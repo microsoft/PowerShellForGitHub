@@ -25,7 +25,7 @@ Install-Module -Name PowerShellForGitHub
 
  ```powershell
 Import-Module .\GitHubAnalytics.psm1
-$issues = Get-GitHubIssuesForRepository -repositoryUrl @('https://github.com/PowerShell/DscResources')
+$issues = Get-GitHubIssueForRepository -repositoryUrl @('https://github.com/PowerShell/DscResources')
 ```
 
 ## Running tests
@@ -56,18 +56,18 @@ Contributions are welcome, please open issue on what functionality you would lik
 #### Querying issues
 
 ```powershell
-$issues = Get-GitHubIssuesForRepository `
+$issues = Get-GitHubIssueForRepository `
 -repositoryUrl @('https://github.com/PowerShell/xPSDesiredStateConfiguration')
 ```
 
 ```powershell
-$issues = Get-GitHubWeeklyIssuesForRepository `
+$issues = Get-GitHubWeeklyIssueForRepository `
 -repositoryUrl @('https://github.com/powershell/xpsdesiredstateconfiguration',`
 'https://github.com/powershell/xactivedirectory') -datatype closed
 ```
 
 ```powershell
-$issues = Get-GitHubTopIssuesRepository `
+$issues = Get-GitHubTopIssueRepository `
 -repositoryUrl @('https://github.com/powershell/xsharepoint',`
 'https://github.com/powershell/xCertificate', 'https://github.com/powershell/xwebadministration') -state open
 ```
@@ -75,18 +75,18 @@ $issues = Get-GitHubTopIssuesRepository `
 #### Querying pull requests
 
 ```powershell
-$pullRequests = Get-GitHubPullRequestsForRepository `
+$pullRequests = Get-GitHubPullRequestForRepository `
 -repositoryUrl @('https://github.com/PowerShell/xPSDesiredStateConfiguration')
 ```
 
 ```powershell
-$pullRequests = Get-GitHubWeeklyPullRequestsForRepository `
+$pullRequests = Get-GitHubWeeklyPullRequestForRepository `
 -repositoryUrl @('https://github.com/powershell/xpsdesiredstateconfiguration',`
 'https://github.com/powershell/xwebadministration') -datatype merged
 ```
 
 ```powershell
-$pullRequests = Get-GitHubTopPullRequestsRepository `
+$pullRequests = Get-GitHubTopPullRequestRepository `
 -repositoryUrl @('https://github.com/powershell/xsharepoint', 'https://github.com/powershell/xwebadministration')`
 -state closed -mergedOnOrAfter 2015-04-20
 ```
@@ -94,29 +94,29 @@ $pullRequests = Get-GitHubTopPullRequestsRepository `
 #### Querying collaborators
 
 ```powershell
-$collaborators = Get-GitHubRepositoryCollaborators`
+$collaborators = Get-GitHubRepositoryCollaborator`
 -repositoryUrl @('https://github.com/PowerShell/DscResources')
 ```
 
 #### Querying contributors
 
 ```powershell
-$contributors = Get-GitHubRepositoryContributors`
+$contributors = Get-GitHubRepositoryCollaborator`
 -repositoryUrl @('https://github.com/PowerShell/DscResources', 'https://github.com/PowerShell/xWebAdministration')
 ```
 
 ```powershell
-$contributors = Get-GitHubRepositoryContributors`
+$contributors = Get-GitHubRepositoryCollaborator`
 -repositoryUrl @('https://github.com/PowerShell/DscResources','https://github.com/PowerShell/xWebAdministration')
 
-$uniqueContributors = Get-GitHubRepositoryUniqueContributors -contributors $contributors
+$uniqueContributors = Get-GitHubRepositoryUniqueContributor -contributors $contributors
 ```
 
 #### Quering teams / organization membership
 
 ```powershell
-$organizationMembers = Get-GitHubOrganizationMembers -organizationName 'OrganizationName'
-$teamMembers = Get-GitHubTeamMembers -organizationName 'OrganizationName' -teamName 'TeamName'
+$organizationMembers = Get-GitHubOrganizationMember -organizationName 'OrganizationName'
+$teamMembers = Get-GitHubTeamMember -organizationName 'OrganizationName' -teamName 'TeamName'
 ```
 
 ### GitHubLabels
