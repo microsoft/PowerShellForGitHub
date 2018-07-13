@@ -1052,11 +1052,14 @@ function Get-NextResultPage
         return $null
     }
 
-    $nextLinkString = $jsonResult.Headers.Link.Split(',')[0]
+    $nextLinkString = $jsonResult.Headers.Link.Split(',').Where{ $_ -match 'rel="next"' }
+    if( $nextLinkString.Count -eq 0){
+        return $null
+    }
     
     # Get url query for the next page
     $query = $nextLinkString.Split(';')[0].replace('<','').replace('>','')
-    if ($query -notmatch '&page=1')
+    if ($query -notmatch '&page=1>')
     {
         return $query
     }
