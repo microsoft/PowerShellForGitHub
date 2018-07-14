@@ -79,10 +79,11 @@ function Get-GitHubIssueForRepository
 
         # Create query for issues
         $query = "$script:gitHubApiReposUrl/$repositoryOwner/$repositoryName/issues?state=$state"
+	$headers = @{}
             
         if (![string]::IsNullOrEmpty($gitHubAccessToken))
         {
-            $query += "&access_token=$gitHubAccessToken"
+	    $headers.Add('Authorization',"token $gitHubAccessToken")
         }
         
         # Obtain issues    
@@ -90,7 +91,7 @@ function Get-GitHubIssueForRepository
         {
             try
             {
-                $jsonResult = Invoke-WebRequest $query
+                $jsonResult = Invoke-WebRequest $query -Headers $headers
                 $issues = ConvertFrom-Json -InputObject $jsonResult.content
             }    
             catch [System.Net.WebException] {
@@ -370,10 +371,11 @@ function Get-GitHubPullRequestForRepository
 
         # Create query for pull requests
         $query = "$script:gitHubApiReposUrl/$repositoryOwner/$repositoryName/pulls?state=$state"
+	$headers = @{}
             
         if (![string]::IsNullOrEmpty($gitHubAccessToken))
         {
-            $query += "&access_token=$gitHubAccessToken"
+	    $headers.Add('Authorization',"token $gitHubAccessToken")
         }
         
         # Obtain pull requests
@@ -381,7 +383,7 @@ function Get-GitHubPullRequestForRepository
         {
             try
             {
-                $jsonResult = Invoke-WebRequest $query
+                $jsonResult = Invoke-WebRequest $query -Headers $headers
                 $pullRequests = ConvertFrom-Json -InputObject $jsonResult.content
             }    
             catch [System.Net.WebException] {
@@ -629,10 +631,11 @@ function Get-GitHubRepositoryCollaborator
         $repositoryOwner = Get-GitHubRepositoryOwnerFromUrl -repositoryUrl $repository
 
         $query = "$script:gitHubApiReposUrl/$repositoryOwner/$repositoryName/collaborators"
+	$headers = @{}
             
         if (![string]::IsNullOrEmpty($gitHubAccessToken))
         {
-            $query += "?access_token=$gitHubAccessToken"
+	    $headers.Add('Authorization',"token $gitHubAccessToken")
         }
         
         # Obtain all collaborators
@@ -640,7 +643,7 @@ function Get-GitHubRepositoryCollaborator
         {
             try
             {
-                $jsonResult = Invoke-WebRequest $query
+                $jsonResult = Invoke-WebRequest $query -Headers $headers
                 $collaborators = ConvertFrom-Json -InputObject $jsonResult.content
             }    
             catch [System.Net.WebException] {
@@ -690,10 +693,11 @@ function Get-GitHubRepositoryContributor
         $repositoryOwner = Get-GitHubRepositoryOwnerFromUrl -repositoryUrl $repository
 
         $query = "$script:gitHubApiReposUrl/$repositoryOwner/$repositoryName/stats/contributors"
+	$headers = @{}
             
         if (![string]::IsNullOrEmpty($gitHubAccessToken))
         {
-            $query += "?access_token=$gitHubAccessToken"
+	    $headers.Add('Authorization',"token $gitHubAccessToken")
         }
         
         # Obtain all contributors    
@@ -701,7 +705,7 @@ function Get-GitHubRepositoryContributor
         {
             try
             {
-                $jsonResult = Invoke-WebRequest $query
+                $jsonResult = Invoke-WebRequest $query -Headers $headers
                 $contributors = ConvertFrom-Json -InputObject $jsonResult.content
             }    
             catch [System.Net.WebException] {
@@ -752,17 +756,18 @@ function Get-GitHubOrganizationMember
     $index = 0
 
     $query = "$script:gitHubApiOrgsUrl/$organizationName/members"
+    $headers = @{}
 
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "?access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }
 
     do 
     {
         try
         {
-            $jsonResult = Invoke-WebRequest $query
+            $jsonResult = Invoke-WebRequest $query -Headers $headers
             $members = ConvertFrom-Json -InputObject $jsonResult.content
         }    
         catch [System.Net.WebException] {
@@ -809,17 +814,18 @@ function Get-GitHubTeam
     $index = 0
 
     $query = "$script:gitHubApiUrl/orgs/$organizationName/teams"
+    $headers = @{}
         
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "?access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }
 
     do 
     {
         try
         {
-            $jsonResult = Invoke-WebRequest $query
+            $jsonResult = Invoke-WebRequest $query -Headers $headers
             $teams = ConvertFrom-Json -InputObject $jsonResult.content
         }    
         catch [System.Net.WebException] {
@@ -881,17 +887,18 @@ function Get-GitHubTeamMember
     }
 
     $query = "$script:gitHubApiUrl/teams/$($team.id)/members"
+    $headers = @{}
         
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "?access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }
 
     do 
     {
         try
         {
-            $jsonResult = Invoke-WebRequest $query
+            $jsonResult = Invoke-WebRequest $query -Headers $headers
             $members = ConvertFrom-Json -InputObject $jsonResult.content
         }    
         catch [System.Net.WebException] {
@@ -939,17 +946,18 @@ function Get-GitHubOrganizationRepository
     $resultToReturn = @()
 
     $query = "$script:gitHubApiUrl/orgs/$organization/repos?"
+    $headers = @{}
             
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "&access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }    
 
     do
     {
         try
         {
-            $jsonResult = Invoke-WebRequest $query
+            $jsonResult = Invoke-WebRequest $query -Headers $headers
             $repositories = (ConvertFrom-Json -InputObject $jsonResult.content)
         }    
         catch [System.Net.WebException] {
@@ -1000,17 +1008,18 @@ function Get-GitHubRepositoryBranch
     $resultToReturn = @()
 
     $query = "$script:gitHubApiUrl/repos/$owner/$repository/branches?"
+    $headers = @{}
 
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "&access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }    
 
     do
     {
         try
         {
-            $jsonResult = Invoke-WebRequest $query
+            $jsonResult = Invoke-WebRequest $query -Headers $headers
             $branches = (ConvertFrom-Json -InputObject $jsonResult.content)
         }    
         catch [System.Net.WebException] {
@@ -1089,13 +1098,14 @@ function Get-GitHubAuthenticatedUser
     $resultToReturn = @()
 
     $query = "$script:gitHubApiUrl/user?"
+    $headers = @{}
             
     if (![string]::IsNullOrEmpty($gitHubAccessToken))
     {
-        $query += "&access_token=$gitHubAccessToken"
+	$headers.Add('Authorization',"token $gitHubAccessToken")
     }
         
-    $jsonResult = Invoke-WebRequest $query
+    $jsonResult = Invoke-WebRequest $query -Headers $headers
     $user = ConvertFrom-Json -InputObject $jsonResult.content
 
     return $user
