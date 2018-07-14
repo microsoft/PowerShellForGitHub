@@ -1211,3 +1211,66 @@ function Get-WeekDate
 
     return $beginningsOfWeeks
 }
+
+<#
+    .SYNOPSIS Obtain repository forks from it's url
+
+    .EXAMPLE Get-GitHubForksForRepository -repositoryUrl "https://github.com/PowerShell/PowerShell"
+#>
+function Get-GitHubForksForRepository
+{
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String[]] $repositoryUrl,
+        $gitHubAccessToken = $script:gitHubToken
+    )
+
+    $resultToReturn = @()
+    $index = 0
+    foreach ($repository in $repositoryUrl)
+    {
+        Write-Host "Getting forks for repository $repository" -ForegroundColor Yellow
+
+        $repositoryName = Get-GitHubRepositoryNameFromUrl -repositoryUrl $repository
+        $repositoryOwner = Get-GitHubRepositoryOwnerFromUrl -repositoryUrl $repository
+
+        # Create query for issues
+        $query = "$script:gitHubApiReposUrl/$repositoryOwner/$repositoryName/forks"
+        $headers = @{}
+
+        if (![string]::IsNullOrEmpty($gitHubAccessToken))
+        {
+                $headers.Add('Authorization',"token $gitHubAccessToken")
+        }
+
+        # Obtain forks
+        do
+        {
+            try
+            {
+               $jsonResult = Invoke-WebRequest $query -Headers $headers
+                $forks = ConvertFrom-Json -InputObject $jsonResult.content
+                foreach ($fork in $forks)
+                {
+                    $resultToReturn += $fork
+                }
+
+            }
+            catch [System.Net.WebException] {
+                Write-Error "Failed to execute query with exception: $($_.Exception)`nHTTP status code: $($_.Exception.Response.StatusCode)"
+                return $null
+            }
+            catch {
+                Write-Error "Failed to execute query with exception: $($_.Exception)"
+                return $null
+            }
+
+            $query = Get-NextResultPage -jsonResult $jsonResult
+        } while ($query -ne $null)
+    }
+
+    return $resultToReturn
+}
+
