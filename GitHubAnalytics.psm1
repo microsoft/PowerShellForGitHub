@@ -90,6 +90,8 @@ function Get-GitHubIssueForRepository
         {
             try
             {
+                # Force TLS 1.2
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $jsonResult = Invoke-WebRequest $query
                 $issues = ConvertFrom-Json -InputObject $jsonResult.content
             }    
@@ -381,6 +383,8 @@ function Get-GitHubPullRequestForRepository
         {
             try
             {
+                # Force TLS 1.2
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $jsonResult = Invoke-WebRequest $query
                 $pullRequests = ConvertFrom-Json -InputObject $jsonResult.content
             }    
@@ -640,6 +644,8 @@ function Get-GitHubRepositoryCollaborator
         {
             try
             {
+                # Force TLS 1.2
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $jsonResult = Invoke-WebRequest $query
                 $collaborators = ConvertFrom-Json -InputObject $jsonResult.content
             }    
@@ -701,6 +707,8 @@ function Get-GitHubRepositoryContributor
         {
             try
             {
+                # Force TLS 1.2
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $jsonResult = Invoke-WebRequest $query
                 $contributors = ConvertFrom-Json -InputObject $jsonResult.content
             }    
@@ -762,6 +770,8 @@ function Get-GitHubOrganizationMember
     {
         try
         {
+            # Force TLS 1.2
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $jsonResult = Invoke-WebRequest $query
             $members = ConvertFrom-Json -InputObject $jsonResult.content
         }    
@@ -819,6 +829,8 @@ function Get-GitHubTeam
     {
         try
         {
+            # Force TLS 1.2
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $jsonResult = Invoke-WebRequest $query
             $teams = ConvertFrom-Json -InputObject $jsonResult.content
         }    
@@ -891,6 +903,8 @@ function Get-GitHubTeamMember
     {
         try
         {
+            # Force TLS 1.2
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $jsonResult = Invoke-WebRequest $query
             $members = ConvertFrom-Json -InputObject $jsonResult.content
         }    
@@ -949,6 +963,8 @@ function Get-GitHubOrganizationRepository
     {
         try
         {
+            # Force TLS 1.2
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $jsonResult = Invoke-WebRequest $query
             $repositories = (ConvertFrom-Json -InputObject $jsonResult.content)
         }    
@@ -1010,6 +1026,8 @@ function Get-GitHubRepositoryBranch
     {
         try
         {
+            # Force TLS 1.2
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $jsonResult = Invoke-WebRequest $query
             $branches = (ConvertFrom-Json -InputObject $jsonResult.content)
         }    
@@ -1091,7 +1109,9 @@ function Get-GitHubAuthenticatedUser
     {
         $query += "&access_token=$gitHubAccessToken"
     }
-        
+
+    # Force TLS 1.2    
+    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
     $jsonResult = Invoke-WebRequest $query
     $user = ConvertFrom-Json -InputObject $jsonResult.content
 
