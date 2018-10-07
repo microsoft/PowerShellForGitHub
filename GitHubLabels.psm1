@@ -64,6 +64,8 @@ function Get-GitHubLabel
             {
                 try
                 {
+                    # Force TLS 1.2    
+                    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                     $jsonResult = Invoke-WebRequest $query -Method Get -Headers $headers
                     $labels = ConvertFrom-Json -InputObject $jsonResult.content
                 }    
@@ -92,6 +94,8 @@ function Get-GitHubLabel
 
             try
             {
+                # Force TLS 1.2    
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $jsonResult = Invoke-WebRequest $query -Method Get -Headers $headers
                 $label = ConvertFrom-Json -InputObject $jsonResult.content
             }    
@@ -145,6 +149,9 @@ function New-GitHubLabel
         $url = "$script:gitHubApiReposUrl/{0}/{1}/labels" -f $ownerName, $repositoryName
         
         Write-Host "Creating Label:" $labelName
+
+        # Force TLS 1.2    
+        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
         $result = Invoke-WebRequest $url -Method Post -Body $data -Headers $headers
         
         if ($result.StatusCode -eq 201) 
@@ -188,6 +195,9 @@ function Remove-GitHubLabel
         $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $ownerName, $repositoryName, $labelName
         
         Write-Host "Deleting Label:" $labelName
+
+        # Force TLS 1.2    
+        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
         $result = Invoke-WebRequest $url -Method Delete -Headers $headers
         
         if ($result.StatusCode -eq 204) 
@@ -240,6 +250,9 @@ function Update-GitHubLabel
         $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $ownerName, $repositoryName, $labelName
         
         Write-Host "Updating label '$labelName' to name '$newLabelName' and color '$labelColor'"
+
+        # Force TLS 1.2    
+        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
         $result = Invoke-WebRequest $url -Method Patch -Body $data -Headers $headers
 
         if ($result.StatusCode -eq 200) 
