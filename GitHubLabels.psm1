@@ -27,38 +27,38 @@ $script:gitHubApiReposUrl = "https://api.github.com/repos"
 <#
     .SYNOPSIS Function to get single or all labels of given repository
     .PARAM
-        repositoryName Name of the repository
+        RepositoryName Name of the repository
     .PARAM 
-        ownerName Owner of the repository
+        OwnerName Owner of the repository
     .PARAM
-        labelName Name of the label to get. Function will return all labels for given repository if labelName is not specified.
+        LabelName Name of the label to get. Function will return all labels for given repository if LabelName is not specified.
     .PARAM
-        gitHubAccessToken GitHub API Access Token.
+        GitHubAccessToken GitHub API Access Token.
             Get github token from https://github.com/settings/tokens 
             If you don't provide it, you can still use this script, but you will be limited to 60 queries per hour.
     .EXAMPLE
-        Get-GitHubLabel -repositoryName DesiredStateConfiguration -ownerName Powershell -labelName TestLabel
-        Get-GitHubLabel -repositoryName DesiredStateConfiguration -ownerName Powershell
+        Get-GitHubLabel -RepositoryName DesiredStateConfiguration -OwnerName Powershell -LabelName TestLabel
+        Get-GitHubLabel -RepositoryName DesiredStateConfiguration -OwnerName Powershell
 #>
 function Get-GitHubLabel
 {
     param(
         [Parameter(Mandatory=$true)]
-        [string]$repositoryName,
+        [string]$RepositoryName,
         [Parameter(Mandatory=$true)]
-        [string]$ownerName,
-        [string]$labelName, 
-        [string]$gitHubAccessToken = $script:gitHubToken
+        [string]$OwnerName,
+        [string]$LabelName, 
+        [string]$GitHubAccessToken = $script:gitHubToken
         )
         
         $resultToReturn = @()
         $index = 0
-        $headers = @{"Authorization"="token $gitHubAccessToken"}
+        $headers = @{"Authorization"="token $GitHubAccessToken"}
         
-        if ($labelName -eq "")
+        if ($LabelName -eq "")
         {
-            $query = "$script:gitHubApiReposUrl/{0}/{1}/labels" -f $ownerName, $repositoryName    
-            Write-Host "Getting all labels for repository $repositoryName"
+            $query = "$script:gitHubApiReposUrl/{0}/{1}/labels" -f $OwnerName, $RepositoryName    
+            Write-Host "Getting all labels for repository $RepositoryName"
 
             do 
             {
@@ -82,13 +82,13 @@ function Get-GitHubLabel
                     $index++
                     $resultToReturn += $label
                 }
-                $query = Get-NextResultPage -jsonResult $jsonResult
+                $query = Get-NextResultPage -JsonResult $jsonResult
             } while ($query -ne $null)
         }
         else 
         {
-            $query = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $ownerName, $repositoryName, $labelName
-            Write-Host "Getting label $labelName for repository $repositoryName"
+            $query = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $OwnerName, $RepositoryName, $LabelName
+            Write-Host "Getting label $LabelName for repository $RepositoryName"
 
             try
             {
@@ -114,141 +114,143 @@ function Get-GitHubLabel
 <#
     .SYNOPSIS Function to create label in given repository
     .PARAM
-        repositoryName Name of the repository
+        RepositoryName Name of the repository
     .PARAM 
-        ownerName Owner of the repository
+        OwnerName Owner of the repository
     .PARAM
-        labelName Name of the label to create
+        LabelName Name of the label to create
     .PARAM
-        gitHubAccessToken GitHub API Access Token.
+        LabelColor New color of the label
+    .PARAM
+        GitHubAccessToken GitHub API Access Token.
             Get github token from https://github.com/settings/tokens 
             If you don't provide it, you can still use this script, but you will be limited to 60 queries per hour.
     .EXAMPLE
-        New-GitHubLabel -repositoryName DesiredStateConfiguration -ownerName PowerShell -labelName TestLabel -labelColor BBBBBB
+        New-GitHubLabel -RepositoryName DesiredStateConfiguration -OwnerName PowerShell -LabelName TestLabel -LabelColor BBBBBB
 #>
 function New-GitHubLabel 
 {
     param(
         [Parameter(Mandatory=$true)]
-        [string]$repositoryName,
+        [string]$RepositoryName,
         [Parameter(Mandatory=$true)]
-        [string]$ownerName,
+        [string]$OwnerName,
         [Parameter(Mandatory=$true)]
-        [string]$labelName, 
-        [string]$labelColor = "EEEEEE",
-        [string]$gitHubAccessToken = $script:gitHubToken
+        [string]$LabelName, 
+        [string]$LabelColor = "EEEEEE",
+        [string]$GitHubAccessToken = $script:gitHubToken
         )
         
-        $headers = @{"Authorization"="token $gitHubAccessToken"}
-        $hashTable = @{"name"=$labelName; "color"=$labelColor}
+        $headers = @{"Authorization"="token $GitHubAccessToken"}
+        $hashTable = @{"name"=$LabelName; "color"=$LabelColor}
         $data = $hashTable | ConvertTo-Json
-        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels" -f $ownerName, $repositoryName
+        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels" -f $OwnerName, $RepositoryName
         
-        Write-Host "Creating Label:" $labelName
+        Write-Host "Creating Label:" $LabelName
         $result = Invoke-WebRequest $url -Method Post -Body $data -Headers $headers
         
         if ($result.StatusCode -eq 201) 
         {
-            Write-Host $labelName "was created"
+            Write-Host $LabelName "was created"
         } 
         else 
         {
-            Write-Error $labelName "was not created. Result: $result"
+            Write-Error $LabelName "was not created. Result: $result"
         }      
 }
 
 <#
     .SYNOPSIS Function to remove label from given repository
     .PARAM
-        repositoryName Name of the repository
+        RepositoryName Name of the repository
     .PARAM 
-        ownerName Owner of the repository
+        OwnerName Owner of the repository
     .PARAM
-        labelName Name of the label to delete
+        LabelName Name of the label to delete
     .PARAM
-        gitHubAccessToken GitHub API Access Token.
+        GitHubAccessToken GitHub API Access Token.
             Get github token from https://github.com/settings/tokens 
             If you don't provide it, you can still use this script, but you will be limited to 60 queries per hour.
     .EXAMPLE
-        Remove-GitHubLabel -repositoryName desiredstateconfiguration -ownerName powershell -labelName TestLabel
+        Remove-GitHubLabel -RepositoryName desiredstateconfiguration -OwnerName powershell -LabelName TestLabel
 #>
 function Remove-GitHubLabel 
 {
     param(
         [Parameter(Mandatory=$true)]
-        [string]$repositoryName,
+        [string]$RepositoryName,
         [Parameter(Mandatory=$true)]
-        [string]$ownerName,
+        [string]$OwnerName,
         [Parameter(Mandatory=$true)]
-        [string]$labelName,
-        [string]$gitHubAccessToken = $script:gitHubToken
+        [string]$LabelName,
+        [string]$GitHubAccessToken = $script:gitHubToken
         )           
             
-        $headers = @{"Authorization"="token $gitHubAccessToken"}
-        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $ownerName, $repositoryName, $labelName
+        $headers = @{"Authorization"="token $GitHubAccessToken"}
+        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $OwnerName, $RepositoryName, $LabelName
         
-        Write-Host "Deleting Label:" $labelName
+        Write-Host "Deleting Label:" $LabelName
         $result = Invoke-WebRequest $url -Method Delete -Headers $headers
         
         if ($result.StatusCode -eq 204) 
         {
-            Write-Host $labelName "was deleted"
+            Write-Host $LabelName "was deleted"
         } 
         else 
         {
-            Write-Error $labelName "was not deleted. Result: $result"
+            Write-Error $LabelName "was not deleted. Result: $result"
         }
 }
 
 <#
     .SYNOPSIS Function to update label in given repository
     .PARAM
-        repositoryName Name of the repository
+        RepositoryName Name of the repository
     .PARAM 
-        ownerName Owner of the repository
+        OwnerName Owner of the repository
     .PARAM
-        labelName Name of the label to update
+        LabelName Name of the label to update
     .PARAM
-        newLabelName New name of the label
+        NewLabelName New name of the label
     .PARAM
-        labelColor New color of the label
+        LabelColor New color of the label
     .PARAM
-        gitHubAccessToken GitHub API Access Token.
+        GitHubAccessToken GitHub API Access Token.
             Get github token from https://github.com/settings/tokens 
             If you don't provide it, you can still use this script, but you will be limited to 60 queries per hour.
     .EXAMPLE
-        Update-GitHubLabel -repositoryName DesiredStateConfiguration -ownerName Powershell -labelName TestLabel -newLabelName NewTestLabel -labelColor BBBB00
+        Update-GitHubLabel -RepositoryName DesiredStateConfiguration -OwnerName Powershell -LabelName TestLabel -NewLabelName NewTestLabel -LabelColor BBBB00
 #>
 function Update-GitHubLabel
 {
     param(
         [Parameter(Mandatory=$true)]
-        [string]$repositoryName,
+        [string]$RepositoryName,
         [Parameter(Mandatory=$true)]
-        [string]$ownerName,
+        [string]$OwnerName,
         [Parameter(Mandatory=$true)]
-        [string]$labelName,
+        [string]$LabelName,
         [Parameter(Mandatory=$true)]
-        [string]$newLabelName,
-        [string]$labelColor = "EEEEEE",
-        [string]$gitHubAccessToken = $script:gitHubToken
+        [string]$NewLabelName,
+        [string]$LabelColor = "EEEEEE",
+        [string]$GitHubAccessToken = $script:gitHubToken
         )           
             
-        $headers = @{"Authorization"="token $gitHubAccessToken"}
-        $hashTable = @{"name"=$newLabelName; "color"=$labelColor}
+        $headers = @{"Authorization"="token $GitHubAccessToken"}
+        $hashTable = @{"name"=$NewLabelName; "color"=$LabelColor}
         $data = $hashTable | ConvertTo-Json
-        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $ownerName, $repositoryName, $labelName
+        $url = "$script:gitHubApiReposUrl/{0}/{1}/labels/{2}" -f $OwnerName, $RepositoryName, $LabelName
         
-        Write-Host "Updating label '$labelName' to name '$newLabelName' and color '$labelColor'"
+        Write-Host "Updating label '$LabelName' to name '$NewLabelName' and color '$LabelColor'"
         $result = Invoke-WebRequest $url -Method Patch -Body $data -Headers $headers
 
         if ($result.StatusCode -eq 200) 
         {
-            Write-Host $labelName "was updated"
+            Write-Host $LabelName "was updated"
         } 
         else
         {
-            Write-Error $labelName "was not updated. Result: $result"
+            Write-Error $LabelName "was not updated. Result: $result"
         }
 }
 
@@ -256,24 +258,24 @@ function Update-GitHubLabel
     .SYNOPSIS Function to create labels for given repository.
         It get all labels from repo, remove the ones which aren't on our approved label list, update the ones which already exist to desired color and add the ones which weren't there before.
     .PARAM
-        repositoryName Name of the repository
+        RepositoryName Name of the repository
     .PARAM 
-        ownerName Owner of the repository
+        OwnerName Owner of the repository
     .PARAM
-        gitHubAccessToken GitHub API Access Token.
+        GitHubAccessToken GitHub API Access Token.
             Get github token from https://github.com/settings/tokens 
             If you don't provide it, you can still use this script, but you will be limited to 60 queries per hour.
     .EXAMPLE
-        New-GitHubLabels -repositoryName DesiredStateConfiguration -ownerName Powershell
+        New-GitHubLabels -RepositoryName DesiredStateConfiguration -OwnerName Powershell
 #>
 function New-GitHubLabels
 {
     param(
           [Parameter(Mandatory=$true)]
-          [string]$repositoryName,
+          [string]$RepositoryName,
           [Parameter(Mandatory=$true)]
-          [string]$ownerName,
-          [string]$gitHubAccessToken = $script:gitHubToken
+          [string]$OwnerName,
+          [string]$GitHubAccessToken = $script:gitHubToken
           )
 
 $labelJson = @"
@@ -340,7 +342,7 @@ $labelJson = @"
 
     $labelList = $labelJson | ConvertFrom-Json
     $labelListNames = $labelList.name
-    $existingLabels = Get-GitHubLabel -repositoryName $repositoryName -ownerName $ownerName -gitHubAccessToken $gitHubAccessToken
+    $existingLabels = Get-GitHubLabel -RepositoryName $RepositoryName -OwnerName $OwnerName -GitHubAccessToken $GitHubAccessToken
     $existingLabelsNames = $existingLabels.name
     
     
@@ -349,12 +351,12 @@ $labelJson = @"
         if ($label.name -notin $existingLabelsNames)
         {
             # Create label if it doesn't exist
-            New-GitHubLabel -repositoryName $repositoryName -ownerName $ownerName -labelName $label.name -labelColor $label.color -gitHubAccessToken $gitHubAccessToken
+            New-GitHubLabel -RepositoryName $RepositoryName -OwnerName $OwnerName -LabelName $label.name -LabelColor $label.color -GitHubAccessToken $GitHubAccessToken
         }
         else 
         {
             # Update label's color if it already exists
-            Update-GitHubLabel -repositoryName $repositoryName -ownerName $ownerName -labelName $label.name -newLabelName $label.name -labelColor $label.color -gitHubAccessToken $gitHubAccessToken
+            Update-GitHubLabel -RepositoryName $RepositoryName -OwnerName $OwnerName -LabelName $label.name -NewLabelName $label.name -LabelColor $label.color -GitHubAccessToken $GitHubAccessToken
         }
     }
     
@@ -363,7 +365,7 @@ $labelJson = @"
         if($label -notin $labelListNames)
         {
             # Remove label if it exists but is not on desired label list
-            Remove-GitHubLabel -repositoryName $repositoryName -ownerName $ownerName -labelName $label -gitHubAccessToken $gitHubAccessToken
+            Remove-GitHubLabel -RepositoryName $RepositoryName -OwnerName $OwnerName -LabelName $label -GitHubAccessToken $GitHubAccessToken
         }
     }
 }
@@ -372,7 +374,7 @@ $labelJson = @"
     .SYNOPSIS Function to get next page with results from query to GitHub API
 
     .PARAM
-        jsonResult Result from the query to GitHub API
+        JsonResult Result from the query to GitHub API
 #>
 function Get-NextResultPage
 {
@@ -380,15 +382,15 @@ function Get-NextResultPage
     (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        $jsonResult
+        $JsonResult
     )
     
-    if($jsonResult.Headers.Link -eq $null)
+    if($JsonResult.Headers.Link -eq $null)
     {
         return $null
     }
 
-    $nextLinkString = $jsonResult.Headers.Link.Split(',')[0]
+    $nextLinkString = $JsonResult.Headers.Link.Split(',')[0]
     
     # Get url query for the next page
     $query = $nextLinkString.Split(';')[0].replace('<','').replace('>','')

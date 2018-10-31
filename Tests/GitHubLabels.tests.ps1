@@ -47,11 +47,11 @@ $script:expectedNumberOfLabels = 14
 
 if ($script:tokenExists)
 {
-    New-GitHubLabels -repositoryName $script:repositoryName -ownerName $script:accountName
+    New-GitHubLabels -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
     Describe 'Getting labels from repository' {
         Context 'When querying for all labels' {
-            $labels = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName
+            $labels = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
             It 'Should return expected number of labels' {
                 $($labels).Count | Should be $script:expectedNumberOfLabels
@@ -59,7 +59,7 @@ if ($script:tokenExists)
         }
 
         Context 'When querying for specific label' {
-            $label = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName bug
+            $label = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName bug
 
             It 'Should return expected label' {
                 $label.name | Should be "bug"
@@ -69,11 +69,11 @@ if ($script:tokenExists)
 
     Describe 'Creating new label' {
         $labelName = "TestLabel"
-        New-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -labelColor BBBBBB
-        $label = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName
+        New-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -LabelColor BBBBBB
+        $label = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName
 
         AfterEach { 
-            Remove-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName
+            Remove-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName
         }
 
         It 'New label should be created' {
@@ -84,15 +84,15 @@ if ($script:tokenExists)
     Describe 'Removing label' {
         $labelName = "TestLabel"
 
-        New-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -labelColor BBBBBB
-        $labels = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName
+        New-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -LabelColor BBBBBB
+        $labels = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
         It 'Should return increased number of labels' {
             $($labels).Count | Should be ($script:expectedNumberOfLabels + 1)
         }
 
-        Remove-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName
-        $labels = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName
+        Remove-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName
+        $labels = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
         It 'Should return expected number of labels' {
             $($labels).Count | Should be $script:expectedNumberOfLabels
@@ -103,12 +103,12 @@ if ($script:tokenExists)
         $labelName = "TestLabel"
     
         Context 'Updating label color' {
-            New-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -labelColor BBBBBB
-            Update-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -newLabelName $labelName -labelColor AAAAAA
-            $label = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName
+            New-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -LabelColor BBBBBB
+            Update-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -NewLabelName $labelName -LabelColor AAAAAA
+            $label = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName
 
             AfterEach { 
-                Remove-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName
+                Remove-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName
             }
 
             It 'Label should have different color' {
@@ -118,12 +118,12 @@ if ($script:tokenExists)
     
         Context 'Updating label name' {
             $newLabelName = $labelName + "2"
-            New-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -labelColor BBBBBB
-            Update-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -newLabelName $newLabelName -labelColor BBBBBB
-            $label = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $newLabelName 
+            New-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -LabelColor BBBBBB
+            Update-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -NewLabelName $newLabelName -LabelColor BBBBBB
+            $label = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $newLabelName 
 
             AfterEach { 
-                Remove-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $newLabelName
+                Remove-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $newLabelName
             }
 
             It 'Label should have different color' {
@@ -136,24 +136,24 @@ if ($script:tokenExists)
     Describe 'Applying set of labels on repository' {
         $labelName = "TestLabel"
 
-        New-GitHubLabels -repositoryName $script:repositoryName -ownerName $script:accountName
+        New-GitHubLabels -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
         # Add new label
-        New-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName $labelName -labelColor BBBBBB
-        $labels = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName
+        New-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName $labelName -LabelColor BBBBBB
+        $labels = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
         # Change color of existing label
-        Update-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName "bug" -newLabelName "bug" -labelColor BBBBBB
+        Update-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName "bug" -NewLabelName "bug" -LabelColor BBBBBB
 
         # Remove one of approved labels"
-        Remove-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName -labelName "discussion"
+        Remove-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName -LabelName "discussion"
 
         It 'Should return increased number of labels' {
             $($labels).Count | Should be ($script:expectedNumberOfLabels + 1)
         }
 
-        New-GitHubLabels -repositoryName $script:repositoryName -ownerName $script:accountName
-        $labels = Get-GitHubLabel -repositoryName $script:repositoryName -ownerName $script:accountName
+        New-GitHubLabels -RepositoryName $script:repositoryName -OwnerName $script:accountName
+        $labels = Get-GitHubLabel -RepositoryName $script:repositoryName -OwnerName $script:accountName
 
         It 'Should return expected number of labels' {
             $($labels).Count | Should be $script:expectedNumberOfLabels
