@@ -1,5 +1,4 @@
 # PowerShellForGitHub
-[![Build status](https://ci.appveyor.com/api/projects/status/t743qp9vfw9f2mq9?svg=true)](https://ci.appveyor.com/project/PowerShell/powershellforgithub)
 
 PowerShell wrapper for GitHub API.
 
