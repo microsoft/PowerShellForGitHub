@@ -4,8 +4,10 @@
 version: 0.1.0.{build}
 
 environment:
-  token:
-    secure: ea+zvlDJmekHVgOvilbf+ZARO2fuoAp07W63ZtEHBz3ke48LdC1odE8bgBk0nIuw
+  avOwnerName: PowerShellForGitHubTeam
+  avOrganizationName: PowerShellForGitHubTeamTestOrg
+  avAccessToken:
+    secure: 9Bjnb+a2KjzXF39rXmKmZl1s/Sf9tKR6fm+E40HCAiDe56fKMJ+rObjg1+joPe6f
 
 install:
   - cinst -y pester
