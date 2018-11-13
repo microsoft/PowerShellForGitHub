@@ -328,15 +328,22 @@ function Invoke-GHRestMethod
         if ($result.StatusCode -eq $resultNotReadyStatusCode)
         {
             $retryDelaySeconds = Get-GitHubConfiguration -Name RetryDelaySeconds
-            if ($retryDelaySeconds -gt 0)
+
+            if ($Method -ne 'Get')
+            {
+                # We only want to do our retry logic for GET requests...
+                # We don't want to repeat PUT/PATCH/POST/DELETE.
+                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)])." -Level Warning
+            }
+            elseif ($retryDelaySeconds -le 0)
+            {
+                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]), however the module is currently configured to not retry in this scenario (RetryDelaySeconds is set to 0).  Please try this command again later." -Level Warning
+            }
+            else
             {
                 Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]).  Will retry in [$retryDelaySeconds] seconds." -Level Warning
                 Start-Sleep -Seconds ($retryDelaySeconds)
                 return (Invoke-GHRestMethod @PSBoundParameters)
-            }
-            else
-            {
-                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]), however the module is currently configured to not retry in this scenario (RetryDelaySeconds is set to 0).  Please try this command again later." -Level Warning
             }
         }
 

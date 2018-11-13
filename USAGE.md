@@ -22,6 +22,9 @@
         *   [Updating the current authenticated user](#updating-the-current-authenticated-user)
         *   [Getting any user](#getting-any-user)
         *   [Getting all users](#getting-all-users)
+    *   [Forks](#forks)
+        *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
+        *   [Create a new fork](#create-a-new-fork)
 
 ----------
 
@@ -296,3 +299,17 @@ Get-GitHubUser -Name octocat
 Get-GitHubUser
 ```
 > Warning: This will take a while.  It's getting _every_ GitHub user.
+
+----------
+
+### Forks
+
+#### Get all the forks for a repository
+```powershell
+Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+```
+
+#### Create a new fork
+```powershell
+New-GitHubRepositoryForm -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+```

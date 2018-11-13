@@ -1,6 +1,20 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.0) - (2018/11/13)
+### Features:
++ Added support for querying forks and creating new ones.
+
+### Fixes:
+* Will only perform a retry when receiving a `202` response on a `GET` request.  Previously, it would
+  retry regardless of the method of the request.
+
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/41) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/TODO)
+
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
 ## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/13)
 ### Features:
 + Significant restructing and refactoring of entire module to make future expansion easier.
