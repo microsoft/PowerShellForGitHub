@@ -1,7 +1,19 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
-## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.0) - (2018/11/13)
+## [0.3.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.1) - (2018/11/13)
+### Fixes:
+* Minor static analysis issues fixed.
+* Corrected name of the test file for `GitHubRepositoryForks`
+* Ensured the `getParams` are used during execution of `Get-GitHubRepositoryFork`
+
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/42) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/TODO)
+
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
+## [0.3.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.0) - (2018/11/13)
 ### Features:
 + Added support for querying forks and creating new ones.
 
@@ -9,13 +21,13 @@
 * Will only perform a retry when receiving a `202` response on a `GET` request.  Previously, it would
   retry regardless of the method of the request.
 
-More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/41) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/TODO)
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/41) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/1076239d7639497984a6e0b04df1e69019c4ec28)
 
 Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
-## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/13)
+## [0.2.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/13)
 ### Features:
 + Significant restructing and refactoring of entire module to make future expansion easier.
 + Significant documentation updates ([CHANGELOG](./CHANGELOG.md), [CONTRIBUTING.md](./CONTRIBUTING.md),

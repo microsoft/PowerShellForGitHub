@@ -88,7 +88,7 @@ Describe 'Creating a new fork for user' {
             $newForks[0].full_name | Should be "$($script:ownerName)/PowerShellForGitHub"
         }
 
-        Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
 
@@ -107,7 +107,7 @@ Describe 'Creating a new fork for an org' {
             $newForks[0].full_name | Should be "$($script:organizationName)/PowerShellForGitHub"
         }
 
-        Remove-GitHubRepository -OwnerName $script:organizationName -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
 

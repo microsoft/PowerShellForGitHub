@@ -84,7 +84,7 @@ function Get-GitHubRepositoryFork
     )
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/forks"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
         'Description' =  "Getting all forks of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
