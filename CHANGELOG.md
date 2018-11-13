@@ -7,7 +7,7 @@
 * Corrected name of the test file for `GitHubRepositoryForks`
 * Ensured the `getParams` are used during execution of `Get-GitHubRepositoryFork`
 
-More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/42) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/TODO)
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/42) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/5703295d497f20fe8eec91d6ed47d126cc518592)
 
 Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
