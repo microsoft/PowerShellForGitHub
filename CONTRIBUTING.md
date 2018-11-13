@@ -404,7 +404,7 @@ Then get a new pull request out for that change to CHANGELOG.
 To add a new tag:
    1. Make sure that you're in a clone of the actual repo and not your own private fork.
    2. Make sure that you have checked out `master` and that it's fully up-to-date
-   3. Run `git tag -a '<version number>'
+   3. Run `git tag -a '<version number>'`
    4. In the pop-up editor, give a one-line summary of the change (that you possibly already wrote for the CHANGELOG)
    5. Save and close the editor
    6. Run `git push --tags` to upload the new tag you just created

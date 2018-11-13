@@ -1,7 +1,7 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
-## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/08)
+## [0.0.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/13)
 ### Features:
 + Significant restructing and refactoring of entire module to make future expansion easier.
 + Significant documentation updates ([CHANGELOG](./CHANGELOG.md), [CONTRIBUTING.md](./CONTRIBUTING.md),
@@ -62,7 +62,7 @@
   organization via `Get-GitHubRepository -OrganizationName <name>`.
 - `Get-GitHubAuthenticatedUser` has been replaced with `Get-GitHubUser -Current`.
 
-More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/TODO) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/TODO)
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/39) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/eb33688e5b8d688d28e8582b76b526da3c4428be)
 
 Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
