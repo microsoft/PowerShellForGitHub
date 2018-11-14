@@ -392,6 +392,14 @@ function Write-Log
     }
 }
 
+$script:alwaysRedactParametersForLogging = @(
+    'AccessToken' # Would be a security issue
+)
+
+$script:alwaysExcludeParametersForLogging = @(
+    'NoStatus'
+)
+
 function Write-InvocationLog
 {
 <#
@@ -401,43 +409,68 @@ function Write-InvocationLog
     .DESCRIPTION
         Writes a log entry for the invoke command.
 
-        To control whether or not this will also write out the details of every parameter,
-        users can call 'Set-GitHubConfiguration -DisableParameterLogging:<$true|$false>'
-
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER InvocationInfo
         The '$MyInvocationInfo' object from the calling function.
 
+    .PARAMETER RedactParameter
+        An optional array of parameter names that should be logged, but their values redacted.
+
+    .PARAMETER ExcludeParameter
+        An optional array of parameter names that should simply not be logged.
+
     .EXAMPLE
         Write-InvocationLog -Invocation $MyInvocation
+
+    .EXAMPLE
+        Write-InvocationLog -Invocation $MyInvocation -ExcludeParameter @('Properties', 'Metrics')
+
+    .NOTES
+        The actual invocation line will not be _completely_ accurate as converted parameters will
+        be in JSON format as opposed to PowerShell format.  However, it should be sufficient enough
+        for debugging purposes.
+
+        ExcludeParamater will always take precedence over RedactParameter.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
-        [Management.Automation.InvocationInfo] $Invocation
+        [Management.Automation.InvocationInfo] $Invocation,
+
+        [string[]] $RedactParameter,
+
+        [string[]] $ExcludeParameter
     )
 
-    Write-Log -Message "[$($Invocation.MyCommand.Module.Version)] Executing: $($Invocation.Line.Trim())" -Level Verbose
+    $jsonConversionDepth = 20 # Seems like it should be more than sufficient
 
-    if (-not (Get-GitHubConfiguration -Name DisableParameterLogging))
+    # Build up the invoked line, being sure to exclude and/or redact any values necessary
+    $params = @()
+    foreach ($param in $Invocation.BoundParameters.GetEnumerator())
     {
-        # Get the length of all invoked parameter names so that the output can all be aligned.
-        $maxLength = 0
-        $Invocation.BoundParameters.Keys |
-            ForEach-Object { $maxLength = [Math]::Max($maxLength, $_.Length + 1) }
+        if ($param.Key -in ($script:alwaysExcludeParametersForLogging + $ExcludeParameter))
+        {
+            continue
+        }
 
-        $Invocation.BoundParameters.GetEnumerator() |
-            Where-Object { ($null -ne $_) -and ($null -ne $_.Value) } |
-            ForEach-Object {
-                $value = $_.Value
-                if ($null -eq $value)
-                {
-                    $value = '$null'
-                }
-
-                Write-Log -Message ("{0, -$maxLength} {1}" -F ($_.Key + ":"), $value.ToString()) -Level Verbose
+        if ($param.Key -in ($script:alwaysRedactParametersForLogging + $RedactParameter))
+        {
+            $params += "-$($param.Key) <redacted>"
+        }
+        else
+        {
+            if ($param.Value -is [switch])
+            {
+                $params += "-$($param.Key):`$$($param.Value.ToBool())"
             }
+            else
+            {
+                $params += "-$($param.Key) $($param.Value | ConvertTo-Json -Depth $jsonConversionDepth -Compress)"
+            }
+        }
     }
+
+    Write-Log -Message "[$($Invocation.MyCommand.Module.Version)] Executing: $($Invocation.MyCommand) $($params -join ' ')" -Level Verbose
 }
 
 function DeepCopy-Object

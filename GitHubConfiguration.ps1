@@ -95,10 +95,6 @@ function Set-GitHubConfiguration
         Specify this switch to disable the hashing of potential PII data prior to submitting the
         data to telemetry (if telemetry hasn't been disabled via DisableTelemetry).
 
-    .PARAMETER DisableParameterLogging
-        Specify this switch to stop the module from logging every individual parameter value
-        when it logs a function call.
-
     .PARAMETER DisableSmarterObjects
         By deffault, this module will modify all objects returned by the API calls to update
         any properties that can be converted to objects (like strings for Date/Time's being
@@ -175,8 +171,6 @@ function Set-GitHubConfiguration
         [switch] $DisableLogging,
 
         [switch] $DisablePiiProtection,
-
-        [switch] $DisableParameterLogging,
 
         [switch] $DisableSmarterObjects,
 
@@ -263,7 +257,6 @@ function Get-GitHubConfiguration
             'DefaultOwnerName',
             'DefaultRepositoryName',
             'DisableLogging',
-            'DisableParameterLogging',
             'DisablePiiProtection',
             'DisableSmarterObjects',
             'DisableTelemetry',
@@ -593,7 +586,6 @@ function Import-GitHubConfiguration
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
         'assemblyPath' = [String]::Empty
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
-        'disableParameterLogging' = $false
         'disablePiiProtection' = $false
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false

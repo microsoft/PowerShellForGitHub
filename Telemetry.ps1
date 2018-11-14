@@ -396,7 +396,7 @@ function Set-TelemetryEvent
         return
     }
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog -Invocation $MyInvocation -ExcludeParameter @('Properties', 'Metrics')
 
     try
     {
@@ -498,7 +498,7 @@ function Set-TelemetryException
         return
     }
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog -Invocation $MyInvocation -ExcludeParameter @('Exception', 'Properties', 'NoFlush')
 
     try
     {
