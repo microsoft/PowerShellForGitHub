@@ -96,6 +96,8 @@ Describe 'Getting the popular content over the last 14 days' {
         It 'Should return expected number of popular content' {
             @($pathList).Count | Should be 0
         }
+
+        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
 
@@ -108,6 +110,8 @@ Describe 'Getting the views over the last 14 days' {
         It 'Should return 0 in the count property' {
             $viewList.Count | Should be 0
         }
+
+        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
 
@@ -120,6 +124,8 @@ Describe 'Getting the clones over the last 14 days' {
         It 'Should return expected number of clones' {
             $cloneList.Count | Should be 0
         }
+
+        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
 
