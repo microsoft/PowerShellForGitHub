@@ -110,9 +110,9 @@ Describe 'Getting the views over the last 14 days' {
         It 'Should return 0 in the count property' {
             $viewList.Count | Should be 0
         }
-    }
 
-    Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url
+    }
 }
 
 Describe 'Getting the clones over the last 14 days' {
@@ -124,9 +124,9 @@ Describe 'Getting the clones over the last 14 days' {
         It 'Should return expected number of clones' {
             $cloneList.Count | Should be 0
         }
-    }
 
-    Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url
+    }
 }
 
 # Restore the user's configuration to its pre-test state
