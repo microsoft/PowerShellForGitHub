@@ -30,7 +30,7 @@
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
         'GitHubTeams.ps1',
-        'GitHubTrafficSupport.ps1',
+        'GitHubTraffic.ps1',
         'GitHubUsers.ps1',
         'NugetTools.ps1',
         'Telemetry.ps1')
