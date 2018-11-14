@@ -80,6 +80,7 @@ function Get-GitHubReferrerTraffic
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/referrers"
+        'Method' = 'Get'
         'Description' =  "Get top 10 referrers for $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
@@ -88,7 +89,7 @@ function Get-GitHubReferrerTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubPathTraffic
@@ -170,6 +171,7 @@ function Get-GitHubPathTraffic
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/paths"
+        'Method' = 'Get'
         'Description' =  "Get top 10 popular contents for $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
@@ -178,7 +180,7 @@ function Get-GitHubPathTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubViewTraffic
@@ -261,6 +263,7 @@ function Get-GitHubViewTraffic
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views"
+        'Method' = 'Get'
         'Description' =  "Get the total number of views and breakdown per day or week for the last 14 days for $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
@@ -269,7 +272,7 @@ function Get-GitHubViewTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubCloneTraffic
@@ -352,6 +355,7 @@ function Get-GitHubCloneTraffic
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones"
+        'Method' = 'Get'
         'Description' =  "Get the total number of clones and breakdown per day or week for the last 14 days for $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
@@ -360,5 +364,5 @@ function Get-GitHubCloneTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return Invoke-GHRestMethod @params
 }
