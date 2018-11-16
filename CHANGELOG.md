@@ -11,11 +11,6 @@
 * Prevented the possibility of Access Tokens from being written into the log file in plain text
   if explicitly passed-in
 
-### Fixes:
-* Minor static analysis issues fixed.
-* Corrected name of the test file for `GitHubRepositoryForks`
-* Ensured the `getParams` are used during execution of `Get-GitHubRepositoryFork`
-
 More Info:
   * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/48) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/b614f4a0fbcb570ef462fea64f776ca85480de86)
 
