@@ -3,7 +3,7 @@
 
 <#
 .Synopsis
-   Tests for GitHubRepositoryForks.ps1 module
+   Tests for GitHubRepositoryTraffic.ps1 module
 #>
 
 [String] $root = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)

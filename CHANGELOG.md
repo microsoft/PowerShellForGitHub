@@ -1,6 +1,34 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.4.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.4.0) - (2018/11/16)
+### Features:
++ Added support for the [Repository Traffic API's](https://developer.github.com/v3/repos/traffic/).
+
+### Fixes:
+* Made NuGet dll retrieval more robust by preventing potential file access problems from being
+  written to the error stream.
+* Prevented the possibility of Access Tokens from being written into the log file in plain text
+  if explicitly passed-in
+
+### Fixes:
+* Minor static analysis issues fixed.
+* Corrected name of the test file for `GitHubRepositoryForks`
+* Ensured the `getParams` are used during execution of `Get-GitHubRepositoryFork`
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/48) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/b614f4a0fbcb570ef462fea64f776ca85480de86)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/49) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/8d2e76f9059f0939b892d08386fe43f0e2722bb0)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/50) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/c6835f4cb1ef0e78e23a8195949eb9ad2555fd4a)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
 ## [0.3.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.1) - (2018/11/13)
 ### Fixes:
 * Minor static analysis issues fixed.

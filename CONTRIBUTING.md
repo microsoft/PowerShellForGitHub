@@ -432,6 +432,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Josh Rolstad (@jrolstad)](https://github.com/jrolstad)**
 - **[Zachary Alexander (@zjalexander)](http://github.com/zjalexander)**
 - **[Andrew Dahl (@aedahl)](http://github.com/aedahl)**
+- **[Pepe Rivera (@joseartrivera)](https://github.com/joseartrivera)**
 
 ----------
 

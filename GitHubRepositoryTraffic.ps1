@@ -248,12 +248,8 @@ function Get-GitHubViewTraffic
         'Per' = $Per
     }
 
-    $getParams = @(
-        "per=$Per"
-    )
-
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?" +  ($getParams -join '&')
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?per=$Per"
         'Method' = 'Get'
         'Description' =  "Getting views for $RepositoryName"
         'AccessToken' = $AccessToken
@@ -344,12 +340,8 @@ function Get-GitHubCloneTraffic
         'Per' = $Per
     }
 
-    $getParams = @(
-        "per=$Per"
-    )
-
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?" +  ($getParams -join '&')
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?per=$Per"
         'Method' = 'Get'
         'Description' =  "Getting number of clones for $RepositoryName"
         'AccessToken' = $AccessToken
