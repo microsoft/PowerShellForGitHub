@@ -75,8 +75,7 @@ function Get-GitHubReferrerTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/referrers"
         'Method' = 'Get'
-        'Description' =  "Get top 10 referrers for $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'Description' =  "Getting referrers for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -160,8 +159,7 @@ function Get-GitHubPathTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/paths"
         'Method' = 'Get'
-        'Description' =  "Get top 10 popular contents for $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'Description' =  "Getting popular contents for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -196,6 +194,9 @@ function Get-GitHubViewTraffic
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Per
+        The interval at which return to return the view counts.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -227,6 +228,9 @@ function Get-GitHubViewTraffic
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [ValidateSet('day', 'week')]
+        [string] $Per = 'day',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -241,13 +245,17 @@ function Get-GitHubViewTraffic
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'Per' = $Per
     }
 
+    $getParams = @(
+        "per=$Per"
+    )
+
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?" +  ($getParams -join '&')
         'Method' = 'Get'
-        'Description' =  "Get the total number of views and breakdown per day or week for the last 14 days for $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'Description' =  "Getting views for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -282,6 +290,9 @@ function Get-GitHubCloneTraffic
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Per
+        The interval at which return to return the view counts.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -313,6 +324,9 @@ function Get-GitHubCloneTraffic
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [ValidateSet('day', 'week')]
+        [string] $Per = 'day',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -327,13 +341,17 @@ function Get-GitHubCloneTraffic
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'Per' = $Per
     }
 
+    $getParams = @(
+        "per=$Per"
+    )
+
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?" +  ($getParams -join '&')
         'Method' = 'Get'
-        'Description' =  "Get the total number of clones and breakdown per day or week for the last 14 days for $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'Description' =  "Getting number of clones for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

@@ -25,6 +25,11 @@
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
+    *   [Traffic](#traffic)
+        *   [Get the referrer traffic for a repository](#get-the-referrer-traffic-for-a-repository)
+        *   [Get the popular content for a repository](#get-the-popular-content-for-a-repository)
+        *   [Get the number of views for a repository](#get-the-number-of-views-for-a-repository)
+        *   [Get the number of clones for a repository](#get-the-number-of-clones-for-a-repository)
 
 ----------
 
@@ -312,4 +317,28 @@ Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitH
 #### Create a new fork
 ```powershell
 New-GitHubRepositoryForm -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+```
+
+----------
+
+### Traffic
+
+#### Get the referrer traffic for a repository
+```powershell
+Get-GitHubReferrerTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+```
+
+#### Get the popular content for a repository
+```powershell
+Get-GitHubPathTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+```
+
+#### Get the number of views for a repository
+```powershell
+Get-GitHubViewTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per 'week'
+```
+
+#### Get the number of clones for a repository
+```powershell
+Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per 'day'
 ```
