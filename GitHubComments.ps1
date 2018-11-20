@@ -98,7 +98,7 @@ function Get-GitHubRepositoryComment
 {
 <#
     .DESCRIPTION
-        Get the issues for a given repository in Github.
+        Get the comments for a given repository in Github.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
