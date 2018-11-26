@@ -83,7 +83,7 @@ Reset-GitHubConfiguration
     Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
 }
 
-Describe 'Creating a new comment' {
+Describe 'Creating, modifying and deleting comments' {
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
     $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle

@@ -135,7 +135,7 @@ function Get-GitHubRepositoryComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort created -Direction asc -Since 2011-04-14T16:00:49Z
 
         Get the comments for the PowerShell\PowerShellForGitHub project.
 #>
