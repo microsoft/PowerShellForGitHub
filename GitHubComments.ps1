@@ -137,7 +137,7 @@ function Get-GitHubRepositoryComment
     .EXAMPLE
         Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get the comments for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -206,7 +206,7 @@ function Get-GitHubComment
 {
 <#
     .DESCRIPTION
-        Get the issues for a given repository in Github.
+        Get a single comment for a given repository in Github.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -224,7 +224,7 @@ function Get-GitHubComment
         them individually.
 
     .PARAMETER CommentID
-        How to sort the results, either created or updated. Default: created
+        The ID of the comment to get.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -237,9 +237,9 @@ function Get-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get a single comment from the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -328,7 +328,7 @@ function New-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1 -Body "Testing this API"
 
         Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
 #>
@@ -379,7 +379,7 @@ function New-GitHubComment
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments"
         'Body' = ($hashBody | ConvertTo-Json)
         'Method' = 'Post'
-        'Description' =  "Getting comment $CommentID for $RepositoryName"
+        'Description' =  "Creating comment under issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -393,7 +393,7 @@ function Edit-GitHubComment
 {
 <#
     .DESCRIPTION
-        Creates a new Github comment in an issue for the given repository
+        Edits an existing comment in an issue for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -411,10 +411,10 @@ function Edit-GitHubComment
         them individually.
 
     .PARAMETER CommentID
-        The number for the issue that the comment will be filed under.
+        The comment ID of the comment to edit.
 
     .PARAMETER body
-        The contents of the comment.
+        The new contents of the comment.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -427,7 +427,7 @@ function Edit-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Edit-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 
         Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
 #>
@@ -510,7 +510,7 @@ function Remove-GitHubComment
         them individually.
 
     .PARAMETER CommentID
-        The number for the issue that the comment will be filed under.
+        The id of the comment to delete.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -523,9 +523,9 @@ function Remove-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Deletes a Github comment from the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
