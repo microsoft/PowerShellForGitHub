@@ -273,7 +273,6 @@ function Get-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Number' =  $IssueNumber
         'CommentID' = $CommentID
     }
 
@@ -429,7 +428,7 @@ function Edit-GitHubComment
     .EXAMPLE
         Edit-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Edits an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
