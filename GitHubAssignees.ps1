@@ -312,7 +312,7 @@ function Remove-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+        Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
 
         Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
 #>
@@ -362,7 +362,7 @@ function Remove-GithubAssignee
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/assignees"
         'Body' = ($hashBody | ConvertTo-Json)
         'Method' = 'Delete'
-        'Description' =  "Add assignees to issue $IssueNumber for $RepositoryName"
+        'Description' =  "Removing assignees from issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

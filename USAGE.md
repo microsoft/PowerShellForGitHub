@@ -30,6 +30,11 @@
         *   [Get the popular content for a repository](#get-the-popular-content-for-a-repository)
         *   [Get the number of views for a repository](#get-the-number-of-views-for-a-repository)
         *   [Get the number of clones for a repository](#get-the-number-of-clones-for-a-repository)
+    *   [Assignees](#assignees)
+        *   [Get assignee list](#get-assignee-list)
+        *   [Check assignee permission](#check-assignee-permission)
+        *   [Add assignee to an issue](#add-assignee-to-an-issue)
+        *   [Remove assignee from an issue](#remove-assignee-from-an-issue)
 
 ----------
 
@@ -341,4 +346,28 @@ Get-GitHubViewTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub 
 #### Get the number of clones for a repository
 ```powershell
 Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per 'day'
+```
+
+----------
+
+### Assignees
+
+#### Get assignee list
+```powershell
+Get-GitHubAsigneeList -OwnerName Powershell -RepositoryName PowerShellForGitHub
+```
+
+#### Check assignee permission
+```powershell
+$HasPermission = Get-GithubAssigneePermissionCheck -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+```
+
+#### Add assignee to an issue
+```powershell
+Add-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+```
+
+#### Remove assignee from an issue
+```powershell
+Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
 ```
