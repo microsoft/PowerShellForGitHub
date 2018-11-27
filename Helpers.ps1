@@ -463,7 +463,7 @@ function Write-InvocationLog
         {
             if ($param.Value -is [switch])
             {
-                $params += "-$($param.Key):`$$($param.Value.ToBool())"
+                $params += "-$($param.Key):`$$($param.Value.ToBool().ToString().ToLower())"
             }
             else
             {
