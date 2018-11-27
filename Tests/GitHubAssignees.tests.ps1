@@ -86,6 +86,11 @@ Describe 'Getting a valid assignee' {
         }
 
         $assigneeUserName = $assigneeList[0].login
+
+        It 'Should have returned an assignee with a login'{
+            $assigneeUserName | Should not be $null
+        }
+
         $hasPermission = Get-GithubAssigneePermissionCheck -Uri $repo.svn_url -Assignee $assigneeUserName
 
         It 'Should have returned an assignee with permission to be assigned to an issue'{
@@ -98,6 +103,8 @@ Describe 'Getting a valid assignee' {
 Describe 'Adding and removing an assignee to an issue'{
 
     Context 'For adding an assignee to an issue'{
+        $assigneeList = @(Get-GitHubAssigneeList -Uri $repo.svn_url)
+        $assigneeUserName = $assigneeList[0].login
         $assignees = @($assigneeUserName)
         Add-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
         $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
@@ -106,7 +113,8 @@ Describe 'Adding and removing an assignee to an issue'{
             $issue.assignee.login | Should be $assigneeUserName
         }
 
-        Remove-GithubAssignee Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
+        Remove-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
+        $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
         It 'Should have removed the user from issue' {
             $issue.assignees.Count | Should be 0
