@@ -75,7 +75,8 @@ function Get-GitHubIssueComment
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    if ($Since -ne $null) {
+    if ($null -ne $Since) 
+    {
         $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
     }
 
@@ -178,7 +179,8 @@ function Get-GitHubRepositoryComment
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    if ($Since -ne $null) {
+    if ($null -ne $Since) 
+    {
         $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
     }
 
