@@ -165,7 +165,7 @@ function Invoke-GHRestMethod
         $headers['Authorization'] = "token $AccessToken"
     }
 
-    if ($Method -in ('post', 'patch', 'put'))
+    if ($Method -in ('post', 'patch', 'put', 'delete'))
     {
         $headers.Add("Content-Type", "application/json; charset=UTF-8")
     }
@@ -188,7 +188,7 @@ function Invoke-GHRestMethod
                 $params.Add("UseBasicParsing", $true)
                 $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
 
-                if ($Method -in ('post', 'put', 'patch') -and (-not [String]::IsNullOrEmpty($Body)))
+                if ($Method -in ('post', 'put', 'patch', 'delete') -and (-not [String]::IsNullOrEmpty($Body)))
                 {
                     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                     $params.Add("Body", $bodyAsBytes)
@@ -227,7 +227,7 @@ function Invoke-GHRestMethod
                     $params.Add("UseBasicParsing", $true)
                     $params.Add("TimeoutSec", $TimeoutSec)
 
-                    if ($Method -in ('post', 'put', 'patch') -and (-not [String]::IsNullOrEmpty($Body)))
+                    if ($Method -in ('post', 'put', 'patch', 'delete') -and (-not [String]::IsNullOrEmpty($Body)))
                     {
                         $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                         $params.Add("Body", $bodyAsBytes)

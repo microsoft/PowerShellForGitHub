@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubAsigneeList
+function Get-GitHubAssigneeList
 {
 <#
     .DESCRIPTION
@@ -163,11 +163,17 @@ function Get-GithubAssigneePermissionCheck
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
+        'ExtendedResult'= $true
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    <# Make this return a bool #>
-    return Invoke-GHRestMethod @params
+    try {
+        $response = Invoke-GHRestMethod @params
+        return $response.StatusCode -eq 204
+    }
+    catch {
+        return $false
+    }
 }
 
 function Add-GithubAssignee
@@ -258,7 +264,7 @@ function Add-GithubAssignee
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/assignees"
         'Body' = ($hashBody | ConvertTo-Json)
         'Method' = 'Post'
-        'Description' =  "Add assignees to $IssueNumber for $RepositoryName"
+        'Description' =  "Add assignees to issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -356,7 +362,7 @@ function Remove-GithubAssignee
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/assignees"
         'Body' = ($hashBody | ConvertTo-Json)
         'Method' = 'Delete'
-        'Description' =  "Add assignees to $IssueNumber for $RepositoryName"
+        'Description' =  "Add assignees to issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

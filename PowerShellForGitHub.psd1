@@ -20,6 +20,7 @@
         'Helpers.ps1',
         'GitHubConfiguration.ps1',
         'GitHubAnalytics.ps1',
+        'GitHubAssignees.ps1',
         'GitHubBranches.ps1',
         'GitHubCore.ps1',
         'GitHubIssues.ps1',
@@ -40,9 +41,12 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-GithubAssignee',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
         'ConvertFrom-Markdown',
+        'Get-GitHubAssigneeList',
+        'Get-GithubAssigneePermissionCheck',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
         'Get-GitHubConfiguration',
@@ -80,6 +84,7 @@
         'New-GitHubLabel',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
+        'Remove-GithubAssignee',
         'Remove-GitHubLabel',
         'Remove-GitHubRepository',
         'Reset-GitHubConfiguration',
