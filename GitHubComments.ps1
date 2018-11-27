@@ -26,7 +26,7 @@ function Get-GitHubIssueComment
         Issue number to receive comments for.
 
     .PARAMETER Since
-        Only comments updated at or after this time are returned. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+        Only comments updated at or after this time are returned.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -62,33 +62,37 @@ function Get-GitHubIssueComment
         [Parameter(Mandatory)]
         [int] $IssueNumber,
 
-        [string] $Since,
+        [DateTime] $Since,
 
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
+
+    if ($Since -ne $null) {
+        $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
+    }
 
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Number' =  $IssueNumber
-        'Since' = $Since
+        'IssueNumber' =  $IssueNumber
+        'Since' = $SinceFormattedTime
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?since=$Since"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?since=$SinceFormattedTime"
         'Description' =  "Getting comments for issue $IssueNumber in $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethodMultipleResult @params
@@ -122,7 +126,7 @@ function Get-GitHubRepositoryComment
         How to list the results, either asc or desc. Ignored without the sort parameter.
 
     .PARAMETER Since
-        Only comments updated at or after this time are returned. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+        Only comments updated at or after this time are returned.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -161,32 +165,36 @@ function Get-GitHubRepositoryComment
         [ValidateSet('asc', 'desc')]
         [string] $Direction,
 
-        [string] $Since,
+        [DateTime] $Since,
 
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
+
+    if ($Since -ne $null) {
+        $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
+    }
 
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Number' =  $IssueNumber
-        'Sort' = $State
-        'Direction' = $Sort
-        'Since' = $Direction
+        'IssueNumber' =  $IssueNumber
+        'Sort' = $Sort
+        'Direction' = $Direction
+        'Since' = $SinceFormattedTime
     }
 
     $getParams = @(
         "sort=$Sort",
         "direction=$Direction",
-        "since=$Since"
+        "since=$SinceFormattedTime"
     )
 
     $params = @{
@@ -196,7 +204,7 @@ function Get-GitHubRepositoryComment
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -264,9 +272,9 @@ function Get-GitHubComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -283,7 +291,7 @@ function Get-GitHubComment
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -358,9 +366,9 @@ function New-GitHubComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -382,7 +390,7 @@ function New-GitHubComment
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -457,9 +465,9 @@ function Edit-GitHubComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -481,7 +489,7 @@ function Edit-GitHubComment
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -550,9 +558,9 @@ function Remove-GitHubComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -569,7 +577,7 @@ function Remove-GitHubComment
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
