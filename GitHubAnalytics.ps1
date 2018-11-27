@@ -55,7 +55,7 @@ function Group-GitHubIssue
         [string] $DateType = 'created'
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if ($PSCmdlet.ParameterSetName -eq 'Weekly')
     {
@@ -148,7 +148,7 @@ function Group-GitHubPullRequest
         [string] $DateType = 'created'
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if ($PSCmdlet.ParameterSetName -eq 'Weekly')
     {

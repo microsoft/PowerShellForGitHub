@@ -61,9 +61,9 @@ function Get-GitHubReferrerTraffic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -79,7 +79,7 @@ function Get-GitHubReferrerTraffic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -145,9 +145,9 @@ function Get-GitHubPathTraffic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -163,7 +163,7 @@ function Get-GitHubPathTraffic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -236,9 +236,9 @@ function Get-GitHubViewTraffic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -255,7 +255,7 @@ function Get-GitHubViewTraffic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -328,9 +328,9 @@ function Get-GitHubCloneTraffic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -347,7 +347,7 @@ function Get-GitHubCloneTraffic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params

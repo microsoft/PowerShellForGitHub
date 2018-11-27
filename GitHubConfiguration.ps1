@@ -711,6 +711,8 @@ function Resolve-ParameterWithDefaultConfigurationValue
 
     .PARAMETER BoundParameters
         The inbound parameters from the calling method.
+        No need to explicitly provide this if you're using the PSBoundParameters from the
+        function that is calling this directly.
 
     .PARAMETER Name
         The name of the parameter in BoundParameters.
@@ -732,8 +734,7 @@ function Resolve-ParameterWithDefaultConfigurationValue
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
-        $BoundParameters,
+        $BoundParameters = (Get-Variable -Name PSBoundParameters -Scope 1 -ValueOnly),
 
         [Parameter(Mandatory)]
         [string] $Name,
@@ -830,7 +831,7 @@ function Set-GitHubAuthentication
         [switch] $SessionOnly
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if (-not $PSBoundParameters.ContainsKey('Credential'))
     {
@@ -891,7 +892,7 @@ function Clear-GitHubAuthentication
         [switch] $SessionOnly
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     Set-TelemetryEvent -EventName Clear-GitHubAuthentication
 

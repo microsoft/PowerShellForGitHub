@@ -59,7 +59,7 @@ function Get-GitHubRateLimit
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = 'rate_limit'
@@ -67,7 +67,7 @@ function Get-GitHubRateLimit
         'Description' =  "Getting your API rate limit"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -135,7 +135,7 @@ function ConvertFrom-Markdown
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{
         'Mode' = $Mode
@@ -156,7 +156,7 @@ function ConvertFrom-Markdown
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -244,9 +244,9 @@ function Get-GitHubLicense
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -275,7 +275,7 @@ function Get-GitHubLicense
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -317,7 +317,7 @@ function Get-GitHubEmoji
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = 'emojis'
@@ -325,7 +325,7 @@ function Get-GitHubEmoji
         'Description' =  "Getting all GitHub emojis"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -415,9 +415,9 @@ function Get-GitHubCodeOfConduct
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -447,7 +447,7 @@ function Get-GitHubCodeOfConduct
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -498,7 +498,7 @@ function Get-GitHubGitIgnore
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -518,7 +518,7 @@ function Get-GitHubGitIgnore
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params

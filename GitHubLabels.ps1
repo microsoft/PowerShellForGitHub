@@ -74,9 +74,9 @@ function Get-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -92,7 +92,7 @@ function Get-GitHubLabel
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     if (-not [String]::IsNullOrWhiteSpace($Name))
@@ -184,9 +184,9 @@ function New-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -217,7 +217,7 @@ function New-GitHubLabel
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -292,9 +292,9 @@ function Remove-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -311,7 +311,7 @@ function Remove-GitHubLabel
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -407,9 +407,9 @@ function Update-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -432,7 +432,7 @@ function Update-GitHubLabel
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -524,11 +524,11 @@ function Set-GitHubLabel
         $Label = $script:defaultGitHubLabels
     }
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus
+    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
 
     $commonParams = @{
         'OwnerName' = $OwnerName

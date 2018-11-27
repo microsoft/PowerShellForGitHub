@@ -67,9 +67,9 @@ function Get-GitHubRepositoryFork
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -89,7 +89,7 @@ function Get-GitHubRepositoryFork
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethodMultipleResult @params
@@ -166,9 +166,9 @@ function New-GitHubRepositoryFork
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -192,7 +192,7 @@ function New-GitHubRepositoryFork
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethod @params
