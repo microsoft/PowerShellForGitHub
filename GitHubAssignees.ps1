@@ -71,7 +71,6 @@ function Get-GitHubAssigneeList
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/assignees"
-        'Method' = 'Get'
         'Description' =  "Getting assignee list for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
