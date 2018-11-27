@@ -79,7 +79,7 @@ function Get-GitHubAssigneeList
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return Invoke-GHRestMethodMultipleResult @params
 }
 
 function Get-GithubAssigneePermissionCheck
@@ -124,6 +124,7 @@ function Get-GithubAssigneePermissionCheck
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParametersetName='Elements')]
+        [OutputType([bool])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
