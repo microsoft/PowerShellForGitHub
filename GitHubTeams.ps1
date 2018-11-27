@@ -81,7 +81,7 @@ function Get-GitHubTeam
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -89,7 +89,7 @@ function Get-GitHubTeam
     $description = [String]::Empty
     if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
     {
-        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
 
@@ -121,7 +121,7 @@ function Get-GitHubTeam
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethodMultipleResult @params
@@ -177,9 +177,9 @@ function Get-GitHubTeamMember
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
-    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus
+    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
 
     $teams = Get-GitHubTeam -OrganizationName $OrganizationName -AccessToken $AccessToken -NoStatus:$NoStatus
     $team = $teams | Where-Object {$_.name -eq $TeamName}

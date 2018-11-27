@@ -44,7 +44,7 @@ function Get-GitHubOrganizationMember
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{
         'OrganizationName' = (Get-PiiSafeString -PlainText $OrganizationName)
@@ -56,7 +56,7 @@ function Get-GitHubOrganizationMember
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethodMultipleResult @params

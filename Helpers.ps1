@@ -412,7 +412,9 @@ function Write-InvocationLog
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER InvocationInfo
-        The '$MyInvocationInfo' object from the calling function.
+        The '$MyInvocation' object from the calling function.
+        No need to explicitly provide this if you're trying to log the immediate function this is
+        being called from.
 
     .PARAMETER RedactParameter
         An optional array of parameter names that should be logged, but their values redacted.
@@ -435,7 +437,7 @@ function Write-InvocationLog
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
-        [Management.Automation.InvocationInfo] $Invocation,
+        [Management.Automation.InvocationInfo] $Invocation = (Get-Variable -Name MyInvocation -Scope 1 -ValueOnly),
 
         [string[]] $RedactParameter,
 

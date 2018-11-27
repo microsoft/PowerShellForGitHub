@@ -175,7 +175,7 @@ function Invoke-GHRestMethod
         Write-Log -Message $Description -Level Verbose
         Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
 
-        $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus
+        $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
         if ($NoStatus)
         {
             if ($PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
@@ -624,7 +624,7 @@ function Invoke-GHRestMethodMultipleResult
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
             }
 
             $result = Invoke-GHRestMethod @params
@@ -743,6 +743,8 @@ function Resolve-RepositoryElements
     .PARAMETER BoundParameters
         The inbound parameters from the calling method.
         This is expecting values that may include 'Uri', 'OwnerName' and 'RepositoryName'
+        No need to explicitly provide this if you're using the PSBoundParameters from the
+        function that is calling this directly.
 
     .PARAMETER DisableValidation
         By default, this function ensures that it returns with all elements provided,
@@ -758,8 +760,7 @@ function Resolve-RepositoryElements
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="This was the most accurate name that I could come up with.  Internal only anyway.")]
     param
     (
-        [Parameter(Mandatory)]
-        $BoundParameters,
+        $BoundParameters = (Get-Variable -Name PSBoundParameters -Scope 1 -ValueOnly),
 
         [switch] $DisableValidation
     )
