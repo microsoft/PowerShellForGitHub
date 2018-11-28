@@ -106,7 +106,7 @@ Describe 'Adding and removing an assignee to an issue'{
         $assigneeList = @(Get-GitHubAssigneeList -Uri $repo.svn_url)
         $assigneeUserName = $assigneeList[0].login
         $assignees = @($assigneeUserName)
-        Add-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
+        New-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
         $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
         It 'Should have assigned the user to the issue' {

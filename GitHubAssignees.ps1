@@ -116,9 +116,9 @@ function Get-GithubAssigneePermissionCheck
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        $HasPermission = Get-GithubAssigneePermissionCheck -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+        Get-GithubAssigneePermissionCheck -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
-        Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
+        Checks if a user has permission to be assigned to an issue from the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -176,13 +176,13 @@ function Get-GithubAssigneePermissionCheck
     }
 }
 
-function Add-GithubAssignee
+function New-GithubAssignee
 {
 <#
     .DESCRIPTION
        Adds a list of assignees to a Github Issue for the given repository.
 
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+       The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER OwnerName
         Owner of the repository.
@@ -201,7 +201,8 @@ function Add-GithubAssignee
         Issue number to add the assignees to.
 
     .PARAMETER Assignees
-        Usernames of users to assign this issue to. NOTE: Only users with push access can add assignees to an issue. Assignees are silently ignored otherwise.
+        Usernames of users to assign this issue to. NOTE: Only users with push access can add assignees to an issue.
+        Assignees are silently ignored otherwise.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -214,7 +215,7 @@ function Add-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+        New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
 
         Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
 #>
@@ -253,7 +254,7 @@ function Add-GithubAssignee
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'Assignees' = (Get-PiiSafeString -PlainText ($AssigneeUsername -join ','))
-        'IssueNumber' = $IssueNumber
+        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
     }
 
     $hashBody = @{

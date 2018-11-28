@@ -364,7 +364,7 @@ $HasPermission = Get-GithubAssigneePermissionCheck -OwnerName Powershell -Reposi
 
 #### Add assignee to an issue
 ```powershell
-Add-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
 ```
 
 #### Remove assignee from an issue
