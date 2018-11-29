@@ -11,7 +11,7 @@
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
-    # RootModule = 'GitHubCore.psm1'
+    RootModule = 'PowerShellForGitHub.psm1'
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules = @(

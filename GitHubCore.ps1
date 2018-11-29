@@ -261,7 +261,7 @@ function Invoke-GHRestMethod
                             Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
                         }
 
-                        throw ($ex | ConvertTo-Json -Depth 20)
+                        throw (ConvertTo-Json -InputObject $ex -Depth 20)
                     }
                 }
 
@@ -851,22 +851,33 @@ filter ConvertTo-SmarterObject
         return $null
     }
 
-    if ($InputObject -is [array])
+    if (($InputObject -is [array]) -or ($InputObject -is [System.Collections.ArrayList]))
     {
+        $updated = @()
         foreach ($object in $InputObject)
         {
-            Write-Output -InputObject (ConvertTo-SmarterObject -InputObject $object)
+            $updated += (ConvertTo-SmarterObject -InputObject $object)
         }
+
+        Write-Output -InputObject @($updated)
     }
     elseif ($InputObject -is [PSCustomObject])
     {
-        $properties = $InputObject.PSObject.Properties | Where-Object { $null -ne $_.Value }
+        $clone = DeepCopy-Object -InputObject $InputObject
+        $properties = $clone.PSObject.Properties | Where-Object { $null -ne $_.Value }
         foreach ($property in $properties)
         {
             # Convert known date properties from dates to real DateTime objects
-            if ($property.Name -in $script:datePropertyNames)
+            if (($property.Name -in $script:datePropertyNames) -and ($property.Value -is [String]))
             {
-                $property.Value = Get-Date -Date $property.Value
+                try
+                {
+                    $property.Value = Get-Date -Date $property.Value
+                }
+                catch
+                {
+                    Write-Log -Message "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is." -Level Verbose
+                }
             }
 
             if (($property.Value -is [array]) -or ($property.Value -is [PSCustomObject]))
@@ -875,7 +886,7 @@ filter ConvertTo-SmarterObject
             }
         }
 
-        Write-Output -InputObject $InputObject
+        Write-Output -InputObject $clone
     }
     else
     {

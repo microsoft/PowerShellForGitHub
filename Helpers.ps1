@@ -467,7 +467,7 @@ function Write-InvocationLog
             }
             else
             {
-                $params += "-$($param.Key) $($param.Value | ConvertTo-Json -Depth $jsonConversionDepth -Compress)"
+                $params += "-$($param.Key) $(ConvertTo-Json -InputObject $param.Value -Depth $jsonConversionDepth -Compress)"
             }
         }
     }

@@ -150,7 +150,7 @@ function ConvertFrom-Markdown
 
     $params = @{
         'UriFragment' = 'markdown'
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Converting Markdown to HTML"
         'AccessToken' = $AccessToken

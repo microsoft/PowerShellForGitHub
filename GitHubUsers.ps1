@@ -259,7 +259,7 @@ function Update-GitHubCurrentUser
     $params = @{
         'UriFragment' = 'user'
         'Method' = 'Patch'
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Description' =  "Updating current authenticated user"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name

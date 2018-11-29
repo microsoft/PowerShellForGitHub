@@ -309,8 +309,7 @@ function Save-GitHubConfiguration
     )
 
     $null = New-Item -Path $Path -Force
-    $Configuration |
-        ConvertTo-Json |
+    ConvertTo-Json -InputObject $Configuration |
         Set-Content -Path $Path -Force -ErrorAction SilentlyContinue -ErrorVariable ev
 
     if (($null -ne $ev) -and ($ev.Count -gt 0))
@@ -654,7 +653,7 @@ function Backup-GitHubConfiguration
     }
     else
     {
-        @{} | ConvertTo-Json | Set-Content -Path $Path -Force:$Force
+        ConvertTo-Json -InputObject @{} | Set-Content -Path $Path -Force:$Force
     }
 }
 
