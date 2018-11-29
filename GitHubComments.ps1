@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubIssueComment
+function Get-GitHubComment
 {
 <#
     .DESCRIPTION
-        Get the commens for an issues in a Github repository.
+        Get the comments for a given Github repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -21,104 +21,12 @@ function Get-GitHubIssueComment
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
+
+    .PARAMETER CommentID
+        The ID of a specific comment to get. If not supplied, will return back all comments for this repository.
 
     .PARAMETER IssueNumber
-        Issue number to receive comments for.
-
-    .PARAMETER Since
-        Only comments updated at or after this time are returned.
-
-    .PARAMETER AccessToken
-        If provided, this will be used as the AccessToken for authentication with the
-        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .EXAMPLE
-        Get-GitHubIssueComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1
-
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
-#>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    param(
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $RepositoryName,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
-        [string] $Uri,
-
-        [Parameter(Mandatory)]
-        [int] $IssueNumber,
-
-        [DateTime] $Since,
-
-        [string] $AccessToken,
-
-        [switch] $NoStatus
-    )
-
-    Write-InvocationLog
-
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    if ($null -ne $Since) 
-    {
-        $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
-    }
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'IssueNumber' =  $IssueNumber
-        'Since' = $SinceFormattedTime
-    }
-
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?since=$SinceFormattedTime"
-        'Description' =  "Getting comments for issue $IssueNumber in $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
-
-    return Invoke-GHRestMethodMultipleResult @params
-}
-
-function Get-GitHubRepositoryComment
-{
-<#
-    .DESCRIPTION
-        Get the comments for a given repository in Github.
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .PARAMETER OwnerName
-        Owner of the repository.
-        If not supplied here, the DefaultOwnerName configuration property value will be used.
-
-    .PARAMETER RepositoryName
-        Name of the repository.
-        If not supplied here, the DefaultRepositoryName configuration property value will be used.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
+        Issue number to get comments for. If not supplied, will return back all comments for this repository.
 
     .PARAMETER Sort
         How to sort the results, either created or updated. Default: created
@@ -140,7 +48,7 @@ function Get-GitHubRepositoryComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRepositoryComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort created -Direction asc -Since 2011-04-14T16:00:49Z
+        Get-GitHubComment-OwnerName Powershell -RepositoryName PowerShellForGitHub
 
         Get the comments for the PowerShell\PowerShellForGitHub project.
 #>
@@ -149,24 +57,44 @@ function Get-GitHubRepositoryComment
         DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='CommentElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='CommentElements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
+        [Parameter(Mandatory, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='CommentUri')]
         [string] $Uri,
 
+        [Parameter(Mandatory, ParameterSetName='CommentUri')]
+        [Parameter(Mandatory, ParameterSetName='CommentElements')]
+        [string] $CommentID,
+
+        [Parameter(Mandatory, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [int] $IssueNumber,
+
+        [Parameter(ParameterSetName='RepositoryUri')]
+        [Parameter(ParameterSetName='RepositoryElements')]
+        [Parameter(ParameterSetName='IssueElements')]
+        [Parameter(ParameterSetName='IssueUri')]
+        [DateTime] $Since,
+
+        [Parameter(ParameterSetName='RepositoryUri')]
+        [Parameter(ParameterSetName='RepositoryElements')]
         [ValidateSet('created', 'updated')]
         [string] $Sort,
 
+        [Parameter(ParameterSetName='RepositoryUri')]
+        [Parameter(ParameterSetName='RepositoryElements')]
         [ValidateSet('asc', 'desc')]
         [string] $Direction,
-
-        [DateTime] $Since,
 
         [string] $AccessToken,
 
@@ -187,116 +115,42 @@ function Get-GitHubRepositoryComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'IssueNumber' =  $IssueNumber
-        'Sort' = $Sort
-        'Direction' = $Direction
-        'Since' = $SinceFormattedTime
+        'ProvidedIssue' = $PSBoundParameters.ContainsKey('IssueNumber')
+        'ProvidedComment' = $PSBoundParameters.ContainsKey('CommentID')
     }
 
-    $getParams = @(
-        "sort=$Sort",
-        "direction=$Direction",
-        "since=$SinceFormattedTime"
-    )
+    if ($PSBoundParameters.ContainsKey('CommentID'))
+    {
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentId"
+        $description = "Getting comment $CommentID for $RepositoryName"
+    }
+    elseif ($PSBoundParameters.ContainsKey('IssueNumber'))
+    {
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?since=$SinceFormattedTime"
+        $description = "Getting comments for issue $IssueNumber in $RepositoryName"
+    }
+    else
+    {
+        $getParams = @(
+            "sort=$Sort",
+            "direction=$Direction",
+            "since=$SinceFormattedTime"
+        )
+
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments`?" +  ($getParams -join '&')
+        $description = "Getting comments for $RepositoryName"
+    }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments`?" +  ($getParams -join '&')
-        'Method' = 'Get'
-        'Description' =  "Getting comments for $RepositoryName"
+        'UriFragment' = $uriFragment
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
-}
-
-function Get-GitHubComment
-{
-<#
-    .DESCRIPTION
-        Get a single comment for a given repository in Github.
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .PARAMETER OwnerName
-        Owner of the repository.
-        If not supplied here, the DefaultOwnerName configuration property value will be used.
-
-    .PARAMETER RepositoryName
-        Name of the repository.
-        If not supplied here, the DefaultRepositoryName configuration property value will be used.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
-    .PARAMETER CommentID
-        The ID of the comment to get.
-
-    .PARAMETER AccessToken
-        If provided, this will be used as the AccessToken for authentication with the
-        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .EXAMPLE
-        Get-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
-
-        Get a single comment from the PowerShell\PowerShellForGitHub project.
-#>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    param(
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $RepositoryName,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
-        [string] $Uri,
-
-        [string] $CommentID,
-
-        [string] $AccessToken,
-
-        [switch] $NoStatus
-    )
-
-    Write-InvocationLog
-
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'CommentID' = $CommentID
-    }
-
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentId"
-        'Method' = 'Get'
-        'Description' =  "Getting comment $CommentID for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
-
-    return Invoke-GHRestMethod @params
+    return Invoke-GHRestMethodMultipleResult @params
 }
 
 function New-GitHubComment
@@ -377,7 +231,7 @@ function New-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'IssueNumber' =  $IssueNumber
+        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
     }
 
     $hashBody = @{
@@ -476,7 +330,7 @@ function Edit-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'CommentID' =  $CommentID
+        'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
     $hashBody = @{
@@ -569,7 +423,7 @@ function Remove-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'CommentID' =  $CommentID
+        'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
     $params = @{

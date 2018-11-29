@@ -48,6 +48,7 @@
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
         'Get-GitHubComment',
+        'Get-GitHubCommentList',
         'Get-GitHubConfiguration',
         'Get-GitHubEmoji',
         'Get-GitHubGitIgnore',
