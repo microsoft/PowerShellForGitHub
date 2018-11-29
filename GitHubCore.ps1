@@ -840,8 +840,12 @@ filter ConvertTo-SmarterObject
     .PARAMETER InputObject
         The object to update
 #>
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [AllowNull()]
         [object] $InputObject
     )
@@ -851,15 +855,11 @@ filter ConvertTo-SmarterObject
         return $null
     }
 
-    if (($InputObject -is [array]) -or ($InputObject -is [System.Collections.ArrayList]))
+    if ($InputObject -is [System.Collections.IList])
     {
-        $updated = @()
-        foreach ($object in $InputObject)
-        {
-            $updated += (ConvertTo-SmarterObject -InputObject $object)
-        }
-
-        Write-Output -InputObject @($updated) -NoEnumerate
+        $InputObject |
+            ConvertTo-SmarterObject |
+            Write-Output
     }
     elseif ($InputObject -is [PSCustomObject])
     {
@@ -880,15 +880,14 @@ filter ConvertTo-SmarterObject
                 }
             }
 
-            if ($property.Value -is [array])
+            if ($property.Value -is [System.Collections.IList])
             {
                 $property.Value = @(ConvertTo-SmarterObject -InputObject $property.Value)
             }
-
-             if ($property.Value -is [PSCustomObject])
-             {
+            elseif ($property.Value -is [PSCustomObject])
+            {
                 $property.Value = ConvertTo-SmarterObject -InputObject $property.Value
-             }
+            }
         }
 
         Write-Output -InputObject $clone
