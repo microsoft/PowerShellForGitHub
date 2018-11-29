@@ -109,8 +109,8 @@ function Get-GitHubComment
         [ValidateSet('asc', 'desc')]
         [string] $Direction,
 
-        [ValidateSet('raw', 'text', 'html', 'full', '')]
-        [string] $MediaType,
+        [ValidateSet('raw', 'text', 'html', 'full')]
+        [string] $MediaType ='raw',
 
         [string] $MediaTypeVersion = 'VERSION',
 
@@ -266,8 +266,8 @@ function New-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
-        [ValidateSet('raw', 'text', 'html', 'full', '')]
-        [string] $MediaType,
+        [ValidateSet('raw', 'text', 'html', 'full')]
+        [string] $MediaType ='raw',
 
         [string] $MediaTypeVersion = 'VERSION',
 
@@ -384,8 +384,8 @@ function Set-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
-        [ValidateSet('raw', 'text', 'html', 'full', '')]
-        [string] $MediaType,
+        [ValidateSet('raw', 'text', 'html', 'full')]
+        [string] $MediaType ='raw',
 
         [string] $MediaTypeVersion = 'VERSION',
 
@@ -541,8 +541,8 @@ function Get-CommentAcceptHeader
 #>
     [CmdletBinding()]
     param(
-        [ValidateSet('raw', 'text', 'html', 'full', '')]
-        [string] $MediaType,
+        [ValidateSet('raw', 'text', 'html', 'full')]
+        [string] $MediaType ='raw',
 
         [string] $MediaTypeVersion = 'VERSION'
     )
