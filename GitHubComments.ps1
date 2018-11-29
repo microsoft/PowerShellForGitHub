@@ -37,6 +37,19 @@ function Get-GitHubComment
     .PARAMETER Since
         Only comments updated at or after this time are returned.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER MediaTypeVersion
+        The version of the response to return. The default version of the API may change in the future.
+        If you're building an application and care about the stability of the API, be sure to request 
+        a specific version. More info at https://developer.github.com/v3/media/.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -95,6 +108,11 @@ function Get-GitHubComment
         [Parameter(ParameterSetName='RepositoryElements')]
         [ValidateSet('asc', 'desc')]
         [string] $Direction,
+
+        [ValidateSet('raw', 'text', 'html', 'full', '')]
+        [string] $MediaType,
+
+        [string] $MediaTypeVersion = 'VERSION',
 
         [string] $AccessToken,
 
@@ -162,6 +180,7 @@ function Get-GitHubComment
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
+        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType -MediaTypeVersion $MediaTypeVersion)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -196,6 +215,19 @@ function New-GitHubComment
 
     .PARAMETER Body
         The contents of the comment.
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER MediaTypeVersion
+        The version of the response to return. The default version of the API may change in the future.
+        If you're building an application and care about the stability of the API, be sure to request 
+        a specific version. More info at https://developer.github.com/v3/media/.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -234,6 +266,11 @@ function New-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
+        [ValidateSet('raw', 'text', 'html', 'full', '')]
+        [string] $MediaType,
+
+        [string] $MediaTypeVersion = 'VERSION',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -261,6 +298,7 @@ function New-GitHubComment
         'Method' = 'Post'
         'Description' =  "Creating comment under issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
+        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType -MediaTypeVersion $MediaTypeVersion)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -295,6 +333,19 @@ function Set-GitHubComment
 
     .PARAMETER body
         The new contents of the comment.
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER MediaTypeVersion
+        The version of the response to return. The default version of the API may change in the future.
+        If you're building an application and care about the stability of the API, be sure to request 
+        a specific version. More info at https://developer.github.com/v3/media/.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -333,6 +384,11 @@ function Set-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
+        [ValidateSet('raw', 'text', 'html', 'full', '')]
+        [string] $MediaType,
+
+        [string] $MediaTypeVersion = 'VERSION',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -360,6 +416,7 @@ function Set-GitHubComment
         'Method' = 'Patch'
         'Description' =  "Set comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
+        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType -MediaTypeVersion $MediaTypeVersion)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -454,4 +511,66 @@ function Remove-GitHubComment
     }
 
     return Invoke-GHRestMethod @params
+}
+
+function Get-CommentAcceptHeader
+{
+<#
+    .DESCRIPTION
+        Returns a formatted AcceptHeader based on the requested MediaType and MediaTypeVersion
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER MediaTypeVersion
+        The version of the response to return. The default version of the API may change in the future.
+        If you're building an application and care about the stability of the API, be sure to request 
+        a specific version. More info at https://developer.github.com/v3/media/.
+
+    .EXAMPLE
+        Get-CommentAcceptHeader -MediaType raw MediaTypeVersion v3
+
+        Returns a formatted AcceptHeader for v3 of the response object
+#>
+    [CmdletBinding()]
+    param(
+        [ValidateSet('raw', 'text', 'html', 'full', '')]
+        [string] $MediaType,
+
+        [string] $MediaTypeVersion = 'VERSION'
+    )
+
+    $acceptHeaders = @()
+
+    <# If the user has not specified a specific version, add the preview acceptHeader #>
+    if ('VERSION' -eq $MediaTypeVersion)
+    {
+        $acceptHeaders += 'application/vnd.github.squirrel-girl-preview'
+    }
+
+    if ('raw' -eq $MediaType)
+    {
+        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.raw+json"
+    }
+    elseif ('text' -eq $MediaType)
+    {
+        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.text+json"
+    }
+    elseif ('html' -eq $MediaType)
+    {
+        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.html+json"
+    }
+    elseif ('full' -eq $MediaType)
+    {
+        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.full+json"
+    }
+
+    return ($acceptHeaders -join ',')
 }
