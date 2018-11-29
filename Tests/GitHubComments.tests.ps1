@@ -98,7 +98,7 @@ Describe 'Creating, modifying and deleting comments' {
     }
 
     Context 'For getting comments from an issue' {
-        $existingComments = @(Get-GitHubIssueComment -Uri $repo.svn_url -IssueNumber $issue.number)
+        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -IssueNumber $issue.number)
 
         It 'Should have the expected number of comments' {
             $existingComments.Count | Should be 1
@@ -123,7 +123,7 @@ Describe 'Creating, modifying and deleting comments' {
     }
 
     Context 'For getting comments from a repository and deleting them' {
-        $existingComments = @(Get-GitHubRepositoryComment -Uri $repo.svn_url)
+        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
         It 'Should have the expected number of comments' {
             $existingComments.Count | Should be 2
@@ -133,7 +133,7 @@ Describe 'Creating, modifying and deleting comments' {
             Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id
         }
 
-        $existingComments = @(Get-GitHubRepositoryComment -Uri $repo.svn_url)
+        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
         It 'Should have no comments' {
             $existingComments.Count | Should be 0
