@@ -41,12 +41,10 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Add-GithubAssignee',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
         'ConvertFrom-Markdown',
-        'Get-GitHubAssigneeList',
-        'Get-GithubAssigneePermissionCheck',
+        'Get-GitHubAssignee',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
         'Get-GitHubConfiguration',
@@ -80,6 +78,7 @@
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
         'Move-GitHubRepositoryOwnership',
+        'New-GithubAssignee',
         'New-GitHubIssue',
         'New-GitHubLabel',
         'New-GitHubRepository',
@@ -94,6 +93,7 @@
         'Set-GitHubLabel',
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
+        'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
         'Unlock-GitHubIssue',
         'Update-GitHubCurrentUser',

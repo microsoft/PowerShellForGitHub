@@ -79,7 +79,7 @@ $issue = New-GitHubIssue -Uri $repo.svn_url -Title "Test issue"
 Describe 'Getting a valid assignee' {
 
     Context 'For getting a valid assignee' {
-        $assigneeList = @(Get-GitHubAssigneeList -Uri $repo.svn_url)
+        $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
 
         It 'Should have returned the one assignee' {
             $assigneeList.Count | Should be 1
@@ -91,7 +91,7 @@ Describe 'Getting a valid assignee' {
             $assigneeUserName | Should not be $null
         }
 
-        $hasPermission = Get-GithubAssigneePermissionCheck -Uri $repo.svn_url -Assignee $assigneeUserName
+        $hasPermission = Test-GitHubAssignee -Uri $repo.svn_url -Assignee $assigneeUserName
 
         It 'Should have returned an assignee with permission to be assigned to an issue'{
             $hasPermission | Should be $true
@@ -103,17 +103,17 @@ Describe 'Getting a valid assignee' {
 Describe 'Adding and removing an assignee to an issue'{
 
     Context 'For adding an assignee to an issue'{
-        $assigneeList = @(Get-GitHubAssigneeList -Uri $repo.svn_url)
+        $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
         $assigneeUserName = $assigneeList[0].login
         $assignees = @($assigneeUserName)
-        New-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
+        New-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignee $assignees
         $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
         It 'Should have assigned the user to the issue' {
             $issue.assignee.login | Should be $assigneeUserName
         }
 
-        Remove-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignees $assignees
+        Remove-GithubAssignee -Uri $repo.svn_url -IssueNumber $issue.number -Assignee $assignees
         $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
         It 'Should have removed the user from issue' {

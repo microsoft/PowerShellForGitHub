@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubAssigneeList
+function Get-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -81,7 +81,7 @@ function Get-GitHubAssigneeList
     return Invoke-GHRestMethodMultipleResult @params
 }
 
-function Get-GithubAssigneePermissionCheck
+function Test-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -115,8 +115,11 @@ function Get-GithubAssigneePermissionCheck
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        [bool] If the assignee can be assigned to issues in the repository.
+
     .EXAMPLE
-        Get-GithubAssigneePermissionCheck -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+        Test-GitHubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
         Checks if a user has permission to be assigned to an issue from the PowerShell\PowerShellForGitHub project.
 #>
@@ -167,11 +170,13 @@ function Get-GithubAssigneePermissionCheck
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    try {
+    try 
+    {
         $response = Invoke-GHRestMethod @params
         return $response.StatusCode -eq 204
     }
-    catch {
+    catch 
+    {
         return $false
     }
 }
@@ -200,7 +205,7 @@ function New-GithubAssignee
     .PARAMETER IssueNumber
         Issue number to add the assignees to.
 
-    .PARAMETER Assignees
+    .PARAMETER Assignee
         Usernames of users to assign this issue to. NOTE: Only users with push access can add assignees to an issue.
         Assignees are silently ignored otherwise.
 
@@ -215,7 +220,7 @@ function New-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+        New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee $assignee
 
         Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
 #>
@@ -235,9 +240,11 @@ function New-GithubAssignee
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [Parameter(Mandatory)]
         [int] $IssueNumber,
 
-        [string[]] $Assignees,
+        [ValidateCount(1, 10)]
+        [string[]] $Assignee,
 
         [string] $AccessToken,
 
@@ -253,12 +260,12 @@ function New-GithubAssignee
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Assignees' = (Get-PiiSafeString -PlainText ($AssigneeUsername -join ','))
+        'AssigneeCount' = $Assignee.Count
         'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
     }
 
     $hashBody = @{
-        'assignees' = $Assignees
+        'assignees' = $Assignee
     }
 
     $params = @{
@@ -267,6 +274,7 @@ function New-GithubAssignee
         'Method' = 'Post'
         'Description' =  "Add assignees to issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
+        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -299,7 +307,7 @@ function Remove-GithubAssignee
     .PARAMETER IssueNumber
         Issue number to remove the assignees from.
 
-    .PARAMETER Assignees
+    .PARAMETER Assignee
         Usernames of assignees to remove from an issue. NOTE: Only users with push access can remove assignees from an issue. Assignees are silently ignored otherwise.
 
     .PARAMETER AccessToken
@@ -313,7 +321,7 @@ function Remove-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees
+        Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee $assignees
 
         Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
 #>
@@ -335,7 +343,7 @@ function Remove-GithubAssignee
 
         [int] $IssueNumber,
 
-        [string[]] $Assignees,
+        [string[]] $Assignee,
 
         [string] $AccessToken,
 
@@ -351,12 +359,12 @@ function Remove-GithubAssignee
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Assignees' = (Get-PiiSafeString -PlainText ($AssigneeUsername -join ','))
-        'IssueNumber' = $IssueNumber
+        'AssigneeCount' = $Assignee.Count
+        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
     }
 
     $hashBody = @{
-        'assignees' = $Assignees
+        'assignees' = $Assignee
     }
 
     $params = @{
@@ -365,6 +373,7 @@ function Remove-GithubAssignee
         'Method' = 'Delete'
         'Description' =  "Removing assignees from issue $IssueNumber for $RepositoryName"
         'AccessToken' = $AccessToken
+        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
