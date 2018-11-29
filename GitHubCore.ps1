@@ -859,7 +859,7 @@ filter ConvertTo-SmarterObject
             $updated += (ConvertTo-SmarterObject -InputObject $object)
         }
 
-        Write-Output -InputObject @($updated)
+        Write-Output -InputObject @($updated) -NoEnumerate
     }
     elseif ($InputObject -is [PSCustomObject])
     {
@@ -880,10 +880,15 @@ filter ConvertTo-SmarterObject
                 }
             }
 
-            if (($property.Value -is [array]) -or ($property.Value -is [PSCustomObject]))
+            if ($property.Value -is [array])
             {
-                $property.Value = ConvertTo-SmarterObject -InputObject $property.Value
+                $property.Value = @(ConvertTo-SmarterObject -InputObject $property.Value)
             }
+
+             if ($property.Value -is [PSCustomObject])
+             {
+                $property.Value = ConvertTo-SmarterObject -InputObject $property.Value
+             }
         }
 
         Write-Output -InputObject $clone
