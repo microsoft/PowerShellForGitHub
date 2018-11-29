@@ -54,7 +54,7 @@ function Get-GitHubComment
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParametersetName='RepositoryElements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
@@ -126,16 +126,33 @@ function Get-GitHubComment
     }
     elseif ($PSBoundParameters.ContainsKey('IssueNumber'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?since=$SinceFormattedTime"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?"
+
+        if ($PSBoundParameters.ContainsKey('Since'))
+        {
+            $uriFragment += "since=$SinceFormattedTime"
+        }
+
         $description = "Getting comments for issue $IssueNumber in $RepositoryName"
     }
     else
     {
-        $getParams = @(
-            "sort=$Sort",
-            "direction=$Direction",
-            "since=$SinceFormattedTime"
-        )
+        $getParams = @()
+
+        if ($PSBoundParameters.ContainsKey('Sort'))
+        {
+            $getParams += "sort=$Sort"
+        }
+
+        if ($PSBoundParameters.ContainsKey('Direction'))
+        {
+            $getParams += "direction=$Direction"
+        }
+
+        if ($PSBoundParameters.ContainsKey('Since'))
+        {
+            $getParams += "since=$SinceFormattedTime"
+        }
 
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments`?" +  ($getParams -join '&')
         $description = "Getting comments for $RepositoryName"
