@@ -111,7 +111,7 @@ Describe 'Creating, modifying and deleting comments' {
 
     Context 'For editing a comment' {
         $newComment = New-GitHubComment -Uri $repo.svn_url -IssueNumber $issue.number -Body $defaultCommentBody
-        $editedComment = Edit-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
+        $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
 
         It 'Should have a body that is not equal to the original body' {
             $editedComment.body | Should not be $newComment.Body

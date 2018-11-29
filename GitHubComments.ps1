@@ -210,7 +210,7 @@ function New-GitHubComment
     .EXAMPLE
         New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1 -Body "Testing this API"
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Creates a new Github comment in an issue for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -269,11 +269,11 @@ function New-GitHubComment
     return Invoke-GHRestMethod @params
 }
 
-function Edit-GitHubComment
+function Set-GitHubComment
 {
 <#
     .DESCRIPTION
-        Edits an existing comment in an issue for the given repository
+        Set an existing comment in an issue for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -307,9 +307,9 @@ function Edit-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Edit-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+        Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 
-        Edits an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Set an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -358,7 +358,7 @@ function Edit-GitHubComment
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
         'Body' = ($hashBody | ConvertTo-Json)
         'Method' = 'Patch'
-        'Description' =  "Editing comment $CommentID for $RepositoryName"
+        'Description' =  "Set comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

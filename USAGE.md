@@ -373,7 +373,7 @@ New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Iss
 
 #### Editing an existing comment
 ```powershell
-Edit-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 ```
 
 #### Removing a comment
