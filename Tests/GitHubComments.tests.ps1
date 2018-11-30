@@ -146,7 +146,7 @@ try
         Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
-finally 
+finally
 {
     # Restore the user's configuration to its pre-test state
     Restore-GitHubConfiguration -Path $configFile

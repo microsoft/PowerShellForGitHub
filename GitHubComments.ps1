@@ -118,7 +118,7 @@ function Get-GitHubComment
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    if ($null -ne $Since) 
+    if ($null -ne $Since)
     {
         $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
     }
