@@ -7,6 +7,8 @@ $script:gitHubApiOrgsUrl = "https://api.github.com/orgs"
 
 $script:defaultAcceptHeader = 'application/vnd.github.v3+json'
 
+Set-Variable -Scope Script -Option ReadOnly -Name validBodyContainingRequestMethods -Value ('post', 'patch', 'put', 'delete')
+
 function Invoke-GHRestMethod
 {
 <#
@@ -165,7 +167,7 @@ function Invoke-GHRestMethod
         $headers['Authorization'] = "token $AccessToken"
     }
 
-    if ($Method -in ('post', 'patch', 'put', 'delete'))
+    if ($Method -in $validBodyContainingRequestMethods)
     {
         $headers.Add("Content-Type", "application/json; charset=UTF-8")
     }
@@ -188,7 +190,7 @@ function Invoke-GHRestMethod
                 $params.Add("UseBasicParsing", $true)
                 $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
 
-                if ($Method -in ('post', 'put', 'patch', 'delete') -and (-not [String]::IsNullOrEmpty($Body)))
+                if ($Method -in $validBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
                 {
                     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                     $params.Add("Body", $bodyAsBytes)
@@ -210,7 +212,7 @@ function Invoke-GHRestMethod
             if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
             {
                 [scriptblock]$scriptBlock = {
-                    param($Url, $method, $Headers, $Body, $TimeoutSec, $ScriptRootPath)
+                    param($Url, $method, $Headers, $Body, $validBodyContainingRequestMethods, $TimeoutSec, $ScriptRootPath)
 
                     # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
                     # the context of this script block since we're running in a different
@@ -227,7 +229,7 @@ function Invoke-GHRestMethod
                     $params.Add("UseBasicParsing", $true)
                     $params.Add("TimeoutSec", $TimeoutSec)
 
-                    if ($Method -in ('post', 'put', 'patch', 'delete') -and (-not [String]::IsNullOrEmpty($Body)))
+                    if ($Method -in $validBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
                     {
                         $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                         $params.Add("Body", $bodyAsBytes)
@@ -265,7 +267,7 @@ function Invoke-GHRestMethod
                     }
                 }
 
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), $PSScriptRoot)
+                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, $validBodyContainingRequestMethods, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), $PSScriptRoot)
 
                 if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
                 {
