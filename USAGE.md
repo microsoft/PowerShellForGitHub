@@ -376,10 +376,11 @@ New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -As
 #### Remove assignee from an issue
 ```powershell
 Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+```
 
 ----------
 
-### Comments### Comments
+### Comments
 
 #### Get comments from an issue
 ```powershell
