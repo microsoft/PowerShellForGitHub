@@ -70,78 +70,84 @@ if (-not $script:accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
-Backup-GitHubConfiguration -Path $configFile
-Reset-GitHubConfiguration
+try
+{
+    Backup-GitHubConfiguration -Path $configFile
+    Reset-GitHubConfiguration
+    Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
 
-# Define Script-scoped, readonly, hidden variables.
+    # Define Script-scoped, readonly, hidden variables.
 
-@{
-    defaultIssueTitle = "Test Title"
-    defaultCommentBody = "This is a test body."
-    defaultEditedCommentBody = "This is an edited test body."
-}.GetEnumerator() | ForEach-Object {
-    Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
+    @{
+        defaultIssueTitle = "Test Title"
+        defaultCommentBody = "This is a test body."
+        defaultEditedCommentBody = "This is an edited test body."
+    }.GetEnumerator() | ForEach-Object {
+        Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
+    }
+
+    Describe 'Creating, modifying and deleting comments' {
+        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+
+        Context 'For creating a new comment' {
+            $newComment = New-GitHubComment -Uri $repo.svn_url -Issue $issue.number -Body $defaultCommentBody
+            $existingComment = Get-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id
+
+            It "Should have the expected body text" {
+                $existingComment.body | Should be $defaultCommentBody
+            }
+        }
+
+        Context 'For getting comments from an issue' {
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number)
+
+            It 'Should have the expected number of comments' {
+                $existingComments.Count | Should be 1
+            }
+
+            It 'Should have the expected body text on the first comment' {
+                $existingComments[0].body | Should be $defaultCommentBody
+            }
+        }
+
+        Context 'For editing a comment' {
+            $newComment = New-GitHubComment -Uri $repo.svn_url -Issue $issue.number -Body $defaultCommentBody
+            $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
+
+            It 'Should have a body that is not equal to the original body' {
+                $editedComment.body | Should not be $newComment.Body
+            }
+
+            It 'Should have the edited content' {
+                $editedComment.body | Should be $defaultEditedCommentBody
+            }
+        }
+
+        Context 'For getting comments from a repository and deleting them' {
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
+
+            It 'Should have the expected number of comments' {
+                $existingComments.Count | Should be 2
+            }
+
+            foreach($comment in $existingComments) {
+                Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id
+            }
+
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
+
+            It 'Should have no comments' {
+                $existingComments.Count | Should be 0
+            }
+        }
+
+        Remove-GitHubRepository -Uri $repo.svn_url
+    }
 }
-
-Describe 'Creating, modifying and deleting comments' {
-    $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-    $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
-
-    Context 'For creating a new comment' {
-        $newComment = New-GitHubComment -Uri $repo.svn_url -IssueNumber $issue.number -Body $defaultCommentBody
-        $existingComment = Get-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id
-
-        It "Should have the expected body text" {
-            $existingComment.body | Should be $defaultCommentBody
-        }
-    }
-
-    Context 'For getting comments from an issue' {
-        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -IssueNumber $issue.number)
-
-        It 'Should have the expected number of comments' {
-            $existingComments.Count | Should be 1
-        }
-
-        It 'Should have the expected body text on the first comment' {
-            $existingComments[0].body | Should be $defaultCommentBody
-        }
-    }
-
-    Context 'For editing a comment' {
-        $newComment = New-GitHubComment -Uri $repo.svn_url -IssueNumber $issue.number -Body $defaultCommentBody
-        $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
-
-        It 'Should have a body that is not equal to the original body' {
-            $editedComment.body | Should not be $newComment.Body
-        }
-
-        It 'Should have the edited content' {
-            $editedComment.body | Should be $defaultEditedCommentBody
-        }
-    }
-
-    Context 'For getting comments from a repository and deleting them' {
-        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
-
-        It 'Should have the expected number of comments' {
-            $existingComments.Count | Should be 2
-        }
-
-        foreach($comment in $existingComments) {
-            Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id
-        }
-
-        $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
-
-        It 'Should have no comments' {
-            $existingComments.Count | Should be 0
-        }
-    }
-
-    Remove-GitHubRepository -Uri $repo.svn_url
+finally 
+{
+    # Restore the user's configuration to its pre-test state
+    Restore-GitHubConfiguration -Path $configFile
 }
-
-# Restore the user's configuration to its pre-test state
-Restore-GitHubConfiguration -Path $configFile

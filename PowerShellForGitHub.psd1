@@ -103,6 +103,7 @@
     )
 
     AliasesToExport = @(
+        'Delete-GitHubComment',
         'Delete-GitHubLabel',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',

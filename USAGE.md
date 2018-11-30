@@ -353,7 +353,7 @@ Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
 
 #### Get comments from an issue
 ```powershell
-Get-GitHubIssueComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1
+Get-GitHubIssueComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
 #### Get comments from a repository
@@ -368,7 +368,7 @@ Get-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Com
 
 #### Adding a new comment to an issue
 ```powershell
-New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1 -Body "Testing this API"
+New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 ```
 
 #### Editing an existing comment

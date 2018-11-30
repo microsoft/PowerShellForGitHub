@@ -25,7 +25,7 @@ function Get-GitHubComment
     .PARAMETER CommentID
         The ID of a specific comment to get. If not supplied, will return back all comments for this repository.
 
-    .PARAMETER IssueNumber
+    .PARAMETER Issue
         Issue number to get comments for. If not supplied, will return back all comments for this repository.
 
     .PARAMETER Sort
@@ -91,7 +91,7 @@ function Get-GitHubComment
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [int] $IssueNumber,
+        [int] $Issue,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
@@ -133,7 +133,7 @@ function Get-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedIssue' = $PSBoundParameters.ContainsKey('IssueNumber')
+        'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
         'ProvidedComment' = $PSBoundParameters.ContainsKey('CommentID')
     }
 
@@ -142,16 +142,16 @@ function Get-GitHubComment
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentId"
         $description = "Getting comment $CommentID for $RepositoryName"
     }
-    elseif ($PSBoundParameters.ContainsKey('IssueNumber'))
+    elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments`?"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$Issue/comments`?"
 
         if ($PSBoundParameters.ContainsKey('Since'))
         {
             $uriFragment += "since=$SinceFormattedTime"
         }
 
-        $description = "Getting comments for issue $IssueNumber in $RepositoryName"
+        $description = "Getting comments for issue $Issue in $RepositoryName"
     }
     else
     {
@@ -210,7 +210,7 @@ function New-GitHubComment
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER IssueNumber
+    .PARAMETER Issue
         The number for the issue that the comment will be filed under.
 
     .PARAMETER Body
@@ -240,7 +240,7 @@ function New-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -IssueNumber 1 -Body "Testing this API"
+        New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
         Creates a new Github comment in an issue for the PowerShell\PowerShellForGitHub project.
 #>
@@ -261,7 +261,7 @@ function New-GitHubComment
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [string] $IssueNumber,
+        [string] $Issue,
 
         [Parameter(Mandatory)]
         [string] $Body,
@@ -285,7 +285,7 @@ function New-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
+        'Issue' =  (Get-PiiSafeString -PlainText $Issue)
     }
 
     $hashBody = @{
@@ -293,10 +293,10 @@ function New-GitHubComment
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/comments"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/comments"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating comment under issue $IssueNumber for $RepositoryName"
+        'Description' =  "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType -MediaTypeVersion $MediaTypeVersion)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -331,7 +331,7 @@ function Set-GitHubComment
     .PARAMETER CommentID
         The comment ID of the comment to edit.
 
-    .PARAMETER body
+    .PARAMETER Body
         The new contents of the comment.
 
     .PARAMETER MediaType
@@ -360,7 +360,7 @@ function Set-GitHubComment
     .EXAMPLE
         Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 
-        Set an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Update an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -412,9 +412,9 @@ function Set-GitHubComment
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Set comment $CommentID for $RepositoryName"
+        'Description' =  "Update comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType -MediaTypeVersion $MediaTypeVersion)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -467,6 +467,7 @@ function Remove-GitHubComment
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParametersetName='Elements')]
+    [Alias('Delete-GitHubComment')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
