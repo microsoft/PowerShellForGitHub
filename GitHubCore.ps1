@@ -1,11 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$script:gitHubApiUrl = "https://api.github.com"
-$script:gitHubApiReposUrl = "https://api.github.com/repos"
-$script:gitHubApiOrgsUrl = "https://api.github.com/orgs"
-
-$script:defaultAcceptHeader = 'application/vnd.github.v3+json'
+@{
+    gitHubApiUrl = 'https://api.github.com'
+    gitHubApiReposUrl = 'https://api.github.com/repos'
+    gitHubApiOrgsUrl = 'https://api.github.com/orgs'
+    defaultAcceptHeader = 'application/vnd.github.v3+json'
+    MediaTypeVersion = 'v3'
+    
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
 
 function Invoke-GHRestMethod
 {

@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-$script:MediaTypeVersion = 'v3'
-
 function Get-GitHubComment
 {
 <#
@@ -522,24 +520,9 @@ function Get-CommentAcceptHeader
         [string] $MediaType ='raw'
     )
 
-    $acceptHeaders = @('application/vnd.github.squirrel-girl-preview')
-
-    if ('raw' -eq $MediaType)
-    {
-        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.raw+json"
-    }
-    elseif ('text' -eq $MediaType)
-    {
-        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.text+json"
-    }
-    elseif ('html' -eq $MediaType)
-    {
-        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.html+json"
-    }
-    elseif ('full' -eq $MediaType)
-    {
-        $acceptHeaders += "application/vnd.github.$MediaTypeVersion.full+json"
-    }
+    $acceptHeaders = @(
+        'application/vnd.github.squirrel-girl-preview',
+        "application/vnd.github.$MediaTypeVersion.$MediaType+json")
 
     return ($acceptHeaders -join ',')
 }
