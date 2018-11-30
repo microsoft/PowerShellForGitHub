@@ -11,7 +11,7 @@
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
-    # RootModule = 'GitHubCore.psm1'
+    RootModule = 'PowerShellForGitHub.psm1'
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules = @(
@@ -20,6 +20,7 @@
         'Helpers.ps1',
         'GitHubConfiguration.ps1',
         'GitHubAnalytics.ps1',
+        'GitHubAssignees.ps1',
         'GitHubBranches.ps1',
         'GitHubCore.ps1',
         'GitHubComments.ps1',
@@ -44,6 +45,7 @@
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
         'ConvertFrom-Markdown',
+        'Get-GitHubAssignee',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
         'Get-GitHubComment',
@@ -78,11 +80,13 @@
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
         'Move-GitHubRepositoryOwnership',
+        'New-GithubAssignee',
         'New-GitHubComment',
         'New-GitHubIssue',
         'New-GitHubLabel',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
+        'Remove-GithubAssignee',
         'Remove-GitHubComment',
         'Remove-GitHubLabel',
         'Remove-GitHubRepository',
@@ -94,6 +98,7 @@
         'Set-GitHubLabel',
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
+        'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
         'Unlock-GitHubIssue',
         'Update-GitHubCurrentUser',

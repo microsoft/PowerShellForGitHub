@@ -463,11 +463,11 @@ function Write-InvocationLog
         {
             if ($param.Value -is [switch])
             {
-                $params += "-$($param.Key):`$$($param.Value.ToBool())"
+                $params += "-$($param.Key):`$$($param.Value.ToBool().ToString().ToLower())"
             }
             else
             {
-                $params += "-$($param.Key) $($param.Value | ConvertTo-Json -Depth $jsonConversionDepth -Compress)"
+                $params += "-$($param.Key) $(ConvertTo-Json -InputObject $param.Value -Depth $jsonConversionDepth -Compress)"
             }
         }
     }

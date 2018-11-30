@@ -12,6 +12,8 @@
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
+Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('post', 'patch', 'put', 'delete')
+
 function Invoke-GHRestMethod
 {
 <#
@@ -170,7 +172,7 @@ function Invoke-GHRestMethod
         $headers['Authorization'] = "token $AccessToken"
     }
 
-    if ($Method -in ('post', 'patch', 'put'))
+    if ($Method -in $ValidBodyContainingRequestMethods)
     {
         $headers.Add("Content-Type", "application/json; charset=UTF-8")
     }
@@ -193,7 +195,7 @@ function Invoke-GHRestMethod
                 $params.Add("UseBasicParsing", $true)
                 $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
 
-                if ($Method -in ('post', 'put', 'patch') -and (-not [String]::IsNullOrEmpty($Body)))
+                if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
                 {
                     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                     $params.Add("Body", $bodyAsBytes)
@@ -215,7 +217,7 @@ function Invoke-GHRestMethod
             if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
             {
                 [scriptblock]$scriptBlock = {
-                    param($Url, $method, $Headers, $Body, $TimeoutSec, $ScriptRootPath)
+                    param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $ScriptRootPath)
 
                     # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
                     # the context of this script block since we're running in a different
@@ -232,7 +234,7 @@ function Invoke-GHRestMethod
                     $params.Add("UseBasicParsing", $true)
                     $params.Add("TimeoutSec", $TimeoutSec)
 
-                    if ($Method -in ('post', 'put', 'patch') -and (-not [String]::IsNullOrEmpty($Body)))
+                    if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
                     {
                         $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                         $params.Add("Body", $bodyAsBytes)
@@ -266,11 +268,11 @@ function Invoke-GHRestMethod
                             Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
                         }
 
-                        throw ($ex | ConvertTo-Json -Depth 20)
+                        throw (ConvertTo-Json -InputObject $ex -Depth 20)
                     }
                 }
 
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), $PSScriptRoot)
+                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, $ValidBodyContainingRequestMethods, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), $PSScriptRoot)
 
                 if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
                 {
@@ -845,8 +847,12 @@ filter ConvertTo-SmarterObject
     .PARAMETER InputObject
         The object to update
 #>
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [AllowNull()]
         [object] $InputObject
     )
@@ -856,31 +862,44 @@ filter ConvertTo-SmarterObject
         return $null
     }
 
-    if ($InputObject -is [array])
+    if ($InputObject -is [System.Collections.IList])
     {
-        foreach ($object in $InputObject)
-        {
-            Write-Output -InputObject (ConvertTo-SmarterObject -InputObject $object)
-        }
+        $InputObject |
+            ConvertTo-SmarterObject |
+            Write-Output
     }
     elseif ($InputObject -is [PSCustomObject])
     {
-        $properties = $InputObject.PSObject.Properties | Where-Object { $null -ne $_.Value }
+        $clone = DeepCopy-Object -InputObject $InputObject
+        $properties = $clone.PSObject.Properties | Where-Object { $null -ne $_.Value }
         foreach ($property in $properties)
         {
             # Convert known date properties from dates to real DateTime objects
-            if ($property.Name -in $script:datePropertyNames)
+            if (($property.Name -in $script:datePropertyNames) -and
+                ($property.Value -is [String]) -and
+                (-not [String]::IsNullOrWhiteSpace($property.Value)))
             {
-                $property.Value = Get-Date -Date $property.Value
+                try
+                {
+                    $property.Value = Get-Date -Date $property.Value
+                }
+                catch
+                {
+                    Write-Log -Message "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is." -Level Verbose
+                }
             }
 
-            if (($property.Value -is [array]) -or ($property.Value -is [PSCustomObject]))
+            if ($property.Value -is [System.Collections.IList])
+            {
+                $property.Value = @(ConvertTo-SmarterObject -InputObject $property.Value)
+            }
+            elseif ($property.Value -is [PSCustomObject])
             {
                 $property.Value = ConvertTo-SmarterObject -InputObject $property.Value
             }
         }
 
-        Write-Output -InputObject $InputObject
+        Write-Output -InputObject $clone
     }
     else
     {

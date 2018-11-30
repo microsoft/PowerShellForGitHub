@@ -514,7 +514,7 @@ function New-GitHubIssue
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating new Issue ""$Title"" on $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
@@ -654,7 +654,7 @@ function Update-GitHubIssue
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating Issue #$Issue on $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
@@ -760,7 +760,7 @@ function Lock-GitHubIssue
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  "Locking Issue #$Issue on $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.sailor-v-preview+json'

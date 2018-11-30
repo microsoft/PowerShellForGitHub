@@ -210,7 +210,7 @@ function New-GitHubLabel
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating label $Name in $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
@@ -425,7 +425,7 @@ function Update-GitHubLabel
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating label $Name"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'

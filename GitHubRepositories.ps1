@@ -166,7 +166,7 @@ function New-GitHubRepository
 
     $params = @{
         'UriFragment' = $uriFragment
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating $RepositoryName"
         'AccessToken' = $AccessToken
@@ -609,7 +609,7 @@ function Update-GitHubRepository
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$ReposistoryName"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating $RepositoryName"
         'AccessToken' = $AccessToken
@@ -817,7 +817,7 @@ function Set-GitHubRepositoryTopic
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  $description
         'AcceptHeader' = 'application/vnd.github.mercy-preview+json'
@@ -1299,7 +1299,7 @@ function Move-GitHubRepositoryOwnership
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/transfer"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Transferring ownership of $RepositoryName to $NewOwnerName"
         'AccessToken' = $AccessToken
