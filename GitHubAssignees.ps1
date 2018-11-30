@@ -170,12 +170,12 @@ function Test-GitHubAssignee
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    try 
+    try
     {
         $response = Invoke-GHRestMethod @params
         return $response.StatusCode -eq 204
     }
-    catch 
+    catch
     {
         return $false
     }
