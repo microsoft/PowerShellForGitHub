@@ -6,8 +6,8 @@
     gitHubApiReposUrl = 'https://api.github.com/repos'
     gitHubApiOrgsUrl = 'https://api.github.com/orgs'
     defaultAcceptHeader = 'application/vnd.github.v3+json'
-    MediaTypeVersion = 'v3'
-    
+    mediaTypeVersion = 'v3'
+
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }

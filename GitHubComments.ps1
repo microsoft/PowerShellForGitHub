@@ -522,7 +522,7 @@ function Get-CommentAcceptHeader
 
     $acceptHeaders = @(
         'application/vnd.github.squirrel-girl-preview',
-        "application/vnd.github.$MediaTypeVersion.$MediaType+json")
+        "application/vnd.github.$mediaTypeVersion.$MediaType+json")
 
     return ($acceptHeaders -join ',')
 }
