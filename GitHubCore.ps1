@@ -868,7 +868,9 @@ filter ConvertTo-SmarterObject
         foreach ($property in $properties)
         {
             # Convert known date properties from dates to real DateTime objects
-            if (($property.Name -in $script:datePropertyNames) -and ($property.Value -is [String]))
+            if (($property.Name -in $script:datePropertyNames) -and
+                ($property.Value -is [String]) -and
+                (-not [String]::IsNullOrWhiteSpace($property.Value)))
             {
                 try
                 {
