@@ -202,7 +202,7 @@ function New-GithubAssignee
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER IssueNumber
+    .PARAMETER Issue
         Issue number to add the assignees to.
 
     .PARAMETER Assignee
@@ -241,8 +241,9 @@ function New-GithubAssignee
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $IssueNumber,
+        [int] $Issue,
 
+        [Parameter(Mandatory)]
         [ValidateCount(1, 10)]
         [string[]] $Assignee,
 
@@ -261,7 +262,7 @@ function New-GithubAssignee
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'AssigneeCount' = $Assignee.Count
-        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
+        'Issue' =  (Get-PiiSafeString -PlainText $Issue)
     }
 
     $hashBody = @{
@@ -269,10 +270,10 @@ function New-GithubAssignee
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/assignees"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Add assignees to issue $IssueNumber for $RepositoryName"
+        'Description' =  "Add assignees to issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -304,7 +305,7 @@ function Remove-GithubAssignee
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER IssueNumber
+    .PARAMETER Issue
         Issue number to remove the assignees from.
 
     .PARAMETER Assignee
@@ -341,8 +342,10 @@ function Remove-GithubAssignee
             ParameterSetName='Uri')]
         [string] $Uri,
 
-        [int] $IssueNumber,
+        [Parameter(Mandatory)]
+        [int] $Issue,
 
+        [Parameter(Mandatory)]
         [string[]] $Assignee,
 
         [string] $AccessToken,
@@ -360,7 +363,7 @@ function Remove-GithubAssignee
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'AssigneeCount' = $Assignee.Count
-        'IssueNumber' =  (Get-PiiSafeString -PlainText $IssueNumber)
+        'Issue' =  (Get-PiiSafeString -PlainText $Issue)
     }
 
     $hashBody = @{
@@ -368,10 +371,10 @@ function Remove-GithubAssignee
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$IssueNumber/assignees"
-        'Body' = ($hashBody | ConvertTo-Json)
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Delete'
-        'Description' =  "Removing assignees from issue $IssueNumber for $RepositoryName"
+        'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
