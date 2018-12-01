@@ -35,12 +35,14 @@ At present, this module can:
  * Query [contributors](https://developer.github.com/v3/repos/statistics/)
  * Query [organizations](https://developer.github.com/v3/orgs/)
  * Query, create, update and remove [Issues](https://developer.github.com/v3/issues/)
+ * Query, create, update and remove [Issue Comments](https://developer.github.com/v3/issues/comments/)
  * Query, create, update and remove [Labels](https://developer.github.com/v3/issues/labels/)
+ * Query, check, add and remove [Assignees](https://developer.github.com/v3/issues/assignees/)
  * Query, create, update and remove [Repositories](https://developer.github.com/v3/repos/)
  * Query and update [Users](https://developer.github.com/v3/users/)
 
 Development is ongoing, with the goal to add broad support for the entire API set.
-Review [examples](#examples) to see how the module can be used to accomplish some of these tasks.
+Review [examples](USAGE.md#examples) to see how the module can be used to accomplish some of these tasks.
 
 ----------
 
@@ -103,7 +105,7 @@ Example command:
 $issues = Get-GitHubIssue -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
 ```
 
-For more example commands, please refer to [USAGE](USAGE.md).
+For more example commands, please refer to [USAGE](USAGE.md#examples).
 
 ----------
 

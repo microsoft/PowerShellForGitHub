@@ -1,6 +1,28 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.5.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.5.0) - (2018/11/30)
+### Features:
++ Added support for the [Issue Comment](https://developer.github.com/v3/issues/comments/) API's.
++ Added support for the [Issue Assignee](https://developer.github.com/v3/issues/assignees/) API's.
+
+### Fixes:
+* Fixed bug that caused single or empty arrays returned within objects to be flattened
+  (instead of remaining as arrays)
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/56) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/6cf344fb38485275f94b1e85c1a5f932e1b519c3)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/53) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/28b314bd7c0a810848e1acb3df43a1d83291be7b)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/54) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/680696a833b3cc753e961fc8c723b0be9b39ecc2)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
 ## [0.4.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.4.0) - (2018/11/16)
 ### Features:
 + Added support for the [Repository Traffic API's](https://developer.github.com/v3/repos/traffic/).
