@@ -115,7 +115,7 @@ function Get-GitHubLabel
     }
     elseif ($PSBoundParameters.ContainsKey('Milestone'))
     {
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/milestones/$Issue/labels"
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/milestones/$Milestone/labels"
         $description = "Getting labels for Milestone $Milestone in $RepositoryName"
     }
     else
@@ -652,7 +652,7 @@ function Add-GitHubLabel
     .PARAMETER Issue
         Issue number to add the label to.
 
-    .PARAMETER Labels
+    .PARAMETER LabelName
         Array of label names to add to the issue
 
     .PARAMETER Replace
@@ -669,9 +669,9 @@ function Add-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Color BBBBBB
+        Add-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
 
-        Creates a new, grey-colored label called "TestLabel" in the PowerShellForGitHub project.
+        Adds labels to an issue in the PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -693,7 +693,7 @@ function Add-GitHubLabel
         [int] $Issue,
 
         [Parameter(Mandatory)]
-        [string[]] $Labels,
+        [string[]] $LabelName,
 
         [switch] $Replace,
 
@@ -711,11 +711,11 @@ function Add-GitHubLabel
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'labelCount' = $Labels.Count
+        'labelCount' = $LabelName.Count
     }
 
     $hashBody = @{
-        'labels' = $Labels
+        'labels' = $LabelName
     }
 
     if ($Replace)

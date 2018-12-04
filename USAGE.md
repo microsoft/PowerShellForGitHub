@@ -13,8 +13,12 @@
         *   [Quering Team and Organization Membership](#querying-team-and-organization-membership)
     *   [Labels](#labels)
         *   [Getting Labels for a Repository](#getting-labels-for-a-repository)
+        *   [Getting Labels for an issue](#getting-labels-for-an-issue)
+        *   [Getting Labels for a milestone](#getting-labels-for-a-milestone)
         *   [Adding a New Label to a Repository](#adding-a-new-label-to-a-repository)
         *   [Removing a Label From a Repository](#removing-a-label-from-a-repository)
+        *   [Adding Labels to an Issue](#adding-labels-to-an-issue)
+        *   [Removing a Label From an Issue](#removing-a-label-from-an-issue)
         *   [Updating a Label With a New Name and Color](#updating-a-label-with-a-new-name-and-color)
         *   [Bulk Updating Labels in a Repository](#bulk-updating-labels-in-a-repository)
     *   [Users](#users)
@@ -270,6 +274,16 @@ $teamMembers = Get-GitHubTeamMembers -OrganizationName 'OrganizationName' -TeamN
 $labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration
 ```
 
+#### Getting Labels for an Issue
+```powershell
+$labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Issue 1
+```
+
+#### Getting Labels for a Milestone
+```powershell
+$labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Milestone 1
+```
+
 #### Adding a New Label to a Repository
 ```powershell
 New-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Name TestLabel -Color BBBBBB
@@ -278,6 +292,17 @@ New-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration 
 #### Removing a Label From a Repository
 ```powershell
 Remove-GitHubLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel
+```
+
+#### Adding Labels to an Issue
+```powershell
+$labelNames = @{'bug', 'discussion')
+Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue 1 -LabelName $labelNames
+```
+
+#### Removing a Label From an Issue
+```powershell
+Remove-GitHubLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color

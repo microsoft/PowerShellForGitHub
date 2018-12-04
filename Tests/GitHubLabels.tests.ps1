@@ -283,14 +283,14 @@ if ($script:accessTokenConfigured)
         Context 'Adding labels to an issue' {
             $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
                 'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-            $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $labelsToAdd)
+            $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
             It 'Should return the expected number of labels' {
                 $addedLabels.Count | Should be $script:defaultLabels.Count
             }
-    
+
             $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-    
+
             It 'Should have added the expected number of labels' {
                 $labelIssues.Count | Should be $script:defaultLabels.Count
             }
@@ -311,19 +311,20 @@ if ($script:accessTokenConfigured)
             $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
             'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
 
-            $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $labelsToAdd -Replace)
+            $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd -Replace)
 
             It 'Should return the expected number of labels' {
                 $addedLabels.Count | Should be $script:defaultLabels.Count
             }
-    
+
             $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-    
+
             It 'Should have added the expected number of labels' {
                 $labelIssues.Count | Should be $script:defaultLabels.Count
             }
         }
-
+        
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
     }
 }
 
