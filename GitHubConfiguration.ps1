@@ -114,6 +114,10 @@ function Set-GitHubConfiguration
         log entry.  This can be useful if you have concurrent PowerShell sessions all logging
         to the same file, as it would then be possible to filter results based on ProcessId.
 
+    .PARAMETER LogRequestBody
+        If specified, the JSON body of the REST request will be logged to verbose output.
+        This can be helpful for debugging purposes.
+
     .PARAMETER LogTimeAsUtc
         If specified, all times logged will be logged as UTC instead of the local timezone.
 
@@ -179,6 +183,8 @@ function Set-GitHubConfiguration
         [string] $LogPath,
 
         [switch] $LogProcessId,
+
+        [switch] $LogRequestBody,
 
         [switch] $LogTimeAsUtc,
 
@@ -262,6 +268,7 @@ function Get-GitHubConfiguration
             'DisableTelemetry',
             'LogPath',
             'LogProcessId',
+            'LogRequestBody',
             'LogTimeAsUtc',
             'RetryDelaySeconds',
             'SuppressNoTokenWarning',
@@ -593,6 +600,7 @@ function Import-GitHubConfiguration
         'defaultRepositoryName' = [String]::Empty
         'logPath' = $logPath
         'logProcessId' = $false
+        'logRequestBody' = $false
         'logTimeAsUtc' = $false
         'retryDelaySeconds' = 30
         'suppressNoTokenWarning' = $false

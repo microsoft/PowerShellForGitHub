@@ -22,6 +22,7 @@ Looking for information on how to use this module?  Head on over to [README.md](
 *   [Coding Guidelines](#coding-guidelines)
 *   [Adding New Configuration Properties](#adding-new-configuration-properties)
 *   [Code Comments](#code-comments)
+*   [Debugging Tips](#debugging-tips)
 *   [Testing](#testing)
     *   [Installing Pester](#installing-pester)
     *   [Configuring Your Environment](#configuring-your-environment)
@@ -267,6 +268,17 @@ Good code comments should improve readability of the code, and make it much more
 That being said, some of the best code you can write is self-commenting.  By refactoring your code
 into small, well-named functions that concisely describe their purpose, it's possible to write
 code that reads clearly while requiring minimal comments to understand what it's doing.
+
+----------
+
+### Debugging Tips
+
+You may find it useful to configure the module to log the body of all REST requests during
+development of a new feature, to make it easier to see exactly what is being sent to GitHub.
+
+```powershell
+Set-GitHubConfiguration -LogRequestBody
+```
 
 ----------
 
