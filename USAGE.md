@@ -42,6 +42,12 @@
         *   [Adding a new comment to an issue](#adding-a-new-comment-to-an-issue)
         *   [Editing an existing comment](#editing-an-existing-comment)
         *   [Removing a comment](#removing-a-comment)
+    *   [Milestones](#milestones)
+        *   [Get milestones from a repository](#get-milestones-from-a-repository)
+        *   [Get a single milestone](#get-a-single-milestone)
+        *   [Adding a new milestone](#adding-a-new-milestone)
+        *   [Editing an existing milestone](#editing-an-existing-milestone)
+        *   [Removing a milestone](#removing-a-milestone)
 ----------
 
 ## Logging
@@ -410,4 +416,33 @@ Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Com
 #### Removing a comment
 ```powershell
 Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
+```
+
+----------
+
+### Milestones
+
+#### Get milestones from a repository
+```powershell
+Get-GitHubMilestones -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort due_on -Direction asc -Due_On '2011-04-14T16:00:49Z'
+```
+
+#### Get a single milestone
+```powershell
+Get-GitHubMilestones -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
+```
+
+#### Adding a new milestone
+```powershell
+New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+```
+
+#### Editing an existing milestone
+```powershell
+Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1 -Title "Testing this API"
+```
+
+#### Removing a milestone
+```powershell
+Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
 ```
