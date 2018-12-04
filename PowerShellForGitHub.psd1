@@ -57,7 +57,7 @@
         'Get-GitHubIssueTimeline',
         'Get-GitHubLabel',
         'Get-GitHubLicense',
-        'Get-GitHubMilestones',
+        'Get-GitHubMilestone',
         'Get-GitHubOrganizationMember',
         'Get-GitHubPathTraffic',
         'Get-GitHubPullRequest',

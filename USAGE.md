@@ -424,12 +424,12 @@ Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -
 
 #### Get milestones from a repository
 ```powershell
-Get-GitHubMilestones -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort due_on -Direction asc -Due_On '2011-04-14T16:00:49Z'
+Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort due_on -Direction asc -Due_On '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single milestone
 ```powershell
-Get-GitHubMilestones -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
+Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
 ```
 
 #### Adding a new milestone

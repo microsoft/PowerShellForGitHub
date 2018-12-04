@@ -79,7 +79,6 @@ try
     # Define Script-scoped, readonly, hidden variables.
 
     @{
-        defaultIssueTitle = "Test issue title"
         defaultMilestoneTitle = "This is a test milestone title."
         defaultEditedMilestoneTitle = "This is an edited milestone title."
     }.GetEnumerator() | ForEach-Object {
@@ -89,11 +88,9 @@ try
     Describe 'Creating, modifying and deleting milestones' {
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
-        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
-
         Context 'For creating a new milestone' {
-            $newMilestone = New-GitHubMilestones -Uri $repo.svn_url -Title $defaultMilestoneTitle
-            $existingMilestone = Get-GitHubMilestones -Uri $repo.svn_url -MilestoneNumber $newMilestone.number
+            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle
+            $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $newMilestone.number
 
             It "Should have the expected title text" {
                 $existingMilestone.title | Should be $defaultMilestoneTitle
@@ -101,7 +98,7 @@ try
         }
 
         Context 'For getting milestones from a repo' {
-            $existingMilestones = @(Get-GitHubMilestones -Uri $repo.svn_url)
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 1
@@ -126,7 +123,7 @@ try
         }
 
         Context 'For getting milestones from a repository and deleting them' {
-            $existingMilestones = @(Get-GitHubMilestones -Uri $repo.svn_url)
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 2
@@ -136,7 +133,7 @@ try
                 Remove-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $milestone.number
             }
 
-            $existingMilestones = @(Get-GitHubMilestones -Uri $repo.svn_url)
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
 
             It 'Should have no milestones' {
                 $existingMilestones.Count | Should be 0

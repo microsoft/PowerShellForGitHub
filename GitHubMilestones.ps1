@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubMilestones
+function Get-GitHubMilestone
 {
 <#
     .DESCRIPTION
@@ -45,7 +45,7 @@ function Get-GitHubMilestones
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubMilestones-OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
 
         Get the milestones for the PowerShell\PowerShellForGitHub project.
 #>
@@ -143,7 +143,7 @@ function New-GitHubMilestone
 {
 <#
     .DESCRIPTION
-        Creates a new Github comment in an issue for the given repository
+        Creates a new Github milestone in an issue for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -167,10 +167,10 @@ function New-GitHubMilestone
         Only milestones with this state are returned, either open or closed. Default: open
 
     .PARAMETER Description
-        A desciprion of the milestone.
+        A description of the milestone.
 
     .PARAMETER Due_On
-        The milestone due date. 
+        The milestone due date.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -185,7 +185,7 @@ function New-GitHubMilestone
     .EXAMPLE
         New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new Github comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Creates a new Github milestone in an issue for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -264,7 +264,7 @@ function Set-GitHubMilestone
 {
 <#
     .DESCRIPTION
-        Creates a new Github comment in an issue for the given repository
+        Set an existing milestone for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -288,10 +288,10 @@ function Set-GitHubMilestone
         Only milestones with this state are returned, either open or closed. Default: open
 
     .PARAMETER Description
-        A desciprion of the milestone.
+        A description of the milestone.
 
     .PARAMETER Due_On
-        The milestone due date. 
+        The milestone due date.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -304,9 +304,9 @@ function Set-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new Github comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Update an existing milestone for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
