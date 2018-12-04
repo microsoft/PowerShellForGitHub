@@ -42,6 +42,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-GitHubLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
         'ConvertFrom-Markdown',

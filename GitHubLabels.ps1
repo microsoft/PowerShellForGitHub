@@ -61,22 +61,35 @@ function Get-GitHubLabel
         DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory,ParameterSetName='Elements')]
+        [Parameter(Mandatory,ParameterSetName='NameElements')]
+        [Parameter(Mandatory,ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='NameElements')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='NameUri')]
+        [Parameter(Mandatory, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [string] $Uri,
 
+        [Parameter(Mandatory, ParameterSetName='NameUri')]
+        [Parameter(Mandatory, ParameterSetName='NameElements')]
         [Alias('LabelName')]
         [string] $Name,
 
+        [Parameter(Mandatory, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
         [int] $Issue,
 
+        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [int] $Milestone,
 
         [string] $AccessToken,
@@ -676,8 +689,10 @@ function Add-GitHubLabel
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [Parameter(Mandatory)]
         [int] $Issue,
 
+        [Parameter(Mandatory)]
         [string[]] $Labels,
 
         [switch] $Replace,
