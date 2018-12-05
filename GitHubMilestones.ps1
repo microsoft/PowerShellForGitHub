@@ -29,7 +29,7 @@ function Get-GitHubMilestone
         How to sort the results, either due_on or completeness. Default: due_on
 
     .PARAMETER Direction
-        How to list the results, either asc or desc. Ignored without the sort parameter.
+        How to list the results, either asc or desc. Ignored without the sort parameter. Default: asc
 
     .PARAMETER State
         Only milestones with this state are returned, either open, closed, or all. Default: open
@@ -70,11 +70,11 @@ function Get-GitHubMilestone
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
         [ValidateSet('open', 'closed', 'all')]
-        [DateTime] $State,
+        [string] $State,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('created', 'updated')]
+        [ValidateSet('due_on', 'completeness')]
         [string] $Sort,
 
         [Parameter(ParameterSetName='RepositoryUri')]
@@ -229,11 +229,6 @@ function New-GitHubMilestone
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    if ($null -ne $Due_On)
-    {
-        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
-    }
-
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
@@ -246,17 +241,18 @@ function New-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('State'))
     {
-        $hashBody += "state=$State"
+        $hashBody.add('state', $State)
     }
 
     if ($PSBoundParameters.ContainsKey('Description'))
     {
-        $hashBody += "description=$Description"
+        $hashBody.add('description', $Description)
     }
 
-    if ($PSBoundParameters.ContainsKey('Due_On'))
+    if ($PSBoundParameters.ContainsKey('Due_On') -and $null -ne $Due_On)
     {
-        $hashBody += "due_on=$DueOnFormattedTime"
+        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
+        $hashBody.add('due_on', $DueOnFormattedTime)
     }
 
     $params = @{
@@ -277,7 +273,7 @@ function Set-GitHubMilestone
 {
 <#
     .DESCRIPTION
-        Set an existing milestone for the given repository
+        Update an existing milestone for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -370,11 +366,6 @@ function Set-GitHubMilestone
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    if ($null -ne $Due_On)
-    {
-        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
-    }
-
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
@@ -388,17 +379,18 @@ function Set-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('State'))
     {
-        $hashBody += "state=$State"
+        $hashBody.add('state', $State)
     }
 
     if ($PSBoundParameters.ContainsKey('Description'))
     {
-        $hashBody += "description=$Description"
+        $hashBody.add('description', $Description)
     }
 
-    if ($PSBoundParameters.ContainsKey('Due_On'))
+    if ($PSBoundParameters.ContainsKey('Due_On') -and $null -ne $Due_On)
     {
-        $hashBody += "due_on=$DueOnFormattedTime"
+        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
+        $hashBody.add('due_on', $DueOnFormattedTime)
     }
 
     $params = @{
