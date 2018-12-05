@@ -202,7 +202,7 @@ function Invoke-GHRestMethod
                     Write-Log -Message "Request includes a body." -Level Verbose
                     if ($LogRequestBody)
                     {
-                        Write-Log -Message (ConvertTo-Json -InputObject $Body -Depth 20) -Level Verbose
+                        Write-Log -Message $Body -Level Verbose
                     }
                 }
 
@@ -245,7 +245,7 @@ function Invoke-GHRestMethod
                         Write-Log -Message "Request includes a body." -Level Verbose
                         if (Get-GitHubConfiguration -Name LogRequestBody)
                         {
-                            Write-Log -Message (ConvertTo-Json -InputObject $Body -Depth 20) -Level Verbose
+                            Write-Log -Message $Body -Level Verbose
                         }
                     }
 
