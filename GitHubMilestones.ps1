@@ -207,6 +207,7 @@ function New-GitHubMilestone
 
         [Parameter(ParameterSetName='Uri')]
         [Parameter(ParameterSetName='Elements')]
+        [ValidateSet('open', 'closed')]
         [string] $State,
 
         [Parameter(ParameterSetName='Uri')]
@@ -215,7 +216,7 @@ function New-GitHubMilestone
 
         [Parameter(ParameterSetName='Uri')]
         [Parameter(ParameterSetName='Elements')]
-        [string] $Due_On,
+        [DateTime] $Due_On,
 
         [string] $AccessToken,
 
@@ -230,7 +231,7 @@ function New-GitHubMilestone
 
     if ($null -ne $Due_On)
     {
-        $DueOnFormattedTime = $Since.ToUniversalTime().ToString('o')
+        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
     }
 
     $telemetryProperties = @{
@@ -241,9 +242,21 @@ function New-GitHubMilestone
 
     $hashBody = @{
         'title' = $Title
-        'state' = $State
-        'description' = $Description
-        'due_on' = $DueOnFormattedTime
+    }
+
+    if ($PSBoundParameters.ContainsKey('State'))
+    {
+        $hashBody += "state=$State"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Description'))
+    {
+        $hashBody += "description=$Description"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Due_On'))
+    {
+        $hashBody += "due_on=$DueOnFormattedTime"
     }
 
     $params = @{
@@ -281,6 +294,9 @@ function Set-GitHubMilestone
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER MilestoneNumber
+        The number of a specific milestone to get.
+
     .PARAMETER Title
         The title of the milestone.
 
@@ -304,7 +320,7 @@ function Set-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1 -Title "Testing this API"
 
         Update an existing milestone for the PowerShell\PowerShellForGitHub project.
 #>
@@ -324,10 +340,15 @@ function Set-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
+        [string] $MilestoneNumber,
+
+        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $Title,
 
         [Parameter(ParameterSetName='Uri')]
         [Parameter(ParameterSetName='Elements')]
+        [ValidateSet('open', 'closed')]
         [string] $State,
 
         [Parameter(ParameterSetName='Uri')]
@@ -336,7 +357,7 @@ function Set-GitHubMilestone
 
         [Parameter(ParameterSetName='Uri')]
         [Parameter(ParameterSetName='Elements')]
-        [string] $Due_On,
+        [DateTime] $Due_On,
 
         [string] $AccessToken,
 
@@ -351,27 +372,40 @@ function Set-GitHubMilestone
 
     if ($null -ne $Due_On)
     {
-        $DueOnFormattedTime = $Since.ToUniversalTime().ToString('o')
+        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
     }
 
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'Title' =  (Get-PiiSafeString -PlainText $Title)
+        'MilestoneNumber' =  (Get-PiiSafeString -PlainText $MilestoneNumber)
     }
 
     $hashBody = @{
         'title' = $Title
-        'state' = $State
-        'description' = $Description
-        'due_on' = $DueOnFormattedTime
+    }
+
+    if ($PSBoundParameters.ContainsKey('State'))
+    {
+        $hashBody += "state=$State"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Description'))
+    {
+        $hashBody += "description=$Description"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Due_On'))
+    {
+        $hashBody += "due_on=$DueOnFormattedTime"
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$MilestoneNumber"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Creating milestone for $RepositoryName"
+        'Description' =  "Setting milestone $MilestoneNumber for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

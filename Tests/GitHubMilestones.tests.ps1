@@ -79,7 +79,8 @@ try
     # Define Script-scoped, readonly, hidden variables.
 
     @{
-        defaultMilestoneTitle = "This is a test milestone title."
+        defaultMilestoneTitle1 = "This is a test milestone title #1."
+        defaultMilestoneTitle2 = "This is a test milestone title #2."
         defaultEditedMilestoneTitle = "This is an edited milestone title."
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
@@ -89,11 +90,11 @@ try
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
         Context 'For creating a new milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle
+            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1
             $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $newMilestone.number
 
             It "Should have the expected title text" {
-                $existingMilestone.title | Should be $defaultMilestoneTitle
+                $existingMilestone.title | Should be $defaultMilestoneTitle1
             }
         }
 
@@ -105,12 +106,12 @@ try
             }
 
             It 'Should have the expected body text on the first milestone' {
-                $existingMilestones[0].title | Should be $defaultMilestoneTitle
+                $existingMilestones[0].title | Should be $defaultMilestoneTitle1
             }
         }
 
         Context 'For editing a milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle
+            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle2
             $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $newMilestone.number -Title $defaultEditedMilestoneTitle
 
             It 'Should have a title that is not equal to the original title' {
