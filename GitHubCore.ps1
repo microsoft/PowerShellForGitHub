@@ -280,7 +280,15 @@ function Invoke-GHRestMethod
                     }
                 }
 
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, $ValidBodyContainingRequestMethods, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), (Get-GitHubConfiguration -Name LogRequestBody), $PSScriptRoot)
+                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
+                    $url,
+                    $Method,
+                    $headers,
+                    $Body,
+                    $ValidBodyContainingRequestMethods,
+                    (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
+                    (Get-GitHubConfiguration -Name LogRequestBody),
+                    $PSScriptRoot)
 
                 if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
                 {
