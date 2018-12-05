@@ -200,7 +200,7 @@ function Invoke-GHRestMethod
                     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                     $params.Add("Body", $bodyAsBytes)
                     Write-Log -Message "Request includes a body." -Level Verbose
-                    if ($LogRequestBody)
+                    if (Get-GitHubConfiguration -Name LogRequestBody)
                     {
                         Write-Log -Message $Body -Level Verbose
                     }
@@ -243,7 +243,7 @@ function Invoke-GHRestMethod
                         $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                         $params.Add("Body", $bodyAsBytes)
                         Write-Log -Message "Request includes a body." -Level Verbose
-                        if (Get-GitHubConfiguration -Name LogRequestBody)
+                        if ($LogRequestBody)
                         {
                             Write-Log -Message $Body -Level Verbose
                         }
