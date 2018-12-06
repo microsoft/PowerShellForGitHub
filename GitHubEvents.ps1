@@ -105,11 +105,17 @@ function Get-GitHubEvent
         $description = "Getting events for $RepositoryName"
     }
 
+    $acceptHeaders = @(
+    'application/vnd.github.starfox-preview+json',
+    'application/vnd.github.sailer-v-preview+json',
+    'application/vnd.github.symmetra-preview+json',
+    'application/vnd.github.machine-man-preview')
+
     $params = @{
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = 'application/vnd.github.starfox-preview+json,application/vnd.github.sailor-v-preview+json,application/vnd.github.symmetra-preview+json,application/vnd.github.machine-man-preview'
+        'AcceptHeader' = $acceptHeaders -join ','
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
