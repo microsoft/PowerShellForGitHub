@@ -137,10 +137,10 @@ if ($script:accessTokenConfigured)
         $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
 
         Context 'For getting an event directly'{
-            $event = Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -Event $events[0].id
+            $singleEvent = Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -EventID $events[0].id
             
             It 'Should have the correct event type'{
-                $event.event | Should be 'reopened'
+                $singleEvent.event | Should be 'reopened'
             }
         }
 

@@ -22,11 +22,11 @@ function Get-GitHubEvent
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Event
-        The ID of a specific event to get. If not supplied, will return back all comments for this repository.
+    .PARAMETER EventID
+        The ID of a specific event to get. If not supplied, will return back all events for this repository.
 
     .PARAMETER Issue
-        Issue number to get events for. If not supplied, will return back all comments for this repository.
+        Issue number to get events for. If not supplied, will return back all events for this repository.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -39,9 +39,9 @@ function Get-GitHubEvent
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubComment-OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub
 
-        Get the comments for the PowerShell\PowerShellForGitHub project.
+        Get the events for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -65,7 +65,7 @@ function Get-GitHubEvent
 
         [Parameter(Mandatory, ParameterSetName='EventUri')]
         [Parameter(Mandatory, ParameterSetName='EventElements')]
-        [string] $Event,
+        [string] $EventID,
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
@@ -91,8 +91,8 @@ function Get-GitHubEvent
 
     if ($PSBoundParameters.ContainsKey('Event'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$Event"
-        $description = "Getting event $Event for $RepositoryName"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventID"
+        $description = "Getting event $EventID for $RepositoryName"
     }
     elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
