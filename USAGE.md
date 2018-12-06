@@ -42,6 +42,10 @@
         *   [Adding a new comment to an issue](#adding-a-new-comment-to-an-issue)
         *   [Editing an existing comment](#editing-an-existing-comment)
         *   [Removing a comment](#removing-a-comment)
+    *   [Events](#Events)
+        *   [Get events from a repository](#get-events-from-a-repository)
+        *   [Get events from an issue](#get-events-from-an-issue)
+        *   [Get a single event](#get-a-single-event])
 ----------
 
 ## Logging
@@ -410,4 +414,23 @@ Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Com
 #### Removing a comment
 ```powershell
 Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
+```
+
+----------
+
+### Events
+
+#### Get events from a repository
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub
+```
+
+#### Get events from an issue
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1
+```
+
+#### Get a single event
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -EventID 1
 ```

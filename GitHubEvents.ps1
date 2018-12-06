@@ -86,10 +86,10 @@ function Get-GitHubEvent
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
-        'ProvidedEvent' = $PSBoundParameters.ContainsKey('Event')
+        'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventID')
     }
 
-    if ($PSBoundParameters.ContainsKey('Event'))
+    if ($PSBoundParameters.ContainsKey('EventID'))
     {
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventID"
         $description = "Getting event $EventID for $RepositoryName"
