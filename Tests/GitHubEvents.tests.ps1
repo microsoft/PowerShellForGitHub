@@ -70,83 +70,90 @@ if (-not $script:accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
-Backup-GitHubConfiguration -Path $configFile
-Reset-GitHubConfiguration
 
-if ($script:accessTokenConfigured)
+try
 {
-    Describe 'Getting events from repository' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
+    Backup-GitHubConfiguration -Path $configFile
+    Reset-GitHubConfiguration
 
-        Context 'For getting events from a new repository' {
+    if ($script:accessTokenConfigured)
+    {
+        Describe 'Getting events from repository' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+
+            Context 'For getting events from a new repository' {
+                $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
+
+                It 'Should have no events' {
+                    $($events).Count | Should be 0
+                }
+            }
+
+            $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
+            Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
+
+            Context 'For getting events from a repository' {
+                $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
+
+                It 'Should have an event from closing an issue' {
+                    $events.Count | Should be 1
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Getting events from an issue' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
+
+            Context 'For getting events from a new issue' {
+                $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number)
+
+                It 'Should have no events' {
+                    $($events).Count | Should be 0
+                }
+            }
+
+            Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
+            Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
+
+            Context 'For getting events from an issue' {
+                $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
+
+                It 'Should have two events from closing and opening the issue' {
+                    $events.Count | Should be 2
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Getting an event directly' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
+            Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
+            Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
             $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
 
-            It 'Should have no events' {
-                $($events).Count | Should be 0
+            Context 'For getting an event directly'{
+                $singleEvent = Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -EventID $events[0].id
+                
+                It 'Should have the correct event type'{
+                    $singleEvent.event | Should be 'reopened'
+                }
             }
+
+            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
         }
-
-        $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
-        Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
-
-        Context 'For getting events from a repository' {
-            $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
-
-            It 'Should have an event from closing an issue' {
-                $events.Count | Should be 1
-            }
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Getting events from an issue' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-        $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
-
-        Context 'For getting events from a new issue' {
-            $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number)
-
-            It 'Should have no events' {
-                $($events).Count | Should be 0
-            }
-        }
-
-        Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
-        Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
-
-        Context 'For getting events from an issue' {
-            $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
-
-            It 'Should have two events from closing and opening the issue' {
-                $events.Count | Should be 2
-            }
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Getting an event directly' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-        $issue = New-GithubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title "New Issue"
-        Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
-        Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
-        $events = @(Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName)
-
-        Context 'For getting an event directly'{
-            $singleEvent = Get-GitHubEvent -OwnerName $script:ownerName -RepositoryName $repositoryName -EventID $events[0].id
-            
-            It 'Should have the correct event type'{
-                $singleEvent.event | Should be 'reopened'
-            }
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
     }
 }
+catch
+{
+    # Restore the user's configuration to its pre-test state
+    Restore-GitHubConfiguration -Path $configFile
+}
 
-# Restore the user's configuration to its pre-test state
-Restore-GitHubConfiguration -Path $configFile
