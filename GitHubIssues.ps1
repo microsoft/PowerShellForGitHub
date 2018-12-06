@@ -128,7 +128,7 @@ function Get-GitHubIssue
         [ValidateSet('all', 'ownedAndMember')]
         [string] $RepositoryType = 'all',
 
-        [string] $Issue,
+        [int] $Issue,
 
         [switch] $IgnorePullRequests,
 
@@ -375,8 +375,7 @@ function Get-GitHubIssueTimeline
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Issue,
+        [int] $Issue,
 
         [string] $AccessToken,
 

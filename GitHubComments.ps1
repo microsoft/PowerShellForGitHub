@@ -249,7 +249,7 @@ function New-GitHubComment
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [string] $Issue,
+        [int] $Issue,
 
         [Parameter(Mandatory)]
         [string] $Body,

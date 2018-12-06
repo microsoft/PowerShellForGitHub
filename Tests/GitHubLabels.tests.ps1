@@ -272,7 +272,7 @@ if ($script:accessTokenConfigured)
         $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
     }
 
-    Describe 'Adding and removing labels to an issue'{
+    Describe 'Adding labels to an issue'{
         $repositoryName = [Guid]::NewGuid().Guid
         $null = New-GitHubRepository -RepositoryName $repositoryName
         Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
@@ -295,37 +295,37 @@ if ($script:accessTokenConfigured)
                 $labelIssues.Count | Should be $script:defaultLabels.Count
             }
         }
-
-        Context 'Removing labels from an issue' {
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "discussion" -Issue $issue.number
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number
-            $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-
-            It 'Should have added the expected number of labels' {
-                $labelIssues.Count | Should be ($script:defaultLabels.Count - 3)
-            }
-        }
-
-        Context 'Replacing labels on an issue' {
-            $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
-            'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-
-            $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd -Replace)
-
-            It 'Should return the expected number of labels' {
-                $addedLabels.Count | Should be $script:defaultLabels.Count
-            }
-
-            $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-
-            It 'Should have added the expected number of labels' {
-                $labelIssues.Count | Should be $script:defaultLabels.Count
-            }
-        }
-        
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
     }
+    Describe 'Removing labels on an issue'{
+
+        Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "discussion" -Issue $issue.number
+        Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number
+        Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number
+        $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
+
+        It 'Should have added the expected number of labels' {
+            $labelIssues.Count | Should be ($script:defaultLabels.Count - 3)
+        }
+    }
+
+    Describe 'Replacing labels on an issue'{
+        $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
+        'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
+
+        $addedLabels = @(Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd -Replace)
+
+        It 'Should return the expected number of labels' {
+            $addedLabels.Count | Should be $script:defaultLabels.Count
+        }
+
+        $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
+
+        It 'Should have added the expected number of labels' {
+            $labelIssues.Count | Should be $script:defaultLabels.Count
+        }
+    }
+    
+    $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
 }
 
 # Restore the user's configuration to its pre-test state
