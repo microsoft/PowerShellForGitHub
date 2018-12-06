@@ -109,7 +109,7 @@ function Get-GitHubEvent
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = 'application/vnd.github.starfox-preview+json,application/vnd.github.sailor-v-preview+json,application/vnd.github.symmetra-preview+json,application/vnd.github.machine-man-preview'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
