@@ -6,7 +6,7 @@
    Tests for GitHubMilestones.ps1 module
 #>
 
-[String] $root = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+$root = Split-Path -Parent $PSScriptRoot
 . (Join-Path -Path $root -ChildPath 'Tests\Config\Settings.ps1')
 Import-Module -Name $root -Force
 
@@ -29,7 +29,7 @@ function Initialize-AppVeyor
         The only reason this exists is so that we can leverage CodeAnalysis.SuppressMessageAttribute,
         which can only be applied to functions.
 
-        We call this immediately after the declaration so that AppVeyor initialization can heppen
+        We call this immediately after the declaration so that AppVeyor initialization can happen
         (if applicable).
 
 #>
@@ -84,7 +84,7 @@ try
         defaultEditedMilestoneTitle = "This is an edited milestone title."
         defaultMilestoneDescription = "This is a test milestone description."
         defaultEditedMilestoneDescription = "This is an edited milestone description."
-        defaultMilestoneDueOn = Get-Date -Date "2023-10-09T00:00:00"
+        defaultMilestoneDueOn = (Get-Date).AddYears(1).Date
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
@@ -93,8 +93,8 @@ try
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
         Context 'For creating a new milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1 -State "closed" -Due_On $defaultMilestoneDueOn
-            $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $newMilestone.number
+            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1 -State "Closed" -DueOn $defaultMilestoneDueOn
+            $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number
 
             It "Should have the expected title text" {
                 $existingMilestone.title | Should be $defaultMilestoneTitle1
@@ -110,7 +110,7 @@ try
         }
 
         Context 'For getting milestones from a repo' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "closed")
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "Closed")
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 1
@@ -123,7 +123,7 @@ try
 
         Context 'For editing a milestone' {
             $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle2 -Description $defaultMilestoneDescription
-            $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $newMilestone.number -Title $defaultEditedMilestoneTitle -Description $defaultEditedMilestoneDescription
+            $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number -Title $defaultEditedMilestoneTitle -Description $defaultEditedMilestoneDescription
 
             It 'Should have a title/description that is not equal to the original title/description' {
                 $editedMilestone.title | Should not be $newMilestone.title
@@ -137,14 +137,14 @@ try
         }
 
         Context 'For getting milestones from a repository and deleting them' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "all" -Sort "completeness" -Direction "desc")
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "All" -Sort "Completeness" -Direction "Descending")
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 2
             }
 
             foreach($milestone in $existingMilestones) {
-                Remove-GitHubMilestone -Uri $repo.svn_url -MilestoneNumber $milestone.number
+                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number
             }
 
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)

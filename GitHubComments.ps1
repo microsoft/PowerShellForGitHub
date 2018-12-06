@@ -29,7 +29,7 @@ function Get-GitHubComment
         Issue number to get comments for. If not supplied, will return back all comments for this repository.
 
     .PARAMETER Sort
-        How to sort the results, either created or updated. Default: created
+        How to sort the results, either created or updated.
 
     .PARAMETER Direction
         How to list the results, either asc or desc. Ignored without the sort parameter.

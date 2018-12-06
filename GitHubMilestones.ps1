@@ -22,17 +22,17 @@ function Get-GitHubMilestone
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER MilestoneNumber
+    .PARAMETER Milestone
         The number of a specific milestone to get. If not supplied, will return back all milestones for this repository.
 
     .PARAMETER Sort
-        How to sort the results, either due_on or completeness. Default: due_on
+        How to sort the results, either DueOn or Completeness.
 
     .PARAMETER Direction
-        How to list the results, either asc or desc. Ignored without the sort parameter. Default: asc
+        How to list the results, either Ascending or Descending. Ignored without the sort parameter.
 
     .PARAMETER State
-        Only milestones with this state are returned, either open, closed, or all. Default: open
+        Only milestones with this state are returned, either Open, Closed, or All.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -46,40 +46,45 @@ function Get-GitHubMilestone
 
     .EXAMPLE
         Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
-
         Get the milestones for the PowerShell\PowerShellForGitHub project.
+
+        Get-GitHubMilestone -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Milestone 1
+        Get milestone number 1 for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParametersetName='RepositoryElements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
         [string] $OwnerName,
 
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
         [string] $RepositoryName,
 
+        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
         [string] $Uri,
 
-        [Parameter(ParameterSetName='RepositoryUri')]
-        [Parameter(ParameterSetName='RepositoryElements')]
-        [string] $MilestoneNumber,
+        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
+        [int] $Milestone,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('open', 'closed', 'all')]
+        [ValidateSet('Open', 'Closed', 'All')]
         [string] $State,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('due_on', 'completeness')]
+        [ValidateSet('DueOn', 'Completeness')]
         [string] $Sort,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('asc', 'desc')]
+        [ValidateSet('Ascending', 'Descending')]
         [string] $Direction,
 
         [string] $AccessToken,
@@ -96,13 +101,13 @@ function Get-GitHubMilestone
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedMilestone' = $PSBoundParameters.ContainsKey('MilestoneNumber')
+        'ProvidedMilestone' = $PSBoundParameters.ContainsKey('Milestone')
     }
 
-    if ($PSBoundParameters.ContainsKey('MilestoneNumber'))
+    if ($PSBoundParameters.ContainsKey('Milestone'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/milestones/$MilestoneNumber"
-        $description = "Getting milestone $MilestoneNumber for $RepositoryName"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
+        $description = "Getting milestone $Milestone for $RepositoryName"
     }
     else
     {
@@ -110,16 +115,31 @@ function Get-GitHubMilestone
 
         if ($PSBoundParameters.ContainsKey('Sort'))
         {
-            $getParams += "sort=$Sort"
+            if ($Sort -eq "Completeness")
+            {
+                $getParams += "sort=completeness"
+            }
+            elseif ($Sort -eq "DueOn")
+            {
+                $getParams += "sort=due_on"
+            }
         }
 
         if ($PSBoundParameters.ContainsKey('Direction'))
         {
-            $getParams += "direction=$Direction"
+            if ($Direction -eq "Ascending")
+            {
+                $getParams += "direction=asc"
+            }
+            elseif ($Direction -eq "Descending")
+            {
+                $getParams += "direction=desc"
+            }
         }
 
         if ($PSBoundParameters.ContainsKey('State'))
         {
+            $State = $State.ToLower()
             $getParams += "state=$State"
         }
 
@@ -143,7 +163,7 @@ function New-GitHubMilestone
 {
 <#
     .DESCRIPTION
-        Creates a new Github milestone in an issue for the given repository
+        Creates a new Github milestone for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -164,12 +184,12 @@ function New-GitHubMilestone
         The title of the milestone.
 
     .PARAMETER State
-        Only milestones with this state are returned, either open or closed. Default: open
+        The state of the milestone, either Open or Closed.
 
     .PARAMETER Description
         A description of the milestone.
 
-    .PARAMETER Due_On
+    .PARAMETER DueOn
         The milestone due date.
 
     .PARAMETER AccessToken
@@ -185,7 +205,7 @@ function New-GitHubMilestone
     .EXAMPLE
         New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new Github milestone in an issue for the PowerShell\PowerShellForGitHub project.
+        Creates a new Github milestone for the PowerShell\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -205,18 +225,12 @@ function New-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $Title,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
-        [ValidateSet('open', 'closed')]
+        [ValidateSet('Open', 'Closed')]
         [string] $State,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
         [string] $Description,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
-        [DateTime] $Due_On,
+        [DateTime] $DueOn,
 
         [string] $AccessToken,
 
@@ -241,6 +255,7 @@ function New-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('State'))
     {
+        $State = $State.ToLower()
         $hashBody.add('state', $State)
     }
 
@@ -249,9 +264,9 @@ function New-GitHubMilestone
         $hashBody.add('description', $Description)
     }
 
-    if ($PSBoundParameters.ContainsKey('Due_On') -and $null -ne $Due_On)
+    if ($PSBoundParameters.ContainsKey('DueOn'))
     {
-        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
+        $DueOnFormattedTime = $DueOn.ToUniversalTime().ToString('o')
         $hashBody.add('due_on', $DueOnFormattedTime)
     }
 
@@ -290,19 +305,19 @@ function Set-GitHubMilestone
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER MilestoneNumber
+    .PARAMETER Milestone
         The number of a specific milestone to get.
 
     .PARAMETER Title
         The title of the milestone.
 
     .PARAMETER State
-        Only milestones with this state are returned, either open or closed. Default: open
+        The state of the milestone, either Open or Closed.
 
     .PARAMETER Description
         A description of the milestone.
 
-    .PARAMETER Due_On
+    .PARAMETER DueOn
         The milestone due date.
 
     .PARAMETER AccessToken
@@ -316,7 +331,7 @@ function Set-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1 -Title "Testing this API"
+        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
 
         Update an existing milestone for the PowerShell\PowerShellForGitHub project.
 #>
@@ -336,24 +351,18 @@ function Set-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [string] $MilestoneNumber,
+        [int] $Milestone,
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $Title,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
-        [ValidateSet('open', 'closed')]
+        [ValidateSet('Open', 'Closed')]
         [string] $State,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
         [string] $Description,
 
-        [Parameter(ParameterSetName='Uri')]
-        [Parameter(ParameterSetName='Elements')]
-        [DateTime] $Due_On,
+        [DateTime] $DueOn,
 
         [string] $AccessToken,
 
@@ -370,7 +379,7 @@ function Set-GitHubMilestone
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'Title' =  (Get-PiiSafeString -PlainText $Title)
-        'MilestoneNumber' =  (Get-PiiSafeString -PlainText $MilestoneNumber)
+        'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
     $hashBody = @{
@@ -379,6 +388,7 @@ function Set-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('State'))
     {
+        $State = $State.ToLower()
         $hashBody.add('state', $State)
     }
 
@@ -387,17 +397,17 @@ function Set-GitHubMilestone
         $hashBody.add('description', $Description)
     }
 
-    if ($PSBoundParameters.ContainsKey('Due_On') -and $null -ne $Due_On)
+    if ($PSBoundParameters.ContainsKey('DueOn'))
     {
-        $DueOnFormattedTime = $Due_On.ToUniversalTime().ToString('o')
+        $DueOnFormattedTime = $DueOn.ToUniversalTime().ToString('o')
         $hashBody.add('due_on', $DueOnFormattedTime)
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$MilestoneNumber"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Setting milestone $MilestoneNumber for $RepositoryName"
+        'Description' =  "Setting milestone $Milestone for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -428,8 +438,8 @@ function Remove-GitHubMilestone
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER MilestoneNumber
-        The number of a specific milestone to get.
+    .PARAMETER Milestone
+        The number of a specific milestone to delete.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -442,7 +452,7 @@ function Remove-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
+        Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
 
         Deletes a Github milestone from the PowerShell\PowerShellForGitHub project.
 #>
@@ -463,7 +473,7 @@ function Remove-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [string] $MilestoneNumber,
+        [string] $Milestone,
 
         [string] $AccessToken,
 
@@ -479,13 +489,13 @@ function Remove-GitHubMilestone
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'MilestoneNumber' =  (Get-PiiSafeString -PlainText $MilestoneNumber)
+        'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$MilestoneNumber"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
         'Method' = 'Delete'
-        'Description' =  "Removing milestone $MilestoneNumber for $RepositoryName"
+        'Description' =  "Removing milestone $Milestone for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

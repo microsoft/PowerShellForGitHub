@@ -424,12 +424,12 @@ Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -
 
 #### Get milestones from a repository
 ```powershell
-Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort due_on -Direction asc -Due_On '2011-04-14T16:00:49Z'
+Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort "due_on" -Direction "asc" -DueOn '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single milestone
 ```powershell
-Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
+Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
 #### Adding a new milestone
@@ -439,10 +439,15 @@ New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -T
 
 #### Editing an existing milestone
 ```powershell
-Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1 -Title "Testing this API"
+Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
+```
+
+#### Add a new issue to an existing milestone
+```powershell
+New-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Title "Test Issue" -Milestone 1 
 ```
 
 #### Removing a milestone
 ```powershell
-Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -MilestoneNumber 1
+Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
 ```
