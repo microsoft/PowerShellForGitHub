@@ -43,8 +43,8 @@ function Initialize-AppVeyor
         $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
         Set-GitHubAuthentication -Credential $cred
 
-        $ownerName = $env:avOwnerName
-        $organizationName = $env:avOrganizationName
+        $script:ownerName = $env:avOwnerName
+        $script:organizationName = $env:avOrganizationName
 
         $message = @(
             'This run is executed in the AppVeyor environment.',
