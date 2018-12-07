@@ -65,7 +65,7 @@ function Get-GitHubEvent
 
         [Parameter(Mandatory, ParameterSetName='EventUri')]
         [Parameter(Mandatory, ParameterSetName='EventElements')]
-        [string] $EventID,
+        [int] $EventID,
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
@@ -96,7 +96,7 @@ function Get-GitHubEvent
     }
     elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$Issue/events`?"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$Issue/events"
         $description = "Getting events for issue $Issue in $RepositoryName"
     }
     else
@@ -106,10 +106,10 @@ function Get-GitHubEvent
     }
 
     $acceptHeaders = @(
-    'application/vnd.github.starfox-preview+json',
-    'application/vnd.github.sailer-v-preview+json',
-    'application/vnd.github.symmetra-preview+json',
-    'application/vnd.github.machine-man-preview')
+        'application/vnd.github.starfox-preview+json',
+        'application/vnd.github.sailer-v-preview+json',
+        'application/vnd.github.symmetra-preview+json',
+        'application/vnd.github.machine-man-preview')
 
     $params = @{
         'UriFragment' = $uriFragment
