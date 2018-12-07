@@ -26,13 +26,13 @@ function Get-GitHubMilestone
         The number of a specific milestone to get. If not supplied, will return back all milestones for this repository.
 
     .PARAMETER Sort
-        How to sort the results, either DueOn or Completeness.
+        How to sort the results.
 
     .PARAMETER Direction
-        How to list the results, either Ascending or Descending. Ignored without the sort parameter.
+        How to list the results. Ignored without the sort parameter.
 
     .PARAMETER State
-        Only milestones with this state are returned, either Open, Closed, or All.
+        Only milestones with this state are returned.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -184,7 +184,7 @@ function New-GitHubMilestone
         The title of the milestone.
 
     .PARAMETER State
-        The state of the milestone, either Open or Closed.
+        The state of the milestone.
 
     .PARAMETER Description
         A description of the milestone.
@@ -312,7 +312,7 @@ function Set-GitHubMilestone
         The title of the milestone.
 
     .PARAMETER State
-        The state of the milestone, either Open or Closed.
+        The state of the milestone.
 
     .PARAMETER Description
         A description of the milestone.

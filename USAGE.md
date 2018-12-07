@@ -432,19 +432,15 @@ Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -S
 Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
-#### Adding a new milestone
+#### Assign an existing issue to a new milestone
 ```powershell
 New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1 
 ```
 
 #### Editing an existing milestone
 ```powershell
 Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
-```
-
-#### Add a new issue to an existing milestone
-```powershell
-New-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Title "Test Issue" -Milestone 1 
 ```
 
 #### Removing a milestone

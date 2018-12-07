@@ -79,6 +79,7 @@ try
     # Define Script-scoped, readonly, hidden variables.
 
     @{
+        defaultIssueTitle = "This is a test issue."
         defaultMilestoneTitle1 = "This is a test milestone title #1."
         defaultMilestoneTitle2 = "This is a test milestone title #2."
         defaultEditedMilestoneTitle = "This is an edited milestone title."
@@ -91,6 +92,7 @@ try
 
     Describe 'Creating, modifying and deleting milestones' {
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
 
         Context 'For creating a new milestone' {
             $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1 -State "Closed" -DueOn $defaultMilestoneDueOn
@@ -107,17 +109,27 @@ try
             It "Should have the expected due_on date" {
                 Get-Date -Date $existingMilestone.due_on | Should be $defaultMilestoneDueOn
             }
+
+            It "Should allow the addition of an existing issue" {
+                Update-GitHubIssue -Uri $repo.svn_url -Issue $issue.number -Milestone $existingMilestone.number
+            }
         }
 
         Context 'For getting milestones from a repo' {
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "Closed")
+            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 1
             }
 
-            It 'Should have the expected body text on the first milestone' {
+            It 'Should have the expected title text on the first milestone' {
                 $existingMilestones[0].title | Should be $defaultMilestoneTitle1
+            }
+
+            It 'Should have the expected issue in the first milestone' {
+                $existingMilestones[0].open_issues | should be 1
+                $issue.milestone.number | Should be 1
             }
         }
 
@@ -148,9 +160,11 @@ try
             }
 
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
+            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have no milestones' {
                 $existingMilestones.Count | Should be 0
+                $issue.milestone | Should be $null
             }
         }
 
