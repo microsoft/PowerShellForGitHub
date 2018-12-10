@@ -117,6 +117,8 @@ function Get-GitHubComment
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
 
     if ($null -ne $Since)
     {

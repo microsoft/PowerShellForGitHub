@@ -48,6 +48,7 @@ function Get-GitHubMilestone
         Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
         Get the milestones for the PowerShell\PowerShellForGitHub project.
 
+    .EXAMPLE
         Get-GitHubMilestone -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Milestone 1
         Get milestone number 1 for the PowerShell\PowerShellForGitHub project.
 #>
@@ -97,6 +98,8 @@ function Get-GitHubMilestone
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
 
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
