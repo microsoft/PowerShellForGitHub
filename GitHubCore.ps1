@@ -200,6 +200,10 @@ function Invoke-GHRestMethod
                     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                     $params.Add("Body", $bodyAsBytes)
                     Write-Log -Message "Request includes a body." -Level Verbose
+                    if (Get-GitHubConfiguration -Name LogRequestBody)
+                    {
+                        Write-Log -Message $Body -Level Verbose
+                    }
                 }
 
                 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -217,7 +221,7 @@ function Invoke-GHRestMethod
             if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
             {
                 [scriptblock]$scriptBlock = {
-                    param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $ScriptRootPath)
+                    param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $LogRequestBody, $ScriptRootPath)
 
                     # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
                     # the context of this script block since we're running in a different
@@ -239,6 +243,10 @@ function Invoke-GHRestMethod
                         $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
                         $params.Add("Body", $bodyAsBytes)
                         Write-Log -Message "Request includes a body." -Level Verbose
+                        if ($LogRequestBody)
+                        {
+                            Write-Log -Message $Body -Level Verbose
+                        }
                     }
 
                     try
@@ -272,7 +280,15 @@ function Invoke-GHRestMethod
                     }
                 }
 
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @($url, $Method, $headers, $Body, $ValidBodyContainingRequestMethods, (Get-GitHubConfiguration -Name WebRequestTimeoutSec), $PSScriptRoot)
+                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
+                    $url,
+                    $Method,
+                    $headers,
+                    $Body,
+                    $ValidBodyContainingRequestMethods,
+                    (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
+                    (Get-GitHubConfiguration -Name LogRequestBody),
+                    $PSScriptRoot)
 
                 if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
                 {

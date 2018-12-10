@@ -1,5 +1,6 @@
 # PowerShellForGitHub PowerShell Module
 
+[![[GitHub version]](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub)
 [![Build status](https://ci.appveyor.com/api/projects/status/vsfq8kxo2et2dn7i?svg=true
 )](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub)
 
