@@ -297,12 +297,12 @@ Remove-GitHubLabel -OwnerName Powershell -RepositoryName desiredstateconfigurati
 #### Adding Labels to an Issue
 ```powershell
 $labelNames = @{'bug', 'discussion')
-Add-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue 1 -LabelName $labelNames
+Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue 1 -LabelName $labelNames
 ```
 
 #### Removing a Label From an Issue
 ```powershell
-Remove-GitHubLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
+Remove-GitHubIssueLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color

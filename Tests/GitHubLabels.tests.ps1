@@ -58,8 +58,8 @@ function Initialize-AppVeyor
 
 Initialize-AppVeyor
 
-$script:accessTokenConfigured = Test-GitHubAuthenticationConfigured
-if (-not $script:accessTokenConfigured)
+$accessTokenConfigured = Test-GitHubAuthenticationConfigured
+if (-not $accessTokenConfigured)
 {
     $message = @(
         'GitHub API Token not defined, some of the tests will be skipped.',
@@ -70,295 +70,300 @@ if (-not $script:accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
-Backup-GitHubConfiguration -Path $configFile
-Reset-GitHubConfiguration
-
-$script:defaultLabels = @(
-    @{
-        'name' = 'pri:lowest'
-        'color' = '4285F4'
-    },
-    @{
-        'name' = 'pri:low'
-        'color' = '4285F4'
-    },
-    @{
-        'name' = 'pri:medium'
-        'color' = '4285F4'
-    },
-    @{
-        'name' = 'pri:high'
-        'color' = '4285F4'
-    },
-    @{
-        'name' = 'pri:highest'
-        'color' = '4285F4'
-    },
-    @{
-        'name' = 'bug'
-        'color' = 'fc2929'
-    },
-    @{
-        'name' = 'duplicate'
-        'color' = 'cccccc'
-    },
-    @{
-        'name' = 'enhancement'
-        'color' = '121459'
-    },
-    @{
-        'name' = 'up for grabs'
-        'color' = '159818'
-    },
-    @{
-        'name' = 'question'
-        'color' = 'cc317c'
-    },
-    @{
-        'name' = 'discussion'
-        'color' = 'fe9a3d'
-    },
-    @{
-        'name' = 'wontfix'
-        'color' = 'dcb39c'
-    },
-    @{
-        'name' = 'in progress'
-        'color' = 'f0d218'
-    },
-    @{
-        'name' = 'ready'
-        'color' = '145912'
-    }
-)
-
-if ($script:accessTokenConfigured)
+try 
 {
-    Describe 'Getting labels from repository' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-        Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
+    Backup-GitHubConfiguration -Path $configFile
+    Reset-GitHubConfiguration
 
-        Context 'When querying for all labels' {
-            $labels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
+    $defaultLabels = @(
+        @{
+            'name' = 'pri:lowest'
+            'color' = '4285F4'
+        },
+        @{
+            'name' = 'pri:low'
+            'color' = '4285F4'
+        },
+        @{
+            'name' = 'pri:medium'
+            'color' = '4285F4'
+        },
+        @{
+            'name' = 'pri:high'
+            'color' = '4285F4'
+        },
+        @{
+            'name' = 'pri:highest'
+            'color' = '4285F4'
+        },
+        @{
+            'name' = 'bug'
+            'color' = 'fc2929'
+        },
+        @{
+            'name' = 'duplicate'
+            'color' = 'cccccc'
+        },
+        @{
+            'name' = 'enhancement'
+            'color' = '121459'
+        },
+        @{
+            'name' = 'up for grabs'
+            'color' = '159818'
+        },
+        @{
+            'name' = 'question'
+            'color' = 'cc317c'
+        },
+        @{
+            'name' = 'discussion'
+            'color' = 'fe9a3d'
+        },
+        @{
+            'name' = 'wontfix'
+            'color' = 'dcb39c'
+        },
+        @{
+            'name' = 'in progress'
+            'color' = 'f0d218'
+        },
+        @{
+            'name' = 'ready'
+            'color' = '145912'
+        }
+    )
+
+    if ($script:accessTokenConfigured)
+    {
+        Describe 'Getting labels from repository' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
+
+            Context 'When querying for all labels' {
+                $labels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName
+
+                It 'Should return expected number of labels' {
+                    $($labels).Count | Should be $:defaultLabels.Count
+                }
+            }
+
+            Context 'When querying for specific label' {
+                $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name bug
+
+                It 'Should return expected label' {
+                    $label.name | Should be "bug"
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Creating new label' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+
+            $labelName = [Guid]::NewGuid().Guid
+            New-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
+            $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
+
+            It 'New label should be created' {
+                $label.name | Should be $labelName
+            }
+
+            AfterEach {
+                Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Removing label' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
+
+            $labelName = [Guid]::NewGuid().Guid
+            New-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
+            $labels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName
+
+            It 'Should return increased number of labels' {
+                $($labels).Count | Should be ($defaultLabels.Count + 1)
+            }
+
+            Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
+            $labels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName
 
             It 'Should return expected number of labels' {
-                $($labels).Count | Should be $script:defaultLabels.Count
-            }
-        }
-
-        Context 'When querying for specific label' {
-            $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name bug
-
-            It 'Should return expected label' {
-                $label.name | Should be "bug"
-            }
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Creating new label' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-
-        $labelName = [Guid]::NewGuid().Guid
-        New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
-        $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName
-
-        It 'New label should be created' {
-            $label.name | Should be $labelName
-        }
-
-        AfterEach {
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Removing label' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-        Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
-
-        $labelName = [Guid]::NewGuid().Guid
-        New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
-        $labels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
-
-        It 'Should return increased number of labels' {
-            $($labels).Count | Should be ($script:defaultLabels.Count + 1)
-        }
-
-        Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName
-        $labels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
-
-        It 'Should return expected number of labels' {
-            $($labels).Count | Should be $script:defaultLabels.Count
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Updating label' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-
-        $labelName = [Guid]::NewGuid().Guid
-
-        Context 'Updating label color' {
-            New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
-            Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -NewName $labelName -Color AAAAAA
-            $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName
-
-            AfterEach {
-                Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName
+                $($labels).Count | Should be $defaultLabels.Count
             }
 
-            It 'Label should have different color' {
-                $label.color | Should be AAAAAA
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Updating label' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+
+            $labelName = [Guid]::NewGuid().Guid
+
+            Context 'Updating label color' {
+                New-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
+                Update-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -NewName $labelName -Color AAAAAA
+                $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
+
+                AfterEach {
+                    Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
+                }
+
+                It 'Label should have different color' {
+                    $label.color | Should be AAAAAA
+                }
             }
-        }
 
-        Context 'Updating label name' {
-            $newLabelName = $labelName + "2"
-            New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
-            Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -NewName $newLabelName -Color BBBBBB
-            $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $newLabelName
+            Context 'Updating label name' {
+                $newLabelName = $labelName + "2"
+                New-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
+                Update-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -NewName $newLabelName -Color BBBBBB
+                $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $newLabelName
 
-            AfterEach {
-                Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $newLabelName
+                AfterEach {
+                    Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $newLabelName
+                }
+
+                It 'Label should have different color' {
+                    $label | Should not be $null
+                    $label.color | Should be BBBBBB
+                }
             }
 
-            It 'Label should have different color' {
-                $label | Should not be $null
-                $label.color | Should be BBBBBB
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Applying set of labels on repository' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+
+            $labelName = [Guid]::NewGuid().Guid
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
+
+            # Add new label
+            New-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
+            $labels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName
+
+            # Change color of existing label
+            Update-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "bug" -NewName "bug" -Color BBBBBB
+
+            # Remove one of approved labels"
+            Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "discussion"
+
+            It 'Should return increased number of labels' {
+                $($labels).Count | Should be ($defaultLabels.Count + 1)
             }
+
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
+            $labels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName
+
+            It 'Should return expected number of labels' {
+                $($labels).Count | Should be $defaultLabels.Count
+                $bugLabel = $labels | Where-Object {$_.name -eq "bug"}
+                $bugLabel.color | Should be "fc2929"
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
+        Describe 'Adding labels to an issue'{
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
 
-    Describe 'Applying set of labels on repository' {
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
+            $issueName = [Guid]::NewGuid().Guid
+            $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title $issueName
 
-        $labelName = [Guid]::NewGuid().Guid
-        Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
+            Context 'Adding labels to an issue' {
+                $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
+                    'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
+                $addedLabels = @(Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
-        # Add new label
-        New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name $labelName -Color BBBBBB
-        $labels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
+                It 'Should return the expected number of labels' {
+                    $addedLabels.Count | Should be $defaultLabels.Count
+                }
 
-        # Change color of existing label
-        Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "bug" -NewName "bug" -Color BBBBBB
+                $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
-        # Remove one of approved labels"
-        Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "discussion"
+                It 'Should have added the expected number of labels' {
+                    $labelIssues.Count | Should be $defaultLabels.Count
+                }
+            }
 
-        It 'Should return increased number of labels' {
-            $($labels).Count | Should be ($script:defaultLabels.Count + 1)
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
+        Describe 'Removing labels on an issue'{
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
 
-        Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
-        $labels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
+            $issueName = [Guid]::NewGuid().Guid
+            $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title $issueName
 
-        It 'Should return expected number of labels' {
-            $($labels).Count | Should be $script:defaultLabels.Count
-            $bugLabel = $labels | Where-Object {$_.name -eq "bug"}
-            $bugLabel.color | Should be "fc2929"
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Adding labels to an issue'{
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-        Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $script:defaultLabels
-
-        $issueName = [Guid]::NewGuid().Guid
-        $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title $issueName
-
-        Context 'Adding labels to an issue' {
             $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
-                'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-            $addedLabels = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
+            'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
+            Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd
+
+            Context 'For removing individual issues'{
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "discussion" -Issue $issue.number
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number
+                $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
+
+                It 'Should have added the expected number of labels' {
+                    $labelIssues.Count | Should be ($defaultLabels.Count - 3)
+                }
+            }
+
+            Context 'For removing all issues'{
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
+                $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
+
+                It 'Should have added the expected number of labels' {
+                    $labelIssues.Count | Should be 0
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Replacing labels on an issue'{
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+
+            $issueName = [Guid]::NewGuid().Guid
+            $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title $issueName
+
+            $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
+            'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
+
+            Add-GitHubIssueLabel  -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName 'pri:medium'
+
+            $addedLabels = @(Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
             It 'Should return the expected number of labels' {
-                $addedLabels.Count | Should be $script:defaultLabels.Count
+                $addedLabels.Count | Should be $labelsToAdd.Count
             }
 
-            $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
+            $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
             It 'Should have added the expected number of labels' {
-                $labelIssues.Count | Should be $script:defaultLabels.Count
+                $labelIssues.Count | Should be $defaultLabels.Count
             }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-    Describe 'Removing labels on an issue'{
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-
-        $issueName = [Guid]::NewGuid().Guid
-        $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title $issueName
-
-        $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
-        'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-        Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd
-
-        Context 'For removing individual issues'{
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "discussion" -Issue $issue.number
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number
-            $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-    
-            It 'Should have added the expected number of labels' {
-                $labelIssues.Count | Should be ($script:defaultLabels.Count - 3)
-            }
-        }
-
-        Context 'For removing all issues'{
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-            $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-
-            It 'Should have added the expected number of labels' {
-                $labelIssues.Count | Should be 0
-            }
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
-    }
-
-    Describe 'Replacing labels on an issue'{
-        $repositoryName = [Guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName
-
-        $issueName = [Guid]::NewGuid().Guid
-        $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title $issueName
-
-        $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
-        'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-
-        Add-GitHubIssueLabel  -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName 'pri:medium'
-
-        $addedLabels = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
-
-        It 'Should return the expected number of labels' {
-            $addedLabels.Count | Should be $labelsToAdd.Count
-        }
-
-        $labelIssues = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number
-
-        It 'Should have added the expected number of labels' {
-            $labelIssues.Count | Should be $script:defaultLabels.Count
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
     }
 }
-
-# Restore the user's configuration to its pre-test state
-Restore-GitHubConfiguration -Path $configFile
+finally
+{
+    # Restore the user's configuration to its pre-test state
+    Restore-GitHubConfiguration -Path $configFile
+}
