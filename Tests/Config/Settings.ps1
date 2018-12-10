@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # The account that the tests will be running under
-$script:ownerName = 'jorivtest'
+$script:ownerName = 'PowerShellForGitHubTeam'
 
 # The organization that the tests will be running under
-$script:organizationName = 'jorivorg'
+$script:organizationName = 'PowerShellForGitHubTeamTestOrg'
