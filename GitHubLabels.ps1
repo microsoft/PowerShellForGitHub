@@ -653,7 +653,7 @@ function Add-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
+        Add-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
 
         Adds labels to an issue in the PowerShellForGitHub project.
 #>
@@ -756,9 +756,9 @@ function Set-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
+        Set-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
 
-        Adds labels to an issue in the PowerShellForGitHub project.
+        Replaces labels on an issue in the PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -860,7 +860,7 @@ function Remove-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
+        Remove-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
 
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
 #>
