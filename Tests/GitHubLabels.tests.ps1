@@ -70,7 +70,7 @@ if (-not $accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
-try 
+try
 {
     Backup-GitHubConfiguration -Path $configFile
     Reset-GitHubConfiguration
