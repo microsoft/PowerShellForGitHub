@@ -108,6 +108,9 @@ function Get-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
+
     if ($PSBoundParameters.ContainsKey('Issue'))
     {
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
@@ -298,12 +301,6 @@ function Remove-GitHubLabel
         Name of the label to be deleted.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
-    .PARAMETER Issue
-        Issue number to remove the label from. If not provided the label will be deleted from the entire repository.
-
-    .PARAMETER RemoveAll
-        If supplied, will remove all labels on an issue.
-
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -321,37 +318,24 @@ function Remove-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='RepositoryElements')]
+        DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Alias('Delete-GitHubLabel')]
     param(
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='Uri')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
-        [Parameter(ParameterSetName='IssueElements')]
-        [Parameter(ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='Uri')]
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
         [string] $Name,
-
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [int] $Issue,
-
-        [Parameter(ParameterSetName='IssueElements')]
-        [Parameter(ParameterSetName='IssueUri')]
-        [switch] $RemoveAll,
 
         [string] $AccessToken,
 
@@ -369,29 +353,10 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSBoundParameters.ContainsKey('Issue'))
-    {
-        if ($RemoveAll)
-        {
-            $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
-            $description = "Deleting all labels from issue $Issue in $RepositoryName"
-        }
-        else
-        {
-            $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
-            $description = "Deleting label $Name from issue $Issue in $RepositoryName"
-        }
-    }
-    else
-    {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/labels/$Name"
-        $description = "Deleting label $Name from $RepositoryName"
-    }
-
     $params = @{
-        'UriFragment' = $uriFragment
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
         'Method' = 'Delete'
-        'Description' =  $description
+        'Description' =  "Deleting label $Name from $RepositoryName"
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -650,7 +615,7 @@ function Set-GitHubLabel
     }
 }
 
-function Add-GitHubLabel
+function Add-GitHubIssueLabel
 {
 <#
     .DESCRIPTION
@@ -674,11 +639,8 @@ function Add-GitHubLabel
     .PARAMETER Issue
         Issue number to add the label to.
 
-    .PARAMETER LabelName
+    .PARAMETER Name
         Array of label names to add to the issue
-
-    .PARAMETER Replace
-        If supplied, will replace all of the labels on the issue with the provided labels.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -691,7 +653,7 @@ function Add-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
+        Add-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
 
         Adds labels to an issue in the PowerShellForGitHub project.
 #>
@@ -849,6 +811,114 @@ function Set-GitHubIssueLabel
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  "Replacing labels to issue $Issue in $RepositoryName"
+        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Remove-GitHubIssueLabel
+{
+<#
+    .DESCRIPTION
+        Deletes a label from an issue in the given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Issue
+        Issue number to remove the label from.
+
+    .PARAMETER Name
+        Name of the label to be deleted. If not provided, will delete all labels on the issue.
+        Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
+
+        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParametersetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Delete-GitHubLabel')]
+    param(
+        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int] $Issue,
+
+        [ValidateNotNullOrEmpty()]
+        [Alias('LabelName')]
+        [string] $Name,
+
+        [switch] $RemoveAll,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $description = [String]::Empty
+
+    if ($PSBoundParameters.ContainsKey('Name'))
+    {
+        $description = "Deleting label $Name from issue $Issue in $RepositoryName"
+    }
+    else
+    {
+        $description = "Deleting all labels from issue $Issue in $RepositoryName"
+    }
+
+    $params = @{
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
+        'Method' = 'Delete'
+        'Description' =  $description
         'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
