@@ -3,8 +3,6 @@
 [![[GitHub version]](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub)
 [![Build status](https://ci.appveyor.com/api/projects/status/vsfq8kxo2et2dn7i?svg=true
 )](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub)
-[![[Average time to resolve an issue]](http://www.isitmaintained.com/badge/resolution/PowerShell/PowerShellForGitHub.svg)](http://www.isitmaintained.com/project/PowerShell/PowerShellForGitHub "Average time to resolve an issue")
-[![[Percentage of issues still open]](http://www.isitmaintained.com/badge/open/PowerShell/PowerShellForGitHub.svg)](http://www.isitmaintained.com/project/PowerShell/PowerShellForGitHub "Percentage of issues still open")
 
 #### Table of Contents
 
