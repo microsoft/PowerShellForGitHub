@@ -140,7 +140,7 @@ try
 
             Context 'For getting an event directly'{
                 $singleEvent = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -EventID $events[0].id
-                
+
                 It 'Should have the correct event type'{
                     $singleEvent.event | Should be 'reopened'
                 }

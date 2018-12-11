@@ -89,6 +89,9 @@ function Get-GitHubEvent
         'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventID')
     }
 
+    $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events"
+    $description = "Getting events for $RepositoryName"
+
     if ($PSBoundParameters.ContainsKey('EventID'))
     {
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventID"
@@ -98,11 +101,6 @@ function Get-GitHubEvent
     {
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/$Issue/events"
         $description = "Getting events for issue $Issue in $RepositoryName"
-    }
-    else
-    {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events"
-        $description = "Getting events for $RepositoryName"
     }
 
     $acceptHeaders = @(
