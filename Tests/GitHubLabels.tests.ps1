@@ -348,7 +348,7 @@ try
 
             $addedLabels = @(Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
-            It 'Should returned the issue with 14 labels' {
+            It 'Should return the issue with 14 labels' {
                 $addedLabels.Count | Should be $labelsToAdd.Count
             }
 
