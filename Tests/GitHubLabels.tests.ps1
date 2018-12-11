@@ -134,7 +134,7 @@ try
         }
     )
 
-    if ($script:accessTokenConfigured)
+    if ($accessTokenConfigured)
     {
         Describe 'Getting labels from repository' {
             $repositoryName = [Guid]::NewGuid().Guid

@@ -663,10 +663,10 @@ function Add-GitHubIssueLabel
         DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
