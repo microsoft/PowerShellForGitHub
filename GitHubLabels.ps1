@@ -741,10 +741,10 @@ function Set-GitHubIssueLabel
         them individually.
 
     .PARAMETER Issue
-        Issue number to add the label to.
+        Issue number to replace the labels.
 
     .PARAMETER LabelName
-        Array of label names to add to the issue
+        Array of label names that will be set on the issue.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
