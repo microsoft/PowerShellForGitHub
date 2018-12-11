@@ -287,13 +287,13 @@ try
                     'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
                 $addedLabels = @(Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
-                It 'Should return the expected number of labels' {
+                It 'Should return the number of labels that were just added' {
                     $addedLabels.Count | Should be $defaultLabels.Count
                 }
 
                 $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
-                It 'Should have added the expected number of labels' {
+                It 'Should return the number of labels that were just added from querying the issue again' {
                     $labelIssues.Count | Should be $defaultLabels.Count
                 }
             }
@@ -317,7 +317,7 @@ try
                 Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number
                 $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
-                It 'Should have added the expected number of labels' {
+                It 'Should have removed three labels from the issue' {
                     $labelIssues.Count | Should be ($defaultLabels.Count - 3)
                 }
             }
@@ -326,7 +326,7 @@ try
                 Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
                 $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
-                It 'Should have added the expected number of labels' {
+                It 'Should have removed all labels from the issue' {
                     $labelIssues.Count | Should be 0
                 }
             }
@@ -348,13 +348,13 @@ try
 
             $addedLabels = @(Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
-            It 'Should return the expected number of labels' {
+            It 'Should should returned the issue with 14 labels' {
                 $addedLabels.Count | Should be $labelsToAdd.Count
             }
 
             $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
-            It 'Should have added the expected number of labels' {
+            It 'Should should have 14 labels after querying the issue' {
                 $labelIssues.Count | Should be $defaultLabels.Count
             }
 
