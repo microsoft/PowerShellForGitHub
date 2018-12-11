@@ -322,17 +322,18 @@ function Remove-GitHubLabel
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Alias('Delete-GitHubLabel')]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
         [string] $Name,
