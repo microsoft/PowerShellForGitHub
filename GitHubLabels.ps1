@@ -61,9 +61,9 @@ function Get-GitHubLabel
         DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory,ParameterSetName='Elements')]
-        [Parameter(Mandatory,ParameterSetName='NameElements')]
-        [Parameter(Mandatory,ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='NameElements')]
+        [Parameter(Mandatory, ParameterSetName='IssueElements')]
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $OwnerName,
 
@@ -681,8 +681,6 @@ function Add-GitHubIssueLabel
         [Alias('LabelName')]
         [string[]] $Name,
 
-        [switch] $Replace,
-
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -697,7 +695,7 @@ function Add-GitHubIssueLabel
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'labelCount' = $Name.Count
+        'LabelCount' = $Name.Count
     }
 
     $hashBody = @{
@@ -784,8 +782,6 @@ function Set-GitHubIssueLabel
         [Alias('LabelName')]
         [string[]] $Name,
 
-        [switch] $Replace,
-
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -800,7 +796,7 @@ function Set-GitHubIssueLabel
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'labelCount' = $Name.Count
+        'LabelCount' = $Name.Count
     }
 
     $hashBody = @{
@@ -886,8 +882,6 @@ function Remove-GitHubIssueLabel
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
         [string] $Name,
-
-        [switch] $RemoveAll,
 
         [string] $AccessToken,
 
