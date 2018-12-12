@@ -48,6 +48,11 @@
         *   [Adding a new milestone](#adding-a-new-milestone)
         *   [Editing an existing milestone](#editing-an-existing-milestone)
         *   [Removing a milestone](#removing-a-milestone)
+    *   [Events](#Events)
+        *   [Get events from a repository](#get-events-from-a-repository)
+        *   [Get events from an issue](#get-events-from-an-issue)
+        *   [Get a single event](#get-a-single-event])
+        
 ----------
 
 ## Logging
@@ -446,4 +451,23 @@ Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -M
 #### Removing a milestone
 ```powershell
 Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
+```
+
+----------
+
+### Events
+
+#### Get events from a repository
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub
+```
+
+#### Get events from an issue
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1
+```
+
+#### Get a single event
+```powershell
+Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -EventID 1
 ```
