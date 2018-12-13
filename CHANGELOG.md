@@ -1,6 +1,19 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.6.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.1) - (2018/12/13)
+### Fixes:
+- Fixes a bub with checking Issues.  When trying to list all issues, it tried to speficially look
+  for Issue 0.
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/73) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/bf6764080ce1291cfe2530a39ffd292f38b37440)
+
+Authors:
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
 ## [0.6.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.0) - (2018/12/13)
 ### Features:
 + Completes all support for GitHub Issue API's:
