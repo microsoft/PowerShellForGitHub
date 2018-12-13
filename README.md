@@ -35,14 +35,17 @@ At present, this module can:
  * Query [collaborators](https://developer.github.com/v3/repos/collaborators/)
  * Query [contributors](https://developer.github.com/v3/repos/statistics/)
  * Query [organizations](https://developer.github.com/v3/orgs/)
- * Query, create, update and remove [Issues](https://developer.github.com/v3/issues/)
- * Query, create, update and remove [Issue Comments](https://developer.github.com/v3/issues/comments/)
+ * Query, create, update and remove [Issues](https://developer.github.com/v3/issues/) and
+   all of their related properties (assignees, comments, events, labels, milestones, timeline)
  * Query, create, update and remove [Labels](https://developer.github.com/v3/issues/labels/)
  * Query, check, add and remove [Assignees](https://developer.github.com/v3/issues/assignees/)
  * Query, create, update and remove [Repositories](https://developer.github.com/v3/repos/)
  * Query and update [Users](https://developer.github.com/v3/users/)
 
 Development is ongoing, with the goal to add broad support for the entire API set.
+
+For a comprehensive look at what work is remaining to be API Complete, refer to [Issue #70](https://github.com/PowerShell/PowerShellForGitHub/issues/70).
+
 Review [examples](USAGE.md#examples) to see how the module can be used to accomplish some of these tasks.
 
 ----------

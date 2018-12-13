@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.5.0'
+    ModuleVersion = '0.6.0'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
@@ -19,6 +19,7 @@
         # GitHubConfiguration.ps1) depend on some of the code in Helpers being around at load time.
         'Helpers.ps1',
         'GitHubConfiguration.ps1',
+
         'GitHubAnalytics.ps1',
         'GitHubAssignees.ps1',
         'GitHubBranches.ps1',

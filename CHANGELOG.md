@@ -1,6 +1,31 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.6.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.0) - (2018/12/13)
+### Features:
++ Completes all support for GitHub Issue API's:
+  + Added support for the [Issue Event](https://developer.github.com/v3/issues/events/) API's.
+  + Added support for the [Issue Milestone](https://developer.github.com/v3/issues/milestones/) API's.
+  + Added support for the [Issue Label](https://developer.github.com/v3/issues/labels/) API's.
++ Added new `LogRequestBody` configuration option to help with development, allowing you to see the
+  exact body of the REST request being sent before it is sent over the wire.
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/64) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/06e25243086954013b50c1fa7e3eb11bc34a9501)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/62) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/2bd244768d0bed85943e5e8375bb3f5bebdc763b)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/59) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/6c7355424828d5ada457bdbe2182c8fdf6845641)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/60) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/98aec29d61bf013a153705079703ae027cc25c9f)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+   * [**@etgottli**](https://github.com/etgottli)
+
+------
+
 ## [0.5.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.5.0) - (2018/11/30)
 ### Features:
 + Added support for the [Issue Comment](https://developer.github.com/v3/issues/comments/) API's.
