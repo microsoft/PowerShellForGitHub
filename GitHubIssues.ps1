@@ -192,7 +192,7 @@ function Get-GitHubIssue
     {
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues"
         $description = "Getting issues for $RepositoryName"
-        if (-not [String]::IsNullOrEmpty($Issue))
+        if ($PSBoundParameters.ContainsKey('Issue'))
         {
             $uriFragment = $uriFragment + "/$Issue"
             $description = "Getting issue $Issue for $RepositoryName"
