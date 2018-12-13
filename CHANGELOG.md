@@ -3,7 +3,7 @@
 
 ## [0.6.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.1) - (2018/12/13)
 ### Fixes:
-- Fixes a bub with checking Issues.  When trying to list all issues, it tried to speficially look
+- Fixes a bug with checking Issues.  When trying to list all issues, it tried to speficially look
   for Issue 0.
 
 More Info:
