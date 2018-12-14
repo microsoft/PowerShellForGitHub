@@ -1,6 +1,23 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.6.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.2) - (2018/12/13)
+### Fixes:
+- Fixes a bug preventing Labels from being correctly added at the time of new Issue creation or
+  modified when updating an issue.
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/76) | [[cl]]
+  (https://github.com/PowerShell/PowerShellForGitHub/commit/3b6e84cbafaf044e2154a06612b1c43a873cd002)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/78) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/577f07bd219e9b5c03d481e562fd7f2fc3586474)
+
+Authors:
+   * [**@lazywinadmin**](https://github.com/lazywinadmin)
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
 ## [0.6.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.1) - (2018/12/13)
 ### Fixes:
 - Fixes a bug with checking Issues.  When trying to list all issues, it tried to speficially look
