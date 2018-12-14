@@ -509,7 +509,7 @@ function New-GitHubIssue
     if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Assignee')) { $hashBody['assignees'] = @($Assignee) }
     if ($PSBoundParameters.ContainsKey('Milestone')) { $hashBody['milestone'] = $Milestone }
-    if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['label'] = @($Label) }
+    if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['labels'] = @($Label) }
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues"
