@@ -378,6 +378,13 @@ try
                 $labelIssues.Count | Should be $defaultLabels.Count
             }
 
+            $updatedIssueLabels = @($labelsToAdd[0])
+            $updatedIssue = Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $updatedIssueLabels
+
+            It 'Should have 1 label after updating the issue' {
+                $updatedIssue.labels.Count | Should be $updatedIssueLabels.Count
+            }
+
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
     }

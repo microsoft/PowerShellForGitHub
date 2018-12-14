@@ -640,7 +640,7 @@ function Update-GitHubIssue
     if ($PSBoundParameters.ContainsKey('Title')) { $hashBody['title'] = $Title }
     if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Assignee')) { $hashBody['assignees'] = @($Assignee) }
-    if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['label'] = @($Label) }
+    if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['labels'] = @($Label) }
     if ($PSBoundParameters.ContainsKey('State')) { $hashBody['state'] = $State }
     if ($PSBoundParameters.ContainsKey('Milestone'))
     {
