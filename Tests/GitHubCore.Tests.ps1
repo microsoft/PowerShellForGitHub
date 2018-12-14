@@ -67,14 +67,16 @@ if (-not $script:accessTokenConfigured)
     Write-Warning -Message ($message -join [Environment]::NewLine)
 }
 
+# Backup the user's configuration before we begin, and ensure we're at a pure state before running
+# the tests.  We'll restore it at the end.
+$configFile = New-TemporaryFile
+
 try
 {
-    # Backup the user's configuration before we begin, and ensure we're at a pure state before running
-    # the tests.  We'll restore it at the end.
-    $configFile = New-TemporaryFile
     Backup-GitHubConfiguration -Path $configFile
     Reset-GitHubConfiguration
     Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
+    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
     Describe 'Testing ConvertTo-SmarterObject behavior' {
         InModuleScope PowerShellForGitHub {

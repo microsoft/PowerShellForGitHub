@@ -70,10 +70,13 @@ if (-not $accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
+
 try
 {
     Backup-GitHubConfiguration -Path $configFile
     Reset-GitHubConfiguration
+    Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
+    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
     $defaultLabels = @(
         @{
@@ -300,6 +303,23 @@ try
 
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
+
+        Describe 'Creating a new Issue with labels' {
+            $repositoryName = [Guid]::NewGuid().Guid
+            $null = New-GitHubRepository -RepositoryName $repositoryName
+            Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
+
+            $issueName = [Guid]::NewGuid().Guid
+            $issueLabels = @($defaultLabels[0].name, $defaultLabels[1].name)
+            $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title $issueName -Label $issueLabels
+
+            It 'Should return the number of labels that were just added' {
+                $issue.labels.Count | Should be $issueLabels.Count
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
         Describe 'Removing labels on an issue'{
             $repositoryName = [Guid]::NewGuid().Guid
             $null = New-GitHubRepository -RepositoryName $repositoryName

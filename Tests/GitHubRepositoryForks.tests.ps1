@@ -70,46 +70,54 @@ if (-not $script:accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
-Backup-GitHubConfiguration -Path $configFile
-Reset-GitHubConfiguration
 
-Describe 'Creating a new fork for user' {
-    $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+try
+{
+    Backup-GitHubConfiguration -Path $configFile
+    Reset-GitHubConfiguration
+    Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
+    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
-    Context 'When a new fork is created' {
-        $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
-        $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
+    Describe 'Creating a new fork for user' {
+        $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
 
-        It 'Should have one more fork than before' {
-            (@($newForks).Count - @($originalForks).Count) | Should be 1
+        Context 'When a new fork is created' {
+            $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
+
+            It 'Should have one more fork than before' {
+                (@($newForks).Count - @($originalForks).Count) | Should be 1
+            }
+
+            It 'Should be the latest fork in the list' {
+                $newForks[0].full_name | Should be "$($script:ownerName)/PowerShellForGitHub"
+            }
+
+            Remove-GitHubRepository -Uri $repo.svn_url
         }
+    }
 
-        It 'Should be the latest fork in the list' {
-            $newForks[0].full_name | Should be "$($script:ownerName)/PowerShellForGitHub"
+    Describe 'Creating a new fork for an org' {
+        $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+
+        Context 'When a new fork is created' {
+            $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
+            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
+
+            It 'Should have one more fork than before' {
+                (@($newForks).Count - @($originalForks).Count) | Should be 1
+            }
+
+            It 'Should be the latest fork in the list' {
+                $newForks[0].full_name | Should be "$($script:organizationName)/PowerShellForGitHub"
+            }
+
+            Remove-GitHubRepository -Uri $repo.svn_url
         }
-
-        Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
-
-Describe 'Creating a new fork for an org' {
-    $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
-
-    Context 'When a new fork is created' {
-        $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
-        $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
-
-        It 'Should have one more fork than before' {
-            (@($newForks).Count - @($originalForks).Count) | Should be 1
-        }
-
-        It 'Should be the latest fork in the list' {
-            $newForks[0].full_name | Should be "$($script:organizationName)/PowerShellForGitHub"
-        }
-
-        Remove-GitHubRepository -Uri $repo.svn_url
-    }
+finally
+{
+    # Restore the user's configuration to its pre-test state
+    Restore-GitHubConfiguration -Path $configFile
 }
-
-# Restore the user's configuration to its pre-test state
-Restore-GitHubConfiguration -Path $configFile

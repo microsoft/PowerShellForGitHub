@@ -70,11 +70,13 @@ if (-not $script:accessTokenConfigured)
 # Backup the user's configuration before we begin, and ensure we're at a pure state before running
 # the tests.  We'll restore it at the end.
 $configFile = New-TemporaryFile
+
 try
 {
     Backup-GitHubConfiguration -Path $configFile
     Reset-GitHubConfiguration
     Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
+    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
     $issue = New-GitHubIssue -Uri $repo.svn_url -Title "Test issue"

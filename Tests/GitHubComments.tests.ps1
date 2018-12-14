@@ -75,6 +75,7 @@ try
     Backup-GitHubConfiguration -Path $configFile
     Reset-GitHubConfiguration
     Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
+    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
     # Define Script-scoped, readonly, hidden variables.
 
