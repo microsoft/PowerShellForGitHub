@@ -87,7 +87,7 @@ try
         defaultEditedMilestoneTitle = "This is an edited milestone title."
         defaultMilestoneDescription = "This is a test milestone description."
         defaultEditedMilestoneDescription = "This is an edited milestone description."
-        defaultMilestoneDueOn = (Get-Date).AddYears(1).Date
+        defaultMilestoneDueOn = (Get-Date).AddYears(1).ToUniversalTime()
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
@@ -109,7 +109,7 @@ try
             }
 
             It "Should have the expected due_on date" {
-                Get-Date -Date $existingMilestone.due_on | Should be $defaultMilestoneDueOn
+                Get-Date -Date $existingMilestone.due_on | Should be $defaultMilestoneDueOn.Date
             }
 
             It "Should allow the addition of an existing issue" {
