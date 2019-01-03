@@ -12,7 +12,7 @@
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
-Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('post', 'patch', 'put', 'delete')
+Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('Post', 'Patch', 'Put', 'Delete')
 
 function Invoke-GHRestMethod
 {
@@ -102,7 +102,7 @@ function Invoke-GHRestMethod
         [string] $UriFragment,
 
         [Parameter(Mandatory)]
-        [ValidateSet('delete', 'get', 'post', 'patch', 'put')]
+        [ValidateSet('Delete', 'Get', 'Post', 'Patch', 'Put')]
         [string] $Method,
 
         [string] $Description,
@@ -208,7 +208,7 @@ function Invoke-GHRestMethod
 
                 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $result = Invoke-WebRequest @params
-                if ($Method -eq 'delete')
+                if ($Method -eq 'Delete')
                 {
                     Write-Log -Message "Successfully removed." -Level Verbose
                 }
@@ -306,7 +306,7 @@ function Invoke-GHRestMethod
                 throw $remoteErrors[0].Exception
             }
 
-            if ($Method -eq 'delete')
+            if ($Method -eq 'Delete')
             {
                 Write-Log -Message "Successfully removed." -Level Verbose
             }

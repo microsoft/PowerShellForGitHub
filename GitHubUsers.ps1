@@ -125,7 +125,7 @@ function Get-GitHubUserContextualInformation
         Get-GitHubUserContextualInformation -User octocat
 
     .EXAMPLE
-        Get-GitHubUserContextualInformation -User octocat -Subject repository -SubjectId 1300192
+        Get-GitHubUserContextualInformation -User octocat -Subject Repository -SubjectId 1300192
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -133,7 +133,7 @@ function Get-GitHubUserContextualInformation
         [Parameter(Mandatory)]
         [string] $User,
 
-        [ValidateSet('organization', 'repository', 'issue', 'pull_request')]
+        [ValidateSet('Organization', 'Repository', 'Issue', 'PullRequest')]
         [string] $Subject,
 
         [string] $SubjectId,
@@ -157,7 +157,14 @@ function Get-GitHubUserContextualInformation
             throw $message
         }
 
-        $getParams += "subject_type=$Subject"
+        $subjectConverter = @{
+            'Organization' = 'organization'
+            'Repository' = 'repository'
+            'Issue' = 'issue'
+            'PullRequest' = 'pull_request'
+        }
+
+        $getParams += "subject_type=$($subjectConverter[$Subject])"
         $getParams += "subject_id=$SubjectId"
     }
 

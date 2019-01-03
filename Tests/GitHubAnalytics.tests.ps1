@@ -97,15 +97,15 @@ try
                 Start-Sleep -Seconds 5
             }
 
-            $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State closed
-            $newIssues[-1] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State closed
+            $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
+            $newIssues[-1] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
 
             $issues = Get-GitHubIssue -Uri $repo.svn_url
             It 'Should return only open issues' {
                 @($issues).Count | Should be 2
             }
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State all
+            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All
             It 'Should return all issues' {
                 @($issues).Count | Should be 4
             }
@@ -119,7 +119,7 @@ try
             }
 
             $createdDate = Get-Date -Date $newIssues[1].created_at
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State all | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') }
+            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') }
 
             It 'Able to filter based on date and state' {
                 @($issues).Count | Should be 1
@@ -175,7 +175,7 @@ try
     #     Context 'When state and time range specified' {
     #         $mergedStartDate = Get-Date -Date '2016-04-10'
     #         $mergedEndDate = Get-Date -Date '2016-05-07'
-    #         $pullRequests = Get-GitHubPullRequest -Uri $script:repositoryUrl -State closed |
+    #         $pullRequests = Get-GitHubPullRequest -Uri $script:repositoryUrl -State Closed |
     #             Where-Object { ($_.merged_at -ge $mergedStartDate) -and ($_.merged_at -le $mergedEndDate) }
 
     #         It 'Should return expected number of PRs' {
@@ -222,7 +222,7 @@ try
     #                 }) }
 
     #         $pullRequestCounts = $pullRequestCounts | Sort-Object -Property Count -Descending
-    #         $pullRequests = Get-GitHubTopPullRequestRepository -Uri @($script:repositoryUrl, $script:repositoryUrl2) -State closed -MergedOnOrAfter
+    #         $pullRequests = Get-GitHubTopPullRequestRepository -Uri @($script:repositoryUrl, $script:repositoryUrl2) -State Closed -MergedOnOrAfter
 
     #         It 'Should return expected number of pull requests for each repository' {
     #             @($pullRequests[0].Count) | Should be 3

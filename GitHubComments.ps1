@@ -96,16 +96,16 @@ function Get-GitHubComment
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('created', 'updated')]
+        [ValidateSet('Created', 'Updated')]
         [string] $Sort,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
-        [ValidateSet('asc', 'desc')]
+        [ValidateSet('Ascending', 'Descending')]
         [string] $Direction,
 
-        [ValidateSet('raw', 'text', 'html', 'full')]
-        [string] $MediaType ='raw',
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -120,9 +120,10 @@ function Get-GitHubComment
     $uriFragment = [String]::Empty
     $description = [String]::Empty
 
+    $sinceFormattedTime = [String]::Empty
     if ($null -ne $Since)
     {
-        $SinceFormattedTime = $Since.ToUniversalTime().ToString('o')
+        $sinceFormattedTime = $Since.ToUniversalTime().ToString('o')
     }
 
     $telemetryProperties = @{
@@ -143,7 +144,7 @@ function Get-GitHubComment
 
         if ($PSBoundParameters.ContainsKey('Since'))
         {
-            $uriFragment += "since=$SinceFormattedTime"
+            $uriFragment += "since=$sinceFormattedTime"
         }
 
         $description = "Getting comments for issue $Issue in $RepositoryName"
@@ -154,17 +155,22 @@ function Get-GitHubComment
 
         if ($PSBoundParameters.ContainsKey('Sort'))
         {
-            $getParams += "sort=$Sort"
+            $getParams += "sort=$($Sort.ToLower())"
         }
 
         if ($PSBoundParameters.ContainsKey('Direction'))
         {
-            $getParams += "direction=$Direction"
+            $directionConverter = @{
+                'Ascending' = 'asc'
+                'Descending' = 'desc'
+            }
+
+            $getParams += "direction=$($directionConverter[$Direction])"
         }
 
         if ($PSBoundParameters.ContainsKey('Since'))
         {
-            $getParams += "since=$SinceFormattedTime"
+            $getParams += "since=$sinceFormattedTime"
         }
 
         $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments`?" +  ($getParams -join '&')
@@ -256,8 +262,8 @@ function New-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
-        [ValidateSet('raw', 'text', 'html', 'full')]
-        [string] $MediaType ='raw',
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -367,8 +373,8 @@ function Set-GitHubComment
         [Parameter(Mandatory)]
         [string] $Body,
 
-        [ValidateSet('raw', 'text', 'html', 'full')]
-        [string] $MediaType ='raw',
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -512,19 +518,19 @@ function Get-CommentAcceptHeader
         full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
 
     .EXAMPLE
-        Get-CommentAcceptHeader -MediaType raw
+        Get-CommentAcceptHeader -MediaType Raw
 
         Returns a formatted AcceptHeader for v3 of the response object
 #>
     [CmdletBinding()]
     param(
-        [ValidateSet('raw', 'text', 'html', 'full')]
-        [string] $MediaType ='raw'
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw'
     )
 
     $acceptHeaders = @(
         'application/vnd.github.squirrel-girl-preview',
-        "application/vnd.github.$mediaTypeVersion.$MediaType+json")
+        "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
 
     return ($acceptHeaders -join ',')
 }

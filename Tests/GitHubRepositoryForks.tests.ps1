@@ -83,7 +83,7 @@ try
 
         Context 'When a new fork is created' {
             $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
-            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
+            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
                 (@($newForks).Count - @($originalForks).Count) | Should be 1
@@ -102,7 +102,7 @@ try
 
         Context 'When a new fork is created' {
             $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
-            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort newest
+            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
                 (@($newForks).Count - @($originalForks).Count) | Should be 1

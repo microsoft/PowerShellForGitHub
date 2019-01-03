@@ -118,26 +118,22 @@ function Get-GitHubMilestone
 
         if ($PSBoundParameters.ContainsKey('Sort'))
         {
-            if ($Sort -eq "Completeness")
-            {
-                $getParams += "sort=completeness"
+            $sortConverter = @{
+                'Completeness' = 'completeness'
+                'DueOn' = 'due_on'
             }
-            elseif ($Sort -eq "DueOn")
-            {
-                $getParams += "sort=due_on"
-            }
+
+            $getParams += "sort=$($sortConverter[$Sort])"
         }
 
         if ($PSBoundParameters.ContainsKey('Direction'))
         {
-            if ($Direction -eq "Ascending")
-            {
-                $getParams += "direction=asc"
+            $directionConverter = @{
+                'Ascending' = 'asc'
+                'Descending' = 'desc'
             }
-            elseif ($Direction -eq "Descending")
-            {
-                $getParams += "direction=desc"
-            }
+
+            $getParams += "direction=$($directionConverter[$Direction])"
         }
 
         if ($PSBoundParameters.ContainsKey('State'))

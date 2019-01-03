@@ -90,9 +90,9 @@ function ConvertFrom-Markdown
     .PARAMETER Mode
         The rendering mode for the Markdown content.
 
-        markdown - Renders Content in plain Markdown, just like README.md files are rendered
+        Markdown - Renders Content in plain Markdown, just like README.md files are rendered
 
-        gfm (GitHub Flavored Markdown) - Creates links for user mentions as well as references to
+        GitHubFlavoredMarkdown - Creates links for user mentions as well as references to
         SHA-1 hashes, issues, and pull requests.
 
     .PARAMETER Context
@@ -113,7 +113,9 @@ function ConvertFrom-Markdown
         [String] The HTML version of the Markdown content.
 
     .EXAMPLE
-        Get-GitHubRateLimit
+        ConvertFrom-Markdown -Content '**Bolded Text**' -Mode Markdown
+
+        Returns back '<p><strong>Bolded Text</strong></p>'
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -125,7 +127,7 @@ function ConvertFrom-Markdown
         [ValidateScript({if ([System.Text.Encoding]::UTF8.GetBytes($_).Count -lt 400000) { $true } else { throw "Content must be less than 400 KB." }})]
         [string] $Content,
 
-        [ValidateSet('markdown', 'gfm')]
+        [ValidateSet('Markdown', 'GitHubFlavoredMarkdown')]
         [string] $Mode = 'markdown',
 
         [string] $Context,
@@ -141,9 +143,14 @@ function ConvertFrom-Markdown
         'Mode' = $Mode
     }
 
+    $modeConverter = @{
+        'Markdown' = 'markdown'
+        'GitHubFlavoredMarkdown' = 'gfm'
+    }
+
     $hashBody = @{
         'text' = $Content
-        'mode' = $Mode
+        'mode' = $modeConverter[$Mode]
     }
 
     if (-not [String]::IsNullOrEmpty($Context)) { $hashBody['context'] = $Context }

@@ -56,7 +56,7 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
-        
+
 ----------
 
 ## Logging
@@ -175,7 +175,7 @@ $issues | Where-Object { $_.created_at -gt (Get-Date).AddDays(-14) }
 $repos = @('https://github.com/powershell/xpsdesiredstateconfiguration', 'https://github.com/powershell/xactivedirectory')
 $issues = @()
 $repos | ForEach-Object { $issues += Get-GitHubIssue -Uri $_ }
-$issues | Group-GitHubIssue -Weeks 12 -DateType 'created'
+$issues | Group-GitHubIssue -Weeks 12 -DateType Created
 ```
 
 ```powershell
@@ -213,7 +213,7 @@ $pullRequests | Where-Object { $_.created_at -gt (Get-Date).AddDays(-14) }
 $repos = @('https://github.com/powershell/xpsdesiredstateconfiguration', 'https://github.com/powershell/xactivedirectory')
 $pullRequests = @()
 $repos | ForEach-Object { $pullRequests += Get-GitHubPullRequest -Uri $_ }
-$pullRequests | Group-GitHubPullRequest -Weeks 12 -DateType 'merged'
+$pullRequests | Group-GitHubPullRequest -Weeks 12 -DateType Merged
 ```
 
 ```powershell
@@ -382,12 +382,12 @@ Get-GitHubPathTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
 
 #### Get the number of views for a repository
 ```powershell
-Get-GitHubViewTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per 'week'
+Get-GitHubViewTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per Week
 ```
 
 #### Get the number of clones for a repository
 ```powershell
-Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per 'day'
+Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per Day
 ```
 
 ----------
@@ -425,7 +425,7 @@ Get-GitHubIssueComment -OwnerName Powershell -RepositoryName PowerShellForGitHub
 
 #### Get comments from a repository
 ```powershell
-Get-GitHubRepositoryComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort created -Direction asc -Since '2011-04-14T16:00:49Z'
+Get-GitHubRepositoryComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single comment
@@ -454,7 +454,7 @@ Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -
 
 #### Get milestones from a repository
 ```powershell
-Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort "due_on" -Direction "asc" -DueOn '2011-04-14T16:00:49Z'
+Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort DueOn -Direction Ascending -DueOn '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single milestone
@@ -465,7 +465,7 @@ Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -M
 #### Assign an existing issue to a new milestone
 ```powershell
 New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
-Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1 
+Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1
 ```
 
 #### Editing an existing milestone
