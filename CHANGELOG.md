@@ -1,6 +1,17 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+## [0.6.3](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.3) - (2019/01/07)
+### Fixes:
+* Updated all parameter sets to use `CamelCase` for the permitted options, and stopped
+  any use of abbreviation, to be more consistent with the rest of PowerShell.
+
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/81) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/185441078efeb0e6693eafeb023785388a1a5a69)
+
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
 ## [0.6.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.2) - (2018/12/13)
 ### Fixes:
 - Fixes a bug preventing Labels from being correctly added at the time of new Issue creation or
