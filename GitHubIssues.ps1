@@ -87,6 +87,14 @@ function Get-GitHubIssue
     .PARAMETER Mentioned
           Only issues that mention this specified user will be returned.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -161,6 +169,9 @@ function Get-GitHubIssue
         [string] $Creator,
 
         [string] $Mentioned,
+
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -304,7 +315,7 @@ function Get-GitHubIssue
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -450,6 +461,14 @@ function New-GitHubIssue
     .PARAMETER Label
         Label(s) to associate with this issue.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -491,6 +510,9 @@ function New-GitHubIssue
 
         [string[]] $Label,
 
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -521,7 +543,7 @@ function New-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating new Issue ""$Title"" on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -579,6 +601,14 @@ function Update-GitHubIssue
     .PARAMETER State
         Modify the current state of the issue.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        text - Return a text only representation of the markdown body. Response will include body_text.
+        html - Return HTML rendered from the body's markdown. Response will include body_html.
+        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -624,6 +654,9 @@ function Update-GitHubIssue
         [ValidateSet('Open', 'Closed')]
         [string] $State,
 
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -661,7 +694,7 @@ function Update-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

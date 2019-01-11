@@ -181,7 +181,7 @@ function Get-GitHubComment
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -292,7 +292,7 @@ function New-GitHubComment
         'Method' = 'Post'
         'Description' =  "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -403,7 +403,7 @@ function Set-GitHubComment
         'Method' = 'Patch'
         'Description' =  "Update comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-CommentAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -501,7 +501,7 @@ function Remove-GitHubComment
     return Invoke-GHRestMethod @params
 }
 
-function Get-CommentAcceptHeader
+function Get-MediaAcceptHeader
 {
 <#
     .DESCRIPTION
@@ -510,7 +510,7 @@ function Get-CommentAcceptHeader
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER MediaType
-        The format in which the API will return the body of the comment.
+        The format in which the API will return the body of the comment or issue.
 
         raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
         text - Return a text only representation of the markdown body. Response will include body_text.

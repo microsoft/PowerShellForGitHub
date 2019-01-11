@@ -1,0 +1,55 @@
+#---------------------------------#
+#      environment configuration  #
+#---------------------------------#
+version: 0.1.0.{build}
+
+environment:
+  avOwnerName: PowerShellForGitHubTeam
+  avOrganizationName: PowerShellForGitHubTeamTestOrg
+  avAccessToken:
+    secure: 9Bjnb+a2KjzXF39rXmKmZl1s/Sf9tKR6fm+E40HCAiDe56fKMJ+rObjg1+joPe6f
+
+install:
+  - cinst -y pester
+
+#---------------------------------#
+#      build configuration        #
+#---------------------------------#
+
+build: false
+
+#---------------------------------#
+#      test configuration         #
+#---------------------------------#
+
+test_script:
+    - ps: |
+        $testResultsFile = ".\TestsResults.xml"
+        $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
+        if ($res.FailedCount -gt 0) {
+            throw "$($res.FailedCount) tests failed."
+        }
+
+
+#---------------------------------#
+#      deployment configuration   #
+#---------------------------------#
+
+# scripts to run before deployment
+deploy_script:
+  - ps: |
+      # Creating project artifact
+      $stagingDirectory = (Resolve-Path ..).Path
+      $zipFilePath = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
+      Add-Type -assemblyname System.IO.Compression.FileSystem
+      [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFilePath)
+
+      @(
+          # You can add other artifacts here
+          $zipFilePath
+      ) | % {
+          Write-Host "Pushing package $_ as Appveyor artifact"
+          Push-AppveyorArtifact $_
+        }
+
