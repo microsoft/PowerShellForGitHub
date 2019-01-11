@@ -521,7 +521,7 @@ function Get-MediaAcceptHeader
         The accept header that should be included with the MediaType accept header.
 
     .EXAMPLE
-        Get-CommentAcceptHeader -MediaType Raw
+        Get-MediaAcceptHeader -MediaType Raw
 
         Returns a formatted AcceptHeader for v3 of the response object
 #>

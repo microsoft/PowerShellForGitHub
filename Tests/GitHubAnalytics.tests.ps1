@@ -127,7 +127,7 @@ try
         }
 
         Context 'When issues are retrieved with a specific MediaTypes' {
-            $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid().Guid) -Body ([guid]::NewGuid().Guid)
+            $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([guid]::NewGuid())
 
             $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
             It 'Should return an issue with body_html' {
