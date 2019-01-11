@@ -517,6 +517,9 @@ function Get-MediaAcceptHeader
         html - Return HTML rendered from the body's markdown. Response will include body_html.
         full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
 
+    .PARAMETER AcceptHeader
+        The accept header that should be included with the MediaType accept header.
+
     .EXAMPLE
         Get-CommentAcceptHeader -MediaType Raw
 
@@ -525,11 +528,12 @@ function Get-MediaAcceptHeader
     [CmdletBinding()]
     param(
         [ValidateSet('Raw', 'Text', 'Html', 'Full')]
-        [string] $MediaType ='Raw'
+        [string] $MediaType = 'Raw',
+        [string] $AcceptHeader = 'application/vnd.github.squirrel-girl-preview'
     )
 
     $acceptHeaders = @(
-        'application/vnd.github.squirrel-girl-preview',
+        $AcceptHeader,
         "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
 
     return ($acceptHeaders -join ',')

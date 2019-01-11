@@ -315,7 +315,7 @@ function Get-GitHubIssue
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.symmetra-preview+json')
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -543,7 +543,7 @@ function New-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating new Issue ""$Title"" on $RepositoryName"
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.symmetra-preview+json')
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -694,7 +694,7 @@ function Update-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.symmetra-preview+json')
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
