@@ -922,3 +922,44 @@ filter ConvertTo-SmarterObject
         Write-Output -InputObject $InputObject
     }
 }
+
+function Get-MediaAcceptHeader
+{
+<#
+    .DESCRIPTION
+        Returns a formatted AcceptHeader based on the requested MediaType
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment or issue.
+
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER AcceptHeader
+        The accept header that should be included with the MediaType accept header.
+
+    .EXAMPLE
+        Get-MediaAcceptHeader -MediaType Raw
+
+        Returns a formatted AcceptHeader for v3 of the response object
+#>
+    [CmdletBinding()]
+    param(
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType = 'Raw',
+
+        [Parameter(Mandatory)]
+        [string] $AcceptHeader
+    )
+
+    $acceptHeaders = @(
+        $AcceptHeader,
+        "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
+
+    return ($acceptHeaders -join ',')
+}
+

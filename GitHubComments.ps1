@@ -40,10 +40,10 @@ function Get-GitHubComment
     .PARAMETER MediaType
         The format in which the API will return the body of the comment.
 
-        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        text - Return a text only representation of the markdown body. Response will include body_text.
-        html - Return HTML rendered from the body's markdown. Response will include body_html.
-        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -181,7 +181,7 @@ function Get-GitHubComment
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -220,10 +220,10 @@ function New-GitHubComment
     .PARAMETER MediaType
         The format in which the API will return the body of the comment.
 
-        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        text - Return a text only representation of the markdown body. Response will include body_text.
-        html - Return HTML rendered from the body's markdown. Response will include body_html.
-        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -292,7 +292,7 @@ function New-GitHubComment
         'Method' = 'Post'
         'Description' =  "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -331,10 +331,10 @@ function Set-GitHubComment
     .PARAMETER MediaType
         The format in which the API will return the body of the comment.
 
-        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        text - Return a text only representation of the markdown body. Response will include body_text.
-        html - Return HTML rendered from the body's markdown. Response will include body_html.
-        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -403,7 +403,7 @@ function Set-GitHubComment
         'Method' = 'Patch'
         'Description' =  "Update comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -501,40 +501,3 @@ function Remove-GitHubComment
     return Invoke-GHRestMethod @params
 }
 
-function Get-MediaAcceptHeader
-{
-<#
-    .DESCRIPTION
-        Returns a formatted AcceptHeader based on the requested MediaType
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .PARAMETER MediaType
-        The format in which the API will return the body of the comment or issue.
-
-        raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        text - Return a text only representation of the markdown body. Response will include body_text.
-        html - Return HTML rendered from the body's markdown. Response will include body_html.
-        full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
-
-    .PARAMETER AcceptHeader
-        The accept header that should be included with the MediaType accept header.
-
-    .EXAMPLE
-        Get-MediaAcceptHeader -MediaType Raw
-
-        Returns a formatted AcceptHeader for v3 of the response object
-#>
-    [CmdletBinding()]
-    param(
-        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
-        [string] $MediaType = 'Raw',
-        [string] $AcceptHeader = 'application/vnd.github.squirrel-girl-preview'
-    )
-
-    $acceptHeaders = @(
-        $AcceptHeader,
-        "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
-
-    return ($acceptHeaders -join ',')
-}
