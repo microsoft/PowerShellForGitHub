@@ -7,6 +7,8 @@
     gitHubApiOrgsUrl = 'https://api.github.com/orgs'
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
+    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
+    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
 
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value

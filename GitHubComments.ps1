@@ -181,7 +181,7 @@ function Get-GitHubComment
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $squirrelAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -292,7 +292,7 @@ function New-GitHubComment
         'Method' = 'Post'
         'Description' =  "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $squirrelAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -403,7 +403,7 @@ function Set-GitHubComment
         'Method' = 'Patch'
         'Description' =  "Update comment $CommentID for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader 'application/vnd.github.squirrel-girl-preview')
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $squirrelAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
