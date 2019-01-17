@@ -109,7 +109,7 @@ try
             }
 
             It "Should have the expected due_on date" {
-                Get-Date -Date $existingMilestone.due_on | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $existingMilestone.due_on).Date | Should be $defaultMilestoneDueOn.Date
             }
 
             It "Should allow the addition of an existing issue" {
