@@ -735,7 +735,8 @@ function Split-GitHubUri
         repositoryName = [String]::Empty
     }
 
-    if ($Uri -match '^https?://(?:www.)?github.com/([^/]+)/?([^/]+)?(?:/.*)?$')
+    if (($Uri -match '^https?://(?:www.)?github.com/([^/]+)/?([^/]+)?(?:/.*)?$') -or
+        ($Uri -match '^https?://api.github.com/repos/([^/]+)/?([^/]+)?(?:/.*)?$'))
     {
         $components.ownerName = $Matches[1]
         if ($Matches.Count -gt 2)
