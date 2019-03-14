@@ -111,6 +111,7 @@
         'Split-GitHubUri',
         'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
+        'Test-GitHubOrganizationMember',
         'Unlock-GitHubIssue',
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
