@@ -86,7 +86,7 @@ function Get-GitHubComment
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
@@ -257,7 +257,7 @@ function New-GitHubComment
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [string] $Body,

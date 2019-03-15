@@ -102,7 +102,7 @@ function New-GitHubRepository
 
         [string] $LicenseTemplate,
 
-        [int] $TeamId,
+        [int64] $TeamId,
 
         [switch] $Private,
 
@@ -1271,7 +1271,7 @@ function Move-GitHubRepositoryOwnership
         [ValidateNotNullOrEmpty()]
         [string] $NewOwnerName,
 
-        [int[]] $TeamId,
+        [int64[]] $TeamId,
 
         [string] $AccessToken,
 

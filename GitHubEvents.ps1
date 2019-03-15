@@ -65,11 +65,11 @@ function Get-GitHubEvent
 
         [Parameter(Mandatory, ParameterSetName='EventUri')]
         [Parameter(Mandatory, ParameterSetName='EventElements')]
-        [int] $EventID,
+        [int64] $EventID,
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [int] $Issue,
+        [int64] $Issue,
 
         [string] $AccessToken,
 

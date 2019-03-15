@@ -136,7 +136,7 @@ function Get-GitHubIssue
         [ValidateSet('All', 'OwnedAndMember')]
         [string] $RepositoryType = 'All',
 
-        [int] $Issue,
+        [int64] $Issue,
 
         [switch] $IgnorePullRequests,
 
@@ -391,7 +391,7 @@ function Get-GitHubIssueTimeline
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [string] $AccessToken,
 
@@ -506,7 +506,7 @@ function New-GitHubIssue
 
         [string[]] $Assignee,
 
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [string[]] $Label,
 
@@ -639,7 +639,7 @@ function Update-GitHubIssue
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [string] $Title,
 
@@ -647,7 +647,7 @@ function Update-GitHubIssue
 
         [string[]] $Assignee,
 
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [string[]] $Label,
 
@@ -764,7 +764,7 @@ function Lock-GitHubIssue
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [ValidateSet('OffTopic', 'TooHeated', 'Resolved', 'Spam')]
         [string] $Reason,
@@ -874,7 +874,7 @@ param(
     [string] $Uri,
 
     [Parameter(Mandatory)]
-    [int] $Issue,
+    [int64] $Issue,
 
     [string] $AccessToken,
 

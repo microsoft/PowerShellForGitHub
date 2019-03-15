@@ -182,7 +182,7 @@ function Get-GitHubTeamMember
         [Parameter(
             Mandatory,
             ParameterSetName='ID')]
-        [int] $TeamId,
+        [int64] $TeamId,
 
         [string] $AccessToken,
 

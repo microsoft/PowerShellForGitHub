@@ -86,11 +86,11 @@ function Get-GitHubLabel
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [string] $AccessToken,
 
@@ -675,7 +675,7 @@ function Add-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [Alias('LabelName')]
@@ -776,7 +776,7 @@ function Set-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [Alias('LabelName')]
@@ -877,7 +877,7 @@ function Remove-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]

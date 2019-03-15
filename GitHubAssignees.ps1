@@ -241,7 +241,7 @@ function New-GithubAssignee
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [ValidateCount(1, 10)]
@@ -343,7 +343,7 @@ function Remove-GithubAssignee
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [string[]] $Assignee,

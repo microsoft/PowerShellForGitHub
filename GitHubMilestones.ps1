@@ -71,7 +71,7 @@ function Get-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
@@ -350,7 +350,7 @@ function Set-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
