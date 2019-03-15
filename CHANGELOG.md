@@ -1,6 +1,27 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+ [0.7.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.7.0) - (2019/03/15)
+### Fixes:
+* Modified all [int] parameters to be [int64] to avoid out of bounds issues with large ID's.
+* `Split-GitHubUri` updated to work with the `https://api.github.com/*` uri's included in some of
+  the REST responses.
+
+### Features:
++ Added `Test-GitHubOrganizationMember` to test if a user is in an organization.
++ Updated `Get-GitHubTeamMember` to optionally work directly with a TeamId.
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/88) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/592167de9b3f07635c49365e291082fd3f712586)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/90) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/c60bb29ac02e7ab9fcd2e29db865b63876cb0125)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/94) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/a22739e7f535faf4c5f486694bd213782437e82a)
+
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
  [0.6.4](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.4) - (2019/01/16)
 ### Fixes:
 * Updated the `*-GitHubIssue` functions to support specifying the `MediaType` that should be used
@@ -29,8 +50,7 @@ Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
   modified when updating an issue.
 
 More Info:
-  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/76) | [[cl]]
-  (https://github.com/PowerShell/PowerShellForGitHub/commit/3b6e84cbafaf044e2154a06612b1c43a873cd002)
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/76) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/3b6e84cbafaf044e2154a06612b1c43a873cd002)
 
   * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/78) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/577f07bd219e9b5c03d481e562fd7f2fc3586474)
 
