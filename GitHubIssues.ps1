@@ -87,6 +87,14 @@ function Get-GitHubIssue
     .PARAMETER Mentioned
           Only issues that mention this specified user will be returned.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -98,12 +106,12 @@ function Get-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State open
+        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State Open
 
         Gets all the currently open issues in the PowerShell\PowerShellForGitHub repository.
 
     .EXAMPLE
-        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State all -Assignee Octocat
+        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
 
         Gets every issue in the PowerShell\PowerShellForGitHub repository that is assigned to Octocat.
 #>
@@ -125,35 +133,35 @@ function Get-GitHubIssue
 
         [string] $OrganizationName,
 
-        [ValidateSet('all', 'ownedAndMember')]
-        [string] $RepositoryType = 'all',
+        [ValidateSet('All', 'OwnedAndMember')]
+        [string] $RepositoryType = 'All',
 
         [int] $Issue,
 
         [switch] $IgnorePullRequests,
 
-        [ValidateSet('assigned', 'created', 'mentioned', 'subscribed', 'all')]
-        [string] $Filter = 'assigned',
+        [ValidateSet('Assigned', 'Created', 'Mentioned', 'Subscribed', 'All')]
+        [string] $Filter = 'Assigned',
 
-        [ValidateSet('open', 'closed', 'all')]
-        [string] $State = 'open',
+        [ValidateSet('Open', 'Closed', 'All')]
+        [string] $State = 'Open',
 
         [string[]] $Label,
 
-        [ValidateSet('created', 'updated', 'comments')]
-        [string] $Sort = 'created',
+        [ValidateSet('Created', 'Updated', 'Comments')]
+        [string] $Sort = 'Created',
 
-        [ValidateSet('asc', 'desc')]
-        [string] $Direction = 'desc',
+        [ValidateSet('Ascending', 'Descending')]
+        [string] $Direction = 'Descending',
 
         [DateTime] $Since,
 
-        [ValidateSet('specific', 'all', 'none')]
+        [ValidateSet('Specific', 'All', 'None')]
         [string] $MilestoneType,
 
         [string] $Milestone,
 
-        [ValidateSet('specific', 'all', 'none')]
+        [ValidateSet('Specific', 'All', 'None')]
         [string] $AssigneeType,
 
         [string] $Assignee,
@@ -161,6 +169,9 @@ function Get-GitHubIssue
         [string] $Creator,
 
         [string] $Mentioned,
+
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -203,12 +214,12 @@ function Get-GitHubIssue
         $uriFragment = "/orgs/$OrganizationName/issues"
         $description = "Getting issues for $OrganizationName"
     }
-    elseif ($RepositoryType -eq 'all')
+    elseif ($RepositoryType -eq 'All')
     {
         $uriFragment = "/issues"
         $description = "Getting issues across owned, member and org repositories"
     }
-    elseif ($RepositoryType -eq 'ownedAndMember')
+    elseif ($RepositoryType -eq 'OwnedAndMember')
     {
         $uriFragment = "/user/issues"
         $description = "Getting issues across owned and member repositories"
@@ -218,11 +229,16 @@ function Get-GitHubIssue
         throw "Parameter set not supported."
     }
 
+    $directionConverter = @{
+        'Ascending' = 'asc'
+        'Descending' = 'desc'
+    }
+
     $getParams = @(
-        "filter=$Filter",
-        "state=$State",
-        "sort=$Sort",
-        "direction=$Direction"
+        "filter=$($Filter.ToLower())",
+        "state=$($State.ToLower())",
+        "sort=$($Sort.ToLower())",
+        "direction=$($directionConverter[$Direction])"
     )
 
     if ($PSBoundParameters.ContainsKey('Label'))
@@ -242,11 +258,11 @@ function Get-GitHubIssue
 
     if ($PSBoundParameters.ContainsKey('MilestoneType'))
     {
-        if ($MilestoneType -eq 'all')
+        if ($MilestoneType -eq 'All')
         {
             $getParams += 'mentioned=*'
         }
-        elseif ($MilestoneType -eq 'none')
+        elseif ($MilestoneType -eq 'None')
         {
             $getParams += 'mentioned=none'
         }
@@ -299,7 +315,7 @@ function Get-GitHubIssue
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -445,6 +461,14 @@ function New-GitHubIssue
     .PARAMETER Label
         Label(s) to associate with this issue.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -486,6 +510,9 @@ function New-GitHubIssue
 
         [string[]] $Label,
 
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -516,7 +543,7 @@ function New-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
         'Description' =  "Creating new Issue ""$Title"" on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -574,6 +601,14 @@ function Update-GitHubIssue
     .PARAMETER State
         Modify the current state of the issue.
 
+    .PARAMETER MediaType
+        The format in which the API will return the body of the issue.
+
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -585,7 +620,7 @@ function Update-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State closed
+        Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -616,8 +651,11 @@ function Update-GitHubIssue
 
         [string[]] $Label,
 
-        [ValidateSet('open', 'closed')]
+        [ValidateSet('Open', 'Closed')]
         [string] $State,
+
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType ='Raw',
 
         [string] $AccessToken,
 
@@ -641,7 +679,7 @@ function Update-GitHubIssue
     if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Assignee')) { $hashBody['assignees'] = @($Assignee) }
     if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['labels'] = @($Label) }
-    if ($PSBoundParameters.ContainsKey('State')) { $hashBody['state'] = $State }
+    if ($PSBoundParameters.ContainsKey('State')) { $hashBody['state'] = $State.ToLower() }
     if ($PSBoundParameters.ContainsKey('Milestone'))
     {
         $hashBody['milestone'] = $Milestone
@@ -656,7 +694,7 @@ function Update-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -707,7 +745,7 @@ function Lock-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Lock-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason spam
+        Lock-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason Spam
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -728,7 +766,7 @@ function Lock-GitHubIssue
         [Parameter(Mandatory)]
         [int] $Issue,
 
-        [ValidateSet('off-topic', 'too heated', 'resolved', 'spam')]
+        [ValidateSet('OffTopic', 'TooHeated', 'Resolved', 'Spam')]
         [string] $Reason,
 
         [string] $AccessToken,
@@ -753,8 +791,15 @@ function Lock-GitHubIssue
 
     if ($PSBoundParameters.ContainsKey('Reason'))
     {
+        $reasonConverter = @{
+            'OffTopic' = 'off-topic'
+            'TooHeated' = 'too heated'
+            'Resolved' = 'resolved'
+            'Spam' = 'spam'
+        }
+
         $telemetryProperties['Reason'] = $Reason
-        $hashBody['active_lock_reason'] = $Reason
+        $hashBody['active_lock_reason'] = $reasonConverter[$Reason]
     }
 
     $params = @{

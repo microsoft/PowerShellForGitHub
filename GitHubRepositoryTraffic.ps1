@@ -228,8 +228,8 @@ function Get-GitHubViewTraffic
             ParameterSetName='Uri')]
         [string] $Uri,
 
-        [ValidateSet('day', 'week')]
-        [string] $Per = 'day',
+        [ValidateSet('Day', 'Week')]
+        [string] $Per = 'Day',
 
         [string] $AccessToken,
 
@@ -249,7 +249,7 @@ function Get-GitHubViewTraffic
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?per=$Per"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?per=$($Per.ToLower())"
         'Method' = 'Get'
         'Description' =  "Getting views for $RepositoryName"
         'AccessToken' = $AccessToken
@@ -320,8 +320,8 @@ function Get-GitHubCloneTraffic
             ParameterSetName='Uri')]
         [string] $Uri,
 
-        [ValidateSet('day', 'week')]
-        [string] $Per = 'day',
+        [ValidateSet('Day', 'Week')]
+        [string] $Per = 'Day',
 
         [string] $AccessToken,
 
@@ -341,7 +341,7 @@ function Get-GitHubCloneTraffic
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?per=$Per"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?per=$($Per.ToLower())"
         'Method' = 'Get'
         'Description' =  "Getting number of clones for $RepositoryName"
         'AccessToken' = $AccessToken

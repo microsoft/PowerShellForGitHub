@@ -87,7 +87,7 @@ try
         defaultEditedMilestoneTitle = "This is an edited milestone title."
         defaultMilestoneDescription = "This is a test milestone description."
         defaultEditedMilestoneDescription = "This is an edited milestone description."
-        defaultMilestoneDueOn = (Get-Date).AddYears(1).Date
+        defaultMilestoneDueOn = (Get-Date).AddYears(1).ToUniversalTime()
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
@@ -109,7 +109,7 @@ try
             }
 
             It "Should have the expected due_on date" {
-                Get-Date -Date $existingMilestone.due_on | Should be $defaultMilestoneDueOn
+                (Get-Date -Date $existingMilestone.due_on).Date | Should be $defaultMilestoneDueOn.Date
             }
 
             It "Should allow the addition of an existing issue" {
@@ -118,7 +118,7 @@ try
         }
 
         Context 'For getting milestones from a repo' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "Closed")
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State Closed)
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
@@ -151,7 +151,7 @@ try
         }
 
         Context 'For getting milestones from a repository and deleting them' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State "All" -Sort "Completeness" -Direction "Descending")
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending)
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 2

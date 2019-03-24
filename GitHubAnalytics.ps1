@@ -31,7 +31,7 @@ function Group-GitHubIssue
         $issues = @()
         $issues += Get-GitHubIssue -Uri 'https://github.com/powershell/xpsdesiredstateconfiguration'
         $issues += Get-GitHubIssue -Uri 'https://github.com/powershell/xactivedirectory'
-        $issues | Group-GitHubIssue -Weeks 12 -DateType closed
+        $issues | Group-GitHubIssue -Weeks 12 -DateType Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -51,8 +51,8 @@ function Group-GitHubIssue
         [int] $Weeks,
 
         [Parameter(ParameterSetName='Weekly')]
-        [ValidateSet('created', 'closed')]
-        [string] $DateType = 'created'
+        [ValidateSet('Created', 'Closed')]
+        [string] $DateType = 'Created'
     )
 
     Write-InvocationLog
@@ -66,8 +66,8 @@ function Group-GitHubIssue
         foreach ($week in $weekDates)
         {
             $filteredIssues = @($Issue | Where-Object {
-                (($DateType -eq 'created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                (($DateType -eq 'closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
+                (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
+                (($DateType -eq 'Closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
             })
 
             $endOfWeek = $week
@@ -124,7 +124,7 @@ function Group-GitHubPullRequest
         $pullRequests = @()
         $pullRequests += Get-GitHubPullRequest -Uri 'https://github.com/powershell/xpsdesiredstateconfiguration'
         $pullRequests += Get-GitHubPullRequest -Uri 'https://github.com/powershell/xactivedirectory'
-        $pullRequests | Group-GitHubPullRequest -Weeks 12 -DateType closed
+        $pullRequests | Group-GitHubPullRequest -Weeks 12 -DateType Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -144,8 +144,8 @@ function Group-GitHubPullRequest
         [int] $Weeks,
 
         [Parameter(ParameterSetName='Weekly')]
-        [ValidateSet('created', 'merged')]
-        [string] $DateType = 'created'
+        [ValidateSet('Created', 'Merged')]
+        [string] $DateType = 'Created'
     )
 
     Write-InvocationLog
@@ -159,8 +159,8 @@ function Group-GitHubPullRequest
         foreach ($week in $weekDates)
         {
             $filteredPullRequests = @($PullRequest | Where-Object {
-                (($DateType -eq 'created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                (($DateType -eq 'merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
+                (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
+                (($DateType -eq 'Merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
             })
 
             $endOfWeek = $week

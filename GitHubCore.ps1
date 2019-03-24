@@ -7,12 +7,14 @@
     gitHubApiOrgsUrl = 'https://api.github.com/orgs'
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
+    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
+    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
 
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
-Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('post', 'patch', 'put', 'delete')
+Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('Post', 'Patch', 'Put', 'Delete')
 
 function Invoke-GHRestMethod
 {
@@ -102,7 +104,7 @@ function Invoke-GHRestMethod
         [string] $UriFragment,
 
         [Parameter(Mandatory)]
-        [ValidateSet('delete', 'get', 'post', 'patch', 'put')]
+        [ValidateSet('Delete', 'Get', 'Post', 'Patch', 'Put')]
         [string] $Method,
 
         [string] $Description,
@@ -208,7 +210,7 @@ function Invoke-GHRestMethod
 
                 [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $result = Invoke-WebRequest @params
-                if ($Method -eq 'delete')
+                if ($Method -eq 'Delete')
                 {
                     Write-Log -Message "Successfully removed." -Level Verbose
                 }
@@ -306,7 +308,7 @@ function Invoke-GHRestMethod
                 throw $remoteErrors[0].Exception
             }
 
-            if ($Method -eq 'delete')
+            if ($Method -eq 'Delete')
             {
                 Write-Log -Message "Successfully removed." -Level Verbose
             }
@@ -922,3 +924,44 @@ filter ConvertTo-SmarterObject
         Write-Output -InputObject $InputObject
     }
 }
+
+function Get-MediaAcceptHeader
+{
+<#
+    .DESCRIPTION
+        Returns a formatted AcceptHeader based on the requested MediaType
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment or issue.
+
+        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body. Response will include body_text.
+        Html - Return HTML rendered from the body's markdown. Response will include body_html.
+        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+
+    .PARAMETER AcceptHeader
+        The accept header that should be included with the MediaType accept header.
+
+    .EXAMPLE
+        Get-MediaAcceptHeader -MediaType Raw
+
+        Returns a formatted AcceptHeader for v3 of the response object
+#>
+    [CmdletBinding()]
+    param(
+        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [string] $MediaType = 'Raw',
+
+        [Parameter(Mandatory)]
+        [string] $AcceptHeader
+    )
+
+    $acceptHeaders = @(
+        $AcceptHeader,
+        "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
+
+    return ($acceptHeaders -join ',')
+}
+

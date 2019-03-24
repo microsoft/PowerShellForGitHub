@@ -59,8 +59,8 @@ function Get-GitHubRepositoryFork
             ParameterSetName='Uri')]
         [string] $Uri,
 
-        [ValidateSet('newest', 'oldest', 'stargazers')]
-        [string] $Sort = 'newest',
+        [ValidateSet('Newest', 'Oldest', 'Stargazers')]
+        [string] $Sort = 'Newest',
 
         [string] $AccessToken,
 
@@ -80,7 +80,7 @@ function Get-GitHubRepositoryFork
     }
 
     $getParams = @(
-        "sort=$Sort"
+        "sort=$($Sort.ToLower())"
     )
 
     $params = @{

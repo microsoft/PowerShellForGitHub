@@ -93,7 +93,7 @@ try
             }
 
             $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
-            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
+            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
 
             Context 'For getting events from a repository' {
                 $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
@@ -120,8 +120,8 @@ try
             }
 
             Context 'For getting events from an issue' {
-                Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
-                Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
+                Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
+                Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
                 $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
                 It 'Should have two events from closing and opening the issue' {
@@ -136,8 +136,8 @@ try
             $repositoryName = [Guid]::NewGuid()
             $null = New-GitHubRepository -RepositoryName $repositoryName
             $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
-            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State closed
-            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State open
+            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
+            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             Context 'For getting an event directly'{

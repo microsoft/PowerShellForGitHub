@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.6.2'
+    ModuleVersion = '0.6.4'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
@@ -35,6 +35,7 @@
         'GitHubReferences.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
+        'GitHubRepositoryMerge.ps1',
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
@@ -86,6 +87,7 @@
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
+        'Merge-GitHubRepositoryBranches',
         'Move-GitHubRepositoryOwnership',
         'New-GithubAssignee',
         'New-GitHubComment',

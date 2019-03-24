@@ -113,6 +113,14 @@ try
             }
         }
 
+        Context 'For getting comments from an issue with a specific MediaType' {
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number -MediaType 'Html')
+
+            It 'Should have the expected body_html on the first comment' {
+                $existingComments[0].body_html | Should not be $null
+            }
+        }
+
         Context 'For editing a comment' {
             $newComment = New-GitHubComment -Uri $repo.svn_url -Issue $issue.number -Body $defaultCommentBody
             $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody

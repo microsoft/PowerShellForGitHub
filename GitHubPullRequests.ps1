@@ -65,7 +65,7 @@ function Get-GitHubPullRequest
         $pullRequests = Get-GitHubPullRequest -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
 
     .EXAMPLE
-        $pullRequests = Get-GitHubPullRequest -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State closed
+        $pullRequests = Get-GitHubPullRequest -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -85,18 +85,18 @@ function Get-GitHubPullRequest
 
         [string] $PullRequest,
 
-        [ValidateSet('open', 'closed', 'all')]
-        [string] $State = 'open',
+        [ValidateSet('Open', 'Closed', 'All')]
+        [string] $State = 'Open',
 
         [string] $Head,
 
         [string] $Base,
 
-        [ValidateSet('created', 'updated', 'popularity', 'long-running')]
-        [string] $Sort = 'created',
+        [ValidateSet('Created', 'Updated', 'Popularity', 'LongRunning')]
+        [string] $Sort = 'Created',
 
-        [ValidateSet('asc', 'desc')]
-        [string] $Direction = 'desc',
+        [ValidateSet('Ascending', 'Descending')]
+        [string] $Direction = 'Descending',
 
         [string] $AccessToken,
 
@@ -123,10 +123,22 @@ function Get-GitHubPullRequest
         $description = "Getting pull request $PullRequest for $RepositoryName"
     }
 
+    $sortConverter = @{
+        'Created' = 'created'
+        'Updated' = 'updated'
+        'Popularity' = 'popularity'
+        'LongRunning' = 'long-running'
+    }
+
+    $directionConverter = @{
+        'Ascending' = 'asc'
+        'Descending' = 'desc'
+    }
+
     $getParams = @(
-        "state=$State",
-        "sort=$Sort",
-        "direction=$Direction"
+        "state=$($State.ToLower())",
+        "sort=$($sortConverter[$Sort])",
+        "direction=$($directionConverter[$Direction])"
     )
 
     if ($PSBoundParameters.ContainsKey('Head'))

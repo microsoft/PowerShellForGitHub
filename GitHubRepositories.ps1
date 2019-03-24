@@ -368,18 +368,18 @@ function Get-GitHubRepository
         [Parameter(ParameterSetName='Organization')]
         [string] $OrganizationName,
 
-        [ValidateSet('all', 'public', 'private')]
+        [ValidateSet('All', 'Public', 'Private')]
         [string] $Visibility,
 
         [string[]] $Affiliation,
 
-        [ValidateSet('all', 'owner', 'public', 'private', 'member', 'forks', 'sources')]
+        [ValidateSet('All', 'Owner', 'Public', 'Private', 'Member', 'Forks', 'Sources')]
         [string] $Type,
 
-        [ValidateSet('created', 'updated', 'pushed', 'full_name')]
+        [ValidateSet('Created', 'Updated', 'Pushed', 'FullName')]
         [string] $Sort,
 
-        [ValidateSet('asc', 'desc')]
+        [ValidateSet('Ascending', 'Descending')]
         [string] $Direction,
 
         [switch] $GetAllPublicRepositories,
@@ -427,11 +427,23 @@ function Get-GitHubRepository
         $description = "Getting repos for $OwnerName"
     }
 
+    $sortConverter = @{
+        'Created' = 'created'
+        'Updated' = 'updated'
+        'Pushed' = 'pushed'
+        'FullName' = 'full_name'
+    }
+
+    $directionConverter = @{
+        'Ascending' = 'asc'
+        'Descending' = 'desc'
+    }
+
     $getParams = @()
-    if ($PSBoundParameters.ContainsKey('Visibility')) { $getParams += "visibility=$Visibility" }
-    if ($PSBoundParameters.ContainsKey('Sort')) { $getParams += "sort=$Sort" }
-    if ($PSBoundParameters.ContainsKey('Type')) { $getParams += "type=$Type" }
-    if ($PSBoundParameters.ContainsKey('Direction')) { $getParams += "direction=$Direction" }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $getParams += "visibility=$($Visibility.ToLower())" }
+    if ($PSBoundParameters.ContainsKey('Sort')) { $getParams += "sort=$($sortConverter[$Sort])" }
+    if ($PSBoundParameters.ContainsKey('Type')) { $getParams += "type=$($Type.ToLower())" }
+    if ($PSBoundParameters.ContainsKey('Direction')) { $getParams += "direction=$($directionConverter[$Direction])" }
     if ($PSBoundParameters.ContainsKey('Affiliation') -and $Affiliation.Count -gt 0)
     {
         $getParams += "affiliation=$($Affiliation -join ',')"
@@ -523,13 +535,6 @@ function Update-GitHubRepository
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .NOTES
-        It's possible that the ValidateSet values for GitIgnoreTemplate and LicenseTemplate
-        can get out of sync if some are added or removed after this module is published.
-        It was considered to make these free-form entries, but the most likely scenario is
-        that entries won't be added/removed often, making it more convenient to the end-user
-        to have the finite set of options available directly via the ValidateSets.
 
     .EXAMPLE
         Update-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
@@ -1241,13 +1246,6 @@ function Move-GitHubRepositoryOwnership
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .NOTES
-        It's possible that the ValidateSet values for GitIgnoreTemplate and LicenseTemplate
-        can get out of sync if some are added or removed after this module is published.
-        It was considered to make these free-form entries, but the most likely scenario is
-        that entries won't be added/removed often, making it more convenient to the end-user
-        to have the finite set of options available directly via the ValidateSets.
 
     .EXAMPLE
         Move-GitHubRepositoryOwnership -OwnerName PowerShell -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat

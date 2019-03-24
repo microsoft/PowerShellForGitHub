@@ -1,6 +1,28 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+ [0.6.4](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.4) - (2019/01/16)
+### Fixes:
+* Updated the `*-GitHubIssue` functions to support specifying the `MediaType` that should be used
+  for the returned result.
+
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/83) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/e3b6c53017abd36fc70253e1a49c31046c885ad1)
+
+Author: [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
+## [0.6.3](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.3) - (2019/01/07)
+### Fixes:
+* Updated all parameter sets to use `CamelCase` for the permitted options, and stopped
+  any use of abbreviation, to be more consistent with the rest of PowerShell.
+
+More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/81) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/185441078efeb0e6693eafeb023785388a1a5a69)
+
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
 ## [0.6.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.2) - (2018/12/13)
 ### Fixes:
 - Fixes a bug preventing Labels from being correctly added at the time of new Issue creation or
