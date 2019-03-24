@@ -87,7 +87,7 @@
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
-        'Merge-GitHubRepositoryBranches',
+        'Merge-GitHubRepositoryBranch',
         'Move-GitHubRepositoryOwnership',
         'New-GithubAssignee',
         'New-GitHubComment',

@@ -1,15 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Merge-GitHubRepositoryBranches
+function Merge-GitHubRepositoryBranch
 {
 <#
     .SYNOPSIS
-        Branch a branch into another
+        Merge the specified branch into another branch
 
     .DESCRIPTION
-        Merge a branch into another
-        Calls the API: https://developer.github.com/v3/repos/merging/
+        Merge the specified branch into another branch
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -37,7 +36,7 @@ function Merge-GitHubRepositoryBranches
 
     .PARAMETER CommitMessage
         Commit message to use for the merge commit. If omitted, a default message will be used.
-        
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -49,10 +48,10 @@ function Merge-GitHubRepositoryBranches
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        //TODO: FInd the output for POST commands and put it here
+        PSCustomObject
 
     .EXAMPLE
-        //TODO: Give an example here
+        Merge-GitHubRepositoryBranch -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Base 'master' -Head 'new_feature' -CommitMessage 'Merging branch new_feature into master'
 #>
 
 [CmdletBinding(
@@ -71,16 +70,19 @@ function Merge-GitHubRepositoryBranches
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [Parameter(Mandatory)]
         [string] $Base,
 
-        [string] $CommitMessage,
-
+        [Parameter(Mandatory)]
         [string] $Head,
+
+        [string] $CommitMessage,
 
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
+
     Write-InvocationLog
 
     $elements = Resolve-RepositoryElements -DisableValidation
@@ -93,9 +95,13 @@ function Merge-GitHubRepositoryBranches
     }
 
     $hashBody = @{
-        'base'= $Base;
-        'head' = $Head;
-        'commit_message' = $CommitMessage;
+        'base'= $Base
+        'head' = $Head
+    }
+
+    if(-not $CommitMessage -eq $null)
+    {
+        $hashBody['commit_message'] = $CommitMessage
     }
 
     $params = @{
@@ -109,5 +115,17 @@ function Merge-GitHubRepositoryBranches
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    try {
+        $result = Invoke-GHRestMethod @params -ExtendedResult
+        if ($result.statusCode -eq 204)
+        {
+            Write-Log -Message "Nothing to merge. The branch $Base already contains changes from $Head" -Level Warning
+        }
+        return $result.result
+    }
+    catch {
+        #TODO: Read the error message and find out the kind of issue
+        Write-Error $_.Exception
+        Write-Log -Message "Unable to merge. Either the branch $Base or branch $Head does not exist or there is a conflict" -Level Warning
+    }
 }
