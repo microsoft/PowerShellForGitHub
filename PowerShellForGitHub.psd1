@@ -48,7 +48,7 @@
         'Add-GitHubIssueLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
-        'ConvertFrom-Markdown',
+        'ConvertFrom-GitHubMarkdown',
         'Get-GitHubAssignee',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',

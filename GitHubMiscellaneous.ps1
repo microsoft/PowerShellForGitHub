@@ -73,7 +73,7 @@ function Get-GitHubRateLimit
     return Invoke-GHRestMethod @params
 }
 
-function ConvertFrom-Markdown
+function ConvertFrom-GitHubMarkdown
 {
 <#
     .SYNOPSIS
@@ -113,7 +113,7 @@ function ConvertFrom-Markdown
         [String] The HTML version of the Markdown content.
 
     .EXAMPLE
-        ConvertFrom-Markdown -Content '**Bolded Text**' -Mode Markdown
+        ConvertFrom-GitHubMarkdown -Content '**Bolded Text**' -Mode Markdown
 
         Returns back '<p><strong>Bolded Text</strong></p>'
 #>
