@@ -146,6 +146,11 @@ function Set-GitHubConfiguration
         created/updated and the specified configuration changes will only remain in memory/effect
         for the duration of this PowerShell session.
 
+    .PARAMETER GitHubBaseUrl
+        The base URL of the GitHub instance to communicate with. Defaults to 'github.com'. Provide
+        a different URL when using a GitHub Enterprise server. The server must respond to the
+        standard API interface, for instance, api.github.contoso.com.
+
     .EXAMPLE
         Set-GitHubConfiguration -WebRequestTimeoutSec 120 -SuppressNoTokenWarning
 
@@ -158,6 +163,12 @@ function Set-GitHubConfiguration
 
         Disables the logging of any activity to the logfile specified in LogPath, but for this
         session only.
+
+    .EXAMPLE
+        Set-GitHubConfiguration -GitHubBaseUrl "github.contoso.com"
+
+        Sets all requests to connect to a GitHub Enterprise server running at
+        api.github.contoso.com.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -197,7 +208,9 @@ function Set-GitHubConfiguration
         [ValidateRange(0, 3600)]
         [int] $WebRequestTimeoutSec,
 
-        [switch] $SessionOnly
+        [switch] $SessionOnly,
+
+        [string] $GitHubBaseUrl
     )
 
     $persistedConfig = $null
@@ -273,7 +286,8 @@ function Get-GitHubConfiguration
             'RetryDelaySeconds',
             'SuppressNoTokenWarning',
             'SuppressTelemetryReminder',
-            'WebRequestTimeoutSec')]
+            'WebRequestTimeoutSec',
+            'GitHubBaseUrl')]
         [string] $Name
     )
 
@@ -606,6 +620,7 @@ function Import-GitHubConfiguration
         'suppressNoTokenWarning' = $false
         'suppressTelemetryReminder' = $false
         'webRequestTimeoutSec' = 0
+        'gitHubBaseUrl' = 'github.com'
     }
 
     $jsonObject = Read-GitHubConfiguration -Path $Path

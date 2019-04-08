@@ -247,7 +247,7 @@ Here are some general guidelines
 ## Adding New Configuration Properties
 
 If you want to add a new configuration value to the module, you must modify the following:
- * In `Restore-GitHubConfiguration`, update `$config` to declare the new property along with
+ * In `Import-GitHubConfiguration`, update `$config` to declare the new property along with
    it's default value, being sure that PowerShell will understand what its type is.
  * Update `Get-GitHubConfiguration` and add the new property name to the `ValidateSet` list
    so that tab-completion and documentation gets auto-updated. You shouldn't have to add anything

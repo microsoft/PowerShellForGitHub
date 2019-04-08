@@ -2,9 +2,6 @@
 # Licensed under the MIT License.
 
 @{
-    gitHubApiUrl = 'https://api.github.com'
-    gitHubApiReposUrl = 'https://api.github.com/repos'
-    gitHubApiOrgsUrl = 'https://api.github.com/orgs'
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
     squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
@@ -154,7 +151,9 @@ function Invoke-GHRestMethod
     # we'll just always continue the existing one...
     $stopwatch.Start()
 
-    $url = "$script:gitHubApiUrl/$UriFragment"
+    $gitHubApiUrl = "https://api.$(Get-GitHubConfiguration -Name "GitHubBaseUrl")"
+
+    $url = "$gitHubApiUrl/$UriFragment"
 
     # It's possible that we are directly calling the "nextLink" from a previous command which
     # provides the full URI.  If that's the case, we'll just use exactly what was provided to us.
@@ -735,8 +734,10 @@ function Split-GitHubUri
         repositoryName = [String]::Empty
     }
 
-    if (($Uri -match '^https?://(?:www.)?github.com/([^/]+)/?([^/]+)?(?:/.*)?$') -or
-        ($Uri -match '^https?://api.github.com/repos/([^/]+)/?([^/]+)?(?:/.*)?$'))
+    $gitHubUrlBase = $(Get-GitHubConfiguration -Name "GitHubBaseUrl")
+
+    if (($Uri -match "^https?://(?:www.)?$gitHubUrlBase/([^/]+)/?([^/]+)?(?:/.*)?$") -or
+        ($Uri -match "^https?://api.$gitHubUrlBase/repos/([^/]+)/?([^/]+)?(?:/.*)?$"))
     {
         $components.ownerName = $Matches[1]
         if ($Matches.Count -gt 2)
