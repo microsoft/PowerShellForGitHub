@@ -67,6 +67,11 @@ function Set-GitHubConfiguration
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
+    .PARAMETER ApiHostName
+        The hostname of the GitHub instance to communicate with. Defaults to 'github.com'. Provide a
+        different hostname when using a GitHub Enterprise server. Do not include the HTTP/S prefix,
+        and do not include 'api'. For example, use "github.contoso.com".
+
     .PARAMETER ApplicationInsightsKey
         Change the Application Insights instance that telemetry will be reported to (if telemetry
         hasn't been disabled via DisableTelemetry).
@@ -146,11 +151,6 @@ function Set-GitHubConfiguration
         created/updated and the specified configuration changes will only remain in memory/effect
         for the duration of this PowerShell session.
 
-    .PARAMETER GitHubBaseUrl
-        The base URL of the GitHub instance to communicate with. Defaults to 'github.com'. Provide
-        a different URL when using a GitHub Enterprise server. The server must respond to the
-        standard API interface, for instance, api.github.contoso.com.
-
     .EXAMPLE
         Set-GitHubConfiguration -WebRequestTimeoutSec 120 -SuppressNoTokenWarning
 
@@ -165,14 +165,17 @@ function Set-GitHubConfiguration
         session only.
 
     .EXAMPLE
-        Set-GitHubConfiguration -GitHubBaseUrl "github.contoso.com"
+        Set-GitHubConfiguration -ApiHostName "github.contoso.com"
 
         Sets all requests to connect to a GitHub Enterprise server running at
-        api.github.contoso.com.
+        github.contoso.com.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
+        [ValidatePattern('^(?!https?:)(?!api\.)(?!www\.).*')]
+        [string] $ApiHostName,
+
         [string] $ApplicationInsightsKey,
 
         [string] $AssemblyPath,
@@ -208,9 +211,7 @@ function Set-GitHubConfiguration
         [ValidateRange(0, 3600)]
         [int] $WebRequestTimeoutSec,
 
-        [switch] $SessionOnly,
-
-        [string] $GitHubBaseUrl
+        [switch] $SessionOnly
     )
 
     $persistedConfig = $null
@@ -270,6 +271,7 @@ function Get-GitHubConfiguration
     param(
         [Parameter(Mandatory)]
         [ValidateSet(
+            'ApiHostName',
             'ApplicationInsightsKey',
             'AssemblyPath',
             'DefaultNoStatus',
@@ -286,8 +288,7 @@ function Get-GitHubConfiguration
             'RetryDelaySeconds',
             'SuppressNoTokenWarning',
             'SuppressTelemetryReminder',
-            'WebRequestTimeoutSec',
-            'GitHubBaseUrl')]
+            'WebRequestTimeoutSec')]
         [string] $Name
     )
 
@@ -603,6 +604,7 @@ function Import-GitHubConfiguration
     }
 
     $config = [PSCustomObject]@{
+        'apiHostName' = 'github.com'
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
         'assemblyPath' = [String]::Empty
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
@@ -620,7 +622,6 @@ function Import-GitHubConfiguration
         'suppressNoTokenWarning' = $false
         'suppressTelemetryReminder' = $false
         'webRequestTimeoutSec' = 0
-        'gitHubBaseUrl' = 'github.com'
     }
 
     $jsonObject = Read-GitHubConfiguration -Path $Path

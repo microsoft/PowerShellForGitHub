@@ -151,9 +151,9 @@ function Invoke-GHRestMethod
     # we'll just always continue the existing one...
     $stopwatch.Start()
 
-    $gitHubApiUrl = "https://api.$(Get-GitHubConfiguration -Name "GitHubBaseUrl")"
+    $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
 
-    $url = "$gitHubApiUrl/$UriFragment"
+    $url = "https://api.$hostname/$UriFragment"
 
     # It's possible that we are directly calling the "nextLink" from a previous command which
     # provides the full URI.  If that's the case, we'll just use exactly what was provided to us.
@@ -734,10 +734,10 @@ function Split-GitHubUri
         repositoryName = [String]::Empty
     }
 
-    $gitHubUrlBase = $(Get-GitHubConfiguration -Name "GitHubBaseUrl")
+    $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
 
-    if (($Uri -match "^https?://(?:www.)?$gitHubUrlBase/([^/]+)/?([^/]+)?(?:/.*)?$") -or
-        ($Uri -match "^https?://api.$gitHubUrlBase/repos/([^/]+)/?([^/]+)?(?:/.*)?$"))
+    if (($Uri -match "^https?://(?:www.)?$hostName/([^/]+)/?([^/]+)?(?:/.*)?$") -or
+        ($Uri -match "^https?://api.$hostName/repos/([^/]+)/?([^/]+)?(?:/.*)?$"))
     {
         $components.ownerName = $Matches[1]
         if ($Matches.Count -gt 2)
