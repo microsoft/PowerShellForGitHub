@@ -101,7 +101,7 @@ the most up-to-date list!
 
 ### GitHub Enterprise
 
-To set the configuration file to use a GitHub Enterprise server instead of GitHub.com, simply supply
+To set the configuration to use a GitHub Enterprise server instead of GitHub.com, simply supply
 the `ApiHostName` parameter with the hostname of your GitHub Enterprise server.
 
  ```powershell
