@@ -153,7 +153,7 @@ function Invoke-GHRestMethod
 
     $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
 
-    $url = "https://api.$hostname/$UriFragment"
+    $url = "https://api.$hostName/$UriFragment"
 
     # It's possible that we are directly calling the "nextLink" from a previous command which
     # provides the full URI.  If that's the case, we'll just use exactly what was provided to us.

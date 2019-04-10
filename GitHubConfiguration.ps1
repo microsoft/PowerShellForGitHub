@@ -253,7 +253,7 @@ function Get-GitHubConfiguration
 
         Always returns the value for this session, which may or may not be the persisted
         setting (that all depends on whether or not the setting was previously modified
-        during this session using Set-GitHubCOnfiguration -SessionOnly).
+        during this session using Set-GitHubConfiguration -SessionOnly).
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

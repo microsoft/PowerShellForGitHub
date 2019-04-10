@@ -99,6 +99,15 @@ Set-GitHubConfiguration -DefaultRepositoryName PowerShellForGitHub
 There are more great configuration options available.  Just review the help for that command for
 the most up-to-date list!
 
+### GitHub Enterprise
+
+To set the configuration file to use a GitHub Enterprise server instead of GitHub.com, simply supply
+the `ApiHostName` parameter with the hostname of your GitHub Enterprise server.
+
+ ```powershell
+Set-GitHubConfiguration -ApiHostName "github.contoso.com"
+```
+
 ----------
 
 ## Usage
