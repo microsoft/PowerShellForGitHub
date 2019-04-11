@@ -56,9 +56,9 @@ function Get-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubComment-OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubComment-OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the comments for the PowerShell\PowerShellForGitHub project.
+        Get the comments for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -236,9 +236,9 @@ function New-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+        New-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
-        Creates a new Github comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Creates a new Github comment in an issue for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -347,9 +347,9 @@ function Set-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+        Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 
-        Update an existing comment in an issue for the PowerShell\PowerShellForGitHub project.
+        Update an existing comment in an issue for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -447,9 +447,9 @@ function Remove-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 
-        Deletes a Github comment from the PowerShell\PowerShellForGitHub project.
+        Deletes a Github comment from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

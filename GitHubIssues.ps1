@@ -106,14 +106,14 @@ function Get-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State Open
+        Get-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Open
 
-        Gets all the currently open issues in the PowerShell\PowerShellForGitHub repository.
+        Gets all the currently open issues in the Microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
-        Get-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
+        Get-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
 
-        Gets every issue in the PowerShell\PowerShellForGitHub repository that is assigned to Octocat.
+        Gets every issue in the Microsoft\PowerShellForGitHub repository that is assigned to Octocat.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -372,7 +372,7 @@ function Get-GitHubIssueTimeline
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubIssueTimeline -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 24
+        Get-GitHubIssueTimeline -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 24
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -480,7 +480,7 @@ function New-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Title 'Test Issue'
+        New-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title 'Test Issue'
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -620,7 +620,7 @@ function Update-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
+        Update-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -745,7 +745,7 @@ function Lock-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Lock-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason Spam
+        Lock-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason Spam
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -855,7 +855,7 @@ function Unlock-GitHubIssue
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Unlock-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 4
+        Unlock-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4
 #>
 [CmdletBinding(
     SupportsShouldProcess,

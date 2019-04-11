@@ -537,7 +537,7 @@ function Update-GitHubRepository
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Update-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
+        Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
     .EXAMPLE
         Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
@@ -661,7 +661,7 @@ function Get-GitHubRepositoryTopic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRepositoryTopic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -753,7 +753,7 @@ function Set-GitHubRepositoryTopic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubRepositoryTopic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Clear
+        Set-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Clear
 
     .EXAMPLE
         Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Name ('octocat', 'powershell', 'github')
@@ -886,7 +886,7 @@ function Get-GitHubRepositoryContributor
         [PSCustomObject[]] List of contributors for the repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryContributor -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryContributor -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
@@ -985,7 +985,7 @@ function Get-GitHubRepositoryCollaborator
         [PSCustomObject[]] List of collaborators for the repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryCollaborator -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryCollaborator -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
@@ -1073,7 +1073,7 @@ function Get-GitHubRepositoryLanguage
         for each language is the number of bytes of code written in that language.
 
     .EXAMPLE
-        Get-GitHubRepositoryLanguage -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryLanguage -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryLanguage -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1157,7 +1157,7 @@ function Get-GitHubRepositoryTag
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRepositoryTag -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTag -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTag -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1248,7 +1248,7 @@ function Move-GitHubRepositoryOwnership
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Move-GitHubRepositoryOwnership -OwnerName PowerShell -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
+        Move-GitHubRepositoryOwnership -OwnerName Microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
 #>
     [CmdletBinding(
         SupportsShouldProcess,

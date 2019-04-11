@@ -45,12 +45,12 @@ function Get-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
-        Get the milestones for the PowerShell\PowerShellForGitHub project.
+        Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get the milestones for the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Get-GitHubMilestone -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Milestone 1
-        Get milestone number 1 for the PowerShell\PowerShellForGitHub project.
+        Get milestone number 1 for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -202,9 +202,9 @@ function New-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+        New-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new Github milestone for the PowerShell\PowerShellForGitHub project.
+        Creates a new Github milestone for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -330,9 +330,9 @@ function Set-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
+        Set-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
 
-        Update an existing milestone for the PowerShell\PowerShellForGitHub project.
+        Update an existing milestone for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -451,9 +451,9 @@ function Remove-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
+        Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 
-        Deletes a Github milestone from the PowerShell\PowerShellForGitHub project.
+        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

@@ -193,8 +193,8 @@ $issueCounts | Sort-Object -Property Count -Descending
 #### Querying Pull Requests
 
 ```powershell
-# Getting all of the pull requests from the PowerShell\PowerShellForGitHub repository
-$issues = Get-GitHubIssue -OwnerName PowerShell -RepositoryName 'PowerShellForGitHub'
+# Getting all of the pull requests from the Microsoft\PowerShellForGitHub repository
+$issues = Get-GitHubIssue -OwnerName Microsoft -RepositoryName 'PowerShellForGitHub'
 ```
 
 ```powershell
@@ -282,27 +282,27 @@ $teamMembers = Get-GitHubTeamMembers -OrganizationName 'OrganizationName' -TeamN
 
 #### Getting Labels for a Repository
 ```powershell
-$labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration
+$labels = Get-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration
 ```
 
 #### Getting Labels for an Issue
 ```powershell
-$labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Issue 1
+$labels = Get-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Issue 1
 ```
 
 #### Getting Labels for a Milestone
 ```powershell
-$labels = Get-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Milestone 1
+$labels = Get-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Milestone 1
 ```
 
 #### Adding a New Label to a Repository
 ```powershell
-New-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Name TestLabel -Color BBBBBB
+New-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Name TestLabel -Color BBBBBB
 ```
 
 #### Removing a Label From a Repository
 ```powershell
-Remove-GitHubLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel
+Remove-GitHubLabel -OwnerName PowerShell -RepositoryName desiredstateconfiguration -Name TestLabel
 ```
 
 #### Adding Labels to an Issue
@@ -313,18 +313,18 @@ Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryNam
 
 #### Removing a Label From an Issue
 ```powershell
-Remove-GitHubIssueLabel -OwnerName Powershell -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
+Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color
 ```powershell
-Update-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Name TestLabel -NewName NewTestLabel -Color BBBB00
+Update-GitHubLabel -OwnerName Microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -NewName NewTestLabel -Color BBBB00
 ```
 
 #### Bulk Updating Labels in a Repository
 ```powershell
 $labels = @( @{ 'name' = 'Label1'; 'color' = 'BBBB00'; 'description' = 'My label description' }, @{ 'name' = 'Label2'; 'color' = 'FF00000' })
-Set-GitHubLabel -OwnerName Powershell -RepositoryName DesiredStateConfiguration -Label $labels
+Set-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Label $labels
 ```
 
 ----------
@@ -358,12 +358,12 @@ Get-GitHubUser
 
 #### Get all the forks for a repository
 ```powershell
-Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Create a new fork
 ```powershell
-New-GitHubRepositoryForm -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+New-GitHubRepositoryForm -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------
@@ -372,22 +372,22 @@ New-GitHubRepositoryForm -OwnerName PowerShell -RepositoryName PowerShellForGitH
 
 #### Get the referrer traffic for a repository
 ```powershell
-Get-GitHubReferrerTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+Get-GitHubReferrerTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get the popular content for a repository
 ```powershell
-Get-GitHubPathTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+Get-GitHubPathTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get the number of views for a repository
 ```powershell
-Get-GitHubViewTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per Week
+Get-GitHubViewTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Per Week
 ```
 
 #### Get the number of clones for a repository
 ```powershell
-Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Per Day
+Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Per Day
 ```
 
 ----------
@@ -396,22 +396,22 @@ Get-GitHubCloneTraffic -OwnerName PowerShell -RepositoryName PowerShellForGitHub
 
 #### Get assignees
 ```powershell
-Get-GitHubAsignee -OwnerName Powershell -RepositoryName PowerShellForGitHub
+Get-GitHubAsignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Check assignee permission
 ```powershell
-$HasPermission = Test-GitHubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+$HasPermission = Test-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 ```
 
 #### Add assignee to an issue
 ```powershell
-New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+New-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
 ```
 
 #### Remove assignee from an issue
 ```powershell
-Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
 ```
 
 ----------
@@ -420,32 +420,32 @@ Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub 
 
 #### Get comments from an issue
 ```powershell
-Get-GitHubIssueComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1
+Get-GitHubIssueComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
 #### Get comments from a repository
 ```powershell
-Get-GitHubRepositoryComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
+Get-GitHubRepositoryComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single comment
 ```powershell
-Get-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
+Get-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
 #### Adding a new comment to an issue
 ```powershell
-New-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+New-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 ```
 
 #### Editing an existing comment
 ```powershell
-Set-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 ```
 
 #### Removing a comment
 ```powershell
-Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -CommentID 1
+Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
 ----------
@@ -454,28 +454,28 @@ Remove-GitHubComment -OwnerName Powershell -RepositoryName PowerShellForGitHub -
 
 #### Get milestones from a repository
 ```powershell
-Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Sort DueOn -Direction Ascending -DueOn '2011-04-14T16:00:49Z'
+Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort DueOn -Direction Ascending -DueOn '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single milestone
 ```powershell
-Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
+Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
 #### Assign an existing issue to a new milestone
 ```powershell
-New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
-Update-GitHubIssue -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1
+New-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
+Update-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1
 ```
 
 #### Editing an existing milestone
 ```powershell
-Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
+Set-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
 ```
 
 #### Removing a milestone
 ```powershell
-Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
+Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
 ----------
@@ -484,15 +484,15 @@ Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
 
 #### Get events from a repository
 ```powershell
-Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub
+Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get events from an issue
 ```powershell
-Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -Issue 1
+Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
 #### Get a single event
 ```powershell
-Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub -EventID 1
+Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
 ```

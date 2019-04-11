@@ -39,9 +39,9 @@ function Get-GitHubEvent
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubEvent -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the events for the PowerShell\PowerShellForGitHub project.
+        Get the events for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

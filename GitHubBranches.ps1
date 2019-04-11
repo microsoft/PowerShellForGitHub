@@ -42,7 +42,7 @@ function Get-GitHubRepositoryBranch
         [PSCustomObject[]] List of branches within the given repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryBranch -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Gets all branches for the specified repository.
 

@@ -79,11 +79,11 @@ try
     Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
 
     Describe 'Creating a new fork for user' {
-        $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Context 'When a new fork is created' {
-            $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
-            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort Newest
+            $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+            $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
                 (@($newForks).Count - @($originalForks).Count) | Should be 1
@@ -98,11 +98,11 @@ try
     }
 
     Describe 'Creating a new fork for an org' {
-        $originalForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Context 'When a new fork is created' {
-            $repo = New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
-            $newForks = Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Sort Newest
+            $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
+            $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
                 (@($newForks).Count - @($originalForks).Count) | Should be 1
