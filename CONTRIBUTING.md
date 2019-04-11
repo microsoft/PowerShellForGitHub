@@ -254,7 +254,7 @@ If you want to add a new configuration value to the module, you must modify the 
    so that tab-completion and documentation gets auto-updated. You shouldn't have to add anything
    to the body of the method. Property names should be alphabetical.
  * Add a new explicit parameter to `Set-GitHubConfiguration` to receive the property, along with
-   updating the CBH (Comment Based Help) by adding a new `.PAREMETER` entry. You shouldn't
+   updating the CBH (Comment Based Help) by adding a new `.PARAMETER` entry. You shouldn't
    have to add anything to the body of the method. Parameters should be alphabetical save for the
    `SessionOnly` switch, which should be last.
 
