@@ -322,16 +322,21 @@ function Get-GitHubIssue
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethodMultipleResult @params
+    try
+    {
+        $result = Invoke-GHRestMethodMultipleResult @params
 
-    if ($IgnorePullRequests)
-    {
-        return ($result | Where-Object { $null -eq (Get-Member -InputObject $_ -Name pull_request) })
+        if ($IgnorePullRequests)
+        {
+            return ($result | Where-Object { $null -eq (Get-Member -InputObject $_ -Name pull_request) })
+        }
+        else
+        {
+            return $result
+        }
+
     }
-    else
-    {
-        return $result
-    }
+    finally {}
 }
 
 function Get-GitHubIssueTimeline

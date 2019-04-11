@@ -42,7 +42,6 @@
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
-        'NugetTools.ps1',
         'Telemetry.ps1',
         'UpdateCheck.ps1')
 
