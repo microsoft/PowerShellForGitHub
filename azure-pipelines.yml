@@ -13,9 +13,7 @@ steps:
 
   - powershell: |
        $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
-       $results | ForEach-Object {
-         Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)"
-      }
+       $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
     displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
 
   - powershell: |
