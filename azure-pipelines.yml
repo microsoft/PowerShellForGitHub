@@ -25,7 +25,9 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     displayName: 'Run Unit Tests via Pester'
     env:
-      avAccessToken: $(GitHubAccessToken)
+      ciAccessToken: $(GitHubAccessToken)
+      ciOwnerName: $(GitHubOwnerName)
+      ciOrganizatioName: $(GitHubOrganizationName)
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'

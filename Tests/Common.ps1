@@ -36,7 +36,7 @@ function Initialize-CommonTestSetup
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
 
-    if ([string]::IsNullOrEmpty($env:avAccessToken))
+    if ([string]::IsNullOrEmpty($env:ciAccessToken))
     {
         $message = @(
             'The tests are using the configuration settings defined in Tests\Config\Settings.ps1.',
@@ -48,12 +48,12 @@ function Initialize-CommonTestSetup
     }
     else
     {
-        $secureString = $env:avAccessToken | ConvertTo-SecureString -AsPlainText -Force
+        $secureString = $env:ciAccessToken | ConvertTo-SecureString -AsPlainText -Force
         $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
         Set-GitHubAuthentication -Credential $cred
 
-        $script:ownerName = $env:avOwnerName
-        $script:organizationName = $env:avOrganizationName
+        $script:ownerName = $env:ciOwnerName
+        $script:organizationName = $env:ciOrganizationName
 
         Write-Warning -Message 'This run is being executed in the AppVeyor environment.'
     }
