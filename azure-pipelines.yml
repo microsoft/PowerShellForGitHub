@@ -21,7 +21,7 @@ steps:
     displayName: 'Install Pester'
 
   - powershell: |
-       Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ./coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile /test-results.xml -OutputFormat NUnitXml
+       Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ./coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ./test-results.xml -OutputFormat NUnitXml
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     displayName: 'Run Unit Tests via Pester'
     env:
