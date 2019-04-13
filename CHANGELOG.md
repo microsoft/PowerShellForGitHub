@@ -1,6 +1,26 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+ [0.8.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.8.0) - (2019/04/12)
+### Features:
++ Added support for GitHub Enterprise users by adding a new `ApiHostName` configuration value.
+  ([more info](https://github.com/Microsoft/PowerShellForGitHub/blob/master/README.md#github-enterprise))
+
+### Fixes:
+* Renamed `ConvertFrom-Markdown` to `ConvertFrom-GitHubMarkdown` to avoid a conflict with
+  PSCore's new `ConvertFrom-Markdown` command.
+
+More Info:
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/101) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/d5acd0f73d97f6692914976ce9366456a59cbf70)
+
+  * [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/100) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/088f95b5a1340c7ce570e6e68a41967fd5760c46)
+
+Authors:
+   * [**@Cellivar**](https://github.com/Cellivar)
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
  [0.7.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.7.0) - (2019/03/15)
 ### Fixes:
 * Modified all [int] parameters to be [int64] to avoid out of bounds issues with large ID's.

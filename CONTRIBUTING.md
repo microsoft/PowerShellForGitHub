@@ -449,6 +449,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Pepe Rivera (@joseartrivera)](https://github.com/joseartrivera)**
 - **[Ethan Gottlieb (@etgottli)](https://github.com/etgottli)**
 - **[Fran&ccedil;ois-Xavier Cat (@lazywinadmin)](https://github.com/lazywinadmin)**
+- **[Cliff Chapman (@Cellivar)](https://github.com/Cellivar)**
 
 ----------
 
