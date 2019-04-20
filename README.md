@@ -23,7 +23,7 @@
 ## Overview
 
 This is a [PowerShell](https://microsoft.com/powershell) [module](https://technet.microsoft.com/en-us/library/dd901839.aspx)
-that provides command-line interaction and automation for for the [GitHub v3 API](https://developer.github.com/v3/).
+that provides command-line interaction and automation for the [GitHub v3 API](https://developer.github.com/v3/).
 
 ----------
 
