@@ -163,3 +163,143 @@ function Get-GitHubPullRequest
 
     return Invoke-GHRestMethodMultipleResult @params
 }
+
+function New-GitHubPullRequest
+{ 
+    <#
+    .SYNOPSIS
+    Create a new pull request in the specified repository.
+    
+    .DESCRIPTION
+    Opens a new pull request from the given branch into the given branch in the specified repository.
+
+    The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+    
+    .PARAMETER OwnerName
+    Parameter description
+    
+    .PARAMETER RepositoryName
+    Parameter description
+    
+    .PARAMETER Uri
+    Parameter description
+    
+    .PARAMETER Title
+    Parameter description
+    
+    .PARAMETER Head
+    Parameter description
+    
+    .PARAMETER Base
+    Parameter description
+    
+    .PARAMETER Body
+    Parameter description
+    
+    .PARAMETER MaintainerCanModify
+    Parameter description
+    
+    .PARAMETER Draft
+    Parameter description
+    
+    .PARAMETER AccessToken
+    Parameter description
+    
+    .PARAMETER NoStatus
+    Parameter description
+    
+    .EXAMPLE
+    An example
+    
+    .NOTES
+    General notes
+    #>
+    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [string] $Title,
+
+        [Parameter(Mandatory)]
+        [string] $Head,
+
+        [Parameter(Mandatory)]
+        [string] $Base,
+
+        [string] $Body,
+
+        [switch] $MaintainerCanModify,
+
+        [switch] $Draft,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.respositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
+    $description = "Creating pull request $Title for $RepositoryName"
+
+    $postBody = @{
+        'title' = $Title
+        'head' = $Head
+        'base' = $Base
+    }
+
+    if ($Body)
+    {
+        $postBody['body'] = $Body
+    }
+
+    if ($MaintainerCanModify)
+    {
+        $postBody['maintainer_can_modify'] = $true
+    }
+
+    if ($Draft)
+    {
+        $postBody['draft'] = $true
+        $acceptHeader = 'application/vnd.github.shadow-cat-preview+json'
+    }
+
+    $restParams = @{
+        'UriFragment' = $uriFragment
+        'Method' = 'Post'
+        'Description' = $description
+        'Body' = ConvertTo-Json -InputObject $postBody -Compress
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if ($acceptHeader)
+    {
+        $restParams['AcceptHeader'] = $acceptHeader
+    }
+
+    return Invoke-GHRestMethod @restParams
+}
