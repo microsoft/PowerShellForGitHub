@@ -191,19 +191,19 @@ function New-GitHubPullRequest
     .PARAMETER Title
         The title of the pull request to be created.
     
-    .PARAMETER HeadBranch
+    .PARAMETER Head
         The name of the head branch (the branch containing the changes to be merged).
 
         May also include the name of the owner fork, in the form "${fork}:${branch}".
     
-    .PARAMETER BaseBranch
+    .PARAMETER Base
         The name of the target branch of the pull request
         (where the changes in the head will be merged to).
 
     .PARAMETER HeadOwner
         The name of fork that the change is coming from.
         
-        Used as the prefix of $HeadBranch parameter in the form "${HeadOwner}:${HeadBranch}".
+        Used as the prefix of $Head parameter in the form "${HeadOwner}:${Head}".
 
         If unspecified, the unprefixed branch name is used,
         creating a pull request from the $OwnerName fork of the repository.
@@ -236,9 +236,15 @@ function New-GitHubPullRequest
             OwnerName = 'Microsoft'
             Repository = 'PowerShellForGitHub'
             Title = 'Add simple file to root'
-
+            Head = 'rjmholt:simple-file'
+            Base = 'master'
+            Body = "Adds a simple text file to the repository root.`n`nThis is an automated PR!"
+            MaintainerCanModify = $true
         }
-        $pr = New-GitHubPullRequest
+        $pr = New-GitHubPullRequest @prParams
+
+    .EXAMPLE
+        New-GitHubPullRequest -Uri 'https://github.com/PowerShell/PSScriptAnalyzer' -Title 'Add test' -Head simple-test -HeadOwner JamesWTruher -Base development -Draft -MaintainerCanModify
     #>
     
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -259,10 +265,10 @@ function New-GitHubPullRequest
         [string] $Title,
 
         [Parameter(Mandatory)]
-        [string] $HeadBranch,
+        [string] $Head,
 
         [Parameter(Mandatory)]
-        [string] $BaseBranch,
+        [string] $Base,
 
         [string] $HeadOwner,
 
@@ -281,17 +287,17 @@ function New-GitHubPullRequest
 
     if ($HeadOwner)
     {
-        if ($HeadBranch.Contains(':'))
+        if ($Head.Contains(':'))
         {
-            $message = "`$HeadBranch ('$HeadBranch') was specified with an owner prefix, but `$HeadOwner ('$HeadOwner') was also specified." +
-                " Either specify `$HeadBranch in '<owner>:<branch>' format, or set `$HeadBranch = '<branch>' and `$HeadOwner = '<owner>'."
+            $message = "`$Head ('$Head') was specified with an owner prefix, but `$HeadOwner ('$HeadOwner') was also specified." +
+                " Either specify `$Head in '<owner>:<branch>' format, or set `$Head = '<branch>' and `$HeadOwner = '<owner>'."
 
             Write-Log -Message $message -Level Error
             throw $message
         }
 
-        # $HeadBranch does not contain ':' - add the owner fork prefix
-        $HeadBranch = "${HeadOwner}:${HeadBranch}"
+        # $Head does not contain ':' - add the owner fork prefix
+        $Head = "${HeadOwner}:${Head}"
     }
 
     $elements = Resolve-RepositoryElements
@@ -308,8 +314,8 @@ function New-GitHubPullRequest
 
     $postBody = @{
         'title' = $Title
-        'head' = $HeadBranch
-        'base' = $BaseBranch
+        'head' = $Head
+        'base' = $Base
     }
 
     if ($Body)
