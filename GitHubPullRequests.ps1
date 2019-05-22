@@ -248,21 +248,43 @@ function New-GitHubPullRequest
     #>
     
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements')]
+    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements_Title')]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='Elements_Title')]
+        [Parameter(ParameterSetName='Elements_Issue')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='Elements_Title')]
+        [Parameter(ParameterSetName='Elements_Issue')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri_Title')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri_Issue')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements_Title')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri_Title')]
         [string] $Title,
+
+        [Parameter(ParameterSetName='Elements_Title')]
+        [Parameter(ParameterSetName='Uri_Title')]
+        [string] $Body,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements_Issue')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri_Issue')]
+        [int] $Issue,
 
         [Parameter(Mandatory)]
         [string] $Head,
@@ -271,8 +293,6 @@ function New-GitHubPullRequest
         [string] $Base,
 
         [string] $HeadOwner,
-
-        [string] $Body,
 
         [switch] $MaintainerCanModify,
 
@@ -310,17 +330,26 @@ function New-GitHubPullRequest
     }
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
-    $description = "Creating pull request $Title for $RepositoryName"
 
     $postBody = @{
-        'title' = $Title
         'head' = $Head
         'base' = $Base
     }
 
-    if ($Body)
+    if ($PSBoundParameters.ContainsKey('Title'))
     {
-        $postBody['body'] = $Body
+        $description = "Creating pull request $Title in $RepositoryName"
+        $postBody['title'] = $Title
+
+        if ($Body)
+        {
+            $postBody['body'] = $Body
+        }
+    }
+    else
+    {
+        $description = "Creating pull request for issue $Issue in $RepositoryName"
+        $postBody['issue'] = $Issue
     }
 
     if ($MaintainerCanModify)
