@@ -347,7 +347,8 @@ function New-GitHubPullRequest
         $description = "Creating pull request $Title in $RepositoryName"
         $postBody['title'] = $Title
 
-        if ([string]::IsNullOrWhiteSpace($Body))
+        # Body may be whitespace, although this might not be useful
+        if ($Body)
         {
             $postBody['body'] = $Body
         }
