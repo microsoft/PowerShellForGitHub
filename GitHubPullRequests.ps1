@@ -236,7 +236,7 @@ function New-GitHubPullRequest
             OwnerName = 'Microsoft'
             Repository = 'PowerShellForGitHub'
             Title = 'Add simple file to root'
-            Head = 'rjmholt:simple-file'
+            Head = 'octocat:simple-file'
             Base = 'master'
             Body = "Adds a simple text file to the repository root.`n`nThis is an automated PR!"
             MaintainerCanModify = $true
