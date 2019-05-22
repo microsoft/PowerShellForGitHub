@@ -278,6 +278,7 @@ function New-GitHubPullRequest
         [Parameter(
             Mandatory,
             ParameterSetName='Uri_Title')]
+        [ValidateNotNullOrEmpty()]
         [string] $Title,
 
         [Parameter(ParameterSetName='Elements_Title')]
