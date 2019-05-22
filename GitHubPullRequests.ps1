@@ -117,7 +117,7 @@ function Get-GitHubPullRequest
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
     $description = "Getting pull requests for $RepositoryName"
-    if (-not [String]::IsNullOrEmpty($PullRequest))
+    if (-not [String]::IsNullOrWhiteSpace($PullRequest))
     {
         $uriFragment = $uriFragment + "/$PullRequest"
         $description = "Getting pull request $PullRequest for $RepositoryName"
@@ -191,6 +191,12 @@ function New-GitHubPullRequest
     .PARAMETER Title
         The title of the pull request to be created.
     
+    .PARAMETER Body
+        The text description of the pull request.
+    
+    .PARAMETER Issue
+        The GitHub issue number to open the pull request to address.
+    
     .PARAMETER Head
         The name of the head branch (the branch containing the changes to be merged).
 
@@ -207,9 +213,6 @@ function New-GitHubPullRequest
 
         If unspecified, the unprefixed branch name is used,
         creating a pull request from the $OwnerName fork of the repository.
-    
-    .PARAMETER Body
-        The text description of the pull request.
     
     .PARAMETER MaintainerCanModify
         If set, allows repository maintainers to commit changes to the
@@ -245,6 +248,9 @@ function New-GitHubPullRequest
 
     .EXAMPLE
         New-GitHubPullRequest -Uri 'https://github.com/PowerShell/PSScriptAnalyzer' -Title 'Add test' -Head simple-test -HeadOwner octocat -Base development -Draft -MaintainerCanModify
+
+    .EXAMPLE
+        New-GitHubPullRequest -Uri 'https://github.com/PowerShell/PSScriptAnalyzer' -Issue 642 -Head simple-test -HeadOwner octocat -Base development -Draft
     #>
     
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -305,7 +311,7 @@ function New-GitHubPullRequest
 
     Write-InvocationLog
 
-    if ($HeadOwner)
+    if (-not [string]::IsNullOrWhiteSpace($HeadOwner))
     {
         if ($Head.Contains(':'))
         {
@@ -341,7 +347,7 @@ function New-GitHubPullRequest
         $description = "Creating pull request $Title in $RepositoryName"
         $postBody['title'] = $Title
 
-        if ($Body)
+        if ([string]::IsNullOrWhiteSpace($Body))
         {
             $postBody['body'] = $Body
         }
