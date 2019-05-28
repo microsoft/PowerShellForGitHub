@@ -117,7 +117,7 @@ function Get-GitHubPullRequest
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
     $description = "Getting pull requests for $RepositoryName"
-    if (-not [String]::IsNullOrWhiteSpace($PullRequest))
+    if (-not [String]::IsNullOrEmpty($PullRequest))
     {
         $uriFragment = $uriFragment + "/$PullRequest"
         $description = "Getting pull request $PullRequest for $RepositoryName"
