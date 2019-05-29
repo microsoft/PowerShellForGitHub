@@ -329,7 +329,7 @@ function New-GitHubPullRequest
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.respositoryName
+    $RepositoryName = $elements.repositoryName
 
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
