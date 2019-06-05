@@ -35,6 +35,8 @@ try
         $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Context 'When a new fork is created' {
+            <# Temporary hack: #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+
             $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
             $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 

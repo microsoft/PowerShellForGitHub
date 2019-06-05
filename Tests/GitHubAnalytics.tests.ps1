@@ -242,6 +242,8 @@ try
     }
 
     Describe 'Getting repositories from organization' {
+        <# Temporary hack: #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+
         $original = Get-GitHubRepository -OrganizationName $script:organizationName
 
         $repositoryName = [guid]::NewGuid().Guid
