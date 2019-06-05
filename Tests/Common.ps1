@@ -32,7 +32,7 @@ function Initialize-CommonTestSetup
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
     param()
 
-    $moduleRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
 
