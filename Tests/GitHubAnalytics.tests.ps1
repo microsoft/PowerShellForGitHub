@@ -246,7 +246,6 @@ try
 
         $original = Get-GitHubRepository -OrganizationName $script:organizationName
 
-        $repositoryName = [guid]::NewGuid().Guid
         $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
         $current = Get-GitHubRepository -OrganizationName $script:organizationName
 
