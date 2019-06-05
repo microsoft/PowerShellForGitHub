@@ -55,7 +55,7 @@ function Initialize-CommonTestSetup
         $script:ownerName = $env:ciOwnerName
         $script:organizationName = $env:ciOrganizationName
 
-        Write-Warning -Message 'This run is being executed in the AppVeyor environment.'
+        Write-Warning -Message 'This run is being executed in the Azure Dev Ops environment.'
     }
 
     $script:accessTokenConfigured = Test-GitHubAuthenticationConfigured
