@@ -56,6 +56,8 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
+    *   Advanced
+        *   [Migrating blog comments to github issues](https://lazywinadmin.com/2019/04/moving_blog_comments.html)
 
 ----------
 
