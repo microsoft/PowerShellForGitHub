@@ -56,8 +56,8 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
-    *   Advanced
-        *   [Migrating blog comments to github issues](https://lazywinadmin.com/2019/04/moving_blog_comments.html)
+    *   [Advanced](#advanced)
+        *   [Migrating blog comments to github issues](#migrating-blog-comments-to-github-issues)
 
 ----------
 
@@ -497,4 +497,107 @@ Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 
 #### Get a single event
 ```powershell
 Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
+```
+
+----------
+
+### Advanced
+
+#### Migrating blog comments to github issues
+
+I used this module to migrate my blog comments from Disqus to Github Issues. I'm using Utterances App to display the Github Issues on each blog posts. [See this blog post for more details](https://lazywinadmin.com/2019/04/moving_blog_comments.html)
+
+```powershell
+$GithubSplat = @{
+    OwnerName = 'lazywinadmin'
+    RepositoryName = 'lazywinadmin.github.io'
+}
+$BlogUrl = 'https://lazywinadmin.com'
+
+# Retrieve existing issues
+$issues = Get-GitHubIssue @githubsplat
+
+# Process each threads with their comments
+$BlogPosts |
+Sort-Object name -Descending |
+ForEach-Object -Process{
+
+    # Capture current blog thread
+    $BlogPost = $_
+
+    # Issue Title, replace the first / and
+    #  remove the html at the end of the name
+    $IssueTitle = $BlogPost.name -replace '^\/' -replace '\.html'
+
+    # lookup for existing issue
+    $IssueObject = $issues|
+        Where-Object -filterscript {$_.title -eq $IssueTitle}
+
+    if(-not $IssueObject)
+    {
+        # Build Header of the post
+        $IssueHeader = $BlogPost.group.ThreadTitle |
+          select-object -first 1
+
+        # Define blog post link
+        $BlogPostLink = "$($BlogUrl)$($BlogPost.name)"
+
+        # Define body of the issue
+        $Body = @"
+# $IssueHeader
+
+[$BlogPostLink]($BlogPostLink)
+
+<!--
+Imported via PowerShell on $(Get-Date -Format o)
+-->
+"@
+        # Create an issue
+        $IssueObject = New-GitHubIssue @githubsplat `
+            -Title $IssueTitle `
+            -Body $body `
+            -Label 'blog comments'
+    }
+
+    # Sort comment by createdAt
+    $BlogPost.group|
+      Where-Object {$_.isspam -like '*false*'} |
+      Sort-Object createdAt |
+      ForEach-Object{
+
+        # Current comment
+        $CurrenComment = $_
+
+        # Author update
+        #  we replace my post author name :)
+        $AuthorName = $($CurrenComment.AuthorName)
+        switch ($AuthorName) 
+        {
+            'Xavier C' {$AuthorName='Francois-Xavier Cat'}
+            default {}
+        }
+
+        # Define body of the comment
+        $CommentBody = @"
+
+## **Author**: $AuthorName
+**Posted on**: ``$($CurrenComment.createdAt)``
+$($CurrenComment.message)
+
+<!--
+Imported via PowerShell on $(Get-Date -Format o)
+Json_original_message:
+$($CurrenComment|Select-Object -ExcludeProperty raw|convertTo-Json)
+-->
+"@
+        # Create Comment
+        New-GitHubComment @githubsplat `
+            -Issue $IssueObject.number `
+            -Body $CommentBody
+    }
+    # Close issue
+    Update-GitHubIssue @githubsplat `
+        -Issue $IssueObject.number `
+        -State Closed
+}
 ```
