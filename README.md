@@ -82,7 +82,7 @@ Get-Help Set-GitHubConfiguration -ShowWindow
 
 For example, if you tend to work on the same repository, you can save yourself a lot of typing
 by configuring the default OwnerName and/or RepositoryName that you work with.  You can always
-override these values by expicitly providing a value for the paramater in an individual command,
+override these values by explicitly providing a value for the parameter in an individual command,
 but for the common scenario, you'd have less typing to do.
 
  ```powershell
