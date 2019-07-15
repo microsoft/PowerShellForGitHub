@@ -153,7 +153,7 @@ function Invoke-GHRestMethod
 
     $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
 
-    if ($hostName -eq "github.com")
+    if ($hostName -eq 'github.com')
     {
         $url = "https://api.$hostName/$UriFragment"
     }
