@@ -2,20 +2,20 @@
 # Licensed under the MIT License.
 
 @{
-    defaultAcceptHeader  = 'application/vnd.github.v3+json'
-    mediaTypeVersion     = 'v3'
+    defaultAcceptHeader = 'application/vnd.github.v3+json'
+    mediaTypeVersion = 'v3'
     squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
     symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
 
-}.GetEnumerator() | ForEach-Object {
-    Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
-}
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
 
 Set-Variable -Scope Script -Option ReadOnly -Name ValidBodyContainingRequestMethods -Value ('Post', 'Patch', 'Put', 'Delete')
 
 function Invoke-GHRestMethod
 {
-    <#
+<#
     .SYNOPSIS
         A wrapper around Invoke-WebRequest that understands the Store API.
 
@@ -116,7 +116,7 @@ function Invoke-GHRestMethod
 
         [string] $TelemetryEventName = $null,
 
-        [hashtable] $TelemetryProperties = @{ },
+        [hashtable] $TelemetryProperties = @{},
 
         [string] $TelemetryExceptionBucket = $null,
 
@@ -137,7 +137,7 @@ function Invoke-GHRestMethod
     # Telemetry-related
     $stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
     $localTelemetryProperties = @{
-        'UriFragment'       = $UriFragment
+        'UriFragment' = $UriFragment
         'WaitForCompletion' = ($WaitForCompletion -eq $true)
     }
     $TelemetryProperties.Keys | ForEach-Object { $localTelemetryProperties[$_] = $TelemetryProperties[$_] }
@@ -170,7 +170,7 @@ function Invoke-GHRestMethod
     }
 
     $headers = @{
-        'Accept'     = $AcceptHeader
+        'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
     }
 
@@ -195,7 +195,7 @@ function Invoke-GHRestMethod
         {
             if ($PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
             {
-                $params = @{ }
+                $params = @{}
                 $params.Add("Uri", $url)
                 $params.Add("Method", $Method)
                 $params.Add("Headers", $headers)
@@ -214,7 +214,7 @@ function Invoke-GHRestMethod
                     }
                 }
 
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                 $result = Invoke-WebRequest @params
                 if ($Method -eq 'Delete')
                 {
@@ -238,7 +238,7 @@ function Invoke-GHRestMethod
                     . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
                     . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
 
-                    $params = @{ }
+                    $params = @{}
                     $params.Add("Uri", $Url)
                     $params.Add("Method", $Method)
                     $params.Add("Headers", $Headers)
@@ -259,7 +259,7 @@ function Invoke-GHRestMethod
 
                     try
                     {
-                        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                         Invoke-WebRequest @params
                     }
                     catch [System.Net.WebException]
@@ -270,7 +270,7 @@ function Invoke-GHRestMethod
                         # information that we actually care about *now*, and then we'll throw our own exception
                         # that is just a JSON object with the data that we'll later extract for processing in
                         # the main catch.
-                        $ex = @{ }
+                        $ex = @{}
                         $ex.Message = $_.Exception.Message
                         $ex.StatusCode = $_.Exception.Response.StatusCode
                         $ex.StatusDescription = $_.Exception.Response.StatusDescription
@@ -381,18 +381,18 @@ function Invoke-GHRestMethod
         if ($ExtendedResult)
         {
             $finalResultEx = @{
-                'result'             = $finalResult
-                'statusCode'         = $result.StatusCode
-                'requestId'          = $result.Headers['X-GitHub-Request-Id']
-                'nextLink'           = $nextLink
-                'link'               = $result.Headers['Link']
-                'lastModified'       = $result.Headers['Last-Modified']
-                'ifNoneMatch'        = $result.Headers['If-None-Match']
-                'ifModifiedSince'    = $result.Headers['If-Modified-Since']
-                'eTag'               = $result.Headers['ETag']
-                'rateLimit'          = $result.Headers['X-RateLimit-Limit']
+                'result' = $finalResult
+                'statusCode' = $result.StatusCode
+                'requestId' = $result.Headers['X-GitHub-Request-Id']
+                'nextLink' = $nextLink
+                'link' = $result.Headers['Link']
+                'lastModified' = $result.Headers['Last-Modified']
+                'ifNoneMatch' = $result.Headers['If-None-Match']
+                'ifModifiedSince' = $result.Headers['If-Modified-Since']
+                'eTag' = $result.Headers['ETag']
+                'rateLimit' = $result.Headers['X-RateLimit-Limit']
                 'rateLimitRemaining' = $result.Headers['X-RateLimit-Remaining']
-                'rateLimitReset'     = $result.Headers['X-RateLimit-Reset']
+                'rateLimitReset' = $result.Headers['X-RateLimit-Reset']
             }
 
             return ([PSCustomObject] $finalResultEx)
@@ -530,7 +530,7 @@ function Invoke-GHRestMethod
 
 function Invoke-GHRestMethodMultipleResult
 {
-    <#
+<#
     .SYNOPSIS
         A special-case wrapper around Invoke-GHRestMethod that understands GET URI's
         which support the 'top' and 'max' parameters.
@@ -605,7 +605,7 @@ function Invoke-GHRestMethodMultipleResult
         shown to the user until a response is returned from the REST request.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [OutputType([Object[]])]
     param(
         [Parameter(Mandatory)]
@@ -620,7 +620,7 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $TelemetryEventName = $null,
 
-        [hashtable] $TelemetryProperties = @{ },
+        [hashtable] $TelemetryProperties = @{},
 
         [string] $TelemetryExceptionBucket = $null,
 
@@ -645,18 +645,17 @@ function Invoke-GHRestMethodMultipleResult
 
     try
     {
-        do
-        {
+        do {
             $params = @{
-                'UriFragment'              = $nextLink
-                'Method'                   = 'Get'
-                'Description'              = $currentDescription
-                'AcceptHeader'             = $AcceptHeader
-                'ExtendedResult'           = $true
-                'AccessToken'              = $AccessToken
-                'TelemetryProperties'      = $telemetryProperties
+                'UriFragment' = $nextLink
+                'Method' = 'Get'
+                'Description' = $currentDescription
+                'AcceptHeader' = $AcceptHeader
+                'ExtendedResult' = $true
+                'AccessToken' = $AccessToken
+                'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
-                'NoStatus'                 = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
             }
 
             $result = Invoke-GHRestMethod @params
@@ -685,7 +684,7 @@ function Invoke-GHRestMethodMultipleResult
 
 function Split-GitHubUri
 {
-    <#
+<#
     .SYNOPSIS
         Extracts the relevant elements of a GitHub repository Uri and returns the requested element.
 
@@ -723,22 +722,22 @@ function Split-GitHubUri
 
         PowerShell
 #>
-    [CmdletBinding(DefaultParametersetName = 'RepositoryName')]
+    [CmdletBinding(DefaultParametersetName='RepositoryName')]
     param
     (
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string] $Uri,
 
-        [Parameter(ParameterSetName = 'OwnerName')]
+        [Parameter(ParameterSetName='OwnerName')]
         [switch] $OwnerName,
 
-        [Parameter(ParameterSetName = 'RepositoryName')]
+        [Parameter(ParameterSetName='RepositoryName')]
         [switch] $RepositoryName
     )
 
     $components = @{
-        ownerName      = [String]::Empty
+        ownerName = [String]::Empty
         repositoryName = [String]::Empty
     }
 
@@ -766,7 +765,7 @@ function Split-GitHubUri
 
 function Resolve-RepositoryElements
 {
-    <#
+<#
     .SYNOPSIS
         Determines the OwnerName and RepositoryName from the possible parameter values.
 
@@ -791,8 +790,8 @@ function Resolve-RepositoryElements
         [PSCutomObject] - The OwnerName and RepositoryName elements to be used
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "This was the most accurate name that I could come up with.  Internal only anyway.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="This was the most accurate name that I could come up with.  Internal only anyway.")]
     param
     (
         $BoundParameters = (Get-Variable -Name PSBoundParameters -Scope 1 -ValueOnly),
@@ -801,10 +800,10 @@ function Resolve-RepositoryElements
     )
 
     $validate = -not $DisableValidation
-    $elements = @{ }
+    $elements = @{}
 
     if ($BoundParameters.ContainsKey('Uri') -and
-        ($BoundParameters.ContainsKey('OwnerName') -or $BoundParameters.ContainsKey('RepositoryName')))
+       ($BoundParameters.ContainsKey('OwnerName') -or $BoundParameters.ContainsKey('RepositoryName')))
     {
         $message = "Cannot specify a Uri AND individual OwnerName/RepositoryName.  Please choose one or the other."
         Write-Log -Message $message -Level Error
@@ -860,7 +859,7 @@ $script:datePropertyNames = @(
 
 filter ConvertTo-SmarterObject
 {
-    <#
+<#
     .SYNOPSIS
         Updates the properties of the input object to be object themselves when the conversion
         is possible.
@@ -893,8 +892,8 @@ filter ConvertTo-SmarterObject
     if ($InputObject -is [System.Collections.IList])
     {
         $InputObject |
-        ConvertTo-SmarterObject |
-        Write-Output
+            ConvertTo-SmarterObject |
+            Write-Output
     }
     elseif ($InputObject -is [PSCustomObject])
     {
@@ -937,7 +936,7 @@ filter ConvertTo-SmarterObject
 
 function Get-MediaAcceptHeader
 {
-    <#
+<#
     .DESCRIPTION
         Returns a formatted AcceptHeader based on the requested MediaType
 
