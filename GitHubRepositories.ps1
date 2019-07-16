@@ -268,10 +268,10 @@ function Get-GitHubRepository
 {
 <#
     .SYNOPSIS
-        Retrieves information about a repository or list of repoistories on GitHub.
+        Retrieves information about a repository or list of repositories on GitHub.
 
     .DESCRIPTION
-        Retrieves information about a repository or list of repoistories on GitHub.
+        Retrieves information about a repository or list of repositories on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
