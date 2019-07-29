@@ -153,7 +153,14 @@ function Invoke-GHRestMethod
 
     $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
 
-    $url = "https://api.$hostName/$UriFragment"
+    if ($hostName -eq 'github.com')
+    {
+        $url = "https://api.$hostName/$UriFragment"
+    }
+    else
+    {
+        $url = "https://$hostName/api/v3/$UriFragment"
+    }
 
     # It's possible that we are directly calling the "nextLink" from a previous command which
     # provides the full URI.  If that's the case, we'll just use exactly what was provided to us.
@@ -966,4 +973,3 @@ function Get-MediaAcceptHeader
 
     return ($acceptHeaders -join ',')
 }
-
