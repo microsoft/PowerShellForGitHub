@@ -285,8 +285,7 @@ Set-GitHubConfiguration -LogRequestBody
 ----------
 
 ### Testing
-[![Build status](https://ci.appveyor.com/api/projects/status/vsfq8kxo2et2dn7i?svg=true
-)](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub)
+[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 #### Installing Pester
 This module supports testing using the [Pester UT framework](https://github.com/pester/Pester).
@@ -348,8 +347,7 @@ There are many more nuances to code-coverage, see
 [its documentation](https://github.com/pester/Pester/wiki/Code-Coverage) for more details.
 
 #### Automated Tests
-[![Build status](https://ci.appveyor.com/api/projects/status/vsfq8kxo2et2dn7i?svg=true
-)](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub)
+[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 These test are configured to automatically execute upon any update to the `master` branch
 on the `HowardWolosky` fork of `PowerShellForGitHub`.  (At this time, we don't have the proper

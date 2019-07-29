@@ -7,7 +7,7 @@
 #>
 
 # This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
@@ -242,17 +242,18 @@ try
     }
 
     Describe 'Getting repositories from organization' {
+        <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+
         $original = Get-GitHubRepository -OrganizationName $script:organizationName
 
-        $repositoryName = [guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName -OrganizationName $script:organizationName
+        $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
         $current = Get-GitHubRepository -OrganizationName $script:organizationName
 
         It 'Should return expected number of organization repositories' {
             (@($current).Count - @($original).Count) | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:organizationName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -Uri $repo.svn_url
     }
 
     Describe 'Getting unique contributors from contributors array' {
