@@ -57,7 +57,7 @@
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
     *   [Advanced](#advanced)
-        *   [Migrating blog comments to github issues](#migrating-blog-comments-to-github-issues)
+        *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
 ----------
 
