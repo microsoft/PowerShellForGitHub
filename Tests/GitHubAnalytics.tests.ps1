@@ -242,7 +242,7 @@ try
     }
 
     Describe 'Getting repositories from organization' {
-        <# Temporary hack: #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+        <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
 
         $original = Get-GitHubRepository -OrganizationName $script:organizationName
 
