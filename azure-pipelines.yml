@@ -5,8 +5,10 @@
 
 trigger:
 - master
-pr:
-- master
+
+# Intionally not having the PR trigger, as we want to kick off PR validation manually after code inspection
+#pr:
+#- master
 
 pool:
   vmImage: 'vs2017-win2016'
