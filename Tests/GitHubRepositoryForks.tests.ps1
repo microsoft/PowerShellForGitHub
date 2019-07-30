@@ -7,7 +7,7 @@
 #>
 
 # This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
@@ -35,6 +35,8 @@ try
         $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Context 'When a new fork is created' {
+            <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+
             $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
             $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 

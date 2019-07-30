@@ -32,11 +32,11 @@ function Initialize-CommonTestSetup
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
     param()
 
-    $moduleRootPath = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
 
-    if ([string]::IsNullOrEmpty($env:avAccessToken))
+    if ([string]::IsNullOrEmpty($env:ciAccessToken))
     {
         $message = @(
             'The tests are using the configuration settings defined in Tests\Config\Settings.ps1.',
@@ -48,14 +48,14 @@ function Initialize-CommonTestSetup
     }
     else
     {
-        $secureString = $env:avAccessToken | ConvertTo-SecureString -AsPlainText -Force
+        $secureString = $env:ciAccessToken | ConvertTo-SecureString -AsPlainText -Force
         $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
         Set-GitHubAuthentication -Credential $cred
 
-        $script:ownerName = $env:avOwnerName
-        $script:organizationName = $env:avOrganizationName
+        $script:ownerName = $env:ciOwnerName
+        $script:organizationName = $env:ciOrganizationName
 
-        Write-Warning -Message 'This run is being executed in the AppVeyor environment.'
+        Write-Warning -Message 'This run is being executed in the Azure Dev Ops environment.'
     }
 
     $script:accessTokenConfigured = Test-GitHubAuthenticationConfigured

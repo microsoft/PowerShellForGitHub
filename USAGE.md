@@ -56,6 +56,8 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
+    *   [Advanced](#advanced)
+        *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
 ----------
 
@@ -495,4 +497,22 @@ Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 
 #### Get a single event
 ```powershell
 Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
+```
+
+----------
+
+### Advanced
+
+#### Migrating blog comments to GitHub issues
+@LazyWinAdmin used this module to migrate his blog comments from Disqus to GitHub Issues. [See blog post](https://lazywinadmin.com/2019/04/moving_blog_comments.html) for full details.
+
+```powershell
+# Create an issue
+$IssueObject = New-GitHubIssue @githubsplat -Title $IssueTitle -Body $body -Label 'blog comments'
+
+# Create Comment
+New-GitHubComment @githubsplat -Issue $IssueObject.number -Body $CommentBody
+
+# Close issue
+Update-GitHubIssue @githubsplat -Issue $IssueObject.number -State Closed
 ```

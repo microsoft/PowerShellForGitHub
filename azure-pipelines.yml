@@ -1,0 +1,55 @@
+#
+# Continuous Integration (CI)
+# This pipeline validates the module for StaticAnalysis and Unit Test issues.
+#
+
+trigger:
+- master
+
+# Intionally not having the PR trigger, as we want to kick off PR validation manually after code inspection
+#pr:
+#- master
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+steps:
+  - powershell: |
+      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+    displayName: 'Install PSScriptAnalyzer'
+
+  - powershell: |
+       $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
+       $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
+    displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
+
+  - powershell: |
+      Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+    displayName: 'Install Pester'
+
+  - powershell: |
+       Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ./coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ./test-results.xml -OutputFormat NUnitXml
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    displayName: 'Run Unit Tests via Pester'
+    env:
+      ciAccessToken: $(GitHubAccessToken)
+      ciOwnerName: $(GitHubOwnerName)
+      ciOrganizatioName: $(GitHubOrganizationName)
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testRunTitle: 'Windows Test Results for Pester'
+      buildPlatform: 'Windows'
+      testRunner: NUnit
+      testResultsFiles: './test-results.xml'
+      failTaskOnFailedTests: true # required to fail build when tests fail
+    condition: succeededOrFailed()
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish code coverage'
+    inputs:
+      codeCoverageTool: 'JaCoCo'
+      summaryFileLocation: './coverage.xml'
+      failIfCoverageEmpty: true
+    condition: and(succeededOrFailed(), eq(variables['System.PullRequest.IsFork'], false))
