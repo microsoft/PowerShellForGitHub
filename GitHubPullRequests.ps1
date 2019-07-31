@@ -165,66 +165,66 @@ function Get-GitHubPullRequest
 }
 
 function New-GitHubPullRequest
-{ 
+{
     <#
     .SYNOPSIS
         Create a new pull request in the specified repository.
-    
+
     .DESCRIPTION
         Opens a new pull request from the given branch into the given branch in the specified repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-    
+
     .PARAMETER OwnerName
         Owner of the repository.
         If not supplied here, the DefaultOwnerName configuration property value will be used.
-    
+
     .PARAMETER RepositoryName
         Name of the repository.
         If not supplied here, the DefaultRepositoryName configuration property value will be used.
-    
+
     .PARAMETER Uri
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
-    
+
     .PARAMETER Title
         The title of the pull request to be created.
-    
+
     .PARAMETER Body
         The text description of the pull request.
-    
+
     .PARAMETER Issue
         The GitHub issue number to open the pull request to address.
-    
+
     .PARAMETER Head
         The name of the head branch (the branch containing the changes to be merged).
 
         May also include the name of the owner fork, in the form "${fork}:${branch}".
-    
+
     .PARAMETER Base
         The name of the target branch of the pull request
         (where the changes in the head will be merged to).
 
     .PARAMETER HeadOwner
         The name of fork that the change is coming from.
-        
+
         Used as the prefix of $Head parameter in the form "${HeadOwner}:${Head}".
 
         If unspecified, the unprefixed branch name is used,
         creating a pull request from the $OwnerName fork of the repository.
-    
+
     .PARAMETER MaintainerCanModify
         If set, allows repository maintainers to commit changes to the
         head branch of this pull request.
-    
+
     .PARAMETER Draft
         If set, opens the pull request as a draft.
-    
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-    
+
     .PARAMETER NoStatus
         If this switch is specified, long-running commands will run on the main thread
         with no commandline status update.  When not specified, those commands run in
@@ -233,7 +233,7 @@ function New-GitHubPullRequest
 
     .OUTPUTS
         [PSCustomObject] An object describing the created pull request.
-    
+
     .EXAMPLE
         $prParams = @{
             OwnerName = 'Microsoft'
@@ -252,7 +252,7 @@ function New-GitHubPullRequest
     .EXAMPLE
         New-GitHubPullRequest -Uri 'https://github.com/PowerShell/PSScriptAnalyzer' -Issue 642 -Head simple-test -HeadOwner octocat -Base development -Draft
     #>
-    
+
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements_Title')]
     param(
