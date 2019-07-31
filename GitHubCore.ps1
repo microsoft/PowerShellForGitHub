@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+if ($foo -eq $null)
+{
+    # static analysis failure
+}
+
 @{
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
