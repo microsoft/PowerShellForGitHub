@@ -3,27 +3,23 @@
 
 <#
 .Synopsis
-   Tests for GitHubLabels.ps1 module
+   Tests for GitHubReleases.ps1 module
 #>
 
 # This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
+$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
 {
-
-
     if ($accessTokenConfigured)
     {
         Describe 'Getting releases from repository' {
             $ownerName = "dotnet"
             $repositoryName = "core"
-
             $releases = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName
 
             Context 'When getting all releases' {
-
                 It 'Should return multiple releases' {
                     $releases.Count | Should BeGreaterThan 1
                 }
@@ -70,29 +66,22 @@ try
         }
 
         Describe 'Getting releases from default owner/repository' {
-
             $originalOwnerName = Get-GitHubConfiguration -Name DefaultOwnerName
             $originalRepositoryName = Get-GitHubConfiguration -Name DefaultRepositoryName
 
             try {
-
                 Set-GitHubConfiguration -DefaultOwnerName "dotnet"
                 Set-GitHubConfiguration -DefaultRepositoryName "core"
-
                 $releases = Get-GitHubRelease
 
                 Context 'When getting all releases' {
-
                     It 'Should return multiple releases' {
                         $releases.Count | Should BeGreaterThan 1
                     }
                 }
-
             } finally {
-
                 Set-GitHubConfiguration -DefaultOwnerName $originalOwnerName
                 Set-GitHubConfiguration -DefaultRepositoryName $originalRepositoryName
-
             }
         }
     }

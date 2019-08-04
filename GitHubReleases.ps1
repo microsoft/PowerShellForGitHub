@@ -27,7 +27,7 @@ function Get-GitHubRelease
 
     .PARAMETER ReleaseId
         Specific releaseId of a release.
-        This is an option parameter which can limit the results to a single release.
+        This is an optional parameter which can limit the results to a single release.
 
     .PARAMETER Latest
         Retrieve only the latest release.
@@ -48,24 +48,38 @@ function Get-GitHubRelease
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRelease -OwnerName
+        Get-GitHubRelease
 
         Gets all releases for the current owner/repository.
 
     .EXAMPLE
         Get-GitHubRelease -ReleaseId 12345
 
-        Get
+        Get a specific release for the current owner/repository
 
     .EXAMPLE
-        Get-GitHubRelease -OctoCat OctoCat
+        Get-GitHubRelease -OwnerName dotnet -RepositoryName core
+
+        Gets all releases from the dotnet\core repository.
 
     .EXAMPLE
-        Get-GitHubRelease -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Get-GitHubRelease -Uri https://github.com/microsoft/PowerShellForGitHub
+
+        Gets all releases from the microsoft/PowerShellForGitHub repository.
 
     .EXAMPLE
-        Get-GitHubRelease -OrganizationName PowerShell
+        Get-GitHubRelease -OwnerName dotnet -RepositoryName core -Latest
 
+        Gets the latest release from the dotnet\core repository.
+
+    .EXAMPLE
+        Get-GitHubRelease -Uri https://github.com/microsoft/PowerShellForGitHub -Tag 0.8.0
+
+        Gets the release tagged with 0.8.0 from the microsoft/PowerShellForGitHub repository.
+
+    .NOTES
+        Information about published releases are available to everyone. Only users with push
+        access will receive listings for draft releases.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -151,26 +165,26 @@ function Get-GitHubRelease
 
     if(-not [String]::IsNullOrEmpty($ReleaseId))
     {
-        $telemetryProperties['ReleaseId'] = Get-PiiSafeString -PlainText $ReleaseId
+        $telemetryProperties['ProvidedReleaseId'] = $true
 
         $uriFragment += "/$ReleaseId"
-        $description = "Getting releases for $OwnerName/$RepositoryName/releases/$ReleaseId"
+        $description = "Getting release information for $ReleaseId from $OwnerName/$RepositoryName"
     }
 
     if($Latest)
     {
-        $telemetryProperties['Latest'] = Get-PiiSafeString -PlainText "latest"
+        $telemetryProperties['GetLatest'] = $true
 
         $uriFragment += "/latest"
-        $description = "Getting releases for $OwnerName/$RepositoryName/releases/latest"
+        $description = "Getting latest release from $OwnerName/$RepositoryName"
     }
 
     if(-not [String]::IsNullOrEmpty($Tag))
     {
-        $telemetryProperties['Tag'] = Get-PiiSafeString -PlainText $Tag
+        $telemetryProperties['ProvidedTag'] = $true
 
         $uriFragment += "/tags/$Tag"
-        $description = "Getting releases for $OwnerName/$RepositoryName/releases/tag/$Tag"
+        $description = "Getting releases tagged with $Tag from $OwnerName/$RepositoryName"
     }
 
     $params = @{
