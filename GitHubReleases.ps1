@@ -50,12 +50,12 @@ function Get-GitHubRelease
     .EXAMPLE
         Get-GitHubRelease
 
-        Gets all releases for the current owner/repository.
+        Gets all releases for the default configured owner/repository.
 
     .EXAMPLE
         Get-GitHubRelease -ReleaseId 12345
 
-        Get a specific release for the current owner/repository
+        Get a specific release for the default configured owner/repository
 
     .EXAMPLE
         Get-GitHubRelease -OwnerName dotnet -RepositoryName core
