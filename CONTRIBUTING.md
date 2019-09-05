@@ -30,9 +30,11 @@ Looking for information on how to use this module?  Head on over to [README.md](
     *   [Automated Tests](#automated-tests)
     *   [New Test Guidelines](#new-test-guidelines)
 *   [Releasing](#releasing)
+    *   [Updating the Version Number](#updating-the-version-number)
+        *   [Semantic Versioning](#semantic-versioning)
     *   [Updating the CHANGELOG](#updating-the-changelog)
     *   [Adding a New Tag](#adding-a-new-tag)
-    *   [Publish a Signed Update to PowerShell Gallery](#publish-a-signed-update-to-PowerShellGallery)
+    *   [Running the Release Build](#running-the-release-build)
 *   [Contributors](#contributors)
 *   [Legal and Licensing](#legal-and-licensing)
 
@@ -375,10 +377,31 @@ any possible name collisions with existing objects on the executing user's accou
 
 ### Releasing
 
-If you are a maintainer:
+When new code changes are checked in to the repo, most users of the module will not see those changes
+unless an updated module gets published by Microsoft to
+[PowerShell Gallery](https://www.powershellgallery.com/packages/PowerShellForGitHub).
 
-Ensure that the version number of the module is updated with every pull request that is being
-accepted.
+The general guidance on publishing an update is that changes should not be in `master` more than
+one week without having been published through PowerShell Gallery as well.
+
+When you are ready to publish a new update, the following steps are necessary:
+  * Create (and complete) a changelist that:
+    * Updates the [version number](#updating-the-version-number)
+    * Updates the [CHANGELOG.md](./CHANGELOG.md) (and [contributors](#contributors) list if necessary)
+  * [Add a tag](#adding-a-new-tag) for the new version to the repo
+  * [Queue a new release build](#running-the-release-build)
+
+#### Updating the Version Number
+
+Whenever new changes to the module are to be released to PowerShellGallery, it is important to
+properly update the version of the module.  The version number is stored in the module manifest
+([PowerShellForGitHub.psd1](https://github.com/microsoft/PowerShellForGitHub/blob/master/PowerShellForGitHub.psd1)),
+and it should be updated following the [Semantic Versioning](#semantic-versioning) standard.
+
+> The update to the module manifest should happen in the same changelist where the
+> [CHANGELOG is updated](#updating-the-changelog).
+
+##### Semantic Versioning
 
 This project follows [semantic versioning](http://semver.org/) in the following way:
 
@@ -389,49 +412,53 @@ Where:
 * `<minor>` - If this is a feature update, increment by one and be sure to reset `<patch>` to 0.
 * `<patch>` - If this is a bug fix, leave `<minor>` alone and increment this by one.
 
-When new code changes are checked in to the repo, the module must be signed and published by
-Microsoft to [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerShellForGitHub).
-
-Once the new version has been pulled into master, there are additional tasks to perform:
-
-  * Ensure that [all tests pass](#testing) and that the module is still [static analysis clean](#static-analysis)
-  * Update [CHANGELOG.md](./CHANGELOG.md)
-  * Add a tag for that version to the repo
-  * Publish a _signed_ update to [PowerShellGallery](https://www.powershellgallery.com/packages/PowerShellForGitHub/).
-
 #### Updating the CHANGELOG
 To update [CHANGELOG.md](./CHANGELOG.md), just duplicate the previous section and update it to be
 relevant for the new release.  Be sure to update all of the sections:
   * The version number
-  * The hard path to the change (we'll get that path working in a moment)
+  * The hard path to the change (we'll get that path working [in a moment](#adding-a-new-tag))
   * The release date
   * A brief list of all the changes (use a `-` for the bullet point if it's fixing a bug, or a `+` for a feature)
   * The link to the pull request (pr) (so that the discussion on the change can be easily reviewed) and the changelist (cl)
   * The author (and a link to their profile)
   * If it's a new contributor, also add them to the [Contributors](#contributors) list below.
 
-Then get a new pull request out for that change to CHANGELOG.
+Then get a new pull request out for that change and for the change to the
+[module manifest's version number](#updating-the-version-number).
 
 #### Adding a New Tag
 To add a new tag:
    1. Make sure that you're in a clone of the actual repo and not your own private fork.
-   2. Make sure that you have checked out `master` and that it's fully up-to-date
-   3. Run `git tag -a '<version number>'`
-   4. In the pop-up editor, give a one-line summary of the change (that you possibly already wrote for the CHANGELOG)
-   5. Save and close the editor
-   6. Run `git push --tags` to upload the new tag you just created
+   2. Make sure that you've already merged in the change that updates the module version.
+   3. Make sure that you have checked out `master` and that it's fully up-to-date
+   4. Run `git tag -a '<version number>'`
+   5. In the pop-up editor, just copy the content from the CHANGELOG that you just wrote, but remove
+      any of the `###` heading blocks since those will be dropped from git as comments instead of
+      headings.
+   6. Save and close the editor
+   7. Run `git push --tags` to upload the new tag you just created
 
 If you want to make sure you get these tags on any other forks/clients, you can run
 `git fetch origin --tags` or `git fetch upstream --tags`, or whatever you've named the source to be.
 
-#### Publish a Signed Update to PowerShellGallery
-The final steps is getting the module updated on
-[PowerShellGallery](https://www.powershellgallery.com/packages/PowerShellForGitHub/)
-so that it is easy for users to adopt the changes.
+> Doing this makes it possible for users to simply run `git checkout <version number>` to quickly
+> set their clone to the state of any previous version.
+> It also has the added benefit that GitHub will automatically create a new "Release" in the
+> Releases tab of the project for this new version.
 
-The module files should be signed by Microsoft prior to publishing.
-Instructions for signing the files and for then publishing the update to PowerShellGallery
-can be found in the [internal Microsoft repo for this project](https://microsoft.visualstudio.com/Apps/_git/eng.powershellforgithub).
+#### Running the Release Build
+
+A [YAML definition exists](https://github.com/microsoft/PowerShellForGitHub/blob/master/build/pipelines/azire-pipelines.release.yaml)
+that will run the equivalent of the CI build, followed by the necessary steps to sign the module
+files and publish the update to PowerShell Gallery.  This YAML file can only be run by a Microsoft
+maintainer because it accesses internal services to sign the module files with Microsoft's certificate.
+
+> **Microsoft Maintainers**: You can access the internal pipeline which can execute the release build
+> [here](https://microsoft.visualstudio.com/Apps/_build?definitionId=43898).  Simply hit `Queue` to
+> get a new module released.
+>
+> Instructions for updating the `PowerShellGalleryApiKey` secret in the pipeline can be found in the
+> [internal Microsoft repo for this project](https://microsoft.visualstudio.com/Apps/_git/eng.powershellforgithub).
 
 ----------
 

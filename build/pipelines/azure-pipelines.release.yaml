@@ -1,0 +1,44 @@
+#
+# Release
+# This pipeline validates the module for Static Analysis and Unit Test issues,
+# it then signs it and publishes the updated module to PowerShellGallery.
+# This pipeline relies on Microsoft-internal resources to run (for signing the module).
+#
+
+# ---------------------------------------------------------
+# REQUIRED: These variables MUST be set within the pipeline
+# * PowerShellGalleryApiKey - {secret} The API key needed to publish the updated module to PowerShellGallery.
+# * GitHubAccessToken       - {secret} The access token with sufficient permissions to modify the
+#                             accounts specified by GitHubOwnerName and GitHubOrganizatioName.
+# * GitHubOwnerName         - The default "owner" that will be used for tests.
+# * GitHubOrganizationName  - The default "organization" that will be used for tests.
+# ---------------------------------------------------------
+
+# Intentionally having no triggers.  This pipeline should be kicked-off manually when
+# an updated version of the module is ready to be published.
+trigger: none
+pr: none
+
+variables:
+  ModuleName: PowerShellForGitHub
+  ReleasePath: $(BUILD.STAGINGDIRECTORY)\staging\$(ModuleName)
+  SigningConfigFile: $(BUILD.STAGINGDIRECTORY)\PoShFileSignConfig.xml
+
+jobs:
+- job: Validate
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - template: ./templates/run-staticAnalysis.yaml
+  - template: ./templates/run-unitTests.yaml
+
+- job: Release
+  dependsOn: Validate
+  pool:
+    name: Package ES Lab E
+  workspace:
+    clean: outputs
+  steps:
+  - checkout: self
+    clean: true
+  - template: ./templates/prepare-release-internalOnly.yaml
