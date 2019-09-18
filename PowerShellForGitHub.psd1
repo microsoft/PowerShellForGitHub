@@ -93,6 +93,7 @@
         'New-GitHubIssue',
         'New-GitHubLabel',
         'New-GitHubMilestone',
+        'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
         'Remove-GithubAssignee',
