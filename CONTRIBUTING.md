@@ -448,6 +448,15 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Ethan Gottlieb (@etgottli)](https://github.com/etgottli)**
 - **[Fran&ccedil;ois-Xavier Cat (@lazywinadmin)](https://github.com/lazywinadmin)**
 - **[Cliff Chapman (@Cellivar)](https://github.com/Cellivar)**
+- **[Robert Holt (@rjmholt)](https://github.com/rjmholt)**
+- **[Steven Maglio (@smaglio81)](https://github.com/smaglio81)**
+- **[Kiran Reddy (@v2kiran)](https://github.com/v2kiran)**
+- **[Darío Hereñú (@kant)](https://github.com/kant)**
+- **[@wikijm](https://github.com/wikijm)**
+- **[Przemysław Kłys (@PrzemyslawKlys)](https://github.com/PrzemyslawKlys)**
+
+
+
 
 ----------
 
