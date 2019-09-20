@@ -1,0 +1,93 @@
+#
+# This template will sign the module and publish it to PowerShellGallery.
+# The signing job relies on Microsoft-internal resources and will not work outside of Microsoft.
+# - If you wish to use this yourself, you'll need to replace the signing task (which securely
+#   accesses a Microsoft-internal certificate) with a task that can sign the files with a certificate
+#   that you do have access to.
+#
+
+#--------------------------------------------------------------------------------------------------
+# This template is dependent on the following pipeline variables being configured within the pipeline,
+# only one of which MUST be set in the pipeline configuation as opposed to the yaml file.
+#
+# SET THIS IN THE PIPELINE
+#  1. PowerShellGalleryApiKey - The API key needed to publish the updated module to PowerShellGallery.
+#                              It should be configured as a "secret".
+#
+# OPTIONALLY OVERRIDE THESE IN THE PIPELINE
+#  2. ModuleName              - The name of this module that is being released.
+#  3. ReleasePath             - A staging directory that the module will be copied to in order to be
+#                              signed and released from.  It is *IMPERATIVE* that the last segment
+#                              in this path is the name of the module.
+#  4. SigningApprover         - Who has the authority to submit the signing request for the files.
+#                              If left undefined, the signing task will use a preset list of approvers.
+#  5. SigningConfigFile       - The path to the XML config file that will be used for submitting
+#                              the batched request of module files to be signed.
+#--------------------------------------------------------------------------------------------------
+
+steps:
+  # This must be the first task in the job definition, since it modifies the build environment
+  # in ways other tasks would not expect (for example, it clears the artifacts directory).
+  - task: PkgESSetupBuild@10
+    displayName: Initialize Package ES
+    inputs:
+      productName: $(ModuleName)
+      disableWorkspace: true
+    env:
+      XES_DISABLEPROV: true
+
+  - powershell: |
+      if (Test-Path -Path $(ReleasePath) -ErrorAction Ignore)
+      {
+          $null = Remove-Item -Path $(ReleasePath) -Recurse -Force
+      }
+
+      $null = Copy-Item -Path ./ -Destination $(ReleasePath) -Recurse -Force
+
+      # Remove the ".git" directory which we don't want.
+      # Doing this via Copy-Item's -Exclude parameter doesn't seem to work right.
+      $null = Remove-Item -Path (Join-Path -Path $(ReleasePath) -ChildPath '.git') -Recurse -Force
+    displayName: 'Create copy of module for release signing'
+
+  - powershell: |
+      $localParams = @{
+        'ModulePath' = "$(ReleasePath)"
+        'OutPath' = "$(SigningConfigFile)"
+        'ModuleName' = "$(ModuleName)"
+      }
+
+      # $(SigningApprover) may or may not be set in the build pipeline.
+      if ($null -ne $SigningApprover)
+      {
+          $localParams['Approver'] = $(SigningApprover)
+      }
+
+      ./build/scripts/Write-SignConfigXml.ps1 @localParams
+    displayName: 'Create the sign config xml file'
+
+  - task: PkgESCodeSign@10
+    displayName: Submit module files to Package ES code signing service
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      signConfigXml: $(SigningConfigFile)
+      inPathRoot: $(ReleasePath)
+      outPathRoot: $(ReleasePath)
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish signed module artifact
+    inputs:
+      pathtoPublish: $(ReleasePath)
+      artifactName: SignedModuleForRelease
+
+  - powershell: |
+      Publish-Module -Path $(ReleasePath) -NuGetApiKey $(PowerShellGalleryApiKey) -Verbose
+    displayName: 'Publish module to PowerShellGallery'
+
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
+  - task: PkgESLateTasks@10
+    displayName: Build Finalization
+    env:
+      XES_DISABLEPROV: true

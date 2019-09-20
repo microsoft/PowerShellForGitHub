@@ -1,0 +1,14 @@
+#
+# This template contains the necessary jobs to run PSScriptAnalyzer on the repo and
+# report the results.
+#
+
+steps:
+  - powershell: |
+      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+    displayName: 'Install PSScriptAnalyzer'
+
+  - powershell: |
+       $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
+       $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
+    displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
