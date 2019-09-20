@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # The account that the tests will be running under
-$script:ownerName = 'PowerShellForGitHubTeam'
+$script:ownerName = 'smaglio81'
 
 # The organization that the tests will be running under
-$script:organizationName = 'PowerShellForGitHubTeamTestOrg'
+$script:organizationName = 'ucsb'

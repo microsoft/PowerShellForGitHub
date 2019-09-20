@@ -481,6 +481,9 @@ function Reset-GitHubConfiguration
         Reset-GitHubConfiguration
 
         Deletes the local configuration file and loads in all default configration values.
+
+    .NOTES
+        This command will not clear your authentication token.  Please use Clear-GitHubAuthentication to accomplish that.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -504,7 +507,7 @@ function Reset-GitHubConfiguration
 
     Initialize-GitHubConfiguration
 
-    Write-Log -Message "This has not cleared your authentication token.  Call Clear-GitHubAuthentication to accomplish that." -Level Warning
+    Write-Log -Message "This has not cleared your authentication token.  Call Clear-GitHubAuthentication to accomplish that." -Level Verbose
 }
 
 function Read-GitHubConfiguration
@@ -909,6 +912,9 @@ function Clear-GitHubAuthentication
         Clear-GitHubAuthentication
 
         Clears out any GitHub API token from memory, as well as from local file storage.
+
+    .NOTES
+        This command will not clear your configuration settings.  Please use Reset-GitHubConfiguration to accomplish that.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -937,7 +943,7 @@ function Clear-GitHubAuthentication
         }
     }
 
-    Write-Log -Message "This has not cleared your configuration settings.  Call Reset-GitHubConfiguration to accomplish that." -Level Warning
+    Write-Log -Message "This has not cleared your configuration settings.  Call Reset-GitHubConfiguration to accomplish that." -Level Verbose
 }
 
 function Get-AccessToken
