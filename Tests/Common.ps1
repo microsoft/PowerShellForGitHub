@@ -33,10 +33,15 @@ function Initialize-CommonTestSetup
     param()
 
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+    $settingsPath = Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1'
+    . $settingsPath
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
 
-    if ([string]::IsNullOrEmpty($env:ciAccessToken))
+    $originalSettingsSha256Hash = "944D5BB450AD2C49F77DAE6C472FEF774B108CD2CB6A0DBF45EF4BBB7FE25D56"
+    $currentSettingsSha256Hash = (Get-FileHash -Path $settingsPath -Algorithm SHA256).Hash
+    $isSettingsUnaltered = $originalSettingsSha256Hash -eq $currentSettingsSha256Hash
+
+    if ([string]::IsNullOrEmpty($env:ciAccessToken) -and $isSettingsUnaltered)
     {
         $message = @(
             'The tests are using the configuration settings defined in Tests\Config\Settings.ps1.',
@@ -48,14 +53,16 @@ function Initialize-CommonTestSetup
     }
     else
     {
-        $secureString = $env:ciAccessToken | ConvertTo-SecureString -AsPlainText -Force
-        $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
-        Set-GitHubAuthentication -Credential $cred
+        if(-not [string]::IsNullOrEmpty($env:ciAccessToken)) {
+            $secureString = $env:ciAccessToken | ConvertTo-SecureString -AsPlainText -Force
+            $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
+            Set-GitHubAuthentication -Credential $cred
 
-        $script:ownerName = $env:ciOwnerName
-        $script:organizationName = $env:ciOrganizationName
+            $script:ownerName = $env:ciOwnerName
+            $script:organizationName = $env:ciOrganizationName
 
-        Write-Warning -Message 'This run is being executed in the Azure Dev Ops environment.'
+            Write-Warning -Message 'This run is being executed in the Azure Dev Ops environment.'
+        }
     }
 
     $script:accessTokenConfigured = Test-GitHubAuthenticationConfigured
