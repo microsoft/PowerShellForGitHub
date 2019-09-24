@@ -522,7 +522,7 @@ function Update-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
-    .PARAMETER DisallowRebaseMerge
+    .PARAMETER Archived
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
 
@@ -610,7 +610,7 @@ function Update-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
-    if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = (-not $Archived.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$ReposistoryName"
