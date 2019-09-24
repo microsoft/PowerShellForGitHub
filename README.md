@@ -1,6 +1,6 @@
 # PowerShellForGitHub PowerShell Module
 
-[![[GitHub version]](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub)
+[![[GitHub version]](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub)
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 #### Table of Contents
