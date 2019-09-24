@@ -613,7 +613,7 @@ function Update-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$ReposistoryName"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'Description' =  "Updating $RepositoryName"
