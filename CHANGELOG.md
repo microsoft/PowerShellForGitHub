@@ -1,6 +1,15 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+  [0.9.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.2) - (2019/11/11)
+### Fixes:
+- Reduces the warning noise seen during execution of the unit tests.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/130) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/89f69f1132505f04e6b2ac38b6f5a93aef6ac947)
+
+Author: [**@smaglio81**](https://github.com/smaglio81)
+
+------
+
  [0.9.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.1) - (2019/09/24)
 ### Fixes:
 - Ensure Milestone `due_on` always gets set to the desired date.
@@ -12,8 +21,7 @@
   - The `Archived` switch's value was being incorrectly inverted
     [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/135) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/9bdb37c053f98f108d346050622b609d8488fd45)
 
-Authors:
-   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
