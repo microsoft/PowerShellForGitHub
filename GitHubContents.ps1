@@ -63,16 +63,10 @@ function Get-GitHubContents
     }
 
     $uriFragment = [String]::Empty
-    $description = [String]::Empty
-    if ($OwnerName -xor $RepositoryName)
-    {
-        $message = 'You must specify BOTH Owner Name and Repository Name when one is provided.'
-        Write-Log -Message $message -Level Error
-        throw $message
-    }
+    $description = [String]::Empty    
 
     #repos/:owner/:repo/contents/:path
-    $uriFragment = "/repos/$OwnerName/$RepositoryName/content"
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents"
     
 
     if ($PSBoundParameters.ContainsKey('Path'))
