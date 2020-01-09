@@ -65,9 +65,7 @@ function Get-GitHubContents
     $uriFragment = [String]::Empty
     $description = [String]::Empty    
 
-    #repos/:owner/:repo/contents/:path
-    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents"
-    
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents"    
 
     if ($PSBoundParameters.ContainsKey('Path'))
     {
