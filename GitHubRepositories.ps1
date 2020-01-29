@@ -461,6 +461,98 @@ function Get-GitHubRepository
     return Invoke-GHRestMethodMultipleResult @params
 }
 
+function Rename-GitHubRepository
+{
+<#
+    .SYNOPSIS
+        Rename a GitHub repository
+
+    .DESCRIPTION
+        Renames a GitHub repository with the new name provided.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Uri
+        Uri for the repository to rename. You can supply this directly, or more easily by
+        using Get-GitHubRepository to get the repository as you please, and then piping the result to this cmdlet
+
+    .PARAMETER NewName
+        The new name to set for the given GitHub repository
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Get-GitHubRepository -Owner myGithubUsername -RepositoryName myRepoToReanme | Rename-GitHubRepository -NewName myNewRepoNameIsSoSweet
+        Get the given repository and rename it with the new name
+
+    .EXAMPLE
+        Get-GitHubRepository -Uri https://github.com/mystuff/myRepoToReanme | Rename-GitHubRepository -NewName myNewRepoNameIsSoSweet
+        Get the repository at the given URI and rename it with the new name
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/mystuff/myRepoToReanme -NewName myNewRepoNameIsSoSweet
+        Rename the repository that is at the given URI with the new name
+
+    .EXAMPLE
+        New-GitHubRepositoryFork -Uri https://github.com/someoneElse/coolRepoForStuff | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+        Fork the repository from the given URI, and then rename the newly forked repository with the new name (appending '_fork' to the name of new repo)
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParametersetName='Uri',
+        ConfirmImpact="High")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias("html_url")]
+        [string] $Uri,
+
+        [parameter(Mandatory)][String]$NewName,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    process {
+        if ($PSCmdlet.ShouldProcess("$Uri", "Rename repository to '$NewName'")) {
+            Write-InvocationLog -Invocation $MyInvocation
+            $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+            $OwnerName = $elements.ownerName
+            $RepositoryName = $elements.repositoryName
+
+            $telemetryProperties = @{
+                'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+                'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            } ## end hsh
+
+            $params = @{
+                'UriFragment' = "repos/$OwnerName/$RepositoryName"
+                'Method' = 'Patch'
+                Body = @{name = $NewName} | ConvertTo-Json
+                'Description' =  "Renaming repository at '$Uri' to '$NewName'"
+                'AccessToken' = $AccessToken
+                'TelemetryEventName' = $MyInvocation.MyCommand.Name
+                'TelemetryProperties' = $telemetryProperties
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+            } ## end hsh
+
+            return Invoke-GHRestMethod @params
+        } ## end if
+    } ## end process
+}
+
 function Update-GitHubRepository
 {
 <#

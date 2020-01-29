@@ -102,6 +102,7 @@
         'Remove-GitHubLabel',
         'Remove-GitHubMilestone',
         'Remove-GitHubRepository',
+        'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
         'Set-GitHubAuthentication',
