@@ -490,20 +490,21 @@ function Rename-GitHubRepository
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRepository -Owner myGithubUsername -RepositoryName myRepoToReanme | Rename-GitHubRepository -NewName myNewRepoNameIsSoSweet
-        Get the given repository and rename it with the new name
+        Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
+        Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+
 
     .EXAMPLE
-        Get-GitHubRepository -Uri https://github.com/mystuff/myRepoToReanme | Rename-GitHubRepository -NewName myNewRepoNameIsSoSweet
-        Get the repository at the given URI and rename it with the new name
+        Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world
+        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
-        Rename-GitHubRepository -Uri https://github.com/mystuff/myRepoToReanme -NewName myNewRepoNameIsSoSweet
-        Rename the repository that is at the given URI with the new name
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
-        New-GitHubRepositoryFork -Uri https://github.com/someoneElse/coolRepoForStuff | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
-        Fork the repository from the given URI, and then rename the newly forked repository with the new name (appending '_fork' to the name of new repo)
+        New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+        Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -535,7 +536,7 @@ function Rename-GitHubRepository
             $telemetryProperties = @{
                 'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
                 'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-            } ## end hsh
+            }
 
             $params = @{
                 'UriFragment' = "repos/$OwnerName/$RepositoryName"
@@ -546,11 +547,11 @@ function Rename-GitHubRepository
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name
                 'TelemetryProperties' = $telemetryProperties
                 'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-            } ## end hsh
+            }
 
             return Invoke-GHRestMethod @params
-        } ## end if
-    } ## end process
+        }
+    }
 }
 
 function Update-GitHubRepository
