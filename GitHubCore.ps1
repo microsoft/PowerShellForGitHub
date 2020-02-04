@@ -127,7 +127,7 @@ function Invoke-GHRestMethod
     # be coming from the Location header in a previous response.  Either way, we don't want there
     # to be a leading "/" or trailing '/'
     if ($UriFragment.StartsWith('/')) { $UriFragment = $UriFragment.Substring(1) }
-    if ($UriFragment.EndsWIth('/')) { $UriFragment = $UriFragment.Substring(0, $UriFragment.Length - 1) }
+    if ($UriFragment.EndsWith('/')) { $UriFragment = $UriFragment.Substring(0, $UriFragment.Length - 1) }
 
     if ([String]::IsNullOrEmpty($Description))
     {

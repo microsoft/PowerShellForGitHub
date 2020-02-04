@@ -71,7 +71,6 @@ function Get-GitHubContent {
     $telemetryProperties = @{
         'OwnerName'      = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Path'           = $PSBoundParameters.ContainsKey('Path')
     }
 
     $uriFragment = [String]::Empty
