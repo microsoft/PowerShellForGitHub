@@ -512,6 +512,12 @@ function Rename-GitHubRepository
         ConfirmImpact="High")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
+        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
@@ -527,7 +533,8 @@ function Rename-GitHubRepository
     )
 
     process {
-        if ($PSCmdlet.ShouldProcess("$Uri", "Rename repository to '$NewName'")) {
+        if ($PSCmdlet.ShouldProcess($(if ($PSCmdlet.ParameterSetName -eq "Uri") {$Uri} else {$OwnerName, $RepositoryName -join "/"}), "Rename repository to '$NewName'"))
+        {
             Write-InvocationLog -Invocation $MyInvocation
             $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
             $OwnerName = $elements.ownerName
@@ -541,7 +548,7 @@ function Rename-GitHubRepository
             $params = @{
                 'UriFragment' = "repos/$OwnerName/$RepositoryName"
                 'Method' = 'Patch'
-                Body = @{name = $NewName} | ConvertTo-Json
+                Body = ConvertTo-Json -InputObject @{name = $NewName}
                 'Description' =  "Renaming repository at '$Uri' to '$NewName'"
                 'AccessToken' = $AccessToken
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name

@@ -15,17 +15,29 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 try
 {
     Describe 'Modifying repositories' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-        $strNewRepoName = "$($repo.Name)_renamed"
-        $renamedRepo = $repo | Rename-GitHubRepository -NewName $strNewRepoName -Confirm:$false
 
-        Context 'For renaming a repository' {
-            It "Should have the expected new repository name" {
+        Context -Name 'For renaming a repository' -Fixture {
+            BeforeEach -Scriptblock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+                $strSuffixToAddToRepo = "_renamed"
+                $strNewRepoName = "$($repo.Name)$strSuffixToAddToRepo"
+                Write-Verbose "New repo name shall be: '$strNewRepoName'"
+            }
+            It "Should have the expected new repository name - by URI" {
+                $renamedRepo = $repo | Rename-GitHubRepository -NewName $strNewRepoName -Confirm:$false
                 $renamedRepo.Name | Should be $strNewRepoName
             }
-        }
 
-        Remove-GitHubRepository -Uri $renamedRepo.svn_url
+            It "Should have the expected new repository name - by Elements" {
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $strNewRepoName -Confirm:$false
+                $renamedRepo.Name | Should be $strNewRepoName
+            }
+            ## cleanup temp testing repository
+            AfterEach -Scriptblock {
+                ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$strSuffixToAddToRepo" -Verbose
+            }
+        }
     }
 }
 finally
