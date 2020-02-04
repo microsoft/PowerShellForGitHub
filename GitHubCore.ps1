@@ -997,6 +997,7 @@ function Get-ContentMediaType
         Returns a formatted AcceptHeader for v3 of the response object
 #>
     [CmdletBinding()]
+    [OutputType([String])]
     param(
         [ValidateSet('Raw', 'Html')]
         [string] $MediaType = 'Raw'

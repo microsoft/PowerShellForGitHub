@@ -54,7 +54,7 @@
         'Get-GitHubAssignee',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
-        'Get-GitHubComment',        
+        'Get-GitHubComment',
         'Get-GitHubConfiguration',
         'Get-GitHubContent',
         'Get-GitHubEmoji',

@@ -10,7 +10,7 @@ function Get-GitHubContent {
         If not supplied here, the DefaultOwnerName configuration property value will be used.
     .PARAMETER RepositoryName
         Name of the repository.
-        If not supplied here, the DefaultRepositoryName configuration property value will be used.    
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
     .PARAMETER Path
         The file path for which to retrieve contents
     .PARAMETER MediaType
@@ -25,12 +25,12 @@ function Get-GitHubContent {
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-        
+
     .EXAMPLE
         Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -MediaType Html
 
         Get the Html output for the README.md file
-    
+
     .EXAMPLE
         Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path LICENSE
 
