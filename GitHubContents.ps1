@@ -1,8 +1,7 @@
-function Get-GitHubContents
-{
-<#
+function Get-GitHubContent {
+    <#
     .SYNOPSIS
-        Retrieve content from files on GitHub.
+        Retrieve the contents of a file or directory in a repository on GitHub.
     .DESCRIPTION
         Retrieve content from files on GitHub.
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
@@ -16,10 +15,8 @@ function Get-GitHubContents
         The file path for which to retrieve contents
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw - Use the Raw media type to retrieve the contents of the file.
+        Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -28,22 +25,37 @@ function Get-GitHubContents
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+        
+    .EXAMPLE
+        Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -MediaType Html
+
+        Get the Html output for the README.md file
+    
+    .EXAMPLE
+        Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path LICENSE
+
+        Get the Binary file output for the LICENSE file
+
+    .EXAMPLE
+        Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path Tests
+
+        List the files within the "Tests" path of the repository
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParametersetName = 'Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
         [string] $Path,
 
-        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
-        [string] $MediaType ='Raw',
+        [ValidateSet('Raw', 'Html')]
+        [string] $MediaType = 'Raw',
 
         [string] $AccessToken,
 
@@ -57,34 +69,33 @@ function Get-GitHubContents
     $RepositoryName = $elements.repositoryName
 
     $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'OwnerName'      = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Path' = $PSBoundParameters.ContainsKey('Path')
+        'Path'           = $PSBoundParameters.ContainsKey('Path')
     }
 
     $uriFragment = [String]::Empty
-    $description = [String]::Empty    
+    $description = [String]::Empty
 
-    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents"    
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents"
 
-    if ($PSBoundParameters.ContainsKey('Path'))
-    {
+    if ($PSBoundParameters.ContainsKey('Path')) {
+        $Path = $Path.TrimStart("\\", "/")
         $uriFragment += "/$Path"
         $description = "Getting content for $Path in $RepositoryName"
     }
-    else 
-    {
+    else {
         $description = "Getting all content for in $RepositoryName"
     }
 
     $params = @{
-        'UriFragment' = $uriFragment
-        'Description' =  $description
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AcceptHeader $symmetraAcceptHeader)
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'UriFragment'         = $uriFragment
+        'Description'         = $description
+        'AcceptHeader'        = (Get-ContentMediaType -MediaType $MediaType)
+        'AccessToken'         = $AccessToken
+        'TelemetryEventName'  = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus'            = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params

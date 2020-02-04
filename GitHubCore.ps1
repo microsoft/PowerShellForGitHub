@@ -973,3 +973,34 @@ function Get-MediaAcceptHeader
 
     return ($acceptHeaders -join ',')
 }
+
+function Get-ContentMediaType
+{
+<#
+    .DESCRIPTION
+        Returns a formatted AcceptHeader based on the requested MediaType for working with GitHub Content,
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER MediaType
+        The format in which the API will return the body of the comment or issue.
+
+        Raw - Return the raw contents of a file. This is the default if you do not pass any specific media type.
+        Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
+
+    .PARAMETER AcceptHeader
+        The accept header that should be included with the MediaType accept header.
+
+    .EXAMPLE
+        Get-ContentMediaType -MediaType Raw
+
+        Returns a formatted AcceptHeader for v3 of the response object
+#>
+    [CmdletBinding()]
+    param(
+        [ValidateSet('Raw', 'Html')]
+        [string] $MediaType = 'Raw'
+    )
+
+    return "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())"
+}
