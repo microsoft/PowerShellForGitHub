@@ -10,11 +10,10 @@
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
+try {
     # Define Script-scoped, readonly, hidden variables.
     @{
-        repoGuid = [Guid]::NewGuid().Guid
+        repoGuid       = [Guid]::NewGuid().Guid
         readmeFileName = "README.md"
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
@@ -23,17 +22,39 @@ try
     # Need this twice since we need to use the above var here
     @{
         htmlOutput = "<div id=`"file`" class=`"md`" data-path=`"README.md`"><article class=`"markdown-body entry-content p-5`" itemprop=`"text`"><h1><a id=`"user-content-$repoGuid`" class=`"anchor`" aria-hidden=`"true`" href=`"#$repoGuid`"><svg class=`"octicon octicon-link`" viewBox=`"0 0 16 16`" version=`"1.1`" width=`"16`" height=`"16`" aria-hidden=`"true`"><path fill-rule=`"evenodd`" d=`"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z`"></path></svg></a>$repoGuid</h1></article></div>"
-        rawOutput = "# $repoGuid"
+        rawOutput  = "# $repoGuid"
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
 
-    Describe 'Getting file content' {
+    Describe 'Getting file and folder content' {
+        # AutoInit will create a readme with the GUID of the repo name
         $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
+
+        Context 'For getting folder contents' {
+
+            $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
+
+            It "Should have the expected name" {
+                $folderOutput.name | Should be ""
+            }
+            It "Should have the expected path" {
+                $folderOutput.path | Should be ""
+            }
+            It "Should have the expected type" {
+                $folderOutput.type | Should be "dir"
+            }
+            It "Should have the expected entries" {
+                $folderOutput.entries.length | Should be 1
+            }
+            It "Should have the expected entry data" {
+                $folderOutput.entries[0].name | Should be $readmeFileName
+                $folderOutput.entries[0].path | Should be $readmeFileName
+            }
+        }
 
         Context 'For getting raw (byte) file contents' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw
             $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
@@ -44,7 +65,6 @@ try
 
         Context 'For getting raw (string) file contents' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw -ResultAsString
 
             It "Should have the expected content" {
@@ -54,7 +74,6 @@ try
 
         Context 'For getting html (byte) file contents' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html
             $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
@@ -66,18 +85,16 @@ try
 
         Context 'For getting html (string) file contents' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html -ResultAsString
 
             It "Should have the expected content" {
                 # Replace newlines with empty for comparison
-                $readmeFileString.Replace("`n","").Replace("`r","") | Should be $htmlOutput
+                $readmeFileString.Replace("`n", "").Replace("`r", "") | Should be $htmlOutput
             }
         }
 
         Context 'For getting object (default) file result' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName
 
             It "Should have the expected name" {
@@ -102,7 +119,6 @@ try
 
         Context 'For getting object file result as string' {
 
-            # AutoInit will create a readme with the GUID of the repo name
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Object -ResultAsString
 
             It "Should have the expected name" {
@@ -126,10 +142,8 @@ try
         Remove-GitHubRepository -Uri $repo.svn_url
     }
 }
-finally
-{
-    if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
-    {
+finally {
+    if (Test-Path -Path $script:originalConfigFile -PathType Leaf) {
         # Restore the user's configuration to its pre-test state
         Restore-GitHubConfiguration -Path $script:originalConfigFile
         $script:originalConfigFile = $null
