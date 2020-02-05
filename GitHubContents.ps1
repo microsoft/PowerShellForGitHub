@@ -15,8 +15,13 @@ function Get-GitHubContent {
         The file path for which to retrieve contents
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
-        Raw - Use the Raw media type to retrieve the contents of the file.
+        Object - Return a json object representation a file or folder. This is the default if you do not pass any specific media type.
+        Raw - Return the raw contents of a file.
         Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
+    .PARAMETER ResultAsString
+        If this switch is specified and the MediaType is either Raw or Html then the resulting bytes will be decoded the result will be
+        returned as a string instead of bytes. If the MediaType is Object, then an additional property on the object is returned 'contentAsString'
+        which will be the decoded base64 result as a string.
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -54,8 +59,10 @@ function Get-GitHubContent {
 
         [string] $Path,
 
-        [ValidateSet('Raw', 'Html')]
-        [string] $MediaType = 'Raw',
+        [ValidateSet('Raw', 'Html', 'Object')]
+        [string] $MediaType = 'Object',
+
+        [switch] $ResultAsString,
 
         [string] $AccessToken,
 
@@ -98,6 +105,18 @@ function Get-GitHubContent {
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params
+
+    if ($ResultAsString) {
+        if ($MediaType -eq 'Raw' -or $MediaType -eq 'Html') {
+            # Decode bytes to string
+            $result = [System.Text.Encoding]::UTF8.GetString($result)
+        }
+        elseif ($MediaType -eq 'Object') {
+            # Convert from base64
+            $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
+            Add-Member -InputObject $result -NotePropertyName "contentAsString" -NotePropertyValue $decoded
+        }
+    }
 
     return $result
 }

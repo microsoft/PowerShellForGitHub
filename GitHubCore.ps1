@@ -985,7 +985,8 @@ function Get-ContentMediaType
     .PARAMETER MediaType
         The format in which the API will return the body of the comment or issue.
 
-        Raw - Return the raw contents of a file. This is the default if you do not pass any specific media type.
+        Object - Return a json object representation a file or folder. This is the default if you do not pass any specific media type.
+        Raw - Return the raw contents of a file.
         Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
 
     .PARAMETER AcceptHeader
@@ -999,8 +1000,8 @@ function Get-ContentMediaType
     [CmdletBinding()]
     [OutputType([String])]
     param(
-        [ValidateSet('Raw', 'Html')]
-        [string] $MediaType = 'Raw'
+        [ValidateSet('Raw', 'Html', 'Object')]
+        [string] $MediaType = 'Object'
     )
 
     return "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())"
