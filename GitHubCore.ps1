@@ -978,7 +978,7 @@ function Get-ContentMediaType
 {
 <#
     .DESCRIPTION
-        Returns a formatted AcceptHeader based on the requested MediaType for working with GitHub Content,
+        Returns a formatted AcceptHeader based on the requested MediaType for working with GitHub Content.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
