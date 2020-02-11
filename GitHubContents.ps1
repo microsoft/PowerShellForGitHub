@@ -117,7 +117,7 @@ function Get-GitHubContent
     $params = @{
         'UriFragment' = $uriFragment
         'Description' = $description
-        'AcceptHeader' = (Get-ContentMediaType -MediaType $MediaType)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

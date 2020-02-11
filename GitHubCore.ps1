@@ -645,7 +645,8 @@ function Invoke-GHRestMethodMultipleResult
 
     try
     {
-        do {
+        do
+        {
             $params = @{
                 'UriFragment' = $nextLink
                 'Method' = 'Get'
@@ -949,6 +950,10 @@ function Get-MediaAcceptHeader
         Text - Return a text only representation of the markdown body. Response will include body_text.
         Html - Return HTML rendered from the body's markdown. Response will include body_html.
         Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Object - Return a json object representation a file or folder.
+
+    .PARAMETER AsJson
+        If this switch is specified as +json value is appended to the MediaType header.
 
     .PARAMETER AcceptHeader
         The accept header that should be included with the MediaType accept header.
@@ -960,49 +965,24 @@ function Get-MediaAcceptHeader
 #>
     [CmdletBinding()]
     param(
-        [ValidateSet('Raw', 'Text', 'Html', 'Full')]
+        [ValidateSet('Raw', 'Text', 'Html', 'Full', 'Object')]
         [string] $MediaType = 'Raw',
 
-        [Parameter(Mandatory)]
+        [switch] $AsJson,
+
         [string] $AcceptHeader
     )
 
-    $acceptHeaders = @(
-        $AcceptHeader,
-        "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())+json")
+    $resultHeaders = "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())"
+    if ($AsJson -eq $true)
+    {
+        $resultHeaders = $resultHeaders + "+json"
+    }
 
-    return ($acceptHeaders -join ',')
-}
+    if ($AcceptHeader)
+    {
+        $resultHeaders = "$AcceptHeader,$resultHeaders"
+    }
 
-function Get-ContentMediaType
-{
-<#
-    .DESCRIPTION
-        Returns a formatted AcceptHeader based on the requested MediaType for working with GitHub Content.
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .PARAMETER MediaType
-        The format in which the API will return the body of the comment or issue.
-
-        Object - Return a json object representation a file or folder. This is the default if you do not pass any specific media type.
-        Raw - Return the raw contents of a file.
-        Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
-
-    .PARAMETER AcceptHeader
-        The accept header that should be included with the MediaType accept header.
-
-    .EXAMPLE
-        Get-ContentMediaType -MediaType Raw
-
-        Returns a formatted AcceptHeader for v3 of the response object
-#>
-    [CmdletBinding()]
-    [OutputType([String])]
-    param(
-        [ValidateSet('Raw', 'Html', 'Object')]
-        [string] $MediaType = 'Object'
-    )
-
-    return "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())"
+    return $resultHeaders
 }
