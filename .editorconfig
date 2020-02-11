@@ -1,0 +1,8 @@
+# editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+
+trim_trailing_whitespace = true
