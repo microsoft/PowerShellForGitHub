@@ -472,6 +472,14 @@ function Rename-GitHubRepository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
     .PARAMETER Uri
         Uri for the repository to rename. You can supply this directly, or more easily by
         using Get-GitHubRepository to get the repository as you please, and then piping the result to this cmdlet
@@ -495,8 +503,8 @@ function Rename-GitHubRepository
 
 
     .EXAMPLE
-        Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world
-        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world.
+        Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
+        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as the -Confirm:$false parameter/value were passed.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
@@ -532,8 +540,10 @@ function Rename-GitHubRepository
         [switch] $NoStatus
     )
 
-    process {
-        if ($PSCmdlet.ShouldProcess($(if ($PSCmdlet.ParameterSetName -eq "Uri") {$Uri} else {$OwnerName, $RepositoryName -join "/"}), "Rename repository to '$NewName'"))
+    process
+    {
+        $strRepositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") {$Uri} else {$OwnerName, $RepositoryName -join "/"}
+        if ($PSCmdlet.ShouldProcess($strRepositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation
             $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
@@ -549,7 +559,7 @@ function Rename-GitHubRepository
                 'UriFragment' = "repos/$OwnerName/$RepositoryName"
                 'Method' = 'Patch'
                 Body = ConvertTo-Json -InputObject @{name = $NewName}
-                'Description' =  "Renaming repository at '$Uri' to '$NewName'"
+                'Description' =  "Renaming repository at '$strRepositoryInfoForDisplayMessage' to '$NewName'"
                 'AccessToken' = $AccessToken
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name
                 'TelemetryProperties' = $telemetryProperties
