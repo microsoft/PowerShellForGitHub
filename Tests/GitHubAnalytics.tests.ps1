@@ -6,78 +6,12 @@
    Tests for GitHubAnalytics.ps1 module
 #>
 
-[String] $root = Split-Path -Parent (Split-Path -Parent $Script:MyInvocation.MyCommand.Path)
-. (Join-Path -Path $root -ChildPath 'Tests\Config\Settings.ps1')
-Import-Module -Name $root -Force
-
-function Initialize-AppVeyor
-{
-<#
-    .SYNOPSIS
-        Configures the tests to run with the authentication information stored in AppVeyor
-        (if that information exists in the environment).
-
-    .DESCRIPTION
-        Configures the tests to run with the authentication information stored in AppVeyor
-        (if that information exists in the environment).
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .NOTES
-        Internal-only helper method.
-
-        The only reason this exists is so that we can leverage CodeAnalysis.SuppressMessageAttribute,
-        which can only be applied to functions.
-
-        We call this immediately after the declaration so that AppVeyor initialization can heppen
-        (if applicable).
-
-#>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
-    param()
-
-    if ($env:AppVeyor)
-    {
-        $secureString = $env:avAccessToken | ConvertTo-SecureString -AsPlainText -Force
-        $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
-        Set-GitHubAuthentication -Credential $cred
-
-        $script:ownerName = $env:avOwnerName
-        $script:organizationName = $env:avOrganizationName
-
-        $message = @(
-            'This run is executed in the AppVeyor environment.',
-            'The GitHub Api Token won''t be decrypted in PR runs causing some tests to fail.',
-            '403 errors possible due to GitHub hourly limit for unauthenticated queries.',
-            'Use Set-GitHubAuthentication manually. modify the values in Tests\Config\Settings.ps1,',
-            'and run tests on your machine first.')
-        Write-Warning -Message ($message -join [Environment]::NewLine)
-    }
-}
-
-Initialize-AppVeyor
-
-$script:accessTokenConfigured = Test-GitHubAuthenticationConfigured
-if (-not $script:accessTokenConfigured)
-{
-    $message = @(
-        'GitHub API Token not defined, some of the tests will be skipped.',
-        '403 errors possible due to GitHub hourly limit for unauthenticated queries.')
-    Write-Warning -Message ($message -join [Environment]::NewLine)
-}
-
-# Backup the user's configuration before we begin, and ensure we're at a pure state before running
-# the tests.  We'll restore it at the end.
-$configFile = New-TemporaryFile
+# This is common test code setup logic for all Pester test files
+$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
 {
-    Backup-GitHubConfiguration -Path $configFile
-    Reset-GitHubConfiguration
-    Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
-    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
-
     Describe 'Obtaining issues for repository' {
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
@@ -308,17 +242,18 @@ try
     }
 
     Describe 'Getting repositories from organization' {
+        <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
+
         $original = Get-GitHubRepository -OrganizationName $script:organizationName
 
-        $repositoryName = [guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName -OrganizationName $script:organizationName
+        $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
         $current = Get-GitHubRepository -OrganizationName $script:organizationName
 
         It 'Should return expected number of organization repositories' {
             (@($current).Count - @($original).Count) | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:organizationName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -Uri $repo.svn_url
     }
 
     Describe 'Getting unique contributors from contributors array' {
@@ -378,6 +313,10 @@ try
 }
 finally
 {
-    # Restore the user's configuration to its pre-test state
-    Restore-GitHubConfiguration -Path $configFile
+    if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
+    {
+        # Restore the user's configuration to its pre-test state
+        Restore-GitHubConfiguration -Path $script:originalConfigFile
+        $script:originalConfigFile = $null
+    }
 }

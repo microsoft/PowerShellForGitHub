@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.6.4'
+    ModuleVersion = '0.9.2'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
@@ -33,6 +33,7 @@
         'GitHubOrganizations.ps1',
         'GitHubPullRequests.ps1',
         'GitHubReferences.ps1',
+        'GitHubReleases.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
         'GitHubRepositoryMerge.ps1',
@@ -50,7 +51,7 @@
         'Add-GitHubIssueLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
-        'ConvertFrom-Markdown',
+        'ConvertFrom-GitHubMarkdown',
         'Get-GitHubAssignee',
         'Get-GitHubCloneTraffic',
         'Get-GitHubCodeOfConduct',
@@ -69,6 +70,7 @@
         'Get-GitHubPullRequest',
         'Get-GitHubRateLimit',
         'Get-GitHubReferrerTraffic',
+        'Get-GitHubRelease',
         'Get-GitHubRepository',
         'Get-GitHubRepositoryBranch',
         'Get-GitHubRepositoryCollaborator',
@@ -94,6 +96,7 @@
         'New-GitHubIssue',
         'New-GitHubLabel',
         'New-GitHubMilestone',
+        'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
         'Remove-GithubAssignee',
@@ -114,6 +117,7 @@
         'Split-GitHubUri',
         'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
+        'Test-GitHubOrganizationMember',
         'Unlock-GitHubIssue',
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',

@@ -73,7 +73,7 @@ function Get-GitHubRateLimit
     return Invoke-GHRestMethod @params
 }
 
-function ConvertFrom-Markdown
+function ConvertFrom-GitHubMarkdown
 {
 <#
     .SYNOPSIS
@@ -113,7 +113,7 @@ function ConvertFrom-Markdown
         [String] The HTML version of the Markdown content.
 
     .EXAMPLE
-        ConvertFrom-Markdown -Content '**Bolded Text**' -Mode Markdown
+        ConvertFrom-GitHubMarkdown -Content '**Bolded Text**' -Mode Markdown
 
         Returns back '<p><strong>Bolded Text</strong></p>'
 #>
@@ -218,9 +218,9 @@ function Get-GitHubLicense
         Gets the content of the mit license file
 
     .EXAMPLE
-        Get-GitHubLicense -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubLicense -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the license file for the PowerShell\PowerShellForGitHub repository.
+        Gets the content of the license file for the Microsoft\PowerShellForGitHub repository.
         It may be necessary to convert the content of the file.  Check the 'encoding' property of
         the result to know how 'content' is encoded.  As an example, to convert from Base64, do
         the following:
@@ -387,9 +387,9 @@ function Get-GitHubCodeOfConduct
         Gets the content of the 'Citizen Code of Conduct'
 
     .EXAMPLE
-        Get-GitHubCodeOfConduct -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubCodeOfConduct -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the Code of Coduct file for the PowerShell\PowerShellForGitHub repository
+        Gets the content of the Code of Coduct file for the Microsoft\PowerShellForGitHub repository
         if one is detected.
 
         It may be necessary to convert the content of the file.  Check the 'encoding' property of

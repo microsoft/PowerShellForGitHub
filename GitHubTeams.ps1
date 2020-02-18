@@ -144,6 +144,9 @@ function Get-GitHubTeamMember
     .PARAMETER TeamName
         The name of the team in the organization
 
+    .PARAMETER TeamId
+        The ID of the team in the organization
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -161,16 +164,25 @@ function Get-GitHubTeamMember
         $members = Get-GitHubTeamMember -Organization PowerShell -TeamName Everybody
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParametersetName='ID')]
     param
     (
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Name')]
         [ValidateNotNullOrEmpty()]
         [String] $TeamName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='ID')]
+        [int64] $TeamId,
 
         [string] $AccessToken,
 
@@ -181,23 +193,29 @@ function Get-GitHubTeamMember
 
     $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
 
-    $teams = Get-GitHubTeam -OrganizationName $OrganizationName -AccessToken $AccessToken -NoStatus:$NoStatus
-    $team = $teams | Where-Object {$_.name -eq $TeamName}
-    if ($null -eq $team)
+    if ($PSCmdlet.ParameterSetName -eq 'Name')
     {
-        $message = "Unable to find the team [$TeamName] within the organization [$OrganizationName]."
-        Write-Log -Message $message -Level Error
-        throw $message
+        $teams = Get-GitHubTeam -OrganizationName $OrganizationName -AccessToken $AccessToken -NoStatus:$NoStatus
+        $team = $teams | Where-Object {$_.name -eq $TeamName}
+        if ($null -eq $team)
+        {
+            $message = "Unable to find the team [$TeamName] within the organization [$OrganizationName]."
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+
+        $TeamId = $team.id
     }
 
     $telemetryProperties = @{
         'OrganizationName' = (Get-PiiSafeString -PlainText $OrganizationName)
         'TeamName' = (Get-PiiSafeString -PlainText $TeamName)
+        'TeamId' = (Get-PiiSafeString -PlainText $TeamId)
     }
 
     $params = @{
-        'UriFragment' = "teams/$($team.id)/members"
-        'Description' =  "Getting members of the team $TeamName $($team.id)"
+        'UriFragment' = "teams/$TeamId/members"
+        'Description' =  "Getting members of team $TeamId"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

@@ -6,84 +6,19 @@
    Tests for GitHubMilestones.ps1 module
 #>
 
-$root = Split-Path -Parent $PSScriptRoot
-. (Join-Path -Path $root -ChildPath 'Tests\Config\Settings.ps1')
-Import-Module -Name $root -Force
-
-function Initialize-AppVeyor
-{
-<#
-    .SYNOPSIS
-        Configures the tests to run with the authentication information stored in AppVeyor
-        (if that information exists in the environment).
-
-    .DESCRIPTION
-        Configures the tests to run with the authentication information stored in AppVeyor
-        (if that information exists in the environment).
-
-        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
-
-    .NOTES
-        Internal-only helper method.
-
-        The only reason this exists is so that we can leverage CodeAnalysis.SuppressMessageAttribute,
-        which can only be applied to functions.
-
-        We call this immediately after the declaration so that AppVeyor initialization can happen
-        (if applicable).
-
-#>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
-    param()
-
-    if ($env:AppVeyor)
-    {
-        $secureString = $env:avAccessToken | ConvertTo-SecureString -AsPlainText -Force
-        $cred = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
-        Set-GitHubAuthentication -Credential $cred
-
-        $script:ownerName = $env:avOwnerName
-        $script:organizationName = $env:avOrganizationName
-
-        $message = @(
-            'This run is executed in the AppVeyor environment.',
-            'The GitHub Api Token won''t be decrypted in PR runs causing some tests to fail.',
-            '403 errors possible due to GitHub hourly limit for unauthenticated queries.',
-            'Use Set-GitHubAuthentication manually. modify the values in Tests\Config\Settings.ps1,',
-            'and run tests on your machine first.')
-        Write-Warning -Message ($message -join [Environment]::NewLine)
-    }
-}
-
-Initialize-AppVeyor
-
-$script:accessTokenConfigured = Test-GitHubAuthenticationConfigured
-if (-not $script:accessTokenConfigured)
-{
-    $message = @(
-        'GitHub API Token not defined, some of the tests will be skipped.',
-        '403 errors possible due to GitHub hourly limit for unauthenticated queries.')
-    Write-Warning -Message ($message -join [Environment]::NewLine)
-}
-
-# Backup the user's configuration before we begin, and ensure we're at a pure state before running
-# the tests.  We'll restore it at the end.
-$configFile = New-TemporaryFile
+# This is common test code setup logic for all Pester test files
+$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
 {
-    Backup-GitHubConfiguration -Path $configFile
-    Reset-GitHubConfiguration
-    Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
-    Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
-
     # Define Script-scoped, readonly, hidden variables.
-
     @{
         defaultIssueTitle = "This is a test issue."
         defaultMilestoneTitle1 = "This is a test milestone title #1."
         defaultMilestoneTitle2 = "This is a test milestone title #2."
+        defaultMilestoneTitle3 = "This is a test milestone title #3."
+        defaultMilestoneTitle4 = "This is a test milestone title #4."
         defaultEditedMilestoneTitle = "This is an edited milestone title."
         defaultMilestoneDescription = "This is a test milestone description."
         defaultEditedMilestoneDescription = "This is an edited milestone description."
@@ -100,6 +35,10 @@ try
             $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1 -State "Closed" -DueOn $defaultMilestoneDueOn
             $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number
 
+            # We'll be testing to make sure that regardless of the time in the timestamp, we'll get the desired date.
+            $newMilestoneDueOnEarlyMorning = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle2 -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(1)
+            $newMilestoneDueOnLateEvening = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle3 -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(23)
+
             It "Should have the expected title text" {
                 $existingMilestone.title | Should be $defaultMilestoneTitle1
             }
@@ -109,7 +48,21 @@ try
             }
 
             It "Should have the expected due_on date" {
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
                 (Get-Date -Date $existingMilestone.due_on).Date | Should be $defaultMilestoneDueOn.Date
+            }
+
+            It "Should have the expected due_on date even if early morning" {
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $newMilestoneDueOnEarlyMorning.due_on).Date | Should be $defaultMilestoneDueOn.Date
+            }
+
+            It "Should have the expected due_on date even if late evening" {
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $newMilestoneDueOnLateEvening.due_on).Date | Should be $defaultMilestoneDueOn.Date
             }
 
             It "Should allow the addition of an existing issue" {
@@ -122,7 +75,7 @@ try
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 1
+                $existingMilestones.Count | Should be 3
             }
 
             It 'Should have the expected title text on the first milestone' {
@@ -136,7 +89,7 @@ try
         }
 
         Context 'For editing a milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle2 -Description $defaultMilestoneDescription
+            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle4 -Description $defaultMilestoneDescription
             $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number -Title $defaultEditedMilestoneTitle -Description $defaultEditedMilestoneDescription
 
             It 'Should have a title/description that is not equal to the original title/description' {
@@ -154,7 +107,7 @@ try
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending)
 
             It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 2
+                $existingMilestones.Count | Should be 4
             }
 
             foreach($milestone in $existingMilestones) {
@@ -175,6 +128,10 @@ try
 }
 finally
 {
-    # Restore the user's configuration to its pre-test state
-    Restore-GitHubConfiguration -Path $configFile
+    if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
+    {
+        # Restore the user's configuration to its pre-test state
+        Restore-GitHubConfiguration -Path $script:originalConfigFile
+        $script:originalConfigFile = $null
+    }
 }

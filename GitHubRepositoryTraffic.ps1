@@ -36,9 +36,9 @@ function Get-GitHubReferrerTraffic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubReferrerTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the top 10 referrers over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get the top 10 referrers over the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -120,9 +120,9 @@ function Get-GitHubPathTraffic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubPathTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubPathTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the top 10 popular contents over the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get the top 10 popular contents over the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -208,9 +208,9 @@ function Get-GitHubViewTraffic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubViewTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubViewTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of views and breakdown per day or week for the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get the total number of views and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -300,9 +300,9 @@ function Get-GitHubCloneTraffic
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubCloneTraffic -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of clones and breakdown per day or week for the last 14 days from the PowerShell\PowerShellForGitHub project.
+        Get the total number of clones and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

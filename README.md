@@ -1,8 +1,7 @@
 # PowerShellForGitHub PowerShell Module
 
-[![[GitHub version]](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/PowerShell%2FPowerShellForGitHub)
-[![Build status](https://ci.appveyor.com/api/projects/status/vsfq8kxo2et2dn7i?svg=true
-)](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub)
+[![[GitHub version]](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub)
+[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 #### Table of Contents
 
@@ -23,7 +22,7 @@
 ## Overview
 
 This is a [PowerShell](https://microsoft.com/powershell) [module](https://technet.microsoft.com/en-us/library/dd901839.aspx)
-that provides command-line interaction and automation for for the [GitHub v3 API](https://developer.github.com/v3/).
+that provides command-line interaction and automation for the [GitHub v3 API](https://developer.github.com/v3/).
 
 ----------
 
@@ -82,7 +81,7 @@ Get-Help Set-GitHubConfiguration -ShowWindow
 
 For example, if you tend to work on the same repository, you can save yourself a lot of typing
 by configuring the default OwnerName and/or RepositoryName that you work with.  You can always
-override these values by expicitly providing a value for the paramater in an individual command,
+override these values by explicitly providing a value for the parameter in an individual command,
 but for the common scenario, you'd have less typing to do.
 
  ```powershell
@@ -98,6 +97,15 @@ Set-GitHubConfiguration -DefaultRepositoryName PowerShellForGitHub
 
 There are more great configuration options available.  Just review the help for that command for
 the most up-to-date list!
+
+### GitHub Enterprise
+
+To set the configuration to use a GitHub Enterprise server instead of GitHub.com, simply supply
+the `ApiHostName` parameter with the hostname of your GitHub Enterprise server.
+
+ ```powershell
+Set-GitHubConfiguration -ApiHostName "github.contoso.com"
+```
 
 ----------
 

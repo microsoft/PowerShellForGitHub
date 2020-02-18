@@ -1,0 +1,44 @@
+#
+# Continuous Integration (CI)
+# This pipeline validates the module for Static Analysis and Unit Test issues.
+#
+
+# ---------------------------------------------------------
+# REQUIRED: These variables MUST be set within the pipeline
+# * GitHubAccessToken      - {secret} The access token with sufficient permissions to modify the
+#                            accounts specified by GitHubOwnerName and GitHubOrganizatioName.
+# * GitHubOwnerName        - The default "owner" that will be used for tests.
+# * GitHubOrganizationName - The default "organization" that will be used for tests.
+# ---------------------------------------------------------
+
+trigger:
+- master
+
+# Intentionally not having the PR trigger, as we want to kick off PR validation manually after code inspection
+#pr:
+#- master
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - template: ./templates/verify-testConfigSettingsHash.yaml
+  - template: ./templates/run-staticAnalysis.yaml
+  - template: ./templates/run-unitTests.yaml
+
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - template: ./templates/verify-testConfigSettingsHash.yaml
+  - template: ./templates/run-staticAnalysis.yaml
+  - template: ./templates/run-unitTests.yaml
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - template: ./templates/verify-testConfigSettingsHash.yaml
+  - template: ./templates/run-staticAnalysis.yaml
+  - template: ./templates/run-unitTests.yaml

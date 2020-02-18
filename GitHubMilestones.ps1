@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# For more information refer to"
+#  https://github.community/t5/How-to-use-Git-and-GitHub/Milestone-quot-Due-On-quot-field-defaults-to-7-00-when-set-by-v3/m-p/6901
+$script:minimumHoursToEnsureDesiredDateInPacificTime = 9
+
 function Get-GitHubMilestone
 {
 <#
@@ -45,12 +49,12 @@ function Get-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub
-        Get the milestones for the PowerShell\PowerShellForGitHub project.
+        Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get the milestones for the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Get-GitHubMilestone -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Milestone 1
-        Get milestone number 1 for the PowerShell\PowerShellForGitHub project.
+        Get milestone number 1 for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -71,7 +75,7 @@ function Get-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
@@ -190,6 +194,8 @@ function New-GitHubMilestone
 
     .PARAMETER DueOn
         The milestone due date.
+        GitHub will drop any time provided with this value, therefore please ensure that the
+        UTC version of this value has your desired date.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -202,9 +208,21 @@ function New-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Title "Testing this API"
+        New-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new Github milestone for the PowerShell\PowerShellForGitHub project.
+        Creates a new Github milestone for the Microsoft\PowerShellForGitHub project.
+
+    .NOTES
+        For more information on how GitHub handles the dates specified in DueOn, please refer to
+        this support forum post:
+        https://github.community/t5/How-to-use-Git-and-GitHub/Milestone-quot-Due-On-quot-field-defaults-to-7-00-when-set-by-v3/m-p/6901
+
+        Please note that due to artifacts of how GitHub was originally designed, all timestamps
+        in the GitHub database are normalized to Pacific Time.  This means that any dates specified
+        that occur before 7am UTC will be considered timestamps for the _previous_ day.
+
+        Given that GitHub drops the _time_ aspect of this DateTime, this function will ensure that
+        the requested DueOn date specified is honored by manipulating the time as needed.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -265,8 +283,15 @@ function New-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('DueOn'))
     {
-        $DueOnFormattedTime = $DueOn.ToUniversalTime().ToString('o')
-        $hashBody.add('due_on', $DueOnFormattedTime)
+        # If you set 'due_on' to be '2020-09-24T06:59:00Z', GitHub considers that to be '2020-09-23T07:00:00Z'
+        # And if you set 'due_on' to be '2020-09-24T07:01:00Z', GitHub considers that to be '2020-09-24T07:00:00Z'
+        # SO....we can't depend on the typical definition of midnight when trying to specify a specific day.
+        # Instead, we'll use 9am on the designated date to ensure we're always dealing with the
+        # same date that GitHub uses, regardless of the current state of Daylight Savings Time.
+        # (See .NOTES for more info)
+        $modifiedDueOn = $DueOn.ToUniversalTime().date.AddHours($script:minimumHoursToEnsureDesiredDateInPacificTime)
+        $dueOnFormattedTime = $modifiedDueOn.ToString('o')
+        $hashBody.add('due_on', $dueOnFormattedTime)
     }
 
     $params = @{
@@ -318,6 +343,8 @@ function Set-GitHubMilestone
 
     .PARAMETER DueOn
         The milestone due date.
+        GitHub will drop any time provided with this value, therefore please ensure that the
+        UTC version of this value has your desired date.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -330,9 +357,21 @@ function Set-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
+        Set-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
 
-        Update an existing milestone for the PowerShell\PowerShellForGitHub project.
+        Update an existing milestone for the Microsoft\PowerShellForGitHub project.
+
+    .NOTES
+        For more information on how GitHub handles the dates specified in DueOn, please refer to
+        this support forum post:
+        https://github.community/t5/How-to-use-Git-and-GitHub/Milestone-quot-Due-On-quot-field-defaults-to-7-00-when-set-by-v3/m-p/6901
+
+        Please note that due to artifacts of how GitHub was originally designed, all timestamps
+        in the GitHub database are normalized to Pacific Time.  This means that any dates specified
+        that occur before 7am UTC will be considered timestamps for the _previous_ day.
+
+        Given that GitHub drops the _time_ aspect of this DateTime, this function will ensure that
+        the requested DueOn date specified is honored by manipulating the time as needed.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -350,7 +389,7 @@ function Set-GitHubMilestone
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -398,8 +437,15 @@ function Set-GitHubMilestone
 
     if ($PSBoundParameters.ContainsKey('DueOn'))
     {
-        $DueOnFormattedTime = $DueOn.ToUniversalTime().ToString('o')
-        $hashBody.add('due_on', $DueOnFormattedTime)
+        # If you set 'due_on' to be '2020-09-24T06:59:00Z', GitHub considers that to be '2020-09-23T07:00:00Z'
+        # And if you set 'due_on' to be '2020-09-24T07:01:00Z', GitHub considers that to be '2020-09-24T07:00:00Z'
+        # SO....we can't depend on the typical definition of midnight when trying to specify a specific day.
+        # Instead, we'll use 9am on the designated date to ensure we're always dealing with the
+        # same date that GitHub uses, regardless of the current state of Daylight Savings Time.
+        # (See .NOTES for more info)
+        $modifiedDueOn = $DueOn.ToUniversalTime().date.AddHours($script:minimumHoursToEnsureDesiredDateInPacificTime)
+        $dueOnFormattedTime = $modifiedDueOn.ToString('o')
+        $hashBody.add('due_on', $dueOnFormattedTime)
     }
 
     $params = @{
@@ -451,9 +497,9 @@ function Remove-GitHubMilestone
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubMilestone -OwnerName Powershell -RepositoryName PowerShellForGitHub -Milestone 1
+        Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 
-        Deletes a Github milestone from the PowerShell\PowerShellForGitHub project.
+        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

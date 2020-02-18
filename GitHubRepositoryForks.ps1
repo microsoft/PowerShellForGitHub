@@ -39,9 +39,9 @@ function Get-GitHubRepositoryFork
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Gets all of the forks for the PowerShell\PowerShellForGitHub repository.
+        Gets all of the forks for the Microsoft\PowerShellForGitHub repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -134,12 +134,12 @@ function New-GitHubRepositoryFork
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub
+        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Creates a fork of this repository under the current authenticated user's account.
 
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName PowerShell -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
+        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
 
         Creates a fork of this repository under the OctoLabs organization.
 #>

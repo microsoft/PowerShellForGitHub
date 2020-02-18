@@ -46,14 +46,14 @@ function Get-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubLabel -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the information for every label from the PowerShell\PowerShellForGitHub project.
+        Gets the information for every label from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Get-GitHubLabel -OwnerName Powershell -RepositoryName PowerShellForGitHub -LabelName TestLabel
+        Get-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -LabelName TestLabel
 
-        Gets the information for the label named "TestLabel" from the PowerShell\PowerShellForGitHub
+        Gets the information for the label named "TestLabel" from the Microsoft\PowerShellForGitHub
         project.
 #>
     [CmdletBinding(
@@ -86,11 +86,11 @@ function Get-GitHubLabel
 
         [Parameter(Mandatory, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [int] $Milestone,
+        [int64] $Milestone,
 
         [string] $AccessToken,
 
@@ -198,7 +198,7 @@ function New-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Color BBBBBB
+        New-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Color BBBBBB
 
         Creates a new, grey-colored label called "TestLabel" in the PowerShellForGitHub project.
 #>
@@ -312,7 +312,7 @@ function Remove-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel
+        Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel
 
         Removes the label called "TestLabel" from the PowerShellForGitHub project.
 #>
@@ -417,7 +417,7 @@ function Update-GitHubLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Update-GitHubLabel -OwnerName Powershell -RepositoryName PowerShellForGitHub -Name TestLabel -NewName NewTestLabel -LabelColor BBBB00
+        Update-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -NewName NewTestLabel -LabelColor BBBB00
 
         Updates the existing label called TestLabel in the PowerShellForGitHub project to be called
         'NewTestLabel' and be colored yellow.
@@ -541,7 +541,7 @@ function Set-GitHubLabel
         removed (and thus unassigned from existing Issues) and then the new one created.
 
     .EXAMPLE
-        Set-GitHubLabel -OwnerName Powershell -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
+        Set-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
 
         Removes any labels not in this Label array, ensure the current assigned color and descriptions
         match what's in the array for the labels that do already exist, and then creates new labels
@@ -654,7 +654,7 @@ function Add-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Add-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
+        Add-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
 
         Adds labels to an issue in the PowerShellForGitHub project.
 #>
@@ -675,7 +675,7 @@ function Add-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [Alias('LabelName')]
@@ -755,7 +755,7 @@ function Set-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
+        Set-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
 
         Replaces labels on an issue in the PowerShellForGitHub project.
 #>
@@ -776,7 +776,7 @@ function Set-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [Alias('LabelName')]
@@ -857,7 +857,7 @@ function Remove-GitHubIssueLabel
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubIssueLabel -OwnerName PowerShell -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
+        Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
 
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
 #>
@@ -877,7 +877,7 @@ function Remove-GitHubIssueLabel
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]

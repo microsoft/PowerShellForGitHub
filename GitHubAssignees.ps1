@@ -33,9 +33,9 @@ function Get-GitHubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubAsigneeList -OwnerName Powershell -RepositoryName PowerShellForGitHub
+        Get-GitHubAsigneeList -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
+        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -119,9 +119,9 @@ function Test-GitHubAssignee
         [bool] If the assignee can be assigned to issues in the repository.
 
     .EXAMPLE
-        Test-GitHubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+        Test-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
-        Checks if a user has permission to be assigned to an issue from the PowerShell\PowerShellForGitHub project.
+        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -220,9 +220,9 @@ function New-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee $assignee
+        New-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
 
-        Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
+        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -241,7 +241,7 @@ function New-GithubAssignee
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [ValidateCount(1, 10)]
@@ -322,9 +322,9 @@ function Remove-GithubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName Powershell -RepositoryName PowerShellForGitHub -Assignee $assignees
+        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
-        Lists the available assignees for issues from the PowerShell\PowerShellForGitHub project.
+        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -343,7 +343,7 @@ function Remove-GithubAssignee
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [string[]] $Assignee,
