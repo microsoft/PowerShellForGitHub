@@ -32,9 +32,11 @@
         'GitHubMiscellaneous.ps1',
         'GitHubOrganizations.ps1',
         'GitHubPullRequests.ps1',
+        'GitHubReferences.ps1',
         'GitHubReleases.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
+        'GitHubRepositoryMerge.ps1',
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
@@ -87,6 +89,7 @@
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
+        'Merge-GitHubRepositoryBranch',
         'Move-GitHubRepositoryOwnership',
         'New-GithubAssignee',
         'New-GitHubComment',
@@ -119,7 +122,9 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
-        'Update-GitHubRepository'
+        'Update-GitHubRepository',
+        'Get-GitHubReference',
+        'New-GithubReference'
     )
 
     AliasesToExport = @(
