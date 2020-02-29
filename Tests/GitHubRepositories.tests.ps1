@@ -19,23 +19,23 @@ try
         Context -Name 'For renaming a repository' -Fixture {
             BeforeEach -Scriptblock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-                $strSuffixToAddToRepo = "_renamed"
-                $strNewRepoName = "$($repo.Name)$strSuffixToAddToRepo"
-                Write-Verbose "New repo name shall be: '$strNewRepoName'"
+                $suffixToAddToRepo = "_renamed"
+                $newRepoName = "$($repo.Name)$suffixToAddToRepo"
+                Write-Verbose "New repo name shall be: '$newRepoName'"
             }
             It "Should have the expected new repository name - by URI" {
-                $renamedRepo = $repo | Rename-GitHubRepository -NewName $strNewRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $strNewRepoName
+                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
+                $renamedRepo.Name | Should be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $strNewRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $strNewRepoName
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+                $renamedRepo.Name | Should be $newRepoName
             }
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
                 ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$strSuffixToAddToRepo" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Verbose
             }
         }
     }

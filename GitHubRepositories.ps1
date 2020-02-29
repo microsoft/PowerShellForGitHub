@@ -500,11 +500,9 @@ function Rename-GitHubRepository
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
         Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
-
-
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
-        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as the -Confirm:$false parameter/value were passed.
+        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
@@ -542,7 +540,7 @@ function Rename-GitHubRepository
 
     process
     {
-        $strRepositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") {$Uri} else {$OwnerName, $RepositoryName -join "/"}
+        $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
         if ($PSCmdlet.ShouldProcess($strRepositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation
@@ -559,7 +557,7 @@ function Rename-GitHubRepository
                 'UriFragment' = "repos/$OwnerName/$RepositoryName"
                 'Method' = 'Patch'
                 Body = ConvertTo-Json -InputObject @{name = $NewName}
-                'Description' =  "Renaming repository at '$strRepositoryInfoForDisplayMessage' to '$NewName'"
+                'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
                 'AccessToken' = $AccessToken
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name
                 'TelemetryProperties' = $telemetryProperties
