@@ -1,6 +1,15 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+  [0.10.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.10.0) - (2020/03/02)
+### Fixes:
+- Added `Rename-GitHubRepository`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/145) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/536b762425d51a181166c2c47ad2b00014911d1d)
+
+Author: [**@mtboren**](https://github.com/mtboren)
+
+------
+
   [0.9.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.2) - (2019/11/11)
 ### Fixes:
 - Reduces the warning noise seen during execution of the unit tests.
