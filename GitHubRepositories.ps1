@@ -461,6 +461,114 @@ function Get-GitHubRepository
     return Invoke-GHRestMethodMultipleResult @params
 }
 
+function Rename-GitHubRepository
+{
+<#
+    .SYNOPSIS
+        Rename a GitHub repository
+
+    .DESCRIPTION
+        Renames a GitHub repository with the new name provided.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository to rename. You can supply this directly, or more easily by
+        using Get-GitHubRepository to get the repository as you please, and then piping the result to this cmdlet
+
+    .PARAMETER NewName
+        The new name to set for the given GitHub repository
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
+        Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+    .EXAMPLE
+        Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
+        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
+
+    .EXAMPLE
+        New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+        Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParametersetName='Uri',
+        ConfirmImpact="High")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias("html_url")]
+        [string] $Uri,
+
+        [parameter(Mandatory)][String]$NewName,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    process
+    {
+        $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+        if ($PSCmdlet.ShouldProcess($strRepositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
+        {
+            Write-InvocationLog -Invocation $MyInvocation
+            $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+            $OwnerName = $elements.ownerName
+            $RepositoryName = $elements.repositoryName
+
+            $telemetryProperties = @{
+                'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+                'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            }
+
+            $params = @{
+                'UriFragment' = "repos/$OwnerName/$RepositoryName"
+                'Method' = 'Patch'
+                Body = ConvertTo-Json -InputObject @{name = $NewName}
+                'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
+                'AccessToken' = $AccessToken
+                'TelemetryEventName' = $MyInvocation.MyCommand.Name
+                'TelemetryProperties' = $telemetryProperties
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+            }
+
+            return Invoke-GHRestMethod @params
+        }
+    }
+}
+
 function Update-GitHubRepository
 {
 <#

@@ -481,6 +481,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Darío Hereñú (@kant)](https://github.com/kant)**
 - **[@wikijm](https://github.com/wikijm)**
 - **[Przemysław Kłys (@PrzemyslawKlys)](https://github.com/PrzemyslawKlys)**
+- **[Matt Boren (@mtboren)](http://github.com/mtboren)**
 
 
 
