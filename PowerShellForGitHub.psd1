@@ -33,6 +33,7 @@
         'GitHubMiscellaneous.ps1',
         'GitHubOrganizations.ps1',
         'GitHubPullRequests.ps1',
+        'GitHubReferences.ps1',
         'GitHubReleases.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
@@ -69,6 +70,7 @@
         'Get-GitHubPathTraffic',
         'Get-GitHubPullRequest',
         'Get-GitHubRateLimit',
+        'Get-GitHubReference',
         'Get-GitHubReferrerTraffic',
         'Get-GitHubRelease',
         'Get-GitHubRepository',
@@ -96,6 +98,7 @@
         'New-GitHubLabel',
         'New-GitHubMilestone',
         'New-GitHubPullRequest',
+        'New-GithubReference',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
         'Remove-GithubAssignee',
@@ -103,6 +106,7 @@
         'Remove-GitHubIssueLabel',
         'Remove-GitHubLabel',
         'Remove-GitHubMilestone',
+        'Remove-GitHubReference',
         'Remove-GitHubRepository',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
@@ -122,6 +126,7 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
+        'Update-GithubReference',
         'Update-GitHubRepository'
     )
 
@@ -129,6 +134,7 @@
         'Delete-GitHubComment',
         'Delete-GitHubLabel',
         'Delete-GitHubMilestone',
+        'Delete-GitHubReference',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
         'Transfer-GitHubRepositoryOwnership'
