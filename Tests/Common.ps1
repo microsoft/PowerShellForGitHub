@@ -37,6 +37,11 @@ function Initialize-CommonTestSetup
     . $settingsPath
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
 
+    # Get-SHA512 is an internal helper function that is not normally exposed.
+    # We need to explicitly load it into our execution context in order to use it below.
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
+
     $originalSettingsHash = (Get-GitHubConfiguration -Name TestConfigSettingsHash)
     $currentSettingsHash = Get-SHA512Hash -PlainText (Get-Content -Path $settingsPath -Raw -Encoding Utf8)
     $settingsAreUnaltered = $originalSettingsHash -eq $currentSettingsHash
