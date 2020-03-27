@@ -29,7 +29,7 @@ function Initialize-CommonTestSetup
         This method is invoked immediately after the declaration.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in Azure DevOps.")]
     param()
 
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
