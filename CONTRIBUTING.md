@@ -483,6 +483,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[@wikijm](https://github.com/wikijm)**
 - **[Przemysław Kłys (@PrzemyslawKlys)](https://github.com/PrzemyslawKlys)**
 - **[Matt Boren (@mtboren)](http://github.com/mtboren)**
+- **[Shannon Deminick (@Shazwazza)](http://github.com/Shazwazza)**
 
 
 

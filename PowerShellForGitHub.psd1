@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.10.0'
+    ModuleVersion = '0.11.0'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.

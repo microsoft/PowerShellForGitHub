@@ -1,6 +1,15 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+  [0.11.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.11.0) - (2020/04/03)
+### Features:
++ Added `Get-GitHubContents`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/146) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/9a45908dc65b3e8dd0227083fab281099cf07b1b)
+
+Author: [**@Shazwazza**](https://github.com/Shazwazza)
+
+------
+
   [0.10.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.10.0) - (2020/03/02)
 ### Features:
 + Added `Rename-GitHubRepository`
