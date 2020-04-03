@@ -979,7 +979,7 @@ function Get-MediaAcceptHeader
         $resultHeaders = $resultHeaders + "+json"
     }
 
-    if (-not [String]::IsNullOrEmptyString($AcceptHeader))
+    if (-not [String]::IsNullOrEmpty($AcceptHeader))
     {
         $resultHeaders = "$AcceptHeader,$resultHeaders"
     }
