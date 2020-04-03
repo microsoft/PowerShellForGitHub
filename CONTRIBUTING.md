@@ -352,18 +352,19 @@ There are many more nuances to code-coverage, see
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 These test are configured to automatically execute upon any update to the `master` branch
-on the `HowardWolosky` fork of `PowerShellForGitHub`.  (At this time, we don't have the proper
-permissions to have AppVeyor execute the tests on the main instance.)  This setup thus depends
-on the `HowardWolosky` fork always being kept up-to-date with the `PowerShell` master.
+of `microsoft/PowerShellForGitHub`.
 
-The [AppVeyor project](https://ci.appveyor.com/project/HowardWolosky/powershellforgithub) has
-been [configured](./appveyor.yml) to execute the tests against a test GitHub account (for the user
-`PowerShellForGitHubTeam`, and the org `PowerShellForGitHubTeamTestOrg`).
-
-Additionally, the Access Token with administrator access for that account has been encrypted on
-AppVeyor and mentioned in the [config file](./appveyor.yml).  That Access Token is not accessible
-by anyone else.  To run the tests locally with your own account, see
+The [Azure DevOps pipeline](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary)
+has been [configured](https://github.com/microsoft/PowerShellForGitHub/blob/master/build/pipelines/templates/run-unitTests.yaml#L25-L28)
+to execute the tests against a test GitHub account (for the user `PowerShellForGitHubTeam`,
+and the org `PowerShellForGitHubTeamTestOrg`).  You will see the AccessToken being referenced there
+as well...it is stored, encryted, within Azure DevOps.  It is not accessible for use outside of
+the CI pipeline.  To run the tests locally with your own account, see
 [configuring-your-environment](#configuring-your-environment).
+
+> NOTE: We're currently encountering issues with the tests successfully running within the pipeline.
+> They do complete successfully locally, so please test your changes locally before submitting a
+> pull request.
 
 #### New Test Guidelines
 Your tests should have NO dependencies on an account being set up in a specific way.  They should

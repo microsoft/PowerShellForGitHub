@@ -29,13 +29,18 @@ function Initialize-CommonTestSetup
         This method is invoked immediately after the declaration.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in AppVeyor.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in Azure DevOps.")]
     param()
 
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     $settingsPath = Join-Path -Path $moduleRootPath -ChildPath 'Tests/Config/Settings.ps1'
     . $settingsPath
     Import-Module -Name (Join-Path -Path $moduleRootPath -ChildPath 'PowerShellForGitHub.psd1') -Force
+
+    # Get-SHA512 is an internal helper function that is not normally exposed.
+    # We need to explicitly load it into our execution context in order to use it below.
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
 
     $originalSettingsHash = (Get-GitHubConfiguration -Name TestConfigSettingsHash)
     $currentSettingsHash = Get-SHA512Hash -PlainText (Get-Content -Path $settingsPath -Raw -Encoding Utf8)
