@@ -974,7 +974,7 @@ function Get-MediaAcceptHeader
     )
 
     $resultHeaders = "application/vnd.github.$mediaTypeVersion.$($MediaType.ToLower())"
-    if ($AsJson -eq $true)
+    if ($AsJson)
     {
         $resultHeaders = $resultHeaders + "+json"
     }
