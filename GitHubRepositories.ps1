@@ -541,7 +541,7 @@ function Rename-GitHubRepository
     process
     {
         $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
-        if ($PSCmdlet.ShouldProcess($strRepositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
+        if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation
             $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
