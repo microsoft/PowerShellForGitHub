@@ -3,7 +3,7 @@
 
 function Get-GitHubProject
 {
-    <#
+<#
     .DESCRIPTION
         Get the projects for a given Github user, repository or organization.
 
@@ -27,9 +27,6 @@ function Get-GitHubProject
 
     .PARAMETER UserName
         The name of the user to get projects for.
-
-    .PARAMETER Name
-        The name of the project to retrieve.
 
     .PARAMETER Project
         Id of the project to retrieve.
@@ -68,11 +65,6 @@ function Get-GitHubProject
         Get the projects for the user GitHubUser.
 
     .EXAMPLE
-        Get-GitHubProject -OrganizationName Microsoft -Name TeamCloud
-
-        Get a specific project by name from the Microsoft organization.
-
-    .EXAMPLE
         Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Closed
 
         Get closed projects from the Microsoft\PowerShellForGitHub repo.
@@ -81,7 +73,6 @@ function Get-GitHubProject
         Get-GitHubProject -Project 4378613
 
         Get a project by id, with this parameter you don't need any other information.
-
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -103,9 +94,6 @@ function Get-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'User')]
         [string] $UserName,
 
-        [Parameter()]
-        [string] $Name,
-
         [Parameter(Mandatory, ParameterSetName = 'Project')]
         [int64] $Project,
 
@@ -116,10 +104,8 @@ function Get-GitHubProject
         [ValidateSet('Open', 'Closed', 'All')]
         [string] $State,
 
-        [Parameter()]
         [string] $AccessToken,
 
-        [Parameter()]
         [switch] $NoStatus
     )
 
@@ -131,85 +117,65 @@ function Get-GitHubProject
     $description = [String]::Empty
     if ($PSCmdlet.ParameterSetName -eq 'Project')
     {
-
-        $telemetryProperties['Project'] = $Project
+        $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
         $uriFragment = "/projects/$Project"
         $description = "Getting project $project"
     }
-    else
+    elseif ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
     {
-        if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
-        {
-            $elements = Resolve-RepositoryElements
-            $OwnerName = $elements.ownerName
-            $RepositoryName = $elements.repositoryName
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
 
-            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
-            $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+        $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+        $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
 
-            $uriFragment = "/repos/$OwnerName/$RepositoryName/projects"
-            $description = "Getting projects for $RepositoryName"
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq 'Organization')
-        {
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/projects"
+        $description = "Getting projects for $RepositoryName"
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'Organization')
+    {
+        $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
-            $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
+        $uriFragment = "/orgs/$OrganizationName/projects"
+        $description = "Getting projects for $OrganizationName"
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'User')
+    {
+        $telemetryProperties['UserName'] = Get-PiiSafeString -PlainText $UserName
 
-            $uriFragment = "/orgs/$OrganizationName/projects"
-            $description = "Getting projects for $OrganizationName"
-        }
-        elseif ($PSCmdlet.ParameterSetName -eq 'User')
-        {
+        $uriFragment = "/users/$UserName/projects"
+        $description = "Getting projects for $UserName"
+    }
 
-            $telemetryProperties['UserName'] = Get-PiiSafeString -PlainText $UserName
+    if ($PSBoundParameters.ContainsKey('State'))
+    {
+        $getParams = @()
+        $State = $State.ToLower()
+        $getParams += "state=$State"
 
-            $uriFragment = "/users/$UserName/projects"
-            $description = "Getting projects for $UserName"
-        }
-
-        if ($PSBoundParameters.ContainsKey('Project'))
-        {
-            $uriFragment = "$uriFragment/$Project"
-            $description = "Getting project $Project"
-        }
-        elseif ($PSBoundParameters.ContainsKey('State'))
-        {
-            $getParams = @()
-            $State = $State.ToLower()
-            $getParams += "state=$State"
-
-            $uriFragment = "$uriFragment`?" + ($getParams -join '&')
-            $description = "Getting projects for $RepositoryName"
-        }
+        $uriFragment = "$uriFragment`?" + ($getParams -join '&')
+        $description += " with state '$state'"
     }
 
     $params = @{
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'Method' = 'Get'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    $results = Invoke-GHRestMethod @params
+    return Invoke-GHRestMethodMultipleResult @params
 
-    if ($PSBoundParameters.ContainsKey('Name'))
-    {
-        $results | Where-Object Name -eq $Name
-    }
-    else
-    {
-        $results
-    }
 }
 
 function New-GitHubProject
 {
-    <#
+<#
     .DESCRIPTION
         Creates a new Github project for the given repository
 
@@ -266,12 +232,10 @@ function New-GitHubProject
         Create a project for the Microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
 
     .EXAMPLE
-        New-GitHubProject -UserProject -Name TestProject'
+        New-GitHubProject -UserProject -Name 'TestProject'
 
         Creates a project for the signed in user called 'TestProject'.
-
 #>
-
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
@@ -295,13 +259,10 @@ function New-GitHubProject
         [Parameter(Mandatory)]
         [string] $Name,
 
-        [Parameter()]
         [string] $Description,
 
-        [Parameter()]
         [string] $AccessToken,
 
-        [Parameter()]
         [switch] $NoStatus
     )
 
@@ -326,7 +287,6 @@ function New-GitHubProject
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'Organization')
     {
-
         $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
         $uriFragment = "/orgs/$OrganizationName/projects"
@@ -334,7 +294,6 @@ function New-GitHubProject
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'User')
     {
-
         $telemetryProperties['User'] = $true
 
         $uriFragment = "/user/projects"
@@ -363,41 +322,18 @@ function New-GitHubProject
     }
 
     return Invoke-GHRestMethod @params
-
 }
 
 function Set-GitHubProject
 {
-    <#
+<#
     .DESCRIPTION
         Modify a GitHub Project.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER OwnerName
-        Owner of the repository.
-        If not supplied here, the DefaultOwnerName configuration property value will be used.
-
-    .PARAMETER RepositoryName
-        Name of the repository.
-        If not supplied here, the DefaultRepositoryName configuration property value will be used.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
-    .PARAMETER OrganizationName
-        The name of the organization that owns the project.
-
-    .PARAMETER UserName
-        The name of the user that owns the project.
-
     .PARAMETER Project
         Id of the project to modify.
-
-    .PARAMETER Name
-        The name of the project to modify.
 
     .PARAMETER Description
         Short description for the project.
@@ -408,6 +344,7 @@ function Set-GitHubProject
     .PARAMETER OrganizationPermission
         Set the permission level that determines whether all members of the project's
         organization can see and/or make changes to the project.
+        Only available for organization projects.
 
     .PARAMETER Private
         Sets the visibility of a project board.
@@ -424,160 +361,74 @@ function Set-GitHubProject
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestProject -State Closed
+        Set-GitHubProject -Project 999999 -State Closed
 
-        Set the 'TestProject' project state to closed for the Microsoft\PowerShellForGitHub
-        repository.
-
-    .EXAMPLE
-        Set-GitHubProject -OrganizationName Microsoft -Name TestProject -Description 'Updated description'
-
-        Updates the description of the 'TestProject' that's owned by the Microsoft organization.
+        Set the project with id '999999' to closed.
 
     .EXAMPLE
-        Set-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -Name TestProject -State Closed
+        $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        Set-GitHubProject -Project $Project.id -State Closed
 
-        Updates the state to closed for the Microsoft\PowerShellForGitHub repository project
-        by using the uri.
-
-    .EXAMPLE
-        Set-GitHubProject -UserName GitHubUser -Name TestProject' -State Closed
-
-        Updates the state to closed for the user project.
-
+        Get the id for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        repository and set state to closed.
 #>
     [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements'
-        )]
+        SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
-        [string] $OwnerName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
-        [string] $RepositoryName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
-        [string] $Uri,
-
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
-        [string] $OrganizationName,
-
-        [Parameter(Mandatory, ParameterSetName = 'User')]
-        [string] $UserName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Project')]
+        [Parameter(Mandatory)]
         [int64] $Project,
 
-        [Parameter()]
-        [string] $Name,
-
-        [Parameter()]
         [string] $Description,
 
-        [Parameter()]
         [ValidateSet('Open', 'Closed')]
         [string] $State,
 
-        [Parameter()]
         [ValidateSet('Read', 'Write', 'Admin', 'None')]
         [string] $OrganizationPermission,
 
-        [Parameter()]
-        [bool] $Private,
+        [switch] $Private,
 
-        [Parameter()]
         [string] $AccessToken,
 
-        [Parameter()]
         [switch] $NoStatus
     )
+
     Write-InvocationLog
 
     $telemetryProperties = @{}
 
-    $uriFragment = [String]::Empty
-    $apiDescription = [String]::Empty
-
-    if ($PSBoundParameters.ContainsKey('Project'))
-    {
-        $projectObj = Get-GitHubProject -Project $Project
-    }
-    else
-    {
-        $projectDetails = @{}
-        foreach ($k in $($PSBoundParameters.Keys))
-        {
-            if($k -in ('OwnerName','RepositoryName','OrganizationName','UserName','Name','Uri')) {
-                $projectDetails[$k] = $PSBoundParameters[$k]
-            }
-        }
-
-        $projectObj = Get-GitHubProject @projectDetails -State All
-        if (-not $projectObj)
-        {
-            $message = 'Project was not found.'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
-        elseif (($projectObj | Measure-Object).count -ne 1)
-        {
-            $message = 'More than one project was returned, narrow down the criteria.'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
-    }
-
-    $uriFragment = "projects/$($projectObj.Id)"
-    $apiDescription = "Updating project $($projectObj.Id)"
+    $uriFragment = "projects/$Project"
+    $apiDescription = "Updating project $Project"
 
     $hashBody = @{}
 
     if ($PSBoundParameters.ContainsKey('Description'))
     {
         $hashBody.add('body', $Description)
-        $apiDescription = "Updating project $($projectObj.Id)"
+        $apiDescription += " description"
     }
 
     if ($PSBoundParameters.ContainsKey('State'))
     {
         $hashBody.add('state', $State)
-        $apiDescription = "Updating project $($projectObj.Id)"
+        $apiDescription += ", state to '$State'"
     }
 
     if ($PSBoundParameters.ContainsKey('Private'))
     {
-        if ($projectObj.owner_url.Split('/') -contains ('repos'))
-        {
-            $message = 'Visibility can only be set for user or organization projects'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
-        else
-        {
-            $hashBody.add('private', $Private)
-            $apiDescription = "Updating project $($projectObj.Id)"
-        }
+       $hashBody.add('private', $Private.ToBool())
+       $apiDescription += ", private to '$Private'"
     }
 
     if ($PSBoundParameters.ContainsKey('OrganizationPermission'))
     {
-        if ($projectObj.owner_url.Split('/') -contains ('orgs'))
-        {
-            $hashBody.add('organization_permission', $OrganizationPermission.ToLower())
-            $apiDescription = "Updating project $($projectObj.Id)"
-        }
-        else
-        {
-            $message = 'Organization permission can only be set for organization projects'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
+        $hashBody.add('organization_permission', $OrganizationPermission.ToLower())
+        $apiDescription += ", organization_permission to '$OrganizationPermission'"
     }
 
     $params = @{
-        'UriFragment' = $uriFragment
+    'UriFragment' = $uriFragment
         'Description' = $apiDescription
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'AccessToken' = $AccessToken
@@ -591,40 +442,16 @@ function Set-GitHubProject
     return Invoke-GHRestMethod @params
 }
 
-
-
 function Remove-GitHubProject
 {
-    <#
+<#
     .DESCRIPTION
         Removes the projects for a given Github repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER OwnerName
-        Owner of the repository.
-        If not supplied here, the DefaultOwnerName configuration property value will be used.
-
-    .PARAMETER RepositoryName
-        Name of the repository.
-        If not supplied here, the DefaultRepositoryName configuration property value will be used.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
-    .PARAMETER OrganizationName
-        The name of the organization that owns the project.
-
-    .PARAMETER UserName
-        The name of the user that owns the project.
-
     .PARAMETER Project
         Id of the project to remove.
-
-    .PARAMETER Name
-        The name of the project to remove.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -637,62 +464,28 @@ function Remove-GitHubProject
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestProject
-
-        Removes the project called 'TestProject' from the Microsoft\PowerShellForGitHub repository.
-
-    .EXAMPLE
-        Remove-GitHubProject -OrganizationName Microsoft -Name TestProject
-
-        Removes the project from the Microsoft organization called 'TestProject'.
-
-    .EXAMPLE
-        Remove-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -Name TestProject
-
-        Create a project for the Microsoft\PowerShellForGitHub repository using
-        the Uri called 'TestProject'.
-
-    .EXAMPLE
-        Remove-GitHubProject -UserName GitHubUser -Name TestProject
-
-        Removes a user project from GitHubUser.
-
-    .EXAMPLE
         Remove-GitHubProject -Project 4387531
 
-        Remove a project by id, with this parameter you don't need any other information.
+        Remove project with id '4387531'.
 
+    .EXAMPLE
+        $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        Remove-GitHubProject -Project $Project.id
+
+        Get the id for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        repository and then remove the project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements')]
+        ConfirmImpact = 'High')]
     [Alias('Delete-GitHubProject')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
-        [string] $OwnerName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
-        [string] $RepositoryName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
-        [string] $Uri,
-
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
-        [string] $OrganizationName,
-
-        [Parameter(Mandatory, ParameterSetName = 'User')]
-        [string] $UserName,
-
-        [Parameter(Mandatory, ParameterSetName = 'Project')]
+        [Parameter(Mandatory)]
         [int64] $Project,
 
-        [string] $Name,
-
-        [Parameter()]
         [string] $AccessToken,
 
-        [Parameter()]
         [switch] $NoStatus
     )
 
@@ -700,51 +493,21 @@ function Remove-GitHubProject
 
     $telemetryProperties = @{}
 
-    $uriFragment = [String]::Empty
-    $apiDescription = [String]::Empty
+    $uriFragment = "projects/$Project"
+    $description = "Deleting project $Project"
 
-    if ($PSBoundParameters.ContainsKey('Project'))
+    if ($PSCmdlet.ShouldProcess($project, "Remove project"))
     {
-        $projectObj = Get-GitHubProject -Project $Project
-    }
-    else
-    {
-        $projectDetails = @{}
-        foreach ($k in $($PSBoundParameters.Keys))
-        {
-            if($k -in ('OwnerName','RepositoryName','OrganizationName','UserName','Name','Uri'))
-            {
-                $projectDetails[$k] = $PSBoundParameters[$k]
-            }
+        $params = @{
+            'UriFragment' = $uriFragment
+            'Description' = $description
+            'AccessToken' = $AccessToken
+            'Method' = 'Delete'
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
         }
-
-        $projectObj = Get-GitHubProject @projectDetails -State All
-        if (-not $projectObj)
-        {
-            $message = 'Project was not found.'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
-        elseif (($projectObj | Measure-Object).count -ne 1)
-        {
-            $message = 'More than one project was returned, narrow down the criteria.'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
-    }
-
-    $uriFragment = "projects/$($projectObj.Id)"
-    $apiDescription = "Deleting project $($projectObj.Id)"
-
-    $params = @{
-        'UriFragment' = $uriFragment
-        'Description' = $apiDescription
-        'AccessToken' = $AccessToken
-        'Method' = 'Delete'
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
     return Invoke-GHRestMethod @params
