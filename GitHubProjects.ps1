@@ -508,7 +508,8 @@ function Remove-GitHubProject
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
             'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
         }
+
+        return Invoke-GHRestMethod @params
     }
 
-    return Invoke-GHRestMethod @params
 }
