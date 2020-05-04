@@ -303,7 +303,7 @@ function Move-GitHubProjectColumn
         Id of the column to move.
 
     .PARAMETER Position
-        The new position of th column.
+        The new position of the column.
         Can be one of first, last, or after:<column_id>, where <column_id> is the id value of a
         column in the same project.
 
