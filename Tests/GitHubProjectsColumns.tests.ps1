@@ -3,7 +3,7 @@
 
 <#
 .Synopsis
-   Tests for GitHubProjectsColumns.ps1 module
+   Tests for GitHubProjectColumns.ps1 module
 #>
 
 # This is common test code setup logic for all Pester test files
