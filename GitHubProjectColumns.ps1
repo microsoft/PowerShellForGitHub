@@ -61,15 +61,15 @@ function Get-GitHubProjectColumn
     {
         $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
-        $uriFragment = "/projects/$project/columns"
-        $description = "Getting project columns for $project"
+        $uriFragment = "/projects/$Project/columns"
+        $description = "Getting project columns for $Project"
     }
     if ($PSCmdlet.ParameterSetName -eq 'Column')
     {
         $telemetryProperties['Column'] = Get-PiiSafeString -PlainText $Column
 
         $uriFragment = "/projects/columns/$Column"
-        $description = "Getting project column $column"
+        $description = "Getting project column $Column"
     }
 
     $params = @{
@@ -135,8 +135,8 @@ function New-GitHubProjectColumn
     $telemetryProperties = @{}
     $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Name
 
-    $uriFragment = "/projects/$project/columns"
-    $apiDescription = "Creating project column $name"
+    $uriFragment = "/projects/$Project/columns"
+    $apiDescription = "Creating project column $Name"
 
     $hashBody = @{
         'name' = $Name
@@ -274,7 +274,7 @@ function Remove-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column"
     $description = "Deleting column $Column"
 
-    if ($PSCmdlet.ShouldProcess($column, "Remove column"))
+    if ($PSCmdlet.ShouldProcess($Column, "Remove column"))
     {
         $params = @{
             'UriFragment' = $uriFragment
