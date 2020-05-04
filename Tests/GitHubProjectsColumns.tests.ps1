@@ -24,7 +24,7 @@ try
 
     $project = New-GitHubProject -UserProject -Name $defaultProject
 
-    Describe 'Getting Project Columns' -Tag get {
+    Describe 'Getting Project Columns' {
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
         }
@@ -71,13 +71,13 @@ try
             $null = Move-GitHubProjectColumn -Column $columntwo.id -Position First
             $results = Get-GitHubProjectColumn -Project $project.id
 
-            It 'Name has been updated' {
+            It 'Column is now in the first position' {
                 $results[0].name | Should be $defaultColumnTwo
             }
         }
     }
 
-    Describe 'Create Project Column' -tag create {
+    Describe 'Create Project Column' {
         Context 'Create project column' {
             BeforeAll {
                 $column = @{id = 0}

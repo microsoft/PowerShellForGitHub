@@ -57,6 +57,7 @@ function Get-GitHubProjectColumn
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
+
     if ($PSCmdlet.ParameterSetName -eq 'Project')
     {
         $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
