@@ -166,7 +166,7 @@ function Set-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to retrieve.
+        Id of the column to modify.
 
     .PARAMETER Name
         The name for the column.
