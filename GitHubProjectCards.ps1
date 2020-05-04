@@ -241,7 +241,7 @@ function Set-GitHubProjectCard
         The note content for the card.
 
     .PARAMETER Archived
-        Archive or retore a project card.
+        Archive or restore a project card.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -457,6 +457,7 @@ function Move-GitHubProjectCard
         $telemetryProperties['Position'] = $true
         $hashBody.add('position', $Position.ToLower())
     }
+
     if ($PSBoundParameters.ContainsKey('ColumnId'))
     {
         if (!$PSBoundParameters.ContainsKey('Position'))
@@ -470,7 +471,7 @@ function Move-GitHubProjectCard
     }
 
     $params = @{
-    'UriFragment' = $uriFragment
+        'UriFragment' = $uriFragment
         'Description' = $apiDescription
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'AccessToken' = $AccessToken
