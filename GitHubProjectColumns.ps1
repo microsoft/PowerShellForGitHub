@@ -213,7 +213,7 @@ function Set-GitHubProjectColumn
     }
 
     $params = @{
-    'UriFragment' = $uriFragment
+        'UriFragment' = $uriFragment
         'Description' = $apiDescription
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'AccessToken' = $AccessToken
@@ -365,7 +365,7 @@ function Move-GitHubProjectColumn
     }
 
     $params = @{
-    'UriFragment' = $uriFragment
+        'UriFragment' = $uriFragment
         'Description' = $apiDescription
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'AccessToken' = $AccessToken
