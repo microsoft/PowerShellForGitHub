@@ -64,7 +64,7 @@ function Get-GitHubProjectColumn
         $uriFragment = "/projects/$Project/columns"
         $description = "Getting project columns for $Project"
     }
-    if ($PSCmdlet.ParameterSetName -eq 'Column')
+    elseif ($PSCmdlet.ParameterSetName -eq 'Column')
     {
         $telemetryProperties['Column'] = Get-PiiSafeString -PlainText $Column
 
