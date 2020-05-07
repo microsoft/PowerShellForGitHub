@@ -10,7 +10,7 @@ function Get-GitHubProjectCard
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to retrieve cards for.
+        ID of the column to retrieve cards for.
 
     .PARAMETER ArchivedState
         Only cards with this archived_state are returned.
@@ -119,7 +119,7 @@ function New-GitHubProjectCard
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to create a card for.
+        ID of the column to create a card for.
 
     .PARAMETER Note
         The name of the column to create.
@@ -235,7 +235,7 @@ function Set-GitHubProjectCard
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Card
-        Id of the card to modify.
+        ID of the card to modify.
 
     .PARAMETER Note
         The note content for the card.
@@ -316,7 +316,7 @@ function Remove-GitHubProjectCard
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Card
-        Id of the card to remove.
+        ID of the card to remove.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -332,6 +332,11 @@ function Remove-GitHubProjectCard
         Remove-GitHubProjectCard -Card 999999
 
         Remove project card with id 999999.
+
+    .EXAMPLE
+        Remove-GitHubProjectCard -Card 999999 -Confirm:$False
+
+        Remove project card with id 999999 without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -380,12 +385,16 @@ function Move-GitHubProjectCard
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Card
-        Id of the card to move.
+        ID of the card to move.
 
-   .PARAMETER Position
-        The new position of the card.
-        Can be one of top, bottom, or after:<card_id>, where <card_id> is the id value of a
-        card in the same column, or in the new column specified by ColumnId.
+    .PARAMETER Top
+        Moves the card to the top of the column.
+
+    .PARAMETER Bottom
+        Moves the card to the bottom of the column.
+
+    .PARAMETER After
+        Moves the card to the position after the card ID specified.
 
     .PARAMETER ColumnId
         The id of a column in the same project to move the card to.
@@ -401,28 +410,23 @@ function Move-GitHubProjectCard
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Card 999999 -Position Top
+        Move-GitHubProjectCard -Card 999999 -Top
 
         Moves the project card with id 999999 to the top of the column.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Card 999999 -Position Bottom
+        Move-GitHubProjectCard -Card 999999 -Bottom
 
         Moves the project card with id 999999 to the bottom of the column.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Card 999999 -ColumnId 123456
-
-        Moves the project card with id 999999 to the column with id 123456.
-
-    .EXAMPLE
-        Move-GitHubProjectCard -Column 999999 -Position After:888888
+        Move-GitHubProjectCard -Column 999999 -After 888888
 
         Moves the project card with id 999999 to the position after the card id 888888.
         Within the same column.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Column 999999 -Position After:888888 -ColumnId 123456
+        Move-GitHubProjectCard -Column 999999 -After 888888 -ColumnId 123456
 
         Moves the project card with id 999999 to the position after the card id 888888, in
         the column with id 123456.
@@ -434,7 +438,11 @@ function Move-GitHubProjectCard
         [Parameter(Mandatory)]
         [int64] $Card,
 
-        [string] $Position,
+        [switch] $Top,
+
+        [switch] $Bottom,
+
+        [int64] $After,
 
         [int64] $ColumnId,
 
@@ -450,22 +458,43 @@ function Move-GitHubProjectCard
     $uriFragment = "/projects/columns/cards/$Card/moves"
     $apiDescription = "Updating card $Card"
 
-    $hashBody = @{}
-
-    if ($PSBoundParameters.ContainsKey('Position'))
+    $paramsCount = 0
+    foreach ($key in $PSBoundParameters.Keys)
     {
-        $telemetryProperties['Position'] = $true
-        $hashBody.add('position', $Position.ToLower())
+        if ($key -in ('Top', 'Bottom', 'After'))
+        {
+            if($PSBoundParameters[$key] -ne $false)
+            {
+                $paramsCount ++
+            }
+        }
+    }
+
+    if($paramsCount -ne 1)
+    {
+        $message = 'You must use one of the parameters Top, Bottom or After.'
+        Write-Log -Message $message -level Error
+        throw $message
+    }
+    elseif($Top)
+    {
+        $position = 'top'
+    }
+    elseif($Bottom)
+    {
+        $position = 'bottom'
+    }
+    else
+    {
+        $position = "after:$After"
+    }
+
+    $hashBody = @{
+        'position' = $Position
     }
 
     if ($PSBoundParameters.ContainsKey('ColumnId'))
     {
-        if (!$PSBoundParameters.ContainsKey('Position'))
-        {
-            $message = "When specifying ColumnId, you must also specify Position."
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
         $telemetryProperties['ColumnId'] = $true
         $hashBody.add('column_id', $ColumnId)
     }

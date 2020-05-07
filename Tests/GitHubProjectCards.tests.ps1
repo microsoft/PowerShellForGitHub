@@ -110,7 +110,7 @@ try
         }
 
         Context 'Move column position within column' {
-            $null = Move-GitHubProjectCard -Card $cardTwo.id -Position Top
+            $null = Move-GitHubProjectCard -Card $cardTwo.id -Top
             $results = Get-GitHubProjectCard -Column $column.id
 
             It 'Card is now top' {
@@ -118,8 +118,17 @@ try
             }
         }
 
+        Context 'Move column using after parameter' {
+            $null = Move-GitHubProjectCard -Card $cardTwo.id -After $card.id
+            $results = Get-GitHubProjectCard -Column $column.id
+
+            It 'Card now exists in new column' {
+                $results[1].note | Should be $defaultCardTwo
+            }
+        }
+
         Context 'Move column to another column' {
-            $null = Move-GitHubProjectCard -Card $cardTwo.id -Position Top -ColumnId $columnTwo.id
+            $null = Move-GitHubProjectCard -Card $cardTwo.id -Top -ColumnId $columnTwo.id
             $results = Get-GitHubProjectCard -Column $columnTwo.id
 
             It 'Card now exists in new column' {
