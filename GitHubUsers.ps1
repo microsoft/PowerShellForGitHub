@@ -55,7 +55,7 @@ function Get-GitHubUser
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='ListAndSearch')]
+        DefaultParameterSetName='ListAndSearch')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='ListAndSearch')]

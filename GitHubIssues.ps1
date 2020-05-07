@@ -33,7 +33,7 @@ function Get-GitHubIssue
         ownedAndMember: Retrieve issues across owned and member repositories
 
     .PARAMETER Issue
-        The number of specic Issue to retrieve.  If not supplied, will return back all
+        The number of specific Issue to retrieve.  If not supplied, will return back all
         Issues for this Repository that match the specified criteria.
 
     .PARAMETER IgnorePullRequests
@@ -117,7 +117,7 @@ function Get-GitHubIssue
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -376,7 +376,7 @@ function Get-GitHubIssueTimeline
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -456,7 +456,7 @@ function New-GitHubIssue
         Login(s) for Users to assign to the issue.
 
     .PARAMETER Milestone
-        The number of the mileston to associate this issue with.
+        The number of the milestone to associate this issue with.
 
     .PARAMETER Label
         Label(s) to associate with this issue.
@@ -484,7 +484,7 @@ function New-GitHubIssue
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -591,7 +591,7 @@ function Update-GitHubIssue
         Provide an empty array to clear all existing assignees.
 
     .PARAMETER Milestone
-        The number of the mileston to associate this issue with.
+        The number of the milestone to associate this issue with.
         Set to 0/$null to remove current.
 
     .PARAMETER Label
@@ -624,7 +624,7 @@ function Update-GitHubIssue
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -749,7 +749,7 @@ function Lock-GitHubIssue
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -859,7 +859,7 @@ function Unlock-GitHubIssue
 #>
 [CmdletBinding(
     SupportsShouldProcess,
-    DefaultParametersetName='Elements')]
+    DefaultParameterSetName='Elements')]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
 param(
     [Parameter(ParameterSetName='Elements')]

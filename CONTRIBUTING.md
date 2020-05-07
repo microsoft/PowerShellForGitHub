@@ -301,14 +301,14 @@ Install-Module -Name Pester
 #### Configuring Your Environment
 The tests intentionally do not mock out interaction with the real GitHub API, as we want to know
 when our interaction with the API has been broken.  That means that to execute the tests, you will
-need Administrator privelege for an account.  For our purposes, we have a "test" account that our
+need Administrator privilege for an account.  For our purposes, we have a "test" account that our
 team uses for having the tests [run automated](#automated-tests).  For you to run the tests locally,
 you must make a couple changes:
 
- 1. Choose if you'll be executing the tests on your own pesonal account or your own test account
+ 1. Choose if you'll be executing the tests on your own personal account or your own test account
     (the tests should be non-destructive, but ... hey ... we are developing code here, mistakes happen.)
  2. Update your local copy of [tests/config/Settings.ps1](./tests/config/Settings.ps1) to note
-    the `OwerName` and `OrganizationName` that the tests will be running under.
+    the `OwnerName` and `OrganizationName` that the tests will be running under.
     > While you can certainly check-in this file to your own fork, please DO NOT include your
     > changes as part of any pull request that you may make.  The `.gitignore` file tries
     > to help prevent that.
@@ -358,7 +358,7 @@ The [Azure DevOps pipeline](https://dev.azure.com/ms/PowerShellForGitHub/_build?
 has been [configured](https://github.com/microsoft/PowerShellForGitHub/blob/master/build/pipelines/templates/run-unitTests.yaml#L25-L28)
 to execute the tests against a test GitHub account (for the user `PowerShellForGitHubTeam`,
 and the org `PowerShellForGitHubTeamTestOrg`).  You will see the AccessToken being referenced there
-as well...it is stored, encryted, within Azure DevOps.  It is not accessible for use outside of
+as well...it is stored, encrypted, within Azure DevOps.  It is not accessible for use outside of
 the CI pipeline.  To run the tests locally with your own account, see
 [configuring-your-environment](#configuring-your-environment).
 

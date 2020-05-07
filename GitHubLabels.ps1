@@ -26,7 +26,7 @@ function Get-GitHubLabel
         them individually.
 
     .PARAMETER Name
-        Name of the specific label to be retieved.  If not supplied, all labels will be retrieved.
+        Name of the specific label to be retrieved.  If not supplied, all labels will be retrieved.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
     .PARAMETER Issue
@@ -58,7 +58,7 @@ function Get-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -204,7 +204,7 @@ function New-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -318,7 +318,7 @@ function Remove-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Alias('Delete-GitHubLabel')]
     param(
@@ -424,7 +424,7 @@ function Update-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -537,7 +537,7 @@ function Set-GitHubLabel
         This method does not rename any existing labels, as it doesn't have any context regarding
         which Issue the new name is for.  Therefore, it is possible that by running this function
         on a repository with Issues that have already been assigned Labels, you may experience data
-        loss as a minor correction to you (maye fixing a typo) will result in the old Label being
+        loss as a minor correction to you (maybe fixing a typo) will result in the old Label being
         removed (and thus unassigned from existing Issues) and then the new one created.
 
     .EXAMPLE
@@ -549,7 +549,7 @@ function Set-GitHubLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -660,7 +660,7 @@ function Add-GitHubIssueLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -761,7 +761,7 @@ function Set-GitHubIssueLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -863,7 +863,7 @@ function Remove-GitHubIssueLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Alias('Delete-GitHubLabel')]
     param(

@@ -26,7 +26,7 @@ function Get-GitHubRepositoryBranch
         them individually.
 
     .PARAMETER Name
-        Name of the specific branch to be retieved.  If not supplied, all branches will be retrieved.
+        Name of the specific branch to be retrieved.  If not supplied, all branches will be retrieved.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -53,7 +53,7 @@ function Get-GitHubRepositoryBranch
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Alias('Get-GitHubBranch')]
     param(

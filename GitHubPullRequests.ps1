@@ -26,7 +26,7 @@ function Get-GitHubPullRequest
         them individually.
 
     .PARAMETER PullRequest
-        The specic pull request id to return back.  If not supplied, will return back all
+        The specific pull request id to return back.  If not supplied, will return back all
         pull requests for the specified Repository.
 
     .PARAMETER State
@@ -69,7 +69,7 @@ function Get-GitHubPullRequest
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
