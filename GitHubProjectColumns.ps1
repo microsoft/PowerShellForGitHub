@@ -10,10 +10,10 @@ function Get-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Project
-        Id of the project to retrieve a list of columns for.
+        ID of the project to retrieve a list of columns for.
 
     .PARAMETER Column
-        Id of the column to retrieve.
+        ID of the column to retrieve.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -95,7 +95,7 @@ function New-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Project
-        Id of the project to create a column for.
+        ID of the project to create a column for.
 
     .PARAMETER Name
         The name of the column to create.
@@ -134,7 +134,7 @@ function New-GitHubProjectColumn
     Write-InvocationLog
 
     $telemetryProperties = @{}
-    $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Name
+    $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Project
 
     $uriFragment = "/projects/$Project/columns"
     $apiDescription = "Creating project column $Name"
@@ -167,7 +167,7 @@ function Set-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to modify.
+        ID of the column to modify.
 
     .PARAMETER Name
         The name for the column.
@@ -237,7 +237,7 @@ function Remove-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to remove.
+        ID of the column to remove.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -253,6 +253,11 @@ function Remove-GitHubProjectColumn
         Remove-GitHubProjectColumn -Column 999999
 
         Remove project column with id 999999.
+
+    .EXAMPLE
+        Remove-GitHubProjectColumn -Column 999999 -Confirm:$False
+
+        Removes the project column with id 999999 without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -301,12 +306,17 @@ function Move-GitHubProjectColumn
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Column
-        Id of the column to move.
+        ID of the column to move.
 
-    .PARAMETER Position
-        The new position of the column.
-        Can be one of first, last, or after:<column_id>, where <column_id> is the id value of a
-        column in the same project.
+    .PARAMETER First
+        Moves the column to be the first for the project.
+
+    .PARAMETER Last
+        Moves the column to be the last for the project.
+
+    .PARAMETER After
+        Moves the column to the position after the column ID specified.
+        Must be within the same project.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -319,22 +329,17 @@ function Move-GitHubProjectColumn
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Move-GitHubProjectColumn -Column 999999 -Position First
+        Move-GitHubProjectColumn -Column 999999 -First
 
         Moves the project column with id 999999 to the first position.
 
     .EXAMPLE
-        Move-GitHubProjectColumn -Column 999999 -Position First
-
-        Moves the project column with id 999999 to the first position.
-
-    .EXAMPLE
-        Move-GitHubProjectColumn -Column 999999 -Position Last
+        Move-GitHubProjectColumn -Column 999999 -Last
 
         Moves the project column with id 999999 to the Last position.
 
     .EXAMPLE
-        Move-GitHubProjectColumn -Column 999999 -Position After:888888
+        Move-GitHubProjectColumn -Column 999999 -After 888888
 
         Moves the project column with id 999999 to the position after column with id 888888.
 #>
@@ -345,9 +350,11 @@ function Move-GitHubProjectColumn
         [Parameter(Mandatory)]
         [int64] $Column,
 
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Position,
+        [switch] $First,
+
+        [switch] $Last,
+
+        [int64] $After,
 
         [string] $AccessToken,
 
@@ -361,8 +368,39 @@ function Move-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column/moves"
     $apiDescription = "Updating column $Column"
 
+    $paramsCount = 0
+    foreach ($key in $PSBoundParameters.Keys)
+    {
+        if ($key -in ('Last', 'First', 'After'))
+        {
+            if($PSBoundParameters[$key] -ne $false)
+            {
+                $paramsCount ++
+            }
+        }
+    }
+
+    if($paramsCount -ne 1)
+    {
+        $message = 'You must use one of the parameters First, Last or After.'
+        Write-Log -Message $message -level Error
+        throw $message
+    }
+    elseif($first)
+    {
+        $position = 'first'
+    }
+    elseif($last)
+    {
+        $position = 'last'
+    }
+    else
+    {
+        $position = "after:$after"
+    }
+
     $hashBody = @{
-        'position' = $Position.ToLower()
+        'position' = $Position
     }
 
     $params = @{

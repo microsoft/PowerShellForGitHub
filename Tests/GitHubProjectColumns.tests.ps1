@@ -67,12 +67,21 @@ try
             }
         }
 
-        Context 'Move column position' {
-            $null = Move-GitHubProjectColumn -Column $columntwo.id -Position First
+        Context 'Move column to first position' {
+            $null = Move-GitHubProjectColumn -Column $columntwo.id -First
             $results = Get-GitHubProjectColumn -Project $project.id
 
             It 'Column is now in the first position' {
                 $results[0].name | Should be $defaultColumnTwo
+            }
+        }
+
+        Context 'Move column using after parameter' {
+            $null = Move-GitHubProjectColumn -Column $columntwo.id -After $column.id
+            $results = Get-GitHubProjectColumn -Project $project.id
+
+            It 'Column is now not in the first position' {
+                $results[1].name | Should be $defaultColumnTwo
             }
         }
     }
