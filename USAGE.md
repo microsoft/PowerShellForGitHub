@@ -56,6 +56,15 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
+    *   [Projects](#Projects)
+        *   [Get projects for a repository](#get-projects-for-a-repository)
+        *   [Get projects for a user](#get-projects-for-a-user)
+        *   [Create a project](#create-a-project)
+        *   [Add a column to a project](#add-a-column-to-a-project)
+        *   [Add a card to a column](#add-a-card-to-a-column)
+        *   [Add an existing issue as a card to a column](#add-an-existing-issue-as-a-card-to-a-column)
+        *   [Move a card to be after a certain card in the same column](Move-a-card-to-be-after-a-certain-card-in-the-same-column)
+        *   [Move a card to the bottom of another column](Move-a-card-to-the-bottom-of-another-column)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -497,6 +506,50 @@ Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 
 #### Get a single event
 ```powershell
 Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
+```
+
+----------
+
+### Projects
+
+#### Get projects for a repository
+```powershell
+Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Get projects for a user
+```powershell
+Get-GitHubProject -UserName octocat
+```
+
+#### Create a project
+```powershell
+New-GitHubProject -OwnerName jpomfret -RepositoryName PowerShellForGitHub -Name TestProject
+```
+
+#### Add a column to a project
+```powershell
+New-GitHubProjectColumn -Project 1 -Name 'To Do'
+```
+
+#### Add a card to a column
+```powershell
+New-GitHubProjectCard -Column 2 -Note 'Fix this bug'
+```
+
+#### Add an existing issue as a card to a column
+```powershell
+New-GitHubProjectCard -Column 2 -ContentId 3 -ContentType Issue
+```
+
+#### Move a card to be after a certain card in the same column
+```powershell
+Move-GitHubProjectCard -Card 4 -After 5
+```
+
+#### Move a card to the bottom of another column
+```powershell
+Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
 ```
 
 ----------
