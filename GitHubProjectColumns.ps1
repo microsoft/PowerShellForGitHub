@@ -386,17 +386,17 @@ function Move-GitHubProjectColumn
         Write-Log -Message $message -level Error
         throw $message
     }
-    elseif($first)
+    elseif($First)
     {
         $position = 'first'
     }
-    elseif($last)
+    elseif($Last)
     {
         $position = 'last'
     }
     else
     {
-        $position = "after:$after"
+        $position = "after:$After"
     }
 
     $hashBody = @{
