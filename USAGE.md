@@ -10,7 +10,7 @@
         *   [Querying Pull Requests](#querying-pull-requests)
         *   [Querying Collaborators](#querying-collaborators)
         *   [Querying Contributors](#querying-contributors)
-        *   [Quering Team and Organization Membership](#querying-team-and-organization-membership)
+        *   [Querying Team and Organization Membership](#querying-team-and-organization-membership)
     *   [Labels](#labels)
         *   [Getting Labels for a Repository](#getting-labels-for-a-repository)
         *   [Getting Labels for an issue](#getting-labels-for-an-issue)
@@ -280,7 +280,7 @@ Get-GitHubRepositoryContributor -OwnerName 'PowerShell' -RepositoryName 'PowerSh
     Sort-Object
 ```
 
-#### Quering Team and Organization Membership
+#### Querying Team and Organization Membership
 
 ```powershell
 $organizationMembers = Get-GitHubOrganizationMembers -OrganizationName 'OrganizationName'
@@ -313,7 +313,7 @@ New-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration 
 
 #### Removing a Label From a Repository
 ```powershell
-Remove-GitHubLabel -OwnerName PowerShell -RepositoryName desiredstateconfiguration -Name TestLabel
+Remove-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Name TestLabel
 ```
 
 #### Adding Labels to an Issue
@@ -324,7 +324,7 @@ Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryNam
 
 #### Removing a Label From an Issue
 ```powershell
-Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
+Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color
@@ -407,7 +407,7 @@ Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub 
 
 #### Get assignees
 ```powershell
-Get-GitHubAsignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Check assignee permission
@@ -524,7 +524,7 @@ Get-GitHubProject -UserName octocat
 
 #### Create a project
 ```powershell
-New-GitHubProject -OwnerName jpomfret -RepositoryName PowerShellForGitHub -Name TestProject
+New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -Name TestProject
 ```
 
 #### Add a column to a project
