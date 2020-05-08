@@ -157,7 +157,7 @@ try
         }
 
         Context 'Move command throws appropriate error' {
-            It 'Card now exists in new column' {
+            It 'Appropriate error is thrown' {
                 { Move-GitHubProjectCard -Card $cardTwo.id -Top -Bottom } | Should Throw 'You must use one (and only one) of the parameters Top, Bottom or After.'
             }
         }
