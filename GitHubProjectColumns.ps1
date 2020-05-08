@@ -33,7 +33,7 @@ function Get-GitHubProjectColumn
     .EXAMPLE
         Get-GitHubProjectColumn -Column 999999
 
-        Get the column with id 999999.
+        Get the column with ID 999999.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -113,7 +113,7 @@ function New-GitHubProjectColumn
     .EXAMPLE
         New-GitHubProjectColumn -Project 999999 -Name 'Done'
 
-        Creates a column called 'Done' for the project with id 999999.
+        Creates a column called 'Done' for the project with ID 999999.
 #>
     [CmdletBinding(
         SupportsShouldProcess)]
@@ -185,7 +185,7 @@ function Set-GitHubProjectColumn
     .EXAMPLE
         Set-GitHubProjectColumn -Column 999999 -Name NewColumnName
 
-        Set the project column name to 'NewColumnName' with column with id 999999.
+        Set the project column name to 'NewColumnName' with column with ID 999999.
 #>
     [CmdletBinding(
         SupportsShouldProcess)]
@@ -252,12 +252,12 @@ function Remove-GitHubProjectColumn
     .EXAMPLE
         Remove-GitHubProjectColumn -Column 999999
 
-        Remove project column with id 999999.
+        Remove project column with ID 999999.
 
     .EXAMPLE
         Remove-GitHubProjectColumn -Column 999999 -Confirm:$False
 
-        Removes the project column with id 999999 without prompting for confirmation.
+        Removes the project column with ID 999999 without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -331,17 +331,17 @@ function Move-GitHubProjectColumn
     .EXAMPLE
         Move-GitHubProjectColumn -Column 999999 -First
 
-        Moves the project column with id 999999 to the first position.
+        Moves the project column with ID 999999 to the first position.
 
     .EXAMPLE
         Move-GitHubProjectColumn -Column 999999 -Last
 
-        Moves the project column with id 999999 to the Last position.
+        Moves the project column with ID 999999 to the Last position.
 
     .EXAMPLE
         Move-GitHubProjectColumn -Column 999999 -After 888888
 
-        Moves the project column with id 999999 to the position after column with id 888888.
+        Moves the project column with ID 999999 to the position after column with ID 888888.
 #>
     [CmdletBinding(
         SupportsShouldProcess)]
@@ -368,21 +368,9 @@ function Move-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column/moves"
     $apiDescription = "Updating column $Column"
 
-    $paramsCount = 0
-    foreach ($key in $PSBoundParameters.Keys)
+    if (-not ($First -xor $Last -xor ($After -gt 0)))
     {
-        if ($key -in ('Last', 'First', 'After'))
-        {
-            if($PSBoundParameters[$key] -ne $false)
-            {
-                $paramsCount ++
-            }
-        }
-    }
-
-    if($paramsCount -ne 1)
-    {
-        $message = 'You must use one of the parameters First, Last or After.'
+        $message = 'You must use one (and only one) of the parameters First, Last or After.'
         Write-Log -Message $message -level Error
         throw $message
     }

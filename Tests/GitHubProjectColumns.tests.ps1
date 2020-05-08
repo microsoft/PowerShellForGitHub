@@ -84,6 +84,12 @@ try
                 $results[1].name | Should be $defaultColumnTwo
             }
         }
+
+        Context 'Move command throws appropriate error' {
+            It 'Expected error returned' {
+                { Move-GitHubProjectColumn -Column $column.id -First -Last } | Should Throw 'You must use one (and only one) of the parameters First, Last or After.'
+            }
+        }
     }
 
     Describe 'Create Project Column' {
@@ -93,7 +99,7 @@ try
             }
             AfterAll {
                 $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
-                Remove-Variable column
+                Remove-Variable -Name column
             }
 
             $column.id = (New-GitHubProjectColumn -Project $project.id -Name $defaultColumn).id
