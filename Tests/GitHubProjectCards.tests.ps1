@@ -40,7 +40,7 @@ try
         BeforeAll {
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
             $cardArchived = New-GitHubProjectCard -Column $column.id -Note $defaultArchivedCard
-            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archived
+            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
         }
         AfterAll {
             $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
@@ -54,6 +54,13 @@ try
 
             It 'Note is correct' {
                 $results.note | Should be $defaultCard
+            }
+        }
+
+        Context 'Get all cards for a column' {
+            $results = Get-GitHubProjectCard -Column $column.id -ArchivedState All
+            It 'Should get all cards' {
+                $results.Count | Should Be 2
             }
         }
 
@@ -96,8 +103,8 @@ try
             }
         }
 
-        Context 'Modify card to be archived' {
-            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archived
+        Context 'Archive a card' {
+            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
             $results = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {
@@ -109,7 +116,20 @@ try
             }
         }
 
-        Context 'Move column position within column' {
+        Context 'Restore a card' {
+            $null = Set-GitHubProjectCard -Card $cardArchived.id -Restore
+            $results = Get-GitHubProjectCard -Card $cardArchived.id
+
+            It 'Should get card' {
+                $results | Should Not BeNullOrEmpty
+            }
+
+            It 'Card is not archived' {
+                $results.Archived | Should be $false
+            }
+        }
+
+        Context 'Move card position within column' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top
             $results = Get-GitHubProjectCard -Column $column.id
 
@@ -118,7 +138,7 @@ try
             }
         }
 
-        Context 'Move column using after parameter' {
+        Context 'Move card using after parameter' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -After $card.id
             $results = Get-GitHubProjectCard -Column $column.id
 
@@ -127,12 +147,18 @@ try
             }
         }
 
-        Context 'Move column to another column' {
+        Context 'Move card to another column' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top -ColumnId $columnTwo.id
             $results = Get-GitHubProjectCard -Column $columnTwo.id
 
             It 'Card now exists in new column' {
                 $results[0].note | Should be $defaultCardTwo
+            }
+        }
+
+        Context 'Move command throws appropriate error' {
+            It 'Card now exists in new column' {
+                { Move-GitHubProjectCard -Card $cardTwo.id -Top -Bottom } | Should Throw 'You must use one (and only one) of the parameters Top, Bottom or After.'
             }
         }
     }
@@ -144,7 +170,7 @@ try
             }
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
-                Remove-Variable card
+                Remove-Variable -Name card
             }
 
             $card.id = (New-GitHubProjectCard -Column $column.id -Note $defaultCard).id
@@ -165,7 +191,7 @@ try
             }
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
-                Remove-Variable card
+                Remove-Variable -Name card
             }
 
             $card.id = (New-GitHubProjectCard -Column $column.id -ContentId $issue.id -ContentType 'Issue').id

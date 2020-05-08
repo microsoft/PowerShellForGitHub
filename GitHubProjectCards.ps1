@@ -13,8 +13,8 @@ function Get-GitHubProjectCard
         ID of the column to retrieve cards for.
 
     .PARAMETER ArchivedState
-        Only cards with this archived_state are returned.
-        Options are all, archived, or not_archived (default).
+        Only cards with this ArchivedState are returned.
+        Options are all, archived, or NotArchived (default).
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -34,7 +34,7 @@ function Get-GitHubProjectCard
     .EXAMPLE
         Get-GitHubProjectCard -Column 999999 -ArchivedState All
 
-        Gets all the cards for column 999999, no matter the archived_state.
+        Gets all the cards for column 999999, no matter the ArchivedState.
 
     .EXAMPLE
         Get-GitHubProjectCard -Column 999999 -ArchivedState Archived
@@ -44,7 +44,7 @@ function Get-GitHubProjectCard
     .EXAMPLE
         Get-GitHubProjectCard -Card 999999
 
-        Gets the card with id 999999.
+        Gets the card with ID 999999.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -57,8 +57,8 @@ function Get-GitHubProjectCard
         [Parameter(Mandatory, ParameterSetName = 'Card')]
         [int64] $Card,
 
-        [ValidateSet('All', 'Archived', 'Not_Archived')]
-        [string] $ArchivedState,
+        [ValidateSet('All', 'Archived', 'NotArchived')]
+        [string] $ArchivedState = 'NotArchived',
 
         [string] $AccessToken,
 
@@ -90,11 +90,11 @@ function Get-GitHubProjectCard
     if ($PSBoundParameters.ContainsKey('ArchivedState'))
     {
         $getParams = @()
-        $ArchivedState = $ArchivedState.ToLower()
-        $getParams += "archived_state=$ArchivedState"
+        $Archived = $ArchivedState.ToLower().Replace('notarchived','not_archived')
+        $getParams += "archived_state=$Archived"
 
         $uriFragment = "$uriFragment`?" + ($getParams -join '&')
-        $description += " with archived_state '$Archived_State'"
+        $description += " with ArchivedState '$Archived'"
     }
 
     $params = @{
@@ -125,12 +125,12 @@ function New-GitHubProjectCard
         The name of the column to create.
 
     .PARAMETER ContentId
-        The issue or pull request id you want to associate with this card.
+        The issue or pull request ID you want to associate with this card.
 
     .PARAMETER ContentType
         The type of content you want to associate with this card.
         Required if you provide ContentId.
-        Use Issue when ContentId is an issue id and use PullRequest when ContentId is a pull request id.
+        Use Issue when ContentId is an issue ID and use PullRequest when ContentId is a pull request id.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -150,17 +150,17 @@ function New-GitHubProjectCard
     .EXAMPLE
         New-GitHubProjectCard -Column 999999 -ContentId 888888 -ContentType Issue
 
-        Creates a card on column 999999 for the issue with id 888888.
+        Creates a card on column 999999 for the issue with ID 888888.
 
     .EXAMPLE
         New-GitHubProjectCard -Column 999999 -ContentId 888888 -ContentType Issue
 
-        Creates a card on column 999999 for the issue with id 888888.
+        Creates a card on column 999999 for the issue with ID 888888.
 
     .EXAMPLE
         New-GitHubProjectCard -Column 999999 -ContentId 777777 -ContentType PullRequest
 
-        Creates a card on column 999999 for the pull request with id 777777.
+        Creates a card on column 999999 for the pull request with ID 777777.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -175,7 +175,7 @@ function New-GitHubProjectCard
         [string] $Note,
 
         [Parameter(Mandatory, ParameterSetName = 'Content')]
-        [int] $ContentId,
+        [int64] $ContentId,
 
         [Parameter(Mandatory, ParameterSetName = 'Content')]
         [ValidateSet('Issue', 'PullRequest')]
@@ -238,10 +238,14 @@ function Set-GitHubProjectCard
         ID of the card to modify.
 
     .PARAMETER Note
-        The note content for the card.
+        The note content for the card.  Only valid for cards without another type of content,
+        so this cannot be specified if the card already has a content_id and content_type.
 
-    .PARAMETER Archived
-        Archive or restore a project card.
+    .PARAMETER Archive
+        Archive a project card.
+
+    .PARAMETER Restore
+        Restore a project card.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -254,12 +258,23 @@ function Set-GitHubProjectCard
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Set-GitHubProjectColumn -Column 999999 -Name NewColumnName
+        Set-GitHubProjectCard -Card 999999 -Note UpdatedNote
 
-        Set the project column name to 'NewColumnName' with column with id 999999.
+        Sets the card note to 'UpdatedNote' for the card with ID 999999.
+
+    .EXAMPLE
+        Set-GitHubProjectCard -Card 999999 -Archive
+
+        Archives the card with ID 999999.
+
+    .EXAMPLE
+        Set-GitHubProjectCard -Card 999999 -Restore
+
+        Restores the card with ID 999999.
 #>
     [CmdletBinding(
-        SupportsShouldProcess)]
+    SupportsShouldProcess,
+    DefaultParameterSetName = 'Note')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory)]
@@ -267,7 +282,13 @@ function Set-GitHubProjectCard
 
         [string] $Note,
 
-        [switch] $Archived,
+        [Parameter(ParameterSetName = 'Archive')]
+        [switch] $Archive,
+
+        [Parameter(ParameterSetName = 'Restore')]
+        [switch] $Restore,
+
+        [string] $AccessToken,
 
         [switch] $NoStatus
     )
@@ -286,10 +307,17 @@ function Set-GitHubProjectCard
         $telemetryProperties['Note'] = $true
         $hashBody.add('note', $Note)
     }
-    if ($PSBoundParameters.ContainsKey('Archived'))
+
+    if ($Archive)
     {
-        $telemetryProperties['Archived'] = $true
-        $hashBody.add('archived', $Archived.ToBool())
+        $telemetryProperties['Archive'] = $true
+        $hashBody.add('archived', $true)
+    }
+
+    if ($Restore)
+    {
+        $telemetryProperties['Restore'] = $true
+        $hashBody.add('archived', $false)
     }
 
     $params = @{
@@ -331,12 +359,12 @@ function Remove-GitHubProjectCard
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999
 
-        Remove project card with id 999999.
+        Remove project card with ID 999999.
 
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999 -Confirm:$False
 
-        Remove project card with id 999999 without prompting for confirmation.
+        Remove project card with ID 999999 without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -397,7 +425,7 @@ function Move-GitHubProjectCard
         Moves the card to the position after the card ID specified.
 
     .PARAMETER ColumnId
-        The id of a column in the same project to move the card to.
+        The ID of a column in the same project to move the card to.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -412,24 +440,24 @@ function Move-GitHubProjectCard
     .EXAMPLE
         Move-GitHubProjectCard -Card 999999 -Top
 
-        Moves the project card with id 999999 to the top of the column.
+        Moves the project card with ID 999999 to the top of the column.
 
     .EXAMPLE
         Move-GitHubProjectCard -Card 999999 -Bottom
 
-        Moves the project card with id 999999 to the bottom of the column.
+        Moves the project card with ID 999999 to the bottom of the column.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Column 999999 -After 888888
+        Move-GitHubProjectCard -Card 999999 -After 888888
 
-        Moves the project card with id 999999 to the position after the card id 888888.
+        Moves the project card with ID 999999 to the position after the card ID 888888.
         Within the same column.
 
     .EXAMPLE
-        Move-GitHubProjectCard -Column 999999 -After 888888 -ColumnId 123456
+        Move-GitHubProjectCard -Card 999999 -After 888888 -ColumnId 123456
 
-        Moves the project card with id 999999 to the position after the card id 888888, in
-        the column with id 123456.
+        Moves the project card with ID 999999 to the position after the card ID 888888, in
+        the column with ID 123456.
 #>
     [CmdletBinding(
         SupportsShouldProcess)]
@@ -458,29 +486,17 @@ function Move-GitHubProjectCard
     $uriFragment = "/projects/columns/cards/$Card/moves"
     $apiDescription = "Updating card $Card"
 
-    $paramsCount = 0
-    foreach ($key in $PSBoundParameters.Keys)
+    if (-not ($Top -xor $Bottom -xor ($After -gt 0)))
     {
-        if ($key -in ('Top', 'Bottom', 'After'))
-        {
-            if($PSBoundParameters[$key] -ne $false)
-            {
-                $paramsCount ++
-            }
-        }
-    }
-
-    if($paramsCount -ne 1)
-    {
-        $message = 'You must use one of the parameters Top, Bottom or After.'
+        $message = 'You must use one (and only one) of the parameters Top, Bottom or After.'
         Write-Log -Message $message -level Error
         throw $message
     }
-    elseif($Top)
+    elseif ($Top)
     {
         $position = 'top'
     }
-    elseif($Bottom)
+    elseif ($Bottom)
     {
         $position = 'bottom'
     }
