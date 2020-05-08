@@ -29,7 +29,7 @@ function Get-GitHubProject
         The name of the user to get projects for.
 
     .PARAMETER Project
-        Id of the project to retrieve.
+        ID of the project to retrieve.
 
     .PARAMETER State
         Only projects with this state are returned.
@@ -333,7 +333,7 @@ function Set-GitHubProject
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Project
-        Id of the project to modify.
+        ID of the project to modify.
 
     .PARAMETER Description
         Short description for the project.
@@ -363,13 +363,13 @@ function Set-GitHubProject
     .EXAMPLE
         Set-GitHubProject -Project 999999 -State Closed
 
-        Set the project with id '999999' to closed.
+        Set the project with ID '999999' to closed.
 
     .EXAMPLE
         $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Set-GitHubProject -Project $Project.id -State Closed
 
-        Get the id for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
         repository and set state to closed.
 #>
     [CmdletBinding(
@@ -451,7 +451,7 @@ function Remove-GitHubProject
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Project
-        Id of the project to remove.
+        ID of the project to remove.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -466,13 +466,13 @@ function Remove-GitHubProject
     .EXAMPLE
         Remove-GitHubProject -Project 4387531
 
-        Remove project with id '4387531'.
+        Remove project with ID '4387531'.
 
     .EXAMPLE
         $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Remove-GitHubProject -Project $Project.id
 
-        Get the id for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
         repository and then remove the project.
 #>
     [CmdletBinding(
