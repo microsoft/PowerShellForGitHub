@@ -28,10 +28,10 @@ function Invoke-GHRestMethod
 
     .PARAMETER UriFragment
         The unique, tail-end, of the REST URI that indicates what Store REST action will
-        be peformed.  This should not start with a leading "/".
+        be performed.  This should not start with a leading "/".
 
     .PARAMETER Method
-        The type of REST method being peformed.  This only supports a reduced set of the
+        The type of REST method being performed.  This only supports a reduced set of the
         possible REST methods (delete, get, post, put).
 
     .PARAMETER Description
@@ -77,7 +77,7 @@ function Invoke-GHRestMethod
         the background, enabling the command prompt to provide status information.
 
     .OUTPUTS
-        [PSCutomObject] - The result of the REST operation, in whatever form it comes in.
+        [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
 
     .EXAMPLE
         Invoke-GHRestMethod -UriFragment "applications/" -Method Get -Description "Get first 10 applications"
@@ -543,7 +543,7 @@ function Invoke-GHRestMethodMultipleResult
 
     .PARAMETER UriFragment
         The unique, tail-end, of the REST URI that indicates what Store REST action will
-        be peformed.  This should *not* include the 'top' and 'max' parameters.  These
+        be performed.  This should *not* include the 'top' and 'max' parameters.  These
         will be automatically added as needed.
 
     .PARAMETER Description
@@ -576,7 +576,7 @@ function Invoke-GHRestMethodMultipleResult
         no bucket value will be used.
 
     .PARAMETER SinglePage
-        By default, this function will automtically call any follow-up "nextLinks" provided by
+        By default, this function will automatically call any follow-up "nextLinks" provided by
         the return value in order to retrieve the entire result set.  If this switch is provided,
         only the first "page" of results will be retrieved, and the "nextLink" links will not be
         followed.
@@ -588,7 +588,7 @@ function Invoke-GHRestMethodMultipleResult
         the background, enabling the command prompt to provide status information.
 
     .OUTPUTS
-        [PSCutomObject[]] - The result of the REST operation, in whatever form it comes in.
+        [PSCustomObject[]] - The result of the REST operation, in whatever form it comes in.
 
     .EXAMPLE
         Invoke-GHRestMethodMultipleResult -UriFragment "repos/PowerShell/PowerShellForGitHub/issues?state=all" -Description "Get all issues"
@@ -692,7 +692,7 @@ function Split-GitHubUri
     .DESCRIPTION
         Extracts the relevant elements of a GitHub repository Uri and returns the requested element.
 
-        Currently supports retrieving the OwnerName and the RepositoryName, when avaialable.
+        Currently supports retrieving the OwnerName and the RepositoryName, when available.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -706,7 +706,7 @@ function Split-GitHubUri
         Returns the Repository Name from the Uri if it can be identified.
 
     .OUTPUTS
-        [PSCutomObject] - The OwnerName and RepositoryName elements from the provided URL
+        [PSCustomObject] - The OwnerName and RepositoryName elements from the provided URL
 
     .EXAMPLE
         Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
@@ -723,7 +723,7 @@ function Split-GitHubUri
 
         PowerShell
 #>
-    [CmdletBinding(DefaultParametersetName='RepositoryName')]
+    [CmdletBinding(DefaultParameterSetName='RepositoryName')]
     param
     (
         [Parameter(Mandatory)]
@@ -788,7 +788,7 @@ function Resolve-RepositoryElements
         have no value.
 
     .OUTPUTS
-        [PSCutomObject] - The OwnerName and RepositoryName elements to be used
+        [PSCustomObject] - The OwnerName and RepositoryName elements to be used
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]

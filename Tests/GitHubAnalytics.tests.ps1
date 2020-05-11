@@ -76,7 +76,7 @@ try
         $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
         $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
-        Context 'When no addional conditions specified' {
+        Context 'When no additional conditions specified' {
             for ($i = 0; $i -lt 3; $i++)
             {
                 $null = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo1.name -Title ([guid]::NewGuid().Guid)
@@ -107,7 +107,7 @@ try
     # required state for testing, and to recover back to the original state at the conclusion of the test.
 
     # Describe 'Obtaining pull requests for repository' {
-    #     Context 'When no addional conditions specified' {
+    #     Context 'When no additional conditions specified' {
     #         $pullRequests = Get-GitHubPullRequest -Uri $script:repositoryUrl
 
     #         It 'Should return expected number of PRs' {
@@ -128,7 +128,7 @@ try
     # }
 
     # Describe 'Obtaining repository with biggest number of pull requests' {
-    #     Context 'When no addional conditions specified' {
+    #     Context 'When no additional conditions specified' {
     #         @($script:repositoryUrl, $script:repositoryUrl2) |
     #             ForEach-Object {
     #                 $pullRequestCounts += ([PSCustomObject]@{

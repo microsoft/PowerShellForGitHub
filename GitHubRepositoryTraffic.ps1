@@ -42,7 +42,7 @@ function Get-GitHubReferrerTraffic
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -126,7 +126,7 @@ function Get-GitHubPathTraffic
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -214,7 +214,7 @@ function Get-GitHubViewTraffic
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -306,7 +306,7 @@ function Get-GitHubCloneTraffic
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
