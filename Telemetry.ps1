@@ -24,7 +24,7 @@ function Get-PiiSafeString
     .EXAMPLE
         Get-PiiSafeString -PlainText "Hello World"
 
-        Returns back the string "B10A8DB164E0754105B7A99BE72E3FE5" which respresents
+        Returns back the string "B10A8DB164E0754105B7A99BE72E3FE5" which represents
         the SHA512 hash of "Hello World", but only if the "DisablePiiProtection" configuration
         value is $false.  If it's $true, "Hello World" will be returned.
 
@@ -245,7 +245,7 @@ function Get-TelemetryClient
         Returns back the singleton instance of the Application Insights TelemetryClient for
         this module.
 
-        If the singleton hasn't been initialized yet, this will ensure all dependenty assemblies
+        If the singleton hasn't been initialized yet, this will ensure all dependent assemblies
         are available on the machine, create the client and initialize its properties.
 
         This will first look for the dependent assemblies in the module's script directory.

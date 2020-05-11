@@ -54,11 +54,11 @@ function Set-GitHubConfiguration
 <#
     .SYNOPSIS
         Change the value of a configuration property for the PowerShellForGitHub module,
-        for the sesion only, or globally for this user.
+        for the session only, or globally for this user.
 
     .DESCRIPTION
         Change the value of a configuration property for the PowerShellForGitHub module,
-        for the sesion only, or globally for this user.
+        for the session only, or globally for this user.
 
         A single call to this method can set any number or combination of properties.
 
@@ -101,7 +101,7 @@ function Set-GitHubConfiguration
         data to telemetry (if telemetry hasn't been disabled via DisableTelemetry).
 
     .PARAMETER DisableSmarterObjects
-        By deffault, this module will modify all objects returned by the API calls to update
+        By default, this module will modify all objects returned by the API calls to update
         any properties that can be converted to objects (like strings for Date/Time's being
         converted to real DateTime objects).  Enable this property if you desire getting back
         the unmodified version of the object from the API.
@@ -481,7 +481,7 @@ function Reset-GitHubConfiguration
     .EXAMPLE
         Reset-GitHubConfiguration
 
-        Deletes the local configuration file and loads in all default configration values.
+        Deletes the local configuration file and loads in all default configuration values.
 
     .NOTES
         This command will not clear your authentication token.  Please use Clear-GitHubAuthentication to accomplish that.
@@ -752,7 +752,7 @@ function Resolve-ParameterWithDefaultConfigurationValue
         The name of the parameter in BoundParameters.
 
     .PARAMETER ConfigValueName
-        The name of the cofiguration property that should be used as default if Name doesn't exist
+        The name of the configuration property that should be used as default if Name doesn't exist
         in BoundParameters.
 
     .PARAMETER NonEmptyStringRequired

@@ -389,7 +389,7 @@ function Get-GitHubCodeOfConduct
     .EXAMPLE
         Get-GitHubCodeOfConduct -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the Code of Coduct file for the Microsoft\PowerShellForGitHub repository
+        Gets the content of the Code of Conduct file for the Microsoft\PowerShellForGitHub repository
         if one is detected.
 
         It may be necessary to convert the content of the file.  Check the 'encoding' property of

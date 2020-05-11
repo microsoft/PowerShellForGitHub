@@ -323,7 +323,7 @@ function Write-Log
         }
 
         # Write the message to screen/log.
-        # Note that the below logic could easily be moved to a separate helper function, but a concious
+        # Note that the below logic could easily be moved to a separate helper function, but a conscious
         # decision was made to leave it here. When this cmdlet is called with -Level Error, Write-Error
         # will generate a WriteErrorException with the origin being Write-Log. If this call is moved to
         # a helper function, the origin of the WriteErrorException will be the helper function, which
@@ -433,7 +433,7 @@ function Write-InvocationLog
         be in JSON format as opposed to PowerShell format.  However, it should be sufficient enough
         for debugging purposes.
 
-        ExcludeParamater will always take precedence over RedactParameter.
+        ExcludeParameter will always take precedence over RedactParameter.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -725,7 +725,7 @@ function Get-HttpWebResponseContent
         Invoke-WebRequest, it returns back a BasicHtmlWebResponseObject which
         directly contains a Content property, however if the web request fails,
         you get a WebException which contains a simpler WebResponse, which
-        requires a bit more effort in order to acccess the raw response content.
+        requires a bit more effort in order to access the raw response content.
 
     .PARAMETER WebResponse
         An HttpWebResponse object, typically the Response property on a WebException.
