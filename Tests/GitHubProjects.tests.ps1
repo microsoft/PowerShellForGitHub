@@ -284,7 +284,7 @@ try
         }
     }
 
-    Describe 'Remove Project' -tag remove{
+    Describe 'Remove Project' {
         Context 'Remove User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc

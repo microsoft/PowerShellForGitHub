@@ -97,10 +97,6 @@ function Get-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'Project')]
         [int64] $Project,
 
-        [Parameter(ParameterSetName = 'Elements')]
-        [Parameter(ParameterSetName = 'Organization')]
-        [Parameter(ParameterSetName = 'User')]
-        [Parameter(ParameterSetName = 'Uri')]
         [ValidateSet('Open', 'Closed', 'All')]
         [string] $State,
 
@@ -366,8 +362,8 @@ function Set-GitHubProject
         Set the project with ID '999999' to closed.
 
     .EXAMPLE
-        $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
-        Set-GitHubProject -Project $Project.id -State Closed
+        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        Set-GitHubProject -Project $project.id -State Closed
 
         Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
         repository and set state to closed.
@@ -428,7 +424,7 @@ function Set-GitHubProject
     }
 
     $params = @{
-    'UriFragment' = $uriFragment
+        'UriFragment' = $uriFragment
         'Description' = $apiDescription
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'AccessToken' = $AccessToken
@@ -469,8 +465,8 @@ function Remove-GitHubProject
         Remove project with ID '4387531'.
 
     .EXAMPLE
-        $Project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
-        Remove-GitHubProject -Project $Project.id
+        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        Remove-GitHubProject -Project $project.id
 
         Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
         repository and then remove the project.
