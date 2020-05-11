@@ -33,6 +33,7 @@
         'GitHubMiscellaneous.ps1',
         'GitHubOrganizations.ps1',
         'GitHubProjects.ps1',
+        'GitHubProjectCards.ps1',
         'GitHubPullRequests.ps1',
         'GitHubReleases.ps1',
         'GitHubRepositories.ps1',
@@ -69,6 +70,7 @@
         'Get-GitHubOrganizationMember',
         'Get-GitHubPathTraffic',
         'Get-GitHubProject',
+        'Get-GitHubProjectCard',
         'Get-GitHubPullRequest',
         'Get-GitHubRateLimit',
         'Get-GitHubReferrerTraffic',
@@ -91,6 +93,7 @@
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
+        'Move-GitHubProjectCard',
         'Move-GitHubRepositoryOwnership',
         'New-GithubAssignee',
         'New-GitHubComment',
@@ -98,6 +101,7 @@
         'New-GitHubLabel',
         'New-GitHubMilestone',
         'New-GitHubProject',
+        'New-GitHubProjectCard',
         'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
@@ -107,6 +111,7 @@
         'Remove-GitHubLabel',
         'Remove-GitHubMilestone',
         'Remove-GitHubProject',
+        'Remove-GitHubProjectCard',
         'Remove-GitHubRepository',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
@@ -118,6 +123,7 @@
         'Set-GitHubLabel',
         'Set-GitHubMilestone',
         'Set-GitHubProject',
+        'Set-GitHubProjectCard',
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
@@ -135,6 +141,7 @@
         'Delete-GitHubLabel',
         'Delete-GitHubMilestone',
         'Delete-GitHubProject',
+        'Delete-GitHubProjectCard',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
         'Transfer-GitHubRepositoryOwnership'
@@ -189,4 +196,3 @@
     # HelpInfo URI of this module
     # HelpInfoURI = ''
 }
-
