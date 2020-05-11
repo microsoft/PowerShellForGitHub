@@ -134,7 +134,7 @@ function New-GitHubProjectColumn
     Write-InvocationLog
 
     $telemetryProperties = @{}
-    $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Project
+    $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
     $uriFragment = "/projects/$Project/columns"
     $apiDescription = "Creating project column $Name"
