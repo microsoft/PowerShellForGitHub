@@ -345,6 +345,7 @@ function Set-GitHubProject
     .PARAMETER Private
         Sets the visibility of a project board.
         Only available for organization and user projects.
+        Note: Updating a project's visibility requires admin access to the project.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
