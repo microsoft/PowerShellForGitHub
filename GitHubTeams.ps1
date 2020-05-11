@@ -29,7 +29,7 @@ function Get-GitHubTeam
         The name of the organization
 
     .PARAMETER TeamId
-        The ID of the speific team to retrieve
+        The ID of the specific team to retrieve
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -50,7 +50,7 @@ function Get-GitHubTeam
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     param
     (
         [Parameter(ParameterSetName='Elements')]
@@ -104,7 +104,7 @@ function Get-GitHubTeam
         $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
         $uriFragment = "/orgs/$OrganizationName/teams"
-        $description = "Gettings teams in $OrganizationName"
+        $description = "Getting teams in $OrganizationName"
     }
     else
     {
@@ -166,7 +166,7 @@ function Get-GitHubTeamMember
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='ID')]
+        DefaultParameterSetName='ID')]
     param
     (
         [Parameter(Mandatory)]
