@@ -62,7 +62,7 @@ function Get-GitHubComment
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='RepositoryElements')]
+        DefaultParameterSetName='RepositoryElements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
@@ -242,7 +242,7 @@ function New-GitHubComment
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -353,7 +353,7 @@ function Set-GitHubComment
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -453,7 +453,7 @@ function Remove-GitHubComment
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Alias('Delete-GitHubComment')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(

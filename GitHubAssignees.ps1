@@ -33,13 +33,13 @@ function Get-GitHubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Get-GitHubAsigneeList -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubAssigneeList -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -125,7 +125,7 @@ function Test-GitHubAssignee
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
         [OutputType([bool])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
@@ -156,7 +156,7 @@ function Test-GitHubAssignee
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Asignee' = (Get-PiiSafeString -PlainText $Assignee)
+        'Assignee' = (Get-PiiSafeString -PlainText $Assignee)
     }
 
     $params = @{
@@ -226,7 +226,7 @@ function New-GithubAssignee
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -328,7 +328,7 @@ function Remove-GithubAssignee
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]

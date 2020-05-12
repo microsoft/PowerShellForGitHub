@@ -58,7 +58,7 @@ function Get-GitHubMilestone
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='RepositoryElements')]
+        DefaultParameterSetName='RepositoryElements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
@@ -226,7 +226,7 @@ function New-GitHubMilestone
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -375,7 +375,7 @@ function Set-GitHubMilestone
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -503,7 +503,7 @@ function Remove-GitHubMilestone
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Alias('Delete-GitHubMilestone')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
