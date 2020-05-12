@@ -1,6 +1,29 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+ [0.12.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.12.0) - (2020/05/12)
+### Features:
++ Added core support for Projects
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/160) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1cdaac1a5af873589458bd0b40b3651187ec7e19)
++ Added suport for Project Columns
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/162) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/85170ce517dc4941518d51d788843a87612e25e0)
++ Added suport for Project Cards
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/163) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3a87f2bd50a811f554d6cfaf085fede7aede6c76)
++ Added sample usage documentation for the new Project API's
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/164) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1556b8b39cd61735aad14be0fb237c14e763f696)
+
+### Fixes:
+- Minor spelling fixes in documentation throughout module
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/165) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/6735ba57a5a43b61a37ef09d4021296dcd417dba)
+- Fixed confirmation message for `Rename-GitHubRepository`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/161) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/3fab72464e38cb573408add7e99d5a6bb0db2ea1)
+
+Authors:
+   * [**@jpomfret**](https://github.com/jpomfret)
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
   [0.11.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.11.0) - (2020/04/03)
 ### Features:
 + Added `Get-GitHubContents`
