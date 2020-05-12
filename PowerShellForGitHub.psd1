@@ -98,6 +98,7 @@
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
+        'Move-GitHubProjectColumn',
         'New-GithubAssignee',
         'New-GitHubComment',
         'New-GitHubIssue',
