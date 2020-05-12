@@ -1,7 +1,17 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
- [0.13.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.0) - (2020/05/12)
+  [0.13.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.1) - (2020/05/12)
+### Fixes:
+- Ensure progress bar for Wait-JobWithAnimation gets marked as Completed
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/169) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/bb2ad45f61f4e55ba763d5eb402c80de5991bb6b)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
+  [0.13.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.0) - (2020/05/12)
 ### Improvement:
 - Migrate REST API progress status to use Write-Progress
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/167) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/992f67871cd659dac20833487b326bdad7b85bd8)
