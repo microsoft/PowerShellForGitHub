@@ -1,6 +1,16 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+ [0.13.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.0) - (2020/05/12)
+### Improvement:
+- Migrate REST API progress status to use Write-Progress
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/167) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/992f67871cd659dac20833487b326bdad7b85bd8)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
  [0.12.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.12.0) - (2020/05/12)
 ### Features:
 + Added core support for Projects
