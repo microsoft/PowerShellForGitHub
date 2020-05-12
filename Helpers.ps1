@@ -110,6 +110,9 @@ function Wait-JobWithAnimation
         $iteration++
     }
 
+    # Ensure that we complete the progress bar once the command is done, regardless of outcome.
+    Write-Progress -Activity $Description -Id $progressId -Completed
+
     # We'll wrap the description (if provided) in brackets for display purposes.
     if (-not [string]::IsNullOrWhiteSpace($Description))
     {
