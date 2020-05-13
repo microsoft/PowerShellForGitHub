@@ -1,0 +1,881 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
+function Get-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Retrieves gist information from GitHub.
+
+    .DESCRIPTION
+        Retrieves gist information from GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific gist that you wish to retrieve.
+
+    .PARAMETER Sha
+        The specific revision of the gist that you wish to retrieve.
+
+    .PARAMETER Forks
+        Gets the forks of the specified gist.
+
+    .PARAMETER Commits
+        Gets the commits of the specified gist.
+
+    .PARAMETER UserName
+        Gets public gists for the specified user.
+
+    .PARAMETER Current
+        Gets the authenticated user's gists.
+
+    .PARAMETER Starred
+        Gets the authenticated user's starred gists.
+
+    .PARAMETER Public
+        Gets public gists sorted by most recently updated to least recently updated.
+        The results will be limited to the first 3000.
+
+    .PARAMETER Since
+        Only gists updated at or after this time are returned.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Get-GitHubGist -Starred
+
+        Gets all starred gists for the current authenticated user.
+
+    .EXAMPLE
+        Get-GitHubGist -Public -Since ((Get-Date).AddDays(-2))
+
+        Gets all public gists that have been updated within the past two days.
+
+    .EXAMPLE
+        Get-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Gets octocat's "hello_world.rb" gist.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Current')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Id')]
+        [string] $Id,
+
+        [Parameter(ParameterSetName='Id')]
+        [string] $Sha,
+
+        [Parameter(ParameterSetName='Id')]
+        [switch] $Forks,
+
+        [Parameter(ParameterSetName='Id')]
+        [switch] $Commits,
+
+        [Parameter(ParameterSetName='User')]
+        [string] $UserName,
+
+        [Parameter(ParameterSetName='Current')]
+        [switch] $Current,
+
+        [Parameter(ParameterSetName='Current')]
+        [switch] $Starred,
+
+        [Parameter(ParameterSetName='Public')]
+        [switch] $Public,
+
+        [Parameter(ParameterSetName='User')]
+        [Parameter(ParameterSetName='Current')]
+        [Parameter(ParameterSetName='Public')]
+        [DateTime] $Since,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
+
+    if ($PSCmdlet.ParameterSetName -eq 'Id')
+    {
+        $telemetryProperties['ById'] = $true
+
+        if ([String]::IsNullOrWhiteSpace($Sha))
+        {
+            if ($Forks)
+            {
+                $uriFragment = "gists/$Id/forks"
+                $description = "Getting forks of gist $Id"
+            }
+            elseif ($Commits)
+            {
+                $uriFragment = "gists/$Id/commits"
+                $description = "Getting commits of gist $Id"
+            }
+            else
+            {
+                $uriFragment = "gists/$Id"
+                $description = "Getting gist $Id"
+            }
+        }
+        else
+        {
+            if ($Forks -or $Commits)
+            {
+                $message = 'Cannot check for forks or commits of a specific SHA.  Do not specify SHA if you want to list out forks or commits.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $telemetryProperties['SpecifiedSha'] = $true
+
+            $uriFragment = "gists/$Id/$Sha"
+            $description = "Getting gist $Id with specified Sha"
+        }
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'User')
+    {
+        $telemetryProperties['ByUserName'] = $true
+
+        $uriFragment = "users/$UserName/gists"
+        $description = "Getting public gists for $UserName"
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'Current')
+    {
+        $telemetryProperties['CurrentUser'] = $true
+
+        if (Test-GitHubAuthenticationConfigured)
+        {
+            if ($Starred)
+            {
+                $uriFragment = 'gists/starred'
+                $description = 'Getting starred gists for current authenticated user'
+            }
+            else
+            {
+                $uriFragment = 'gists'
+                $description = 'Getting gists for current authenticated user'
+            }
+        }
+        else
+        {
+            if ($Starred)
+            {
+                $message = 'Starred can only be specified for authenticated users.  Either call Set-GitHubAuthentication first, or provide a value for the AccessToken parameter.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $description = 'Getting public gists'
+        }
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'Public')
+    {
+        $telemetryProperties['Public'] = $true
+
+        $uriFragment = "gists/public"
+        $description = 'Getting public gists'
+    }
+
+    $getParams = @()
+    $sinceFormattedTime = [String]::Empty
+    if ($null -ne $Since)
+    {
+        $sinceFormattedTime = $Since.ToUniversalTime().ToString('o')
+        $getParams += "since=$sinceFormattedTime"
+    }
+
+    $params = @{
+        'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
+        'Description' =  $description
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    $result = Invoke-GHRestMethodMultipleResult @params
+
+    if ($result.truncated -eq $true)
+    {
+        $message = @"
+Response has been truncated.  The API will only return the first 3000 gist results,
+the first 300 files within an individual gist, and the first 1 Mb of an individual file.
+If the file has been truncated, you can call (Invoke-WebRequest -UseBasicParsing -Method Get -Uri <raw_url>).Content)
+where <raw_url> is the value of raw_url for the file in question.  Be aware that for files larger
+than 10 Mb, you''ll need to clone the gist via the URL provided by git_pull_url.
+"@
+        Write-Log -Message $message -Level Warning
+    }
+
+    return $result
+}
+
+function Remove-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Removes/deletes a gist from GitHub.
+
+    .DESCRIPTION
+        Removes/deletes a gist from GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific gist that you wish to retrieve.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Removes octocat's "hello_world.rb" gist (assuming you have permission).
+
+    .EXAMPLE
+        Remove-GitHubGist -Id 6cad326836d38bd3a7ae -Confirm:$false
+
+        Removes octocat's "hello_world.rb" gist (assuming you have permission).
+        Will not prompt for confirmation, as -Confirm:$false was specified.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        ConfirmImpact="High")]
+    [Alias('Delete-GitHubGist')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    if ($PSCmdlet.ShouldProcess($Id, "Delete gist"))
+    {
+        $telemetryProperties = @{}
+        $params = @{
+            'UriFragment' = "gists/$Id"
+            'Method' = 'Delete'
+            'Description' =  "Removing gist $Id"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return Invoke-GHRestMethod @params
+    }
+}
+
+function Copy-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Forks a gist from GitHub.
+
+    .DESCRIPTION
+        Forks a gist from GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific gist that you wish to fork.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Copy-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Forks octocat's "hello_world.rb" gist.
+
+    .EXAMPLE
+        Fork-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Forks octocat's "hello_world.rb" gist.  This is using the alias for the command.
+        The result is the same whether you use Copy-GitHubGist or Fork-GitHubGist.
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    [Alias('Fork-GitHubGist')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+    $params = @{
+        'UriFragment' = "gists/$Id/forks"
+        'Method' = 'Post'
+        'Description' =  "Forking gist $Id"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Add-GitHubGistStar
+{
+<#
+    .SYNOPSIS
+        Star a gist from GitHub.
+
+    .DESCRIPTION
+        Star a gist from GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific Gist that you wish to star.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Add-GitHubGistStar -Id 6cad326836d38bd3a7ae
+
+        STars octocat's "hello_world.rb" gist.
+
+    .EXAMPLE
+        Star-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Stars octocat's "hello_world.rb" gist.  This is using the alias for the command.
+        The result is the same whether you use Add-GitHubGistStar or Star-GitHubGist.
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    [Alias('Star-GitHubGist')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+    $params = @{
+        'UriFragment' = "gists/$Id/star"
+        'Method' = 'Put'
+        'Description' =  "Starring gist $Id"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Remove-GitHubGistStar
+{
+<#
+    .SYNOPSIS
+        Unstar a gist from GitHub.
+
+    .DESCRIPTION
+        Unstar a gist from GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific gist that you wish to unstar.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubGistStar -Id 6cad326836d38bd3a7ae
+
+        Unstars octocat's "hello_world.rb" gist.
+
+    .EXAMPLE
+        Unstar-GitHubGist -Id 6cad326836d38bd3a7ae
+
+        Unstars octocat's "hello_world.rb" gist.  This is using the alias for the command.
+        The result is the same whether you use Remove-GitHubGistStar or Unstar-GitHubGist.
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    [Alias('Unstar-GitHubGist')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+    $params = @{
+        'UriFragment' = "gists/$Id/star"
+        'Method' = 'Delete'
+        'Description' =  "Unstarring gist $Id"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Test-GitHubGistStar
+{
+<#
+    .SYNOPSIS
+        Checks if a gist from GitHub is starred.
+
+    .DESCRIPTION
+        Checks if a gist from GitHub is starred.
+        Will return $false if it isn't starred, as well as if it couldn't be checked
+        (due to permissions or non-existence).
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID of the specific gist that you wish to check.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .OUTPUTS
+        [bool] If the gist was both found and determined to be starred.
+
+    .EXAMPLE
+        Test-GitHubGistStar -Id 6cad326836d38bd3a7ae
+
+        Returns $true if the gist is starred, or $false if isn't starred or couldn't be checked
+        (due to permissions or non-existence).
+
+    .NOTES
+        For some reason, this does not currently seem to be working correctly
+        (even though it matches the spec: https://developer.github.com/v3/gists/#check-if-a-gist-is-starred).
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([bool])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+    $params = @{
+        'UriFragment' = "gists/$Id/star"
+        'Method' = 'Get'
+        'Description' =  "Checking if gist $Id is starred"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'ExtendedResult' = $true
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    try
+    {
+        $response = Invoke-GHRestMethod @params
+        return $response.StatusCode -eq 204
+    }
+    catch
+    {
+        return $false
+    }
+}
+
+function New-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Creates a new gist on GitHub.
+
+    .DESCRIPTION
+        Creates a new gist on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER File
+        An array of filepaths that should be part of this gist.
+        Use this when you have multiple files that should be part of a gist, or when you simply
+        want to reference an existing file on disk.
+
+    .PARAMETER Content
+        The content of a single file that should be part of the gist.
+
+    .PARAMETER FileName
+        The name of the file that Content should be stored in within the newly created gist.
+
+    .PARAMETER Description
+        A descriptive name for this gist.
+
+    .PARAMETER Public
+        When specified, the gist will be public and available for anyone to see.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        New-GitHubGist -Content 'Body of my file.' -FileName 'sample.txt' -Description 'This is my gist!' -Public
+
+        Creates a new public gist with a single file named 'sample.txt' that has the body of "Body of my file."
+
+    .EXAMPLE
+        New-GitHubGist -File 'c:\files\foo.txt' -Description 'This is my gist!'
+
+        Creates a new private gist with a single file named 'foo.txt'.  Will populate it with the
+        content of the file at c:\files\foo.txt.
+
+    .EXAMPLE
+        New-GitHubGist -File ('c:\files\foo.txt', 'c:\other\bar.txt', 'c:\octocat.ps1') -Description 'This is my gist!'
+
+        Creates a new private gist with a three files named 'foo.txt', 'bar.txt' and 'octocat.ps1'.
+        Each will be populated with the content from the file on disk at the specified location.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Content')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ParameterSetName='FileRef')]
+        [string[]] $File,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Content')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Content,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Content')]
+        [ValidateNotNullOrEmpty()]
+        [string] $FileName,
+
+        [string] $Description,
+
+        [switch] $Public,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+
+    $files = @{}
+    if ($PSCmdlet.ParameterSetName -eq 'Content')
+    {
+        $files[$FileName] = @{ 'content' = $Content }
+    }
+    else
+    {
+        foreach ($path in $File)
+        {
+            $path = Resolve-UnverifiedPath -Path $path
+            if (-not (Test-Path -Path $path))
+            {
+                $message = "Specified file [$path] could not be found or was inaccessible."
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $content = Get-Content -Path $path -Raw -Encoding UTF8
+            $fileName = (Get-Item -Path $path).Name
+
+            if ($files.ContainsKey($fileName))
+            {
+                $message = "You have specified more than one file with the same name [$fileName].  gists don't have a concept of directory structures, so please ensure each file has a unique name."
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $files[$fileName] = @{ 'content' = $Content }
+        }
+    }
+
+    $hashBody = @{
+        'description' = $Description
+        'public' = $Public.ToBool()
+        'files' = $files
+    }
+
+    $params = @{
+        'UriFragment' = "gists"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Post'
+        'Description' =  "Creating a new gist"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Set-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Updates a gist on GitHub.
+
+    .DESCRIPTION
+        Updates a gist on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Id
+        The ID for the gist to update.
+
+    .PARAMETER Update
+        A hashtable of files to update in the gist.
+        The key should be the name of the file in the gist as it exists right now.
+        The value should be another hashtable with the following optional key/value pairs:
+            fileName - Specify a new name here if you want to rename the file.
+            filePath - Specify a path to a file on disk if you wish to update the contents of the
+                       file in the gist with the contents of the specified file.
+                       Should not be  specified if you use 'content' (below)
+            content  - Directly specify the raw content that the file in the gist should be updated with.
+                       Should not be used if you use 'filePath' (above).
+
+    .PARAMETER Delete
+        A list of filenames that should be removed from this gist.
+
+    .PARAMETER Description
+        New description for this gist.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Description 'This is my newer description'
+
+        Updates the description for the specified gist.
+
+    .EXAMPLE
+        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Delete 'hello_world.rb'
+
+        Deletes the 'hello_world.rb' file from the specified gist.
+
+    .EXAMPLE
+        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Delete 'hello_world.rb' -Description 'This is my newer description'
+
+        Deletes the 'hello_world.rb' file from the specified gist and updates the description.
+
+    .EXAMPLE
+        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
+
+        Renames the 'hello_world.rb' file in the specified gist to be 'hello_universe.rb'.
+
+    .EXAMPLE
+        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
+
+        Renames the 'hello_world.rb' file in the specified gist to be 'hello_universe.rb'.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Content')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [string] $Id,
+
+        [hashtable] $Update,
+
+        [string[]] $Delete,
+
+        [string] $Description,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $telemetryProperties = @{}
+
+    $files = @{}
+
+    # Mark the files that should be deleted.
+    foreach ($toDelete in $Delete)
+    {
+        $files[$toDelete] = $null
+    }
+
+    # Then figure out which ones need content updates and/or file renames
+    if ($null -ne $Update)
+    {
+        foreach ($toUpdate in $Update.GetEnumerator())
+        {
+            $currentFileName = $toUpdate.Key
+
+            $providedContent = $toUpdate.Value.Content
+            $providedFileName = $toUpdate.Value.FileName
+            $providedFilePath = $toUpdate.Value.FilePath
+
+            if (-not [String]::IsNullOrWhiteSpace($providedContent))
+            {
+                $files[$currentFileName] = @{ 'content' = $providedContent }
+            }
+
+            if (-not [String]::IsNullOrWhiteSpace($providedFilePath))
+            {
+                if (-not [String]::IsNullOrWhiteSpace($providedContent))
+                {
+                    $message = "When updating a file [$currentFileName], you cannot provide both a path to a file [$providedPath] and the raw content."
+                    Write-Log -Message $message -Level Error
+                    throw $message
+                }
+
+                $providedPath = Resolve-Path -Path $providedPath
+                if (-not (Test-Path -Path $providedPath))
+                {
+                    $message = "Specified file [$providedPath] could not be found or was inaccessible."
+                    Write-Log -Message $message -Level Error
+                    throw $message
+                }
+
+                $newContent = Get-Content -Path $providedFilePath -Raw -Encoding UTF8
+                $files[$currentFileName] = @{ 'content' = $newContent }
+            }
+
+            # The user has chosen to rename the file.
+            if (-not [String]::IsNullOrWhiteSpace($providedFileName))
+            {
+                $files[$currentFileName] = @{ 'filename' = $providedFileName }
+            }
+        }
+    }
+
+    $hashBody = @{}
+    if (-not [String]::IsNullOrWhiteSpace($Description)) { $hashBody['description'] = $Description }
+    if ($files.Keys.count -gt 0) { $hashBody['files'] = $files }
+
+    $params = @{
+        'UriFragment' = "gists/$Id"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Patch'
+        'Description' =  "Updating gist $Id"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    try
+    {
+        return Invoke-GHRestMethod @params
+    }
+    catch
+    {
+        if ($_.Exception.Message -like '*(422)*')
+        {
+            $message = 'This error can happen if you try to delete a file that doesn''t exist.  Be aware that casing matters.  ''A.txt'' is not the same as ''a.txt''.'
+            Write-Log -Message $message -Level Warning
+        }
+
+        throw
+    }
+}

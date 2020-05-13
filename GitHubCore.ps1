@@ -329,6 +329,15 @@ function Invoke-GHRestMethod
                 $finalResult = $finalResult | ConvertFrom-Json
             }
         }
+        catch [InvalidOperationException]
+        {
+            # In some cases, the returned data might have two different keys of the same characters
+            # but different casing (this can happen with gists with two files named 'a.txt' and 'A.txt').
+            # PowerShell 6 introduced the -AsHashtable switch to work around this issue, but this
+            # module wants to be compatible down to PowerShell 4, so we're unable to use that feature.
+            Write-Log -Message 'The returned object likely contains keys that differ only in casing.  Unable to convert to an object.  Returning the raw JSON as a fallback.' -Level Warning
+            $finalResult = $finalResult
+        }
         catch [ArgumentException]
         {
             # The content must not be JSON (which is a legitimate situation).
