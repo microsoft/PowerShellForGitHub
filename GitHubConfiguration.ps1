@@ -839,6 +839,8 @@ function Set-GitHubAuthentication
         $secureString = ("<Your Access Token>" | ConvertTo-SecureString -AsPlainText -Force)
         $cred = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
         Set-GitHubAuthentication -Credential $cred
+        $secureString = $null # clear this out now that it's no longer needed
+        $cred = $null # clear this out now that it's no longer needed
 
         Allows you to specify your access token as a plain-text string ("<Your Access Token>")
         which will be securely stored on the machine for use in all future PowerShell sessions.

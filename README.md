@@ -74,6 +74,10 @@ If you ever wish to clear it in the future, just call `Clear-GitHubAuthenticatio
 > For automated scenarios (like GithHub Actions) where you are dynamically getting the access token
 > needed for authentication, refer to `Example 2` in `Get-Help Set-StoreBrokerAuthentication -Examples`
 > for how to configure in a promptless fashion.
+>
+> Alternatively, you _could_ configure PowerShell itself to always pass in a plain-text access token
+> to any command (by setting `$PSDefaultParameterValues["*-GitHub*:AccessToken"] = "<access token>"`),
+> although keep in mind that this is insecure (any other process could access this plain-text value).
 
 A number of additional configuration options exist with this module, and they can be configured
 for just the current session or to persist across all future sessions with `Set-GitHubConfiguration`.
