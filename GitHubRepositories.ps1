@@ -217,10 +217,15 @@ function Remove-GitHubRepository
 
     .EXAMPLE
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete
+
+    .EXAMPLE
+        Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
+        Remove repository given uri without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubRepository')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
