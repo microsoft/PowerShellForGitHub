@@ -836,13 +836,12 @@ function Set-GitHubAuthentication
         SecureString for use in future PowerShell sessions.
 
     .EXAMPLE
-        $secureString = ("<Your Access Token>" | ConvertTo-SecureString)
+        $secureString = ("<Your Access Token>" | ConvertTo-SecureString -AsPlainText -Force)
         $cred = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
         Set-GitHubAuthentication -Credential $cred
 
-        Uses the API token stored in the password field of the provided credential object for
-        authentication, and stores it in a file on the machine as a SecureString for use in
-        future PowerShell sessions.
+        Allows you to specify your access token as a plain-text string ("<Your Access Token>")
+        which will be securely stored on the machine for use in all future PowerShell sessions.
 
     .EXAMPLE
         Set-GitHubAuthentication -SessionOnly

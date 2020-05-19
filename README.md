@@ -71,6 +71,10 @@ access token.
    securely cached to disk and will persist across all future PowerShell sessions.
 If you ever wish to clear it in the future, just call `Clear-GitHubAuthentication`).
 
+> For automated scenarios (like GithHub Actions) where you are dynamically getting the access token
+> needed for authentication, refer to `Example 2` in `Get-Help Set-StoreBrokerAuthentication -Examples`
+> for how to configure in a promptless fashion.
+
 A number of additional configuration options exist with this module, and they can be configured
 for just the current session or to persist across all future sessions with `Set-GitHubConfiguration`.
 For a full explanation of all possible configurations, run the following:
