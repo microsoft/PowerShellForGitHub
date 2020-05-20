@@ -448,6 +448,7 @@ function Remove-GitHubComment
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
