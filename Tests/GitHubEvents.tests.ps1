@@ -37,7 +37,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Getting events from an issue' {
@@ -63,7 +63,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Getting an event directly' {
@@ -82,7 +82,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
     }
 }

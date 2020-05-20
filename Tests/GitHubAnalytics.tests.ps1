@@ -69,7 +69,7 @@ try
             }
         }
 
-        $null = Remove-GitHubRepository -Uri ($repo.svn_url)
+        $null = Remove-GitHubRepository -Uri ($repo.svn_url) -Confirm:$false
     }
 
     Describe 'Obtaining repository with biggest number of issues' {
@@ -98,8 +98,8 @@ try
             }
         }
 
-        $null = Remove-GitHubRepository -Uri ($repo1.svn_url)
-        $null = Remove-GitHubRepository -Uri ($repo2.svn_url)
+        $null = Remove-GitHubRepository -Uri ($repo1.svn_url) -Confirm:$false
+        $null = Remove-GitHubRepository -Uri ($repo2.svn_url) -Confirm:$false
     }
 
 
@@ -192,7 +192,7 @@ try
                 @($collaborators).Count | Should be 1
             }
 
-            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
         }
     }
 
@@ -207,7 +207,7 @@ try
             @($contributors).Count | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 
     if ($script:accessTokenConfigured)
@@ -253,7 +253,7 @@ try
             (@($current).Count - @($original).Count) | Should be 1
         }
 
-        $null = Remove-GitHubRepository -Uri $repo.svn_url
+        $null = Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 
     Describe 'Getting unique contributors from contributors array' {
@@ -271,7 +271,7 @@ try
             @($uniqueContributors).Count | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 
     Describe 'Getting repository name from url' {
@@ -308,7 +308,7 @@ try
             @($branches[0].name) | Should be "master"
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 }
 finally

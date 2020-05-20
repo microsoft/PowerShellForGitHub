@@ -22,7 +22,7 @@ try
                 @($referrerList).Count | Should be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 
@@ -36,7 +36,7 @@ try
                 @($pathList).Count | Should be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 
@@ -50,7 +50,7 @@ try
                 $viewList.Count | Should be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 
@@ -64,7 +64,7 @@ try
                 $cloneList.Count | Should be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 }

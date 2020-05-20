@@ -323,10 +323,12 @@ function Remove-GithubAssignee
 
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
+
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
+
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
@@ -374,17 +376,20 @@ function Remove-GithubAssignee
         'assignees' = $Assignee
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Delete'
-        'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Delete'
+            'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }

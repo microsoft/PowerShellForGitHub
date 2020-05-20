@@ -111,7 +111,7 @@ try
             }
 
             foreach($milestone in $existingMilestones) {
-                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number
+                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number -Confirm:$false
             }
 
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
@@ -123,7 +123,7 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally

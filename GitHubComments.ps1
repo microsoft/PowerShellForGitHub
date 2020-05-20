@@ -452,6 +452,7 @@ function Remove-GitHubComment
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Confirm:$false
+
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
     [CmdletBinding(
@@ -492,16 +493,19 @@ function Remove-GitHubComment
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
-        'Method' = 'Delete'
-        'Description' =  "Removing comment $CommentID for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
+            'Method' = 'Delete'
+            'Description' =  "Removing comment $CommentID for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 

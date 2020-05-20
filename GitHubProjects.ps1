@@ -462,10 +462,12 @@ function Remove-GitHubProject
 
     .EXAMPLE
         Remove-GitHubProject -Project 4387531
+
         Remove project with ID '4387531'.
 
     .EXAMPLE
         Remove-GitHubProject -Project 4387531 -Confirm:$false
+
         Remove project with ID '4387531' without prompting for confirmation.
 
     .EXAMPLE

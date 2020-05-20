@@ -35,7 +35,7 @@ try
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
                 ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Verbose -Confirm:$false
             }
         }
     }

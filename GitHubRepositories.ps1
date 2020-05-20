@@ -220,6 +220,7 @@ function Remove-GitHubRepository
 
     .EXAMPLE
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
+
         Remove repository given uri without prompting for confirmation.
 #>
     [CmdletBinding(
@@ -255,18 +256,20 @@ function Remove-GitHubRepository
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
+    if ($PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName"
+            'Method' = 'Delete'
+            'Description' =  "Deleting $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName"
-        'Method' = 'Delete'
-        'Description' =  "Deleting $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        return Invoke-GHRestMethod @params
     }
-
-    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubRepository

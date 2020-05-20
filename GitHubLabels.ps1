@@ -313,10 +313,12 @@ function Remove-GitHubLabel
 
     .EXAMPLE
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel
+
         Removes the label called "TestLabel" from the PowerShellForGitHub project.
 
     .EXAMPLE
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Confirm:$false
+
         Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
@@ -358,18 +360,21 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
-        'Method' = 'Delete'
-        'Description' =  "Deleting label $Name from $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
+            'Method' = 'Delete'
+            'Description' =  "Deleting label $Name from $RepositoryName"
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 
 function Update-GitHubLabel
@@ -615,7 +620,7 @@ function Set-GitHubLabel
         if ($labelName -notin $labelNames)
         {
             # Remove label if it exists but is not in desired label list
-            $null = Remove-GitHubLabel -Name $labelName @commonParams
+            $null = Remove-GitHubLabel -Name $labelName @commonParams -Confirm:$false
         }
     }
 }
@@ -862,10 +867,12 @@ function Remove-GitHubIssueLabel
 
     .EXAMPLE
         Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
+
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
+        Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1 -Confirm:$false
+
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
@@ -918,18 +925,21 @@ function Remove-GitHubIssueLabel
         $description = "Deleting all labels from issue $Issue in $RepositoryName"
     }
 
-    $params = @{
-        'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
-        'Method' = 'Delete'
-        'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    {
+        $params = @{
+            'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
+            'Method' = 'Delete'
+            'Description' =  $description
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 
 # A set of labels that a project might want to initially populate their repository with
