@@ -282,3 +282,582 @@ filter Add-GitHubReleaseAdditionalProperties
         Write-Output $item
     }
 }
+
+function New-GitHubRelease
+{
+<#
+    .SYNOPSIS
+        Create a new release for a repository on GitHub.
+
+    .DESCRIPTION
+        Create a new release for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER TagName
+        The name of the tag.
+
+    .PARAMETER Commitish
+        The commitsh value that determines where the Git tag is created from.
+        Cn be any branch or commit SHA.  Unused if the Git tag already exists.
+        Will default to the repository's default branch (usually 'master').
+
+    .PARAMETER Name
+        The name of the release.
+
+    .PARAMETER Body
+        Text describing the contents of the tag.
+
+    .PARAMETER Draft
+        Specifies if this should be a draft (unpublished) release or a published one.
+
+    .PARAMETER PreRelease
+        Indicates if this should be identified as a pre-release or as a full release.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
+
+    .NOTES
+        Users of this method must have push access.
+
+        This endpoind triggers notifications.  Creating content too quickly using this endpoint
+        may result in abuse rate limiting.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [string] $TagName,
+
+        [string] $Commitish,
+
+        [string] $Name,
+
+        [string] $Body,
+
+        [switch] $Draft,
+
+        [switch] $PreRelease,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'ProvidedCommitish' = (-not [String]::IsNullOrWhiteSpace($Commitish))
+        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
+        'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
+        'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
+        'ProvidedPreRelease' = ($PSBoundParameters.ContainsKey('PreRelease'))
+    }
+
+    $hashBody = @{
+        'tag_name' = $TagName
+    }
+
+    if (-not [String]::IsNullOrWhiteSpace($Commitish)) { $hashBody['target_commitish'] = $Commitish }
+    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
+    if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
+    if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
+    if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Post'
+        'Description' =  "Creating release at $TagName"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Set-GitHubRelease
+{
+<#
+    .SYNOPSIS
+        Edits a release for a repository on GitHub.
+
+    .DESCRIPTION
+        Edits a release for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Release
+        The ID of the release to edit.
+
+    .PARAMETER TagName
+        The name of the tag.
+
+    .PARAMETER Commitish
+        The commitsh value that determines where the Git tag is created from.
+        Cn be any branch or commit SHA.  Unused if the Git tag already exists.
+        Will default to the repository's default branch (usually 'master').
+
+    .PARAMETER Name
+        The name of the release.
+
+    .PARAMETER Body
+        Text describing the contents of the tag.
+
+    .PARAMETER Draft
+        Specifies if this should be a draft (unpublished) release or a published one.
+
+    .PARAMETER PreRelease
+        Indicates if this should be identified as a pre-release or as a full release.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Set-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0 -Body 'Adds core support for Projects'
+
+    .NOTES
+        Users of this method must have push access.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int64] $Release,
+
+        [string] $TagName,
+
+        [string] $Commitish,
+
+        [string] $Name,
+
+        [string] $Body,
+
+        [switch] $Draft,
+
+        [switch] $PreRelease,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'ProvidedTagName' = (-not [String]::IsNullOrWhiteSpace($TagName))
+        'ProvidedCommitish' = (-not [String]::IsNullOrWhiteSpace($Commitish))
+        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
+        'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
+        'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
+        'ProvidedPreRelease' = ($PSBoundParameters.ContainsKey('PreRelease'))
+    }
+
+    $hashBody = @{}
+    if (-not [String]::IsNullOrWhiteSpace($TagName)) { $hashBody['tag_name'] = $TagName }
+    if (-not [String]::IsNullOrWhiteSpace($Commitish)) { $hashBody['target_commitish'] = $Commitish }
+    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
+    if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
+    if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
+    if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/$Release"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Patch'
+        'Description' =  "Creating release at $TagName"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Remove-GitHubRelease
+{
+<#
+    .SYNOPSIS
+        Removes a release from a repository on GitHub.
+
+    .DESCRIPTION
+        Removes a release from a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Release
+        The ID of the release to remove.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+
+    .NOTES
+        Users of this method must have push access.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Delete-GitHubRelease')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int64] $Release,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/$Release"
+        'Method' = 'Delete'
+        'Description' =  "Deleting release $Release"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Get-GitHubReleaseAsset
+{
+<#
+    .SYNOPSIS
+        Gets a a list of assets for a release, or downloads a single release asset.
+
+    .DESCRIPTION
+        Gets a a list of assets for a release, or downloads a single release asset.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Asset
+        The ID of the specific asset to download.
+
+    .PARAMETER Path
+        The path where the downloaded asset should be stored.
+
+    .PARAMETER Force
+        If specified, will overwrite any file located at Path when downloading Asset.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+
+    .NOTES
+        Users of this method must have push access.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements-Info')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(ParameterSetName='Elements-Info')]
+        [Parameter(ParameterSetName='Elements-Download')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements-Info')]
+        [Parameter(ParameterSetName='Elements-Download')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-Info')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-Download')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int64] $Asset,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements-Download')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-Download')]
+        [string] $Path,
+
+        [Parameter(ParameterSetName='Elements-Download')]
+        [Parameter(ParameterSetName='Uri-Download')]
+        [switch] $Force,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'Method' = 'Get'
+        'Description' =  "Getting information for asset $Asset"
+        'RawResult' = $true
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if (-not [String]::IsNullOrWhiteSpace($Path))
+    {
+        $params['Description'] = "Downloading asset $Asset"
+        $params['AcceptHeader'] = 'application/octet-stream'
+
+        $Path = Resolve-UnverifiedPath -Path $Path
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Remove-GitHubReleaseAsset
+{
+<#
+    .SYNOPSIS
+        Removes an asset from a release on GitHub.
+
+    .DESCRIPTION
+        Removes an asset from a release on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Asset
+        The ID of the asset to remove.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Delete-GitHubReleaseAsset')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int64] $Asset,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'Method' = 'Delete'
+        'Description' =  "Deleting asset $Asset"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}

@@ -62,6 +62,10 @@ function Invoke-GHRestMethod
         If specified, the result will be a PSObject that contains the normal result, along with
         the response code and other relevant header detail content.
 
+    .PARAMETER RawResult
+        If specified, this will not attempt to convert the result's content into an object, assuming
+        that it was returned as JSON.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -121,6 +125,8 @@ function Invoke-GHRestMethod
         [string] $AcceptHeader = $script:defaultAcceptHeader,
 
         [switch] $ExtendedResult,
+
+        [switch] $RawResult,
 
         [string] $AccessToken,
 
@@ -248,7 +254,15 @@ function Invoke-GHRestMethod
         $finalResult = $result.Content
         try
         {
-            $finalResult = $finalResult | ConvertFrom-Json
+            if (-not $RawResult)
+            {
+                $finalResult = $finalResult | ConvertFrom-Json
+
+                if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
+                {
+                    $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+                }
+            }
         }
         catch [ArgumentException]
         {
