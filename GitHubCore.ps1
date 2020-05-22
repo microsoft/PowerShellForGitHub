@@ -71,7 +71,8 @@ function Invoke-GHRestMethod
         the response code and other relevant header detail content.
 
     .PARAMETER Save
-        If specified, this will save the result to a temporary file and return the path to that file.
+        If specified, this will save the result to a temporary file and return the FileInfo of that
+        temporary file.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
