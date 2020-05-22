@@ -711,7 +711,6 @@ function Get-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements-List')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Alias('Get-GitHubAsset')]
     param(
         [Parameter(ParameterSetName='Elements-List')]
         [Parameter(ParameterSetName='Elements-Info')]
@@ -898,7 +897,6 @@ function New-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Alias('New-GitHubAsset')]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1041,7 +1039,6 @@ function Set-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Alias('Set-GitHubAsset')]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1146,9 +1143,7 @@ function Remove-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
-    [Alias('Delete-GitHubAsset')]
     [Alias('Delete-GitHubReleaseAsset')]
-    [Alias('Remove-GitHubAsset')]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
