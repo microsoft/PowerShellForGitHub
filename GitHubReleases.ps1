@@ -701,13 +701,16 @@ function Get-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements-Info')]
+        DefaultParameterSetName='Elements-List')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Get-GitHubAsset')]
     param(
+        [Parameter(ParameterSetName='Elements-List')]
         [Parameter(ParameterSetName='Elements-Info')]
         [Parameter(ParameterSetName='Elements-Download')]
         [string] $OwnerName,
 
+        [Parameter(ParameterSetName='Elements-List')]
         [Parameter(ParameterSetName='Elements-Info')]
         [Parameter(ParameterSetName='Elements-Download')]
         [string] $RepositoryName,
@@ -718,9 +721,31 @@ function Get-GitHubReleaseAsset
         [Parameter(
             Mandatory,
             ParameterSetName='Uri-Download')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-List')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements-List')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-List')]
+        [int64] $Release,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements-Info')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements-Download')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-Info')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-Download')]
         [int64] $Asset,
 
         [Parameter(
@@ -751,26 +776,52 @@ function Get-GitHubReleaseAsset
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
+    $shouldSave = $false
+    $acceptHeader = $script:defaultAcceptHeader
+    if ($PSCmdlet.ParameterSetName -in ('Elements-List', 'Uri-List'))
+    {
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/releases/$Release/assets"
+        $description = "Getting list of assets for release $Release"
+    }
+    elseif ($PSCmdlet.ParameterSetName -in ('Elements-Info', 'Uri-Info'))
+    {
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        $description = "Getting information about release asset $Asset"
+    }
+    elseif ($PSCmdlet.ParameterSetName -in ('Elements-Download', 'Uri-Download'))
+    {
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        $description = "Downloading release asset $Asset"
+        $shouldSave = $true
+        $acceptHeader = 'application/octet-stream'
+
+        $Path = Resolve-UnverifiedPath -Path $Path
+    }
+
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'UriFragment' =  $uriFragment
         'Method' = 'Get'
-        'Description' =  "Getting information for asset $Asset"
-        'RawResult' = $true
+        'Description' =  $description
+        'AcceptHeader' = $acceptHeader
+        'Save' = $shouldSave
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    if (-not [String]::IsNullOrWhiteSpace($Path))
+    $result = Invoke-GHRestMethod @params
+
+    if ($PSCmdlet.ParameterSetName -in ('Elements-Download', 'Uri-Download'))
     {
-        $params['Description'] = "Downloading asset $Asset"
-        $params['AcceptHeader'] = 'application/octet-stream'
-
-        $Path = Resolve-UnverifiedPath -Path $Path
+        return (Move-Item -Path $result -Destination $Path -Force:$Force -PassThru)
     }
-
-    return Invoke-GHRestMethod @params
+    else
+    {
+        return $result
+    }
 }
 
 function Remove-GitHubReleaseAsset
@@ -817,7 +868,9 @@ function Remove-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Delete-GitHubAsset')]
     [Alias('Delete-GitHubReleaseAsset')]
+    [Alias('Remove-GitHubAsset')]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,

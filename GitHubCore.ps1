@@ -29,17 +29,17 @@ function Invoke-GHRestMethod
 {
 <#
     .SYNOPSIS
-        A wrapper around Invoke-WebRequest that understands the Store API.
+        A wrapper around Invoke-WebRequest that understands the GitHub API.
 
     .DESCRIPTION
-        A very heavy wrapper around Invoke-WebRequest that understands the Store API and
+        A very heavy wrapper around Invoke-WebRequest that understands the GitHub API and
         how to perform its operation with and without console status updates.  It also
         understands how to parse and handle errors from the REST calls.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER UriFragment
-        The unique, tail-end, of the REST URI that indicates what Store REST action will
+        The unique, tail-end, of the REST URI that indicates what GitHub REST action will
         be performed.  This should not start with a leading "/".
 
     .PARAMETER Method
@@ -62,9 +62,8 @@ function Invoke-GHRestMethod
         If specified, the result will be a PSObject that contains the normal result, along with
         the response code and other relevant header detail content.
 
-    .PARAMETER RawResult
-        If specified, this will not attempt to convert the result's content into an object, assuming
-        that it was returned as JSON.
+    .PARAMETER Save
+        If specified, this will save the result to a temporary file and return the path to that file.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -126,7 +125,7 @@ function Invoke-GHRestMethod
 
         [switch] $ExtendedResult,
 
-        [switch] $RawResult,
+        [switch] $Save,
 
         [string] $AccessToken,
 
@@ -207,6 +206,13 @@ function Invoke-GHRestMethod
 
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
+    # When $Save is in use, we need to remember what file we're saving the result to.
+    $outFile = [String]::Empty
+    if ($Save)
+    {
+        $outFile = New-TemporaryFile
+    }
+
     try
     {
         Write-Log -Message $Description -Level Verbose
@@ -220,6 +226,7 @@ function Invoke-GHRestMethod
         $params.Add("UseDefaultCredentials", $true)
         $params.Add("UseBasicParsing", $true)
         $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+        if ($Save) { $params.Add('OutFile', $outFile) }
 
         if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
         {
@@ -234,8 +241,8 @@ function Invoke-GHRestMethod
 
         # Disable Progress Bar in function scope during Invoke-WebRequest
         $ProgressPreference = 'SilentlyContinue'
-
         [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+
         $result = Invoke-WebRequest @params
 
         if ($Method -eq 'Delete')
@@ -254,7 +261,11 @@ function Invoke-GHRestMethod
         $finalResult = $result.Content
         try
         {
-            if (-not $RawResult)
+            if ($Save)
+            {
+                $finalResult = Get-Item -Path $outFile
+            }
+            else
             {
                 $finalResult = $finalResult | ConvertFrom-Json
 
@@ -287,28 +298,31 @@ function Invoke-GHRestMethod
             }
         }
 
-        $links = $result.Headers['Link'] -split ','
-        $nextLink = $null
-        $nextPageNumber = 1
-        $numPages = 1
-        $since = 0
-        foreach ($link in $links)
+        if ($result.Headers.Count -gt 0)
         {
-            if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
+            $links = $result.Headers['Link'] -split ','
+            $nextLink = $null
+            $nextPageNumber = 1
+            $numPages = 1
+            $since = 0
+            foreach ($link in $links)
             {
-                $nextLink = $Matches[1]
-                $nextPageNumber = [int]$Matches[2]
-            }
-            elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
-            {
-                # Special case scenario for the users endpoint.
-                $nextLink = $Matches[1]
-                $since = [int]$Matches[2]
-                $numPages = 0 # Signifies an unknown number of pages.
-            }
-            elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
-            {
-                $numPages = [int]$Matches[1]
+                if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
+                {
+                    $nextLink = $Matches[1]
+                    $nextPageNumber = [int]$Matches[2]
+                }
+                elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
+                {
+                    # Special case scenario for the users endpoint.
+                    $nextLink = $Matches[1]
+                    $since = [int]$Matches[2]
+                    $numPages = 0 # Signifies an unknown number of pages.
+                }
+                elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
+                {
+                    $numPages = [int]$Matches[1]
+                }
             }
         }
 
@@ -494,7 +508,7 @@ function Invoke-GHRestMethodMultipleResult
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER UriFragment
-        The unique, tail-end, of the REST URI that indicates what Store REST action will
+        The unique, tail-end, of the REST URI that indicates what GitHub REST action will
         be performed.  This should *not* include the 'top' and 'max' parameters.  These
         will be automatically added as needed.
 
