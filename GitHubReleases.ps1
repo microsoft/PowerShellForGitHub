@@ -181,10 +181,10 @@ filter Get-GitHubRelease
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    $telemetryProperties = @{}
-
-    $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
-    $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/releases"
     $description = "Getting releases for $OwnerName/$RepositoryName"
@@ -937,13 +937,7 @@ function New-GitHubReleaseAsset
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
     $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedUploadUrl' = (-not [String]::IsNullOrWhiteSpace($UploadUrl))
         'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
         'ProvidedContentType' = (-not [String]::IsNullOrWhiteSpace($ContentType))
@@ -952,8 +946,15 @@ function New-GitHubReleaseAsset
     # If UploadUrl wasn't provided, we'll need to query for it first.
     if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
     {
-        $info = Get-GitHubRelease -OwnerName $OwnerName -RepositoryName $RepositoryName -Release $Release -AccessToken:$AccessToken -NoStatus:$NoStatus
-        $UploadUrl = $info.upload_url
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
+        $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
+
+        $releaseInfo = Get-GitHubRelease -OwnerName $OwnerName -RepositoryName $RepositoryName -Release $Release -AccessToken:$AccessToken -NoStatus:$NoStatus
+        $UploadUrl = $releaseInfo.upload_url
     }
 
     # Remove the '{name,label}' from the Url if it's there
