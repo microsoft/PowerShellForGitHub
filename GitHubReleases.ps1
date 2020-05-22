@@ -598,13 +598,18 @@ function Remove-GitHubRelease
     .EXAMPLE
         Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
+    .EXAMPLE
+        Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890 -Confirm:$false
+
+        Will not prompt for confirmation, as -Confirm:$false was specified.
+
     .NOTES
         Requires push access to the repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubRelease')]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -647,7 +652,10 @@ function Remove-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    if ($PSCmdlet.ShouldProcess($Release, "Deleting release"))
+    {
+        return Invoke-GHRestMethod @params
+    }
 }
 
 function Get-GitHubReleaseAsset
@@ -1127,11 +1135,16 @@ function Remove-GitHubReleaseAsset
 
     .EXAMPLE
         Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+
+    .EXAMPLE
+        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890 -Confirm:$false
+
+        Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubAsset')]
     [Alias('Delete-GitHubReleaseAsset')]
     [Alias('Remove-GitHubAsset')]
@@ -1176,5 +1189,8 @@ function Remove-GitHubReleaseAsset
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    if ($PSCmdlet.ShouldProcess($Asset, "Deleting asset"))
+    {
+        return Invoke-GHRestMethod @params
+    }
 }
