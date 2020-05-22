@@ -824,6 +824,7 @@ function Get-GitHubReleaseAsset
 
     if ($PSCmdlet.ParameterSetName -in ('Elements-Download', 'Uri-Download'))
     {
+        Write-Log -Message "Moving [$($result.FullName)] to [$Path]" -Level Verbose
         return (Move-Item -Path $result -Destination $Path -Force:$Force -PassThru)
     }
     else
