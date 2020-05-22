@@ -197,7 +197,7 @@ filter Get-GitHubRelease
         $description = "Getting release information for $Release from $OwnerName/$RepositoryName"
     }
 
-    if($Latest)
+    if ($Latest)
     {
         $telemetryProperties['GetLatest'] = $true
 
@@ -205,7 +205,7 @@ filter Get-GitHubRelease
         $description = "Getting latest release from $OwnerName/$RepositoryName"
     }
 
-    if(-not [String]::IsNullOrEmpty($Tag))
+    if (-not [String]::IsNullOrEmpty($Tag))
     {
         $telemetryProperties['ProvidedTag'] = $true
 
@@ -341,7 +341,7 @@ function New-GitHubRelease
         New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
 
     .NOTES
-        Users of this method must have push access.
+        Requires push access to the repository.
 
         This endpoind triggers notifications.  Creating content too quickly using this endpoint
         may result in abuse rate limiting.
@@ -481,7 +481,7 @@ function Set-GitHubRelease
         Set-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0 -Body 'Adds core support for Projects'
 
     .NOTES
-        Users of this method must have push access.
+        Requires push access to the repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -599,7 +599,7 @@ function Remove-GitHubRelease
         Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
     .NOTES
-        Users of this method must have push access.
+        Requires push access to the repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -697,7 +697,7 @@ function Get-GitHubReleaseAsset
         Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
     .NOTES
-        Users of this method must have push access.
+        Requires push access to the repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -822,6 +822,270 @@ function Get-GitHubReleaseAsset
     {
         return $result
     }
+}
+
+function New-GitHubReleaseAsset
+{
+<#
+    .SYNOPSIS
+        Uploads a new asset for a release on GitHub.
+
+    .DESCRIPTION
+        Uploads a new asset for a release on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Release
+        The ID of the release that the asset is for.
+
+    .PARAMETER UploadUrl
+        The value of 'upload_url' from getting the asset details.
+
+    .PARAMETER Path
+        The path to the file to upload as a new asset.
+
+    .PARAMETER Label
+        An alternate short description o fthe asset.  Used in place of the filename.
+
+    .PARAMETER ContentType
+        The MIME Media Type for the file being uploaded.  By default, this will be inferred based
+        on the file's extension.  If the extension is not known by this module, it will fallback to
+        using text/plain.  You may specify a ContentType here to override the module's logic.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
+
+    .NOTES
+        GitHub renames asset filenames that have special characters, non-alphanumeric characters,
+        and leading or trailing periods. Get-GitHubReleaseAsset lists the renamed filenames.
+
+        If you upload an asset with the same filename as another uploaded asset, you'll receive
+        an error and must delete the old file before you can re-upload the new asset.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('New-GitHubAsset')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [int64] $Release,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='UploadUrl')]
+        [string] $UploadUrl,
+
+        [Parameter(Mandatory)]
+        [ValidateScript({if (Test-Path -Path $_ -PathType Leaf) { $true } else { throw "$_ does not exist or is inaccessible." }})]
+        [string] $Path,
+
+        [string] $Label,
+
+        [string] $ContentType,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements -DisableValidation
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'ProvidedUploadUrl' = (-not [String]::IsNullOrWhiteSpace($UploadUrl))
+        'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
+        'ProvidedContentType' = (-not [String]::IsNullOrWhiteSpace($ContentType))
+    }
+
+    # If UploadUrl wasn't provided, we'll need to query for it first.
+    if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
+    {
+        $info = Get-GitHubRelease -OwnerName $OwnerName -RepositoryName $RepositoryName -Release $Release -AccessToken:$AccessToken -NoStatus:$NoStatus
+        $UploadUrl = $info.upload_url
+    }
+
+    # Remove the '{name,label}' from the Url if it's there
+    if ($UploadUrl -match '(.*){')
+    {
+        $UploadUrl = $Matches[1]
+    }
+
+    $Path = Resolve-UnverifiedPath -Path $Path
+    $file = Get-Item -Path $Path
+    $fileName = $file.Name
+    $fileNameEncoded = [System.Web.HTTPUtility]::UrlEncode($fileName)
+    $queryParams = @("name=$fileNameEncoded")
+
+    $labelEncoded = [System.Web.HTTPUtility]::UrlEncode($Label)
+    if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
+
+    $params = @{
+        'UriFragment' =  $UploadUrl + '?' + ($queryParams -join '&')
+        'Method' = 'Post'
+        'Description' =  "Uploading $fileName as a release asset"
+        'InFile' = $Path
+        'ContentType' = $ContentType
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
+function Set-GitHubReleaseAsset
+{
+<#
+    .SYNOPSIS
+        Edits an existing asset for a release on GitHub.
+
+    .DESCRIPTION
+        Edits an existing asset for a release on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Asset
+        The ID of the asset being updated.
+
+    .PARAMETER Name
+        The new filename of the asset.
+
+    .PARAMETER Label
+        An alternate short description o fthe asset.  Used in place of the filename.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Set-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 123456 -Name bar.zip
+
+    .NOTES
+        Requires push access to the repository.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Set-GitHubAsset')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [int64] $Asset,
+
+        [string] $Name,
+
+        [string] $Label,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
+        'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
+    }
+
+    $hashBody = @{}
+    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
+    if (-not [String]::IsNullOrWhiteSpace($Label)) { $hashBody['label'] = $Label }
+
+    $params = @{
+        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Patch'
+        'Description' =  "Editing asset $Asset"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 function Remove-GitHubReleaseAsset
