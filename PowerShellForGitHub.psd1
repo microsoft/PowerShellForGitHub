@@ -92,6 +92,7 @@
         'Get-GitHubUserContextualInformation',
         'Get-GitHubViewTraffic',
         'Group-GitHubIssue',
+        'Group-GitHubPullRequest',
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',

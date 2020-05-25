@@ -27,7 +27,11 @@ try
     Describe 'Getting Project Columns' {
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+
+            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+            $column = $column
         }
+
         AfterAll {
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
         }
@@ -48,7 +52,12 @@ try
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
             $columntwo = New-GitHubProjectColumn -Project $project.id -Name $defaultColumnTwo
+
+            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+            $column = $column
+            $columnTwo = $columnTwo
         }
+
         AfterAll {
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
             $null = Remove-GitHubProjectColumn -Column $columntwo.id -Confirm:$false
@@ -96,7 +105,11 @@ try
         Context 'Create project column' {
             BeforeAll {
                 $column = @{id = 0}
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $column = $column
             }
+
             AfterAll {
                 $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
                 Remove-Variable -Name column
@@ -119,6 +132,9 @@ try
         Context 'Remove project column' {
             BeforeAll {
                 $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $column = $column
             }
 
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false

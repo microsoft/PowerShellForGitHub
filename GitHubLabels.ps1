@@ -206,6 +206,7 @@ function New-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -320,6 +321,7 @@ function Remove-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubLabel')]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -551,6 +553,7 @@ function Set-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -662,6 +665,7 @@ function Add-GitHubIssueLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -763,6 +767,7 @@ function Set-GitHubIssueLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,

@@ -37,6 +37,7 @@ function Group-GitHubIssue
         SupportsShouldProcess,
         DefaultParameterSetName='Weekly')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="DateType due to PowerShell/PSScriptAnalyzer#1472")]
     param
     (
         [Parameter(
@@ -55,41 +56,68 @@ function Group-GitHubIssue
         [string] $DateType = 'Created'
     )
 
-    Write-InvocationLog
-
-    if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+    begin
     {
-        $totalIssues = 0
-        $weekDates = Get-WeekDate -Weeks $Weeks
-        $endOfWeek = Get-Date
+        Write-InvocationLog
 
-        foreach ($week in $weekDates)
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
         {
-            $filteredIssues = @($Issue | Where-Object {
-                (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                (($DateType -eq 'Closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
-            })
+            $weekDates = Get-WeekDate -Weeks $Weeks
 
-            $endOfWeek = $week
-            $count = $filteredIssues.Count
-            $totalIssues += $count
+            $result = [ordered]@{}
+            foreach ($week in $weekDates)
+            {
+                $result[$week] = ([PSCustomObject]([ordered]@{
+                    'WeekStart' = $week
+                    'Count' = 0
+                    'Issues' = @()
+                }))
+            }
 
-            Write-Output -InputObject ([PSCustomObject]([ordered]@{
-                'WeekStart' = $week
-                'Count' = $count
-                'Issues' = $filteredIssues
+            $result['total'] = ([PSCustomObject]([ordered]@{
+                'WeekStart' = 'total'
+                'Count' = 0
+                'Issues' = @()
             }))
         }
-
-        Write-Output -InputObject ([PSCustomObject]([ordered]@{
-            'WeekStart' = 'total'
-            'Count' = $totalIssues
-            'Issues' = $Issue
-        }))
     }
-    else
+
+    process
     {
-        Write-Output -InputObject $Issue
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+        {
+            $endOfWeek = Get-Date
+            foreach ($week in $weekDates)
+            {
+                $filteredIssues = @($Issue | Where-Object {
+                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
+                })
+
+                $endOfWeek = $week
+
+                $result[$week].Issues += $filteredIssues
+                $result[$week].Count += ($filteredIssues.Count)
+
+                $result['total'].Issues += $filteredIssues
+                $result['total'].Count += ($filteredIssues.Count)
+            }
+        }
+        else
+        {
+            Write-Output -InputObject $Issue
+        }
+    }
+
+    end
+    {
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+        {
+            foreach ($entry in $result.Values.GetEnumerator())
+            {
+                Write-Output -InputObject $entry
+            }
+        }
     }
 }
 
@@ -130,6 +158,7 @@ function Group-GitHubPullRequest
         SupportsShouldProcess,
         DefaultParameterSetName='Weekly')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="DateType due to PowerShell/PSScriptAnalyzer#1472")]
     param
     (
         [Parameter(
@@ -148,41 +177,68 @@ function Group-GitHubPullRequest
         [string] $DateType = 'Created'
     )
 
-    Write-InvocationLog
-
-    if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+    begin
     {
-        $totalPullRequests = 0
-        $weekDates = Get-WeekDate -Weeks $Weeks
-        $endOfWeek = Get-Date
+        Write-InvocationLog
 
-        foreach ($week in $weekDates)
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
         {
-            $filteredPullRequests = @($PullRequest | Where-Object {
-                (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                (($DateType -eq 'Merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
-            })
+            $weekDates = Get-WeekDate -Weeks $Weeks
 
-            $endOfWeek = $week
-            $count = $filteredPullRequests.Count
-            $totalPullRequests += $count
+            $result = [ordered]@{}
+            foreach ($week in $weekDates)
+            {
+                $result[$week] = ([PSCustomObject]([ordered]@{
+                    'WeekStart' = $week
+                    'Count' = 0
+                    'PullRequests' = @()
+                }))
+            }
 
-            Write-Output -InputObject ([PSCustomObject]([ordered]@{
-                'WeekStart' = $week
-                'Count' = $count
-                'PullRequests' = $filteredPullRequests
+            $result['total'] = ([PSCustomObject]([ordered]@{
+                'WeekStart' = 'total'
+                'Count' = 0
+                'PullRequests' = @()
             }))
         }
-
-        Write-Output -InputObject ([PSCustomObject]([ordered]@{
-            'WeekStart' = 'total'
-            'Count' = $totalPullRequests
-            'PullRequests' = $PullRequest
-        }))
     }
-    else
+
+    process
     {
-        Write-Output -InputObject $PullRequest
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+        {
+            $endOfWeek = Get-Date
+            foreach ($week in $weekDates)
+            {
+                $filteredPullRequests = @($PullRequest | Where-Object {
+                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
+                })
+
+                $endOfWeek = $week
+
+                $result[$week].PullRequests += $filteredPullRequests
+                $result[$week].Count += ($filteredPullRequests.Count)
+
+                $result['total'].PullRequests += $filteredPullRequests
+                $result['total'].Count += ($filteredPullRequests.Count)
+            }
+        }
+        else
+        {
+            Write-Output -InputObject $PullRequest
+        }
+    }
+
+    end
+    {
+        if ($PSCmdlet.ParameterSetName -eq 'Weekly')
+        {
+            foreach ($entry in $result.Values.GetEnumerator())
+            {
+                Write-Output -InputObject $entry
+            }
+        }
     }
 }
 
