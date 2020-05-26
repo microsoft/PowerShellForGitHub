@@ -35,11 +35,14 @@ try
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
     Describe 'Getting Project' {
-
         Context 'Get User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -61,7 +64,11 @@ try
         Context 'Get Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -83,7 +90,11 @@ try
         Context 'Get Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -106,7 +117,11 @@ try
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultProjectClosed -Description $defaultProjectClosedDesc
                 $null = Set-GitHubProject -Project $project.id -State Closed
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -134,7 +149,11 @@ try
         Context 'Modify User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -157,7 +176,11 @@ try
         Context 'Modify Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -189,7 +212,11 @@ try
         Context 'Modify Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
@@ -214,7 +241,11 @@ try
         Context 'Create User projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
                 Remove-Variable project
@@ -238,7 +269,11 @@ try
         Context 'Create Organization projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
                 Remove-Variable project
@@ -262,7 +297,11 @@ try
         Context 'Create Repo projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
+
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
                 Remove-Variable project
@@ -288,6 +327,9 @@ try
         Context 'Remove User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
@@ -299,6 +341,9 @@ try
         Context 'Remove Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
@@ -310,6 +355,9 @@ try
         Context 'Remove Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false

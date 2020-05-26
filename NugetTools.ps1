@@ -82,9 +82,7 @@ function Get-NugetPackage
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline)]
+        [Parameter(Mandatory)]
         [string] $PackageName,
 
         [Parameter(Mandatory)]

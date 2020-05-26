@@ -31,7 +31,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
 
@@ -39,6 +38,5 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-  - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
