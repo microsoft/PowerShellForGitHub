@@ -53,6 +53,7 @@ function Get-GitHubRateLimit
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [string] $AccessToken,
 
@@ -119,6 +120,7 @@ function ConvertFrom-GitHubMarkdown
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -137,36 +139,42 @@ function ConvertFrom-GitHubMarkdown
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
+    begin
+    {
+        Write-InvocationLog
 
-    $telemetryProperties = @{
-        'Mode' = $Mode
+        $telemetryProperties = @{
+            'Mode' = $Mode
+        }
+
+        $modeConverter = @{
+            'Markdown' = 'markdown'
+            'GitHubFlavoredMarkdown' = 'gfm'
+        }
     }
 
-    $modeConverter = @{
-        'Markdown' = 'markdown'
-        'GitHubFlavoredMarkdown' = 'gfm'
+    process
+    {
+        $hashBody = @{
+            'text' = $Content
+            'mode' = $modeConverter[$Mode]
+        }
+
+        if (-not [String]::IsNullOrEmpty($Context)) { $hashBody['context'] = $Context }
+
+        $params = @{
+            'UriFragment' = 'markdown'
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Post'
+            'Description' =  "Converting Markdown to HTML"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Write-Output -InputObject (Invoke-GHRestMethod @params)
     }
-
-    $hashBody = @{
-        'text' = $Content
-        'mode' = $modeConverter[$Mode]
-    }
-
-    if (-not [String]::IsNullOrEmpty($Context)) { $hashBody['context'] = $Context }
-
-    $params = @{
-        'UriFragment' = 'markdown'
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Post'
-        'Description' =  "Converting Markdown to HTML"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
-
-    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubLicense
@@ -318,6 +326,7 @@ function Get-GitHubEmoji
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [string] $AccessToken,
 

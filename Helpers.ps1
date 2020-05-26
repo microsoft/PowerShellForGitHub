@@ -262,6 +262,7 @@ function Write-Log
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We need to be able to access the PID for logging purposes, and it is accessed via a global variable.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidOverwritingBuiltInCmdlets", "", Justification="Write-Log is an internal function being incorrectly exported by PSDesiredStateConfiguration.  See PowerShell/PowerShell#7209")]
     param(
         [Parameter(ValueFromPipeline)]
         [AllowEmptyCollection()]
@@ -618,19 +619,27 @@ function Write-InteractiveHost
         [System.ConsoleColor] $BackgroundColor
     )
 
-    # Determine if the host is interactive
-    if ([Environment]::UserInteractive -and `
-        ![Bool]([Environment]::GetCommandLineArgs() -like '-noni*') -and `
-        (Get-Host).Name -ne 'Default Host')
+    begin
     {
-        # Special handling for OutBuffer (generated for the proxy function)
-        $outBuffer = $null
-        if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer))
-        {
-            $PSBoundParameters['OutBuffer'] = 1
-        }
+        $hostIsInteractive = ([Environment]::UserInteractive -and
+            ![Bool]([Environment]::GetCommandLineArgs() -like '-noni*') -and
+            ((Get-Host).Name -ne 'Default Host'))
+    }
 
-        Write-Host @PSBoundParameters
+    process
+    {
+        # Determine if the host is interactive
+        if ($hostIsInteractive)
+        {
+            # Special handling for OutBuffer (generated for the proxy function)
+            $outBuffer = $null
+            if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer))
+            {
+                $PSBoundParameters['OutBuffer'] = 1
+            }
+
+            Write-Host @PSBoundParameters
+        }
     }
 }
 
@@ -679,15 +688,18 @@ function Resolve-UnverifiedPath
         [string] $Path
     )
 
-    $resolvedPath = Resolve-Path -Path $Path -ErrorVariable resolvePathError -ErrorAction SilentlyContinue
+    process
+    {
+        $resolvedPath = Resolve-Path -Path $Path -ErrorVariable resolvePathError -ErrorAction SilentlyContinue
 
-    if ($null -eq $resolvedPath)
-    {
-        return $resolvePathError[0].TargetObject
-    }
-    else
-    {
-        return $resolvedPath.ProviderPath
+        if ($null -eq $resolvedPath)
+        {
+            Write-Output -InputObject ($resolvePathError[0].TargetObject)
+        }
+        else
+        {
+            Write-Output -InputObject ($resolvedPath.ProviderPath)
+        }
     }
 }
 

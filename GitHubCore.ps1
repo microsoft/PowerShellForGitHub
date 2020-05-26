@@ -6,6 +6,12 @@
     mediaTypeVersion = 'v3'
     squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
     symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
+    mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
+    nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
+    baptisteAcceptHeader = 'application/vnd.github.baptiste-preview+json'
+    scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
+    dorianAcceptHeader = 'application/vnd.github.dorian-preview+json'
+    londonAcceptHeader = 'application/vnd.github.london-preview+json'
 
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
@@ -606,6 +612,7 @@ function Invoke-GHRestMethodMultipleResult
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [OutputType([Object[]])]
     param(
         [Parameter(Mandatory)]
