@@ -277,8 +277,8 @@ try
             }
 
             Context 'For removing all issues'{
-                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
-                $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -Confirm:$false
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -Confirm:$false
+                $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
                 It 'Should have removed all labels from the issue' {
                     $labelIssues.Count | Should be 0
