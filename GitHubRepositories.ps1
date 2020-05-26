@@ -221,7 +221,7 @@ function Remove-GitHubRepository
     .EXAMPLE
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
 
-        Remove repository given uri without prompting for confirmation.
+        Remove repository with the given URI, without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
