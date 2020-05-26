@@ -317,7 +317,12 @@ function Get-GitHubRepository
     .PARAMETER GetAllPublicRepositories
         If this is specified with no other parameter, then instead of returning back all
         repositories for the current authenticated user, it will instead return back all
-        public repositories on GitHub.
+        public repositories on GitHub in the order in which they were created.
+
+    .PARAMETER Since
+        The ID of the last public repository that you have seen.  If specified with
+        -GetAllPublicRepositories, will only return back public repositories created _after_ this
+        one.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -340,24 +345,30 @@ function Get-GitHubRepository
         Gets all public repositories on GitHub.
 
     .EXAMPLE
-        Get-GitHubRepository -OctoCat OctoCat
+        Get-GitHubRepository -OwnerName octocat
+
+        Gets all of the repositories for the user octocat
 
     .EXAMPLE
-        Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Get-GitHubRepository -Uri https://github.com/microsoft/PowerShellForGitHub
+
+        Gets information about the microsoft/PowerShellForGitHub repository.
 
     .EXAMPLE
         Get-GitHubRepository -OrganizationName PowerShell
 
+        Gets all of the repositories in the PowerShell organization.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='AuthenticatedUser')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='ElementsOrUser')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='ElementsOrUser')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -369,20 +380,35 @@ function Get-GitHubRepository
         [string] $OrganizationName,
 
         [ValidateSet('All', 'Public', 'Private')]
+        [Parameter(ParameterSetName='AuthenticatedUser')]
         [string] $Visibility,
 
+        [Parameter(ParameterSetName='AuthenticatedUser')]
         [string[]] $Affiliation,
 
+        [Parameter(ParameterSetName='AuthenticatedUser')]
+        [Parameter(ParameterSetName='ElementsOrUser')]
+        [Parameter(ParameterSetName='Organization')]
         [ValidateSet('All', 'Owner', 'Public', 'Private', 'Member', 'Forks', 'Sources')]
         [string] $Type,
 
+        [Parameter(ParameterSetName='AuthenticatedUser')]
+        [Parameter(ParameterSetName='ElementsOrUser')]
+        [Parameter(ParameterSetName='Organization')]
         [ValidateSet('Created', 'Updated', 'Pushed', 'FullName')]
         [string] $Sort,
 
+        [Parameter(ParameterSetName='AuthenticatedUser')]
+        [Parameter(ParameterSetName='ElementsOrUser')]
+        [Parameter(ParameterSetName='Organization')]
         [ValidateSet('Ascending', 'Descending')]
         [string] $Direction,
 
+        [Parameter(ParameterSetName='PublicRepos')]
         [switch] $GetAllPublicRepositories,
+
+        [Parameter(ParameterSetName='PublicRepos')]
+        [int64] $Since,
 
         [string] $AccessToken,
 
@@ -395,36 +421,115 @@ function Get-GitHubRepository
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    $telemetryProperties = @{}
+    $telemetryProperties = @{
+        'UsageType' = $PSCmdlet.ParameterSetName
+    }
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
-    if ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
+    switch ($PSCmdlet.ParameterSetName)
     {
-        $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
-        $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+        { ('ElementsOrUser', 'Uri') -contains $_ } {
+            # This is a little tricky.  Ideally we'd have two separate ParameterSets (Elements, User),
+            # however PowerShell would be unable to disambiguate between the two, so unfortunately
+            # we need to do some additional work here.  And because fallthru doesn't appear to be
+            # working right, we're combining both of those, along with Uri.
 
-        $uriFragment = "repos/$OwnerName/$RepositoryName"
-        $description = "Getting repo $RepositoryName"
-    }
-    elseif ([String]::IsNullOrEmpty($OwnerName) -and [String]::IsNullOrEmpty($OrganizationName))
-    {
-        $uriFragment = 'user/repos'
-        $description = 'Getting repos for current authenticated user'
-    }
-    elseif ([String]::IsNullOrEmpty($OwnerName))
-    {
-        $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
+            if ([String]::IsNullOrWhiteSpace($OwnerName))
+            {
+                $message = 'OwnerName could not be determined.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+            elseif ([String]::IsNullOrWhiteSpace($RepositoryName))
+            {
+                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
+                {
+                    $telemetryProperties['UsageType'] = 'User'
+                    $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
 
-        $uriFragment = "orgs/$OrganizationName/repos"
-        $description = "Getting repos for $OrganizationName"
-    }
-    else
-    {
-        $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+                    $uriFragment = "users/$OwnerName/repos"
+                    $description = "Getting repos for $OwnerName"
+                }
+                else
+                {
+                    $message = 'RepositoryName could not be determined.'
+                    Write-Log -Message $message -Level Error
+                    throw $message
+                }
+            }
+            else
+            {
+                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
+                {
+                    $telemetryProperties['UsageType'] = 'Elements'
 
-        $uriFragment = "users/$OwnerName/repos"
-        $description = "Getting repos for $OwnerName"
+                    if ($PSBoundParameters.ContainsKey('Type') -or
+                        $PSBoundParameters.ContainsKey('Sort') -or
+                        $PSBoundParameters.ContainsKey('Direction'))
+                    {
+                        $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                        Write-Log -Message $message -Level Error
+                        throw $message
+                    }
+                }
+
+                $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+                $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+
+                $uriFragment = "repos/$OwnerName/$RepositoryName"
+                $description = "Getting $OwnerName/$RepositoryName"
+            }
+
+            break
+        }
+
+        'Organization' {
+
+            $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
+
+            $uriFragment = "orgs/$OrganizationName/repos"
+            $description = "Getting repos for $OrganizationName"
+
+            break
+        }
+
+        'User' {
+            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+
+            $uriFragment = "users/$OwnerName/repos"
+            $description = "Getting repos for $OwnerName"
+
+            break
+        }
+
+        'AuthenticatedUser' {
+            if ($PSBoundParameters.ContainsKey('Type') -and
+                ($PSBoundParameters.ContainsKey('Visibility') -or
+                $PSBoundParameters.ContainsKey('Affiliation')))
+            {
+                $message = 'Unable to specify -Type when using -Visibility and/or -Affiliation.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $uriFragment = 'user/repos'
+            $description = 'Getting repos for current authenticated user'
+
+            break
+        }
+
+        'PublicRepos' {
+            $uriFragment = 'repositories'
+            $description = "Getting all public repositories"
+
+            if ($PSBoundParameters.ContainsKey('Since'))
+            {
+                $description += " since $Since"
+            }
+
+            break
+        }
     }
 
     $sortConverter = @{
@@ -448,10 +553,12 @@ function Get-GitHubRepository
     {
         $getParams += "affiliation=$($Affiliation -join ',')"
     }
+    if ($PSBoundParameters.ContainsKey('Since')) { $getParams += "since=$Since" }
 
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
+        'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader,$script:mercyAcceptHeader"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -810,7 +917,7 @@ function Get-GitHubRepositoryTopic
         'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
         'Method' = 'Get'
         'Description' =  "Getting topics for $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.mercy-preview+json'
+        'AcceptHeader' = $script:mercyAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -933,7 +1040,7 @@ function Set-GitHubRepositoryTopic
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.mercy-preview+json'
+        'AcceptHeader' = $script:mercyAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

@@ -632,7 +632,7 @@ function Import-GitHubConfiguration
         # The hash is used to identify if the user has made changes to the config file prior to running the UT's locally.
         # It intentionally cannot be modified via Set-GitHubConfiguration and must be updated directly in the
         # source code here should the default Settings.ps1 file ever be changed.
-        'testConfigSettingsHash' = 'A76CA42A587D10247F887F9257DB7BF5F988E8714A7C0E29D7B100A20F5D35B8E3306AC5B9BBC8851EC19846A90BB3C80FC7C594D0347A772B2B10BADB1B3E68'
+        'testConfigSettingsHash' = '272EE14CED396100A7AFD23EA21CA262470B7F4D80E47B7ABD90508B86210775F020EEF79D322F4C22A53835F700E1DFD13D0509C1D08DD6F9771B3F0133EDAB'
     }
 
     $jsonObject = Read-GitHubConfiguration -Path $Path
