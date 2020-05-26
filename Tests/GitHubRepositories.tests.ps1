@@ -32,7 +32,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             $newRepo = Get-GitHubRepository -RepositoryName $defaultRepoName
@@ -81,7 +81,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             It 'Should get repository' {
@@ -105,7 +105,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
             }
 
-            $delete = Remove-GitHubRepository -RepositoryName $defaultRepoName -Verbose
+            $delete = Remove-GitHubRepository -RepositoryName $defaultRepoName
             It 'Should get no content' {
                 $repo | Should BeNullOrEmpty
             }
@@ -119,7 +119,6 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.Name)$suffixToAddToRepo"
-                Write-Verbose "New repo name shall be: '$newRepoName'"
             }
             It "Should have the expected new repository name - by URI" {
                 $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
@@ -133,7 +132,7 @@ try
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
                 ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo"
             }
         }
     }
@@ -145,7 +144,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             It 'Should have the new updated description' {
@@ -167,12 +166,12 @@ try
                 $repo = New-GitHubRepository -RepositoryName $defaultRepoName -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             It 'Should have the expected topic' {
-                $topic = Set-GitHubRepositoryTopic -RepositoryName $defaultRepoName -Name ($defaultRepoTopic)
-                $updatedRepo.names[0] | Should be $defaultRepoTopics
+                $topic = Set-GitHubRepositoryTopic -RepositoryName $defaultRepoName -Name $defaultRepoTopic
+                $updatedRepo.names[0] | Should be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
@@ -189,7 +188,7 @@ try
                 $repo = New-GitHubRepositoryLanguage -RepositoryName $defaultRepoName -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             $languages = Get-GitHubRepositoryLanguage -RepositoryName $defaultRepoName
@@ -206,7 +205,7 @@ try
                 $repo = New-GitHubRepositoryLanguage -RepositoryName $defaultRepoName -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)" -Verbose
+                Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             $tags = Get-GitHubRepositoryTag -RepositoryName $defaultRepoName
