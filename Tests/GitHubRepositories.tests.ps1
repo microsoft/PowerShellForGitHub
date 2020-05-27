@@ -16,11 +16,9 @@ try
 {
     # Define Script-scoped, readonly, hidden variables.
     @{
-        defaultRepoName = ([Guid]::NewGuid().Guid)
         defaultRepoDesc = "This is a description."
         defaultRepoHomePage = "https://www.microsoft.com/"
         defaultRepoTopic = "microsoft"
-        modifiedRepoDesc = "This is a modified description."
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
@@ -79,7 +77,7 @@ try
 
             $repos = Get-GitHubRepository -OrganizationName $script:organizationName -Type All
             It "Should have results for the organization" {
-                $repo.name | Should BeIn $repos.name
+                $repo.Name | Should BeIn $repos.Name
             }
 
             AfterAll -ScriptBlock {
@@ -139,7 +137,7 @@ try
             }
 
             It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -NewName $newRepoName -Confirm:$false
                 $renamedRepo.Name | Should be $newRepoName
             }
             ## cleanup temp testing repository
@@ -154,7 +152,8 @@ try
 
         Context -Name 'For creating a repository' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
+                $repoName = ([Guid]::NewGuid().Guid) + "_name"
+                $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)"
@@ -165,7 +164,7 @@ try
             }
 
             It 'Name is correct' {
-                $repo.name | Should be $defaultRepoName
+                $repo.Name | Should be $repoName
             }
 
             It 'Description is correct' {
@@ -178,10 +177,10 @@ try
 
         Context -Name 'For deleting a repository' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
 
-            $delete = Remove-GitHubRepository -RepositoryName $defaultRepoName
+            $delete = Remove-GitHubRepository -RepositoryName $repo.Name
             It 'Should get no content' {
                 $repo | Should BeNullOrEmpty
             }
@@ -246,7 +245,7 @@ try
             }
 
             It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -NewName $newRepoName -Confirm:$false
                 $renamedRepo.Name | Should be $newRepoName
             }
             ## cleanup temp testing repository
@@ -261,19 +260,20 @@ try
 
         Context -Name 'For creating a repository' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepository -RepositoryName $defaultRepoName -Description $defaultRepoDesc -AutoInit
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             It 'Should have the new updated description' {
-                $updatedRepo = Update-GitHubRepository -RepositoryName $defaultRepoName -Description $modifiedRepoDesc
+                $modifiedRepoDesc = $defaultRepoDesc + "_modified"
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Description $modifiedRepoDesc
                 $updatedRepo.description | Should be $modifiedRepoDesc
             }
 
             It 'Should have the new updated homepage url' {
-                $updatedRepo = Update-GitHubRepository -RepositoryName $defaultRepoName -Homepage $defaultRepoHomePage
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Homepage $defaultRepoHomePage
                 $repo.homepage | Should be $defaultRepoHomePage
             }
         }
@@ -283,19 +283,19 @@ try
 
         Context -Name 'For creating and getting a repository topic' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepository -RepositoryName $defaultRepoName -AutoInit
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
             It 'Should have the expected topic' {
-                $topic = Set-GitHubRepositoryTopic -RepositoryName $defaultRepoName -Name $defaultRepoTopic
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.Name -Name $defaultRepoTopic
                 $updatedRepo.names[0] | Should be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
-                $topic = Set-GitHubRepositoryTopic -RepositoryName $defaultRepoName -Clear
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.Name -Clear
                 $updatedRepo.names | Should BeNullOrEmpty
             }
         }
@@ -305,13 +305,13 @@ try
 
         Context -Name 'For getting repository languages' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepositoryLanguage -RepositoryName $defaultRepoName -AutoInit
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
-            $languages = Get-GitHubRepositoryLanguage -RepositoryName $defaultRepoName
+            $languages = Get-GitHubRepositoryLanguage -OwnerName $repo.owner.login -RepositoryName $repo.Name
             It 'Should be empty' {
                 $languages | Should BeNullOrEmpty
             }
@@ -322,13 +322,13 @@ try
 
         Context -Name 'For getting repository tags' -Fixture {
             BeforeAll {
-                $repo = New-GitHubRepositoryLanguage -RepositoryName $defaultRepoName -AutoInit
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)"
             }
 
-            $tags = Get-GitHubRepositoryTag -RepositoryName $defaultRepoName
+            $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.Name
             It 'Should be empty' {
                 $tags | Should BeNullOrEmpty
             }
