@@ -129,6 +129,8 @@ function Invoke-GHRestMethod
         [switch] $NoStatus
     )
 
+    Invoke-UpdateCheck
+
     # Normalize our Uri fragment.  It might be coming from a method implemented here, or it might
     # be coming from the Location header in a previous response.  Either way, we don't want there
     # to be a leading "/" or trailing '/'

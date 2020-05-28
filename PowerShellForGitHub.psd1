@@ -43,7 +43,8 @@
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
         'NugetTools.ps1',
-        'Telemetry.ps1')
+        'Telemetry.ps1',
+        'UpdateCheck.ps1')
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '4.0'

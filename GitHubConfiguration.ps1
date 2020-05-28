@@ -110,6 +110,10 @@ function Set-GitHubConfiguration
         Specify this switch to stop the module from reporting any of its usage (which would be used
         for diagnostics purposes).
 
+    .PARAMETER DisableUpdateCheck
+        Specify this switch to stop the daily update check with PowerShellGallery which can
+        inform you when there is a newer version of this module available.
+
     .PARAMETER LogPath
         The location of the log file that all activity will be written to if DisableLogging remains
         $false.
@@ -193,6 +197,8 @@ function Set-GitHubConfiguration
         [switch] $DisableSmarterObjects,
 
         [switch] $DisableTelemetry,
+
+        [switch] $DisableUpdateCheck,
 
         [string] $LogPath,
 
@@ -281,6 +287,7 @@ function Get-GitHubConfiguration
             'DisablePiiProtection',
             'DisableSmarterObjects',
             'DisableTelemetry',
+            'DisableUpdateCheck',
             'LogPath',
             'LogProcessId',
             'LogRequestBody',
@@ -615,6 +622,7 @@ function Import-GitHubConfiguration
         'disablePiiProtection' = $false
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false
+        'disableUpdateCheck' = $false
         'defaultNoStatus' = $false
         'defaultOwnerName' = [String]::Empty
         'defaultRepositoryName' = [String]::Empty

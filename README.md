@@ -72,7 +72,7 @@ access token.
 If you ever wish to clear it in the future, just call `Clear-GitHubAuthentication`).
 
 > For automated scenarios (like GithHub Actions) where you are dynamically getting the access token
-> needed for authentication, refer to `Example 2` in `Get-Help Set-StoreBrokerAuthentication -Examples`
+> needed for authentication, refer to `Example 2` in `Get-Help Set-GitHubAuthentication -Examples`
 > for how to configure in a promptless fashion.
 >
 > Alternatively, you _could_ configure PowerShell itself to always pass in a plain-text access token
