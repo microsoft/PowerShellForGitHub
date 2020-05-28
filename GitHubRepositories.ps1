@@ -40,8 +40,11 @@ function New-GitHubRepository
         This is only valid when creating a repository in an organization.
 
     .PARAMETER Private
-        By default, this repository will created Public.  Specify this to create
+        By default, this repository will be created Public.  Specify this to create
         a private repository.
+
+    .PARAMETER Visibility
+        Specifies the visibility level of the repository.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -68,6 +71,12 @@ function New-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER DeleteBranchOnMerge
+        Specifies the automatic deleting of head branches when pull requests are merged.
+
+    .PARAMETER IsTemplate
+        Specifies whether the repository is made available as a template.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -106,6 +115,9 @@ function New-GitHubRepository
 
         [switch] $Private,
 
+        [ValidateSet('Public', 'Private', 'Internal')]
+        [string] $Visibility,
+
         [switch] $NoIssues,
 
         [switch] $NoProjects,
@@ -119,6 +131,10 @@ function New-GitHubRepository
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
+
+        [switch] $DeleteBranchOnMerge,
+
+        [switch] $IsTemplate,
 
         [string] $AccessToken,
 
@@ -156,6 +172,7 @@ function New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('LicenseTemplate')) { $hashBody['license_template'] = $LicenseTemplate }
     if ($PSBoundParameters.ContainsKey('TeamId')) { $hashBody['team_id'] = $TeamId }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -163,6 +180,8 @@ function New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -713,6 +732,9 @@ function Update-GitHubRepository
         Specify this to make the repository private.
         To change a repository to be public, specify -Private:$false
 
+    .PARAMETER Visibility
+        Specifies the visibility level of the repository.
+
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
 
@@ -735,6 +757,12 @@ function Update-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER DeleteBranchOnMerge
+        Specifies the automatic deleting of head branches when pull requests are merged.
+
+    .PARAMETER IsTemplate
+        Specifies whether the repository is made available as a template.
 
     .PARAMETER Archived
         Specify this to archive this repository.
@@ -780,6 +808,9 @@ function Update-GitHubRepository
 
         [switch] $Private,
 
+        [ValidateSet('Public', 'Private', 'Internal')]
+        [string] $Visibility,
+
         [switch] $NoIssues,
 
         [switch] $NoProjects,
@@ -791,6 +822,10 @@ function Update-GitHubRepository
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
+
+        [switch] $DeleteBranchOnMerge,
+
+        [switch] $IsTemplate,
 
         [switch] $Archived,
 
@@ -818,12 +853,15 @@ function Update-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Homepage')) { $hashBody['homepage'] = $Homepage }
     if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $hashBody['default_branch'] = $DefaultBranch }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     $params = @{
