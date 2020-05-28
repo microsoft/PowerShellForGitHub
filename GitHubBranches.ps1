@@ -89,7 +89,7 @@ function Get-GitHubRepositoryBranch
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $uriFragment = "repos/$OwnerName/$RepositoryName/branches`?"
+    $uriFragment = "repos/$OwnerName/$RepositoryName/branches"
     if (-not [String]::IsNullOrEmpty($Name)) { $uriFragment = $uriFragment + "/$Name" }
 
     $getParams = @()
