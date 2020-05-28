@@ -41,7 +41,7 @@ function New-GitHubRepository
 
     .PARAMETER Private
         By default, this repository will created Public.  Specify this to create
-        a private repository.  Creating private repositories requires a paid GitHub account.
+        a private repository.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -710,8 +710,7 @@ function Update-GitHubRepository
         Update the default branch for this repository.
 
     .PARAMETER Private
-        Specify this to make the repository repository.  Creating private repositories requires a
-        paid GitHub account.
+        Specify this to make the repository private.
         To change a repository to be public, specify -Private:$false
 
     .PARAMETER NoIssues
