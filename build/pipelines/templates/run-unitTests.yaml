@@ -15,7 +15,7 @@
 
 steps:
   - powershell: |
-      Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+      Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
     displayName: 'Install Pester'
 
   - powershell: |
