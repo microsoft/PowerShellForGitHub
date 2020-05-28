@@ -26,7 +26,7 @@ steps:
     env:
       ciAccessToken: $(GitHubAccessToken)
       ciOwnerName: $(GitHubOwnerName)
-      ciOrganizatioName: $(GitHubOrganizationName)
+      ciOrganizationName: $(GitHubOrganizationName)
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'
