@@ -58,7 +58,7 @@ function Get-GitHubReaction
         Gets a GitHub issue and pipe it into Get-GitHubReaction to get all the reactions for that issue.
 
     .NOTES
-        Currently, this only supports reacting to issues.
+        Currently, this only supports reacting to issues. Issue comments, commit comments and PR comments will come later.
 
     .NOTES
         The alias parameters 'number' and 'repository_url' are so that this cmdlet composes with `Get-GitHubIssue`.
@@ -178,6 +178,12 @@ function Set-GitHubReaction
         Set-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket
 
         Sets the 'rocket' reaction for issue 12626 of the PowerShell\PowerShell project.
+
+    .NOTES
+        Currently, this only supports reacting to issues. Issue comments, commit comments and PR comments will come later.
+
+    .NOTES
+        The alias parameters 'number' and 'repository_url' are so that this cmdlet composes with `Get-GitHubIssue`.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -292,6 +298,9 @@ function Remove-GitHubReaction
         Get-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket | Remove-GitHubReaction
 
         Gets a reaction using Get-GitHubReaction and pipes it into Remove-GitHubReaction.
+
+    .NOTES
+        Currently, this only supports reacting to issues. Issue comments, commit comments and PR comments will come later.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
