@@ -155,7 +155,7 @@ function New-GitHubRepository
         $uriFragment = "orgs/$OrganizationName/repos"
     }
 
-    if ($PSBoundParameters.ContainsKey('TeamId') -and (-not $PSBoundParameters.Contains('OrganizationName')))
+    if ($PSBoundParameters.ContainsKey('TeamId') -and (-not $PSBoundParameters.ContainsKey('OrganizationName')))
     {
         $message = 'TeamId may only be specified when creating a repository under an organization.'
         Write-Log -Message $message -Level Error
