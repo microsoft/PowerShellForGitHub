@@ -228,7 +228,6 @@ function Remove-GitHubRepository
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
     [Alias('Delete-GitHubRepository')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
