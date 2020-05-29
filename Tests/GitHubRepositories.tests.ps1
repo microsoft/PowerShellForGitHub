@@ -38,13 +38,13 @@ try
             $privateRepos = Get-GitHubRepository -Visibility Private
 
             It "Should have the public repo" {
-                $publicRepo.Name | Should BeIn $publicRepos.Name
-                $publicRepo.Name | Should Not BeIn $privateRepos.Name
+                $publicRepo.name | Should BeIn $publicRepos.name
+                $publicRepo.name | Should Not BeIn $privateRepos.name
             }
 
             It "Should have the private repo" {
-                $privateRepo.Name | Should BeIn $privateRepos.Name
-                $privateRepo.Name | Should Not BeIn $publicRepos.Name
+                $privateRepo.name | Should BeIn $privateRepos.name
+                $privateRepo.name | Should Not BeIn $publicRepos.name
             }
 
             It 'Should not permit bad combination of parameters' {
@@ -77,7 +77,7 @@ try
 
             $repos = Get-GitHubRepository -OrganizationName $script:organizationName -Type All
             It "Should have results for the organization" {
-                $repo.Name | Should BeIn $repos.Name
+                $repo.name | Should BeIn $repos.name
             }
 
             AfterAll -ScriptBlock {
@@ -103,17 +103,17 @@ try
                 $returned | Should -BeOfType PSCustomObject
             }
 
-            $returned = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
+            $returned = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
             It "Should be a single result using Elements ParameterSet" {
                 $returned | Should -BeOfType PSCustomObject
             }
 
             It 'Should not permit additional parameters' {
-                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Type All } | Should Throw
+                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Type All } | Should Throw
             }
 
             It 'Should require both OwnerName and RepositoryName' {
-                { Get-GitHubRepository -RepositoryName $repo.Name } | Should Throw
+                { Get-GitHubRepository -RepositoryName $repo.name } | Should Throw
                 { Get-GitHubRepository -Uri "https://github.com/$script:ownerName" } | Should Throw
             }
 
@@ -123,40 +123,15 @@ try
         }
     }
 
-    Describe 'Modifying repositories' {
-        Context -Name 'For renaming a repository' -Fixture {
-            BeforeEach -Scriptblock {
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-                $suffixToAddToRepo = "_renamed"
-                $newRepoName = "$($repo.Name)$suffixToAddToRepo"
-                Write-Verbose "New repo name shall be: '$newRepoName'"
-            }
-            It "Should have the expected new repository name - by URI" {
-                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
-            }
-
-            It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
-            }
-            ## cleanup temp testing repository
-            AfterEach -Scriptblock {
-                ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo"
-            }
-        }
-    }
-
     Describe 'Creating repositories' {
 
         Context -Name 'For creating a repository' -Fixture {
             BeforeAll {
-                $repoName = ([Guid]::NewGuid().Guid) + "_name"
+                $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)"
+                Remove-GitHubRepository -Uri $repo.svn_url
             }
 
             It 'Should get repository' {
@@ -164,11 +139,11 @@ try
             }
 
             It 'Name is correct' {
-                $repo.Name | Should be $repoName
+                $repo.name | Should be $repoName
             }
 
             It 'Description is correct' {
-                $repo.Description | Should be $defaultRepoDesc
+                $repo.description | Should be $defaultRepoDesc
             }
         }
     }
@@ -180,7 +155,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
 
-            $delete = Remove-GitHubRepository -RepositoryName $repo.Name
+            $delete = Remove-GitHubRepository -RepositoryName $repo.name
             It 'Should get no content' {
                 $repo | Should BeNullOrEmpty
             }
@@ -189,64 +164,20 @@ try
 
     Describe 'Renaming repositories' {
 
-            AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
-            }
-        }
-
-        Context 'For public repos' {
-            # Skipping these tests for now, as it would run for a _very_ long time.
-            # No obviously good way to verify this.
-        }
-
-        Context 'For a specific repo' {
-            BeforeAll -Scriptblock {
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
-            }
-
-            $returned = Get-GitHubRepository -Uri $repo.svn_url
-            It "Should be a single result using Uri ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
-            }
-
-            $returned = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
-            It "Should be a single result using Elements ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should not permit additional parameters' {
-                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Type All } | Should Throw
-            }
-
-            It 'Should require both OwnerName and RepositoryName' {
-                { Get-GitHubRepository -RepositoryName $repo.Name } | Should Throw
-                { Get-GitHubRepository -Uri "https://github.com/$script:ownerName" } | Should Throw
-            }
-
-            AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
-            }
-        }
-    }
-
-    Describe 'Modifying repositories' {
         Context -Name 'For renaming a repository' -Fixture {
             BeforeEach -Scriptblock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
-                $newRepoName = "$($repo.Name)$suffixToAddToRepo"
+                $newRepoName = "$($repo.name)$suffixToAddToRepo"
             }
             It "Should have the expected new repository name - by URI" {
                 $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
+                $renamedRepo.name | Should be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+                $renamedRepo.name | Should be $newRepoName
             }
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
@@ -263,17 +194,17 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)"
+                Remove-GitHubRepository -Uri $repo.svn_url
             }
 
             It 'Should have the new updated description' {
                 $modifiedRepoDesc = $defaultRepoDesc + "_modified"
-                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Description $modifiedRepoDesc
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Description $modifiedRepoDesc
                 $updatedRepo.description | Should be $modifiedRepoDesc
             }
 
             It 'Should have the new updated homepage url' {
-                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Homepage $defaultRepoHomePage
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Homepage $defaultRepoHomePage
                 $repo.homepage | Should be $defaultRepoHomePage
             }
         }
@@ -286,16 +217,16 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)"
+                Remove-GitHubRepository -Uri $repo.svn_url
             }
 
             It 'Should have the expected topic' {
-                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.Name -Name $defaultRepoTopic
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
                 $updatedRepo.names[0] | Should be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
-                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.Name -Clear
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
                 $updatedRepo.names | Should BeNullOrEmpty
             }
         }
@@ -308,10 +239,10 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)"
+                Remove-GitHubRepository -Uri $repo.svn_url
             }
 
-            $languages = Get-GitHubRepositoryLanguage -OwnerName $repo.owner.login -RepositoryName $repo.Name
+            $languages = Get-GitHubRepositoryLanguage -OwnerName $repo.owner.login -RepositoryName $repo.name
             It 'Should be empty' {
                 $languages | Should BeNullOrEmpty
             }
@@ -325,10 +256,10 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri "$($repo.svn_url)"
+                Remove-GitHubRepository -Uri $repo.svn_url
             }
 
-            $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.Name
+            $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.name
             It 'Should be empty' {
                 $tags | Should BeNullOrEmpty
             }
