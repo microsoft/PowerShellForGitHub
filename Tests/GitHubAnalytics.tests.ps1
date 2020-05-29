@@ -19,7 +19,7 @@ try
             $issues = Get-GitHubIssue -Uri $repo.svn_url
 
             It 'Should return expected number of issues' {
-                @($issues).Count | Should be 0
+                $issues.Count | Should be 0
             }
         }
 
@@ -36,12 +36,12 @@ try
 
             $issues = Get-GitHubIssue -Uri $repo.svn_url
             It 'Should return only open issues' {
-                @($issues).Count | Should be 2
+                $issues.Count | Should be 2
             }
 
             $issues = Get-GitHubIssue -Uri $repo.svn_url -State All
             It 'Should return all issues' {
-                @($issues).Count | Should be 4
+                $issues.Count | Should be 4
             }
 
             $createdOnOrAfterDate = Get-Date -Date $newIssues[0].created_at
@@ -49,21 +49,25 @@ try
             $issues = (Get-GitHubIssue -Uri $repo.svn_url) | Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) }
 
             It 'Smart object date conversion works for comparing dates' {
-                @($issues).Count | Should be 2
+                $issues.Count | Should be 2
             }
 
             $createdDate = Get-Date -Date $newIssues[1].created_at
             $issues = Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') }
 
+            # Account for differences in array handling between PowerShell 7 vs earlier versions.
+            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+            $issues = ,$issues
+
             It 'Able to filter based on date and state' {
-                @($issues).Count | Should be 1
+                $issues.Count | Should be 1
             }
         }
 
         Context 'When issues are retrieved with a specific MediaTypes' {
             $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([guid]::NewGuid())
 
-            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
+            $issues = Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html'
             It 'Should return an issue with body_html' {
                 $issues[0].body_html | Should not be $null
             }
@@ -88,18 +92,18 @@ try
             $issueCounts = $issueCounts | Sort-Object -Property Count -Descending
 
             It 'Should return expected number of issues for each repository' {
-                @($issueCounts[0].Count) | Should be 3
-                @($issueCounts[1].Count) | Should be 0
+                $issueCounts[0].Count | Should be 3
+                $issueCounts[1].Count | Should be 0
             }
 
             It 'Should return expected repository names' {
-                @($issueCounts[0].Uri) | Should be ($repo1.svn_url)
-                @($issueCounts[1].Uri) | Should be ($repo2.svn_url)
+                $issueCounts[0].Uri | Should be $repo1.svn_url
+                $issueCounts[1].Uri | Should be $repo2.svn_url
             }
         }
 
-        $null = Remove-GitHubRepository -Uri ($repo1.svn_url)
-        $null = Remove-GitHubRepository -Uri ($repo2.svn_url)
+        $null = Remove-GitHubRepository -Uri $repo1.svn_url
+        $null = Remove-GitHubRepository -Uri $repo2.svn_url
     }
 
 
@@ -186,10 +190,14 @@ try
             $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
             $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
 
-            $collaborators = Get-GitHubRepositoryCollaborator -Uri $repositoryUrl
+            $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repositoryUrl)
+
+            # Account for differences in array handling between PowerShell 7 vs earlier versions.
+            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+            #$collaborators = ,$collaborators
 
             It 'Should return expected number of collaborators' {
-                @($collaborators).Count | Should be 1
+                $collaborators.Count | Should be 1
             }
 
             $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
@@ -203,8 +211,12 @@ try
 
         $contributors = Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics
 
+        # Account for differences in array handling between PowerShell 7 vs earlier versions.
+        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+        $contributors = ,$contributors
+
         It 'Should return expected number of contributors' {
-            @($contributors).Count | Should be 1
+            $contributors.Count | Should be 1
         }
 
         $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
@@ -249,8 +261,12 @@ try
         $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
         $current = Get-GitHubRepository -OrganizationName $script:organizationName
 
+        # Account for differences in array handling between PowerShell 7 vs earlier versions.
+        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+        $current = ,$current
+
         It 'Should return expected number of organization repositories' {
-            (@($current).Count - @($original).Count) | Should be 1
+            ($current.Count - $original.Count) | Should be 1
         }
 
         $null = Remove-GitHubRepository -Uri $repo.svn_url
@@ -268,7 +284,7 @@ try
             Sort-Object
 
         It 'Should return expected number of unique contributors' {
-            @($uniqueContributors).Count | Should be 1
+            $uniqueContributors.Count | Should be 1
         }
 
         $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
@@ -300,12 +316,16 @@ try
 
         $branches = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName
 
+        # Account for differences in array handling between PowerShell 7 vs earlier versions.
+        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+        $branches = ,$branches
+
         It 'Should return expected number of repository branches' {
-            @($branches).Count | Should be 1
+            $branches.Count | Should be 1
         }
 
         It 'Should return the name of the branches' {
-            @($branches[0].name) | Should be "master"
+            $branches[0].name | Should be 'master'
         }
 
         $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName

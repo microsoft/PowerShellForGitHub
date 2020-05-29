@@ -18,7 +18,11 @@ try
     Describe 'Getting a valid assignee' {
 
         Context 'For getting a valid assignee' {
-            $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
+            $assigneeList = Get-GitHubAssignee -Uri $repo.svn_url
+
+            # Account for differences in array handling between PowerShell 7 vs earlier versions.
+            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+            $assigneeList = ,$assigneeList
 
             It 'Should have returned the one assignee' {
                 $assigneeList.Count | Should be 1
@@ -42,9 +46,9 @@ try
     Describe 'Adding and removing an assignee to an issue'{
 
         Context 'For adding an assignee to an issue'{
-            $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
+            $assigneeList = Get-GitHubAssignee -Uri $repo.svn_url
             $assigneeUserName = $assigneeList[0].login
-            $assignees = @($assigneeUserName)
+            $assignees = $assigneeUserName
             New-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 

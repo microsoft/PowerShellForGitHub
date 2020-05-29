@@ -28,13 +28,17 @@ try
             Context 'When getting the latest releases' {
                 $latest = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest
 
+                # Account for differences in array handling between PowerShell 7 vs earlier versions
+                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+                $latest = ,$latest
+
                 It 'Should return one value' {
-                    @($latest).Count | Should Be 1
+                    $latest.Count | Should Be 1
                 }
 
                 It 'Should return the first release from the full releases list' {
-                    $releases[0].url | Should Be $releases[0].url
-                    $releases[0].name | Should Be $releases[0].name
+                    $latest[0].url | Should Be $releases[0].url
+                    $latest[0].name | Should Be $releases[0].name
                 }
             }
 
@@ -42,8 +46,12 @@ try
                 $specificIndex = 5
                 $specific = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id
 
+                # Account for differences in array handling between PowerShell 7 vs earlier versions
+                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+                $specific = ,$specific
+
                 It 'Should return one value' {
-                    @($specific).Count | Should Be 1
+                    $specific.Count | Should Be 1
                 }
 
                 It 'Should return the correct release' {
@@ -55,8 +63,12 @@ try
                 $taggedIndex = 8
                 $tagged = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name
 
+                # Account for differences in array handling between PowerShell 7 vs earlier versions
+                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+                $tagged = ,$tagged
+
                 It 'Should return one value' {
-                    @($tagged).Count | Should Be 1
+                    $tagged.Count | Should Be 1
                 }
 
                 It 'Should return the correct release' {

@@ -19,7 +19,7 @@ try
             $null = New-GitHubRepository -RepositoryName $repositoryName
 
             Context 'For getting events from a new repository' {
-                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+                $events = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName
 
                 It 'Should have no events' {
                     $events.Count | Should be 0
@@ -30,7 +30,11 @@ try
             Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
 
             Context 'For getting events from a repository' {
-                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+                $events = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName
+
+                # Account for differences in array handling between PowerShell 7 vs earlier versions
+                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
+                $events = ,$events
 
                 It 'Should have an event from closing an issue' {
                     $events.Count | Should be 1
@@ -46,7 +50,7 @@ try
             $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
 
             Context 'For getting events from a new issue' {
-                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
+                $events = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
                 It 'Should have no events' {
                     $events.Count | Should be 0
@@ -56,7 +60,7 @@ try
             Context 'For getting events from an issue' {
                 Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
                 Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
-                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+                $events = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName
 
                 It 'Should have two events from closing and opening the issue' {
                     $events.Count | Should be 2
@@ -72,7 +76,7 @@ try
             $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
             Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
             Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
-            $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+            $events = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName
 
             Context 'For getting an event directly'{
                 $singleEvent = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -EventID $events[0].id

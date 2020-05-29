@@ -222,7 +222,7 @@ try
             Context 'Adding labels to an issue' {
                 $labelsToAdd = @('pri:lowest', 'pri:low', 'pri:medium', 'pri:high', 'pri:highest', 'bug', 'duplicate',
                     'enhancement', 'up for grabs', 'question', 'discussion', 'wontfix', 'in progress', 'ready')
-                $addedLabels = @(Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
+                $addedLabels = Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd
 
                 It 'Should return the number of labels that were just added' {
                     $addedLabels.Count | Should be $defaultLabels.Count
@@ -300,7 +300,7 @@ try
 
             Add-GitHubIssueLabel  -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName 'pri:medium'
 
-            $addedLabels = @(Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
+            $addedLabels = Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd
 
             It 'Should return the issue with 14 labels' {
                 $addedLabels.Count | Should be $labelsToAdd.Count
@@ -312,7 +312,7 @@ try
                 $labelIssues.Count | Should be $defaultLabels.Count
             }
 
-            $updatedIssueLabels = @($labelsToAdd[0])
+            $updatedIssueLabels = $labelsToAdd[0]
             $updatedIssue = Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $updatedIssueLabels
 
             It 'Should have 1 label after updating the issue' {

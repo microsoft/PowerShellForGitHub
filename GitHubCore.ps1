@@ -681,8 +681,7 @@ function Invoke-GHRestMethodMultipleResult
             Set-TelemetryEvent -EventName $TelemetryEventName -Properties $TelemetryProperties -Metrics $telemetryMetrics
         }
 
-        # Ensure we're always returning our results as an array, even if there is a single result.
-        return @($finalResult)
+        return $finalResult
     }
     catch
     {

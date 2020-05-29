@@ -20,7 +20,7 @@ try
             $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
-                (@($newForks).Count - @($originalForks).Count) | Should be 1
+                ($newForks.Count - $originalForks.Count) | Should be 1
             }
 
             It 'Should be the latest fork in the list' {
@@ -41,7 +41,7 @@ try
             $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
 
             It 'Should have one more fork than before' {
-                (@($newForks).Count - @($originalForks).Count) | Should be 1
+                ($newForks.Count - $originalForks.Count) | Should be 1
             }
 
             It 'Should be the latest fork in the list' {
