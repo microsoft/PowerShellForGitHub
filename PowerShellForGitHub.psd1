@@ -121,6 +121,7 @@
         'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFromTemplate',
+        'New-GitHubRepositoryBranch',
         'New-GitHubRepositoryFork',
         'Remove-GitHubAssignee',
         'Remove-GitHubIssueComment',
@@ -131,6 +132,7 @@
         'Remove-GitHubProjectCard',
         'Remove-GitHubProjectColumn',
         'Remove-GitHubRepository',
+        'Remove-GitHubRepositoryBranch'
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
