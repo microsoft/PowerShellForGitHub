@@ -249,6 +249,11 @@ try
             It 'Should be empty' {
                 $languages | Should BeNullOrEmpty
             }
+
+            $languages = Get-GitHubRepositoryLanguage -OwnerName "microsoft" -RepositoryName "PowerShellForGitHub"
+            It 'Should be empty' {
+                "PowerShell" | Should BeIn $languages
+            }
         }
     }
 
