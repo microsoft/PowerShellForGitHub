@@ -156,6 +156,7 @@ try
             }
 
             $delete = Remove-GitHubRepository -RepositoryName $repo.name
+            $repo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
             It 'Should get no content' {
                 $repo | Should BeNullOrEmpty
             }
@@ -222,12 +223,14 @@ try
 
             It 'Should have the expected topic' {
                 $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
-                $updatedRepo.names[0] | Should be $defaultRepoTopic
+                $updatedRepo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $updatedRepo.name | Should be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
                 $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
-                $updatedRepo.names | Should BeNullOrEmpty
+                $updatedRepo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $updatedRepo.name | Should BeNullOrEmpty
             }
         }
     }
