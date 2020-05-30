@@ -5,10 +5,10 @@ function Get-GitHubReference
 {
 <#
     .SYNOPSIS
-        Retrieve a reference of a given GitHub repository.
+        Retrieve a reference from a given GitHub repository.
 
     .DESCRIPTION
-        Retrieve a reference of a given GitHub repository.
+        Retrieve a reference from a given GitHub repository.
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER OwnerName
@@ -24,9 +24,17 @@ function Get-GitHubReference
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Reference
-        Name of the reference, for example: "heads/<branch name>" for branches and "tags/<tag name>" for tags.
-        Gets all the references (everything in the namespace, not only heads and tags) if not provided
+    .PARAMETER Tag
+        The name of the Tag to be retrieved.
+
+    .PARAMETER Branch
+        The name of the Branch to be retrieved.
+
+    .PARAMETER All
+        If provided, will retrieve both branches and tags for the given repository
+
+    .PARAMETER MatchPrefix
+        If provided, this will return matching preferences for the given branch/tag name in case an exact match is not found
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -43,25 +51,54 @@ function Get-GitHubReference
         Details of the git reference in the given repository
 
     .EXAMPLE
-        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Reference heads/master
+        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag powershellTagV1
+
+    .EXAMPLE
+        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master
+
+    .EXAMPLE
+        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master -MatchPrefix
+
+    .EXAMPLE
+        Get-GitHubReference -OwnerName microsoft -RepositoryName -All
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+        DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
+        [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
+        [Parameter(Mandatory, ParameterSetName='Uri')]
         [string] $Uri,
 
-        [string] $Reference,
+        [Parameter(ParameterSetName='TagUri')]
+        [Parameter(ParameterSetName='TagElements')]
+        [string] $Tag,
+
+        [Parameter(ParameterSetName='BranchUri')]
+        [Parameter(ParameterSetName='BranchElements')]
+        [string] $Branch,
+
+        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName='Uri')]
+        [switch] $All,
+
+        [Parameter(ParameterSetName='BranchUri')]
+        [Parameter(ParameterSetName='BranchElements')]
+        [Parameter(ParameterSetName='TagUri')]
+        [Parameter(ParameterSetName='TagElements')]
+        [switch] $MatchPrefix,
 
         [string] $AccessToken,
 
@@ -80,26 +117,25 @@ function Get-GitHubReference
         'ProvidedReference' = $PSBoundParameters.ContainsKey('Reference')
     }
 
-    if ($OwnerName -xor $RepositoryName)
-    {
-        $message = 'You must specify both Owner Name and Repository Name.'
-        Write-Log -Message $message -Level Error
-        throw $message
-    }
+    $uriFragment = "repos/$OwnerName/$RepositoryName/git"
 
-    if (-not [String]::IsNullOrEmpty($RepositoryName))
-    {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/git/matching-refs"
+    if ($All) {
+        # Add a slash at the end as Invoke-GHRestMethod removes the last trailing slash. Calling this API without the slash causes a 404
+        $uriFragment = $uriFragment + "/matching-refs//"
         $description =  "Getting all references for $RepositoryName"
-        if ($PSBoundParameters.ContainsKey('Reference'))
-        {
-            $uriFragment = $uriFragment + "/$Reference"
-            $description =  "Getting Reference $Reference for $RepositoryName"
+    }
+    else {
+        $reference = Resolve-Reference $Tag $Branch
+
+        if ($MatchPrefix) {
+            $uriFragment = $uriFragment +  "/matching-refs/$reference"
+            $description =  "Getting references matching $reference for $RepositoryName"
         }
         else
         {
-            # Add a slash at the end. Calling it with only matching-refs without the slash causes a 404
-            $uriFragment = $uriFragment + "//"
+            # We want to return an exact match, call the 'get single reference' API
+            $uriFragment = $uriFragment + "/ref/$reference"
+            $description =  "Getting reference $reference for $RepositoryName"
         }
     }
 
@@ -112,6 +148,7 @@ function Get-GitHubReference
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
+    Write-Host $uriFragment
     return Invoke-GHRestMethodMultipleResult @params
 }
 
@@ -138,8 +175,11 @@ function New-GitHubReference
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Reference
-        The name of the reference to be created (eg: heads/master or tags/myTag)
+    .PARAMETER Tag
+        The name of the Tag to be created.
+
+    .PARAMETER Branch
+        The name of the Branch to be created.
 
     .PARAMETER Sha
         The SHA1 value for the reference to be created
@@ -159,26 +199,33 @@ function New-GitHubReference
         Details of the git reference created. Throws an Exception if the reference already exists
 
     .EXAMPLE
-        New-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Reference heads/master -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+        New-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag powershellTagV1 -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+
+    .EXAMPLE
+        New-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
     #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+    [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
-        [string] $Reference,
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
+        [string] $Tag,
+
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [string] $Branch,
 
         [Parameter(Mandatory)]
         [string] $Sha,
@@ -199,18 +246,13 @@ function New-GitHubReference
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($OwnerName -xor $RepositoryName)
-    {
-        $message = 'You must specify both Owner Name and Repository Name.'
-        Write-Log -Message $message -Level Error
-        throw $message
-    }
+    $reference = Resolve-Reference $Tag $Branch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
-    $description =  "Creating Reference $Reference for $RepositoryName from SHA $Sha"
+    $description =  "Creating Reference $reference for $RepositoryName from SHA $Sha"
 
     $hashBody = @{
-        'ref' = "refs/" + $Reference
+        'ref' = "refs/" + $reference
         'sha' = $Sha
     }
 
@@ -251,12 +293,15 @@ function Update-GitHubReference
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Reference
-        The name of the reference to be updated (eg: heads/master or tags/myTag)
-    
+    .PARAMETER Tag
+        The name of the tag to be updated to the given SHA.
+
+    .PARAMETER Branch
+        The name of the branch to be updated to the given SHA.
+
     .PARAMETER Sha
-        The updated SHA1 value to be set for this reference
-    
+        The updated SHA1 value to be set for this reference.
+
     .PARAMETER Force
         Indicates whether to force the update. If not set it will ensure that the update is a fast-forward update.
 
@@ -278,19 +323,25 @@ function Update-GitHubReference
         DefaultParametersetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
-        [string] $Reference,
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
+        [string] $Tag,
+
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [string] $Branch,
 
         [Parameter(Mandatory)]
         [string] $Sha,
@@ -313,15 +364,10 @@ function Update-GitHubReference
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($OwnerName -xor $RepositoryName)
-    {
-        $message = 'You must specify both Owner Name and Repository Name.'
-        Write-Log -Message $message -Level Error
-        throw $message
-    }
+    $reference = Resolve-Reference $Tag $Branch
 
-    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/$Reference"
-    $description =  "Updating SHA for Reference $Reference in $RepositoryName to $Sha"
+    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/$reference"
+    $description =  "Updating SHA for Reference $reference in $RepositoryName to $Sha"
 
     $hashBody = @{
         'force' = $Force.IsPresent
@@ -365,8 +411,11 @@ function Remove-GitHubReference
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Reference
-        The name of the reference to be deleted (eg: heads/master)
+    .PARAMETER Tag
+        The name of the tag to be deleted.
+
+    .PARAMETER Branch
+        The name of the branch to be deleted.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -379,64 +428,89 @@ function Remove-GitHubReference
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Reference heads/master
+        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag powershellTagV1
+
+    .EXAMPLE
+        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master
+
+    .EXAMPLE
+        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch milestone1 -Confirm:$false
     #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParametersetName='Elements')]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact="High")]
     [Alias('Delete-GitHubReference')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
-        [string] $Reference,
+        [Parameter(Mandatory, ParameterSetName='TagUri')]
+        [Parameter(Mandatory, ParameterSetName='TagElements')]
+        [string] $Tag,
+
+        [Parameter(Mandatory, ParameterSetName='BranchUri')]
+        [Parameter(Mandatory, ParameterSetName='BranchElements')]
+        [string] $Branch,
 
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
-
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-    }
-
-    if ($OwnerName -xor $RepositoryName)
+    $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+    $reference = Resolve-Reference $Tag $Branch
+    if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Remove reference: $reference"))
     {
-        $message = 'You must specify both Owner Name and Repository Name.'
-        Write-Log -Message $message -Level Error
-        throw $message
+        Write-InvocationLog -Invocation $MyInvocation
+
+        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        }
+
+        $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/$reference"
+        $description =  "Deleting Reference $reference from repository $RepositoryName"
+
+        $params = @{
+            'UriFragment' = $uriFragment
+            'Method' = 'Delete'
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Description' = $description
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return Invoke-GHRestMethod @params
     }
 
-    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/$Reference"
-    $description =  "Deleting Reference $Reference from repository $RepositoryName"
+}
 
-    $params = @{
-        'UriFragment' = $uriFragment
-        'Method' = 'Delete'
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Description' = $description
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+function Resolve-Reference($Tag, $Branch)
+{
+    if (-not [String]::IsNullOrEmpty($Tag))
+    {
+        return "tags/$Tag"
     }
-
-    return Invoke-GHRestMethod @params
+    elseif (-not [String]::IsNullOrEmpty($Branch))
+    {
+        return "heads/$Branch"
+    }
+    else
+    {
+        return [string]::Empty
+    }
 }

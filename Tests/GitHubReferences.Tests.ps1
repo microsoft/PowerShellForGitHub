@@ -10,194 +10,442 @@
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
+function Update-MasterSHA()
+{
+    # Add a new file in master in order to create a new commit and hence, an updated SHA
+    # TODO: Replace this when the Content updation related APIs are made available
+    $fileContent = "Hello powershell!"
+    $fileName = "powershell.txt"
+    $encodedFile = [System.Convert]::ToBase64String(([System.Text.Encoding]::UTF8).GetBytes($fileContent))
+
+    $fileData = @{
+        "message" = "added new file"
+        "content" = "$encodedFile"
+    }
+
+    $params = @{
+        'UriFragment' = "repos/$ownerName/$repositoryName/contents/$fileName"
+        'Method' = 'Put'
+        'Body' = (ConvertTo-Json -InputObject $fileData)
+        'AccessToken' = $AccessToken
+    }
+    Invoke-GHRestMethod @params
+}
+
 try
 {
     if ($accessTokenConfigured)
     {
-        Describe 'Create a new reference(branch) in repository' {
+        $masterBranchName = "master"
+        Describe 'Create a new branch in repository' {
             $repositoryName = [Guid]::NewGuid()
             $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-            $masterRefName = "heads/master"
-            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
             $sha = $existingref.object.sha
 
-            Context 'On creating a valid reference in a new repository from a given SHA' {
-                $refName = "heads/" + [Guid]::NewGuid().ToString()
-                $result = New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refName -Sha $sha
+            Context 'On creating a new branch in a repository from a given SHA' {
+                $branchName = [Guid]::NewGuid().ToString()
+                $result = New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $sha
 
-                It 'Should successfully create the reference' {
-                    $result.ref | Should Be "refs/$refName"
+                It 'Should successfully create the new branch' {
+                    $result.ref | Should Be "refs/heads/$branchName"
+                }
+
+                It 'Should throw an Exception when trying to create it again' {
+                    { New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName -Sha $sha } | Should Throw
                 }
             }
 
-            Context 'On creating a valid reference in a new repository (specified by Uri) from a given SHA' {
-                $refName = "heads/" + [Guid]::NewGuid().ToString()
-                $result = New-GitHubReference -Uri $repo.svn_url -Reference $refName -Sha $sha
+            Context 'On creating a new branch in a repository (specified by Uri) from a given SHA' {
+                $branchName = [Guid]::NewGuid().ToString()
+                $result = New-GitHubReference -Uri $repo.svn_url -Branch $branchName -Sha $sha
 
-                It 'Should successfully create the reference' {
-                    $result.ref | Should Be "refs/$refName"
+                It 'Should successfully create the branch' {
+                    $result.ref | Should Be "refs/heads/$branchName"
                 }
-            }
 
-            Context 'On trying to create an existing reference in a new repository from a given SHA' {
-                It 'Should throw an Exception' {
-                    { New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName -Sha $sha } | Should Throw
-                }
-            }
-
-            Context 'On creating an existing reference in a new repository (specified by Uri) from a given SHA' {
-                It 'Should throw an exception' {
-                    { New-GitHubReference -Uri $repo.svn_url -Reference $masterRefName -Sha $sha }  | Should Throw
+                It 'Should throw an exception when trying to create it again' {
+                    { New-GitHubReference -Uri $repo.svn_url -Branch $masterBranchName -Sha $sha }  | Should Throw
                 }
             }
 
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
 
-        Describe 'Getting a reference(branch) from repository' {
+        Describe 'Create a new tag in a repository' {
             $repositoryName = [Guid]::NewGuid()
             $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-            $masterRefName = "heads/master"
-            $randomRefName = "heads/$([Guid]::NewGuid())"
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+            $sha = $existingref.object.sha
 
-            Context 'On getting a valid reference from a new repository' {
-                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName
+            Context 'On creating a new tag in a repository referring to a given SHA' {
+                $tagName = [Guid]::NewGuid().ToString()
+                $result = New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Sha $sha
 
-                It 'Should return details of the reference' {
-                    $reference.ref | Should be "refs/$masterRefName"
+                It 'Should successfully create the new tag' {
+                    $result.ref | Should Be "refs/tags/$tagName"
+                }
+
+                It 'Should throw an Exception when trying to create it again' {
+                    { New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Sha $sha } | Should Throw
                 }
             }
 
-            Context 'On getting an invalid reference from a new repository' {
-                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $randomRefName
+            Context 'On creating a new tag in a repository (specified by Uri) from a given SHA' {
+                $tagName = [Guid]::NewGuid().ToString()
+                $result = New-GitHubReference -Uri $repo.svn_url -Tag $tagName -Sha $sha
 
-                It 'Should not return any details' {
-                    $reference | Should be $null
+                It 'Should successfully create the reference' {
+                    $result.ref | Should Be "refs/tags/$tagName"
                 }
-            }
 
-            Context 'On getting a valid reference using Uri from a new repository' {
-                $reference = Get-GitHubReference -Uri $repo.svn_url -Reference $masterRefName
-
-                It 'Should return details of the reference' {
-                    $reference.ref | Should be "refs/$masterRefName"
-                }
-            }
-
-            Context 'On getting an invalid reference using Uri from a new repository' {
-                $reference = Get-GitHubReference -Uri $repo.svn_url -Reference $randomRefName
-
-                It 'Should not return any details' {
-                    $reference | Should be $null
+                It 'Should throw an exception when trying to create it again' {
+                    { New-GitHubReference -Uri $repo.svn_url -Tag $tagName -Sha $sha }  | Should Throw
                 }
             }
 
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
 
+        Describe 'Getting branch(es) from repository' {
+            $repositoryName = [Guid]::NewGuid()
+            $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $randomBranchName = [Guid]::NewGuid()
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+            $sha = $existingref.object.sha
+
+            Context 'On getting an existing branch from a repository' {
+                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+
+                It 'Should return details of the branch' {
+                    $reference.ref | Should be "refs/heads/$masterBranchName"
+                }
+            }
+
+            Context 'On getting an non-existent branch from a repository' {
+
+                It 'Should throw an exception' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $randomBranchName } |
+                    Should Throw
+                }
+            }
+
+            Context 'On getting an existing branch using Uri from a repository' {
+                $reference = Get-GitHubReference -Uri $repo.svn_url -Branch $masterBranchName
+
+                It 'Should return details of the branch' {
+                    $reference.ref | Should be "refs/heads/$masterBranchName"
+                }
+            }
+
+            Context 'On getting an invalid branch using Uri from a repository' {
+
+                It 'Should throw an exception' {
+                    { Get-GitHubReference -Uri $repo.svn_url -Branch $randomBranchName } |
+                    Should Throw
+                }
+            }
+
+            Context 'On getting branches by prefix from a repository' {
+                $branch1 = "elements_" + $([Guid]::NewGuid().ToString())
+                $branch2 = "elements_" + $([Guid]::NewGuid().ToString())
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branch1 -Sha $sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branch2 -Sha $sha
+
+                $references = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch "elements" -MatchPrefix
+
+                It 'Should return all branches matching the prefix' {
+                    $expected = @("refs/heads/$branch1", "refs/heads/$branch2")
+                    $references.ref | Should Be $expected
+                }
+            }
+
+            Context 'On getting branches by prefix using Uri from a repository' {
+                $branch1 = "uri_" + $([Guid]::NewGuid().ToString())
+                $branch2 = "uri_" + $([Guid]::NewGuid().ToString())
+                New-GitHubReference -Uri $repo.svn_url -Branch $branch1 -Sha $sha
+                New-GitHubReference -Uri $repo.svn_url -Branch $branch2 -Sha $sha
+
+                $references = Get-GitHubReference -Uri $repo.svn_url -Branch "uri" -MatchPrefix
+
+                It 'Should return all branches matching the prefix' {
+                    $expected = @("refs/heads/$branch1", "refs/heads/$branch2")
+                    $references.ref | Should Be $expected
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Getting tag(s) from repository' {
+            $repositoryName = [Guid]::NewGuid()
+            $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $randomTagName = [Guid]::NewGuid()
+            $validTag = "master-tag"
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+            $sha = $existingref.object.sha
+            New-GitHubReference -Uri $repo.svn_url -Tag $validTag -Sha $sha
+
+            Context 'On getting an existing tag from a repository' {
+                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $validTag
+
+                It 'Should return details of the tag' {
+                    $reference.ref | Should be "refs/tags/$validTag"
+                }
+            }
+
+            Context 'On getting an non-existent tag from a repository' {
+
+                It 'Should throw an exception' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $randomTagName } |
+                    Should Throw
+                }
+            }
+
+            Context 'On getting an existing tag using Uri from a repository' {
+                $reference = Get-GitHubReference -Uri $repo.svn_url -Tag $validTag
+
+                It 'Should return details of the tag' {
+                    $reference.ref | Should be "refs/tags/$validTag"
+                }
+            }
+
+            Context 'On getting an invalid tag using Uri from a repository' {
+
+                It 'Should throw an exception' {
+                    { Get-GitHubReference -Uri $repo.svn_url -Tag $randomTagName } |
+                    Should Throw
+                }
+            }
+
+            Context 'On getting tags by prefix from a repository' {
+                $tag1 = "elements_" + $([Guid]::NewGuid().ToString())
+                $tag2 = "elements_" + $([Guid]::NewGuid().ToString())
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $tag1 -Sha $sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $tag2 -Sha $sha
+
+                $references = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag "elements" -MatchPrefix
+
+                It 'Should return all tags matching the prefix' {
+                    $expected = @("refs/tags/$tag1", "refs/tags/$tag2")
+                    $references.ref | Should Be $expected
+                }
+            }
+
+            Context 'On getting tags by prefix from a repository specified By Uri' {
+                $tag1 = "uri_" + $([Guid]::NewGuid().ToString())
+                $tag2 = "uri_" + $([Guid]::NewGuid().ToString())
+                New-GitHubReference -Uri $repo.svn_url -Tag $tag1 -Sha $sha
+                New-GitHubReference -Uri $repo.svn_url -Tag $tag2 -Sha $sha
+
+                $references = Get-GitHubReference -Uri $repo.svn_url -Tag "uri" -MatchPrefix
+
+                It 'Should return all tags matching the prefix' {
+                    $expected = @("refs/tags/$branch1", "refs/tags/$branch2")
+                    $references.ref | Should Be $expected
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
         Describe 'Getting all references from repository' {
             $repositoryName = [Guid]::NewGuid()
             $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-            $masterRefName = "heads/master"
-            $secondRefName = "heads/branch1"
-            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName
+            $branchName = "forked-from-master"
+            $tagName = "master-fork-tag"
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
             $sha = $existingref.object.sha
-            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $secondRefName -Sha $sha
-            $refNames = @("refs/$masterRefName", "refs/$secondRefName")
+            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $sha
+            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Sha $sha
 
-            Context 'On getting all references from a new repository' {
-                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName
+            $refNames = @("refs/heads/$masterBranchName", "refs/heads/$branchName", "refs/tags/$tagName")
 
-                It 'Should return all references' {
-                    ($reference.ref | Where-Object {$refNames -Contains $_}).Count | Should be $refNames.Count
+            Context 'On getting all references from a repository' {
+                $reference = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -All
+
+                It 'Should return all branches and tags' {
+                    $reference.ref | Should be $refNames
                 }
             }
 
-            Context 'On getting all references using Uri from a new repository' {
-                $reference = Get-GitHubReference -Uri $repo.svn_url
+            Context 'On getting all references using Uri from a repository' {
+                $reference = Get-GitHubReference -Uri $repo.svn_url -All
 
-                It 'Should return all references' {
-                    ($reference.ref | Where-Object {$refNames -Contains $_}).Count | Should be $refNames.Count
+                It 'Should return all branches and tags' {
+                    $reference.ref | Should be $refNames
                 }
             }
 
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
 
-        Describe 'Delete a reference(branch) from repository' {
+        Describe 'Delete a branch from a repository' {
             $repositoryName = [Guid]::NewGuid()
-            New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $branchName = "myBranch"
 
-            Context 'On deleting a newly created reference in a new repository' {
-                $refname = "heads/myRef"
-                $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference "heads/master"
+            Context 'On deleting a newly created branch in a repository' {
+                $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch "master"
                 $sha = $existingref.object.sha
-                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname -Sha $sha
-                Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $sha
+                Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Confirm:$false
 
-                It 'Should not return any details when the reference is queried' {
-                    Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname |
-                    Should be $null
+                It 'Should throw an exception when trying to get the deleted branch' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName } |
+                    Should Throw
                 }
 
-                It 'Should throw an exception when the same reference is deleted again' {
-                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname } |
+                It 'Should throw an exception when the same branch is deleted again' {
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Confirm:$false} |
                     Should Throw
                 }
             }
 
-            Context 'On deleting an invalid reference from a new repository' {
+            Context 'On deleting an invalid branch from a repository' {
                 It 'Should throw an exception' {
-                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference "heads/$([Guid]::NewGuid())" } |
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $([Guid]::NewGuid()) -Confirm:$false} |
                     Should Throw
                 }
             }
+
+            Context 'On deleting a newly created branch in a repository specified by Uri' {
+                $branchName = "myBranch"
+                $existingref = Get-GitHubReference -Uri $repo.svn_url -Branch "master"
+                $sha = $existingref.object.sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $sha
+                Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Confirm:$false
+
+                It 'Should throw an exception when trying to get the deleted branch' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName} |
+                    Should Throw
+                }
+
+                It 'Should throw an exception when the same branch is deleted again' {
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Confirm:$false} |
+                    Should Throw
+                }
+            }
+
+            Context 'On deleting an invalid branch from a repository specified by Uri' {
+                It 'Should throw an exception' {
+                    { Remove-GitHubReference -OwnerName -Uri $repo.svn_url -Branch $([Guid]::NewGuid()) -Confirm:$false } |
+                    Should Throw
+                }
+            }
+
             $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
         }
 
-        Describe 'Update a reference(branch) in repository' {
-            $masterRefName = "heads/master"
+        Describe 'Delete a Tag from a Repository' {
             $repositoryName = [Guid]::NewGuid()
-            New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-            $refname = "heads/myRef"
-            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName
-            $sha = $existingref.object.sha
-            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname -Sha $sha
+            $repo = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $tagName = "myTag"
 
-            Context 'On updating a newly created reference to a different SHA' {
-                It 'Should throw an exception if the SHA is invalid' {
-                    { Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname -Sha "1234" } |
+            Context 'On deleting a valid tag in a repository' {
+                $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch "master"
+                $sha = $existingref.object.sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Sha $sha
+                Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Confirm:$false
+
+                It 'Should throw an exception when trying to get the deleted tag' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName } |
+                    Should Throw
+                }
+
+                It 'Should throw an exception when the same tag is deleted again' {
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Confirm:$false } |
                     Should Throw
                 }
             }
 
-            Context 'On updating a reference to a different SHA' {
-                # Add a new file in master in order to create a new commit and hence, an updated SHA
-                # TODO: Replace this when the Content updation related APIs are made available
-                $fileContent = "Hello powershell!"
-                $fileName = "powershell.txt"
-                $encodedFile = [System.Convert]::ToBase64String(([System.Text.Encoding]::UTF8).GetBytes($fileContent))
+            Context 'On deleting an invalid tag from a repository' {
+                It 'Should throw an exception' {
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $([Guid]::NewGuid()) -Confirm:$false } |
+                    Should Throw
+                }
+            }
 
-                $fileData = @{
-                    "message" = "added new file"
-                    "content" = "$encodedFile"
+            Context 'On deleting a tag in a repository specified by Uri' {
+                $existingref = Get-GitHubReference -Uri $repo.svn_url -Branch "master"
+                $sha = $existingref.object.sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Sha $sha
+                Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Confirm:$false
+
+                It 'Should throw an exception when trying to get the deleted tag' {
+                    { Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName } |
+                    Should Throw
                 }
 
-                $params = @{
-                    'UriFragment' = "repos/$ownerName/$repositoryName/contents/$fileName"
-                    'Method' = 'Put'
-                    'Body' = (ConvertTo-Json -InputObject $fileData)
-                    'AccessToken' = $AccessToken
+                It 'Should throw an exception when the same branch is deleted again' {
+                    { Remove-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tagName -Confirm:$false } |
+                    Should Throw
                 }
-                Invoke-GHRestMethod @params
+            }
 
-                # Update branch with master SHA
-                $masterSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $masterRefName).object.sha
-                $oldSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname).object.sha
-                Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname -Sha $masterSHA
+            Context 'On deleting an invalid tag from a repository specified by Uri' {
+                It 'Should throw an exception' {
+                    { Remove-GitHubReference -OwnerName -Uri $repo.svn_url -Tag $([Guid]::NewGuid()) -Confirm:$false } |
+                    Should Throw
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Update a branch in a repository' {
+            $repositoryName = [Guid]::NewGuid()
+            New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $branchName = "myBranch"
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+            $sha = $existingref.object.sha
+            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $sha
+
+            Context 'On updating an existing branch to a different SHA' {
+                It 'Should throw an exception if the SHA is invalid' {
+                    { Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha "1234" } |
+                    Should Throw
+                }
+            }
+
+            Context 'On updating a branch to a different SHA' {
+                Update-MasterSHA
+                $masterSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch "master").object.sha
+                $oldSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName).object.sha
+                Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName -Sha $masterSHA
 
                 It 'Should return the updated SHA when the reference is queried after update' {
-                    $newSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Reference $refname).object.sha
+                    $newSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $branchName).object.sha
+                    $newSHA | Should be $masterSHA
+                    $newSHA | Should Not be $oldSHA
+                }
+            }
+
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+        }
+
+        Describe 'Update a tag in a repository' {
+            $repositoryName = [Guid]::NewGuid()
+            New-GitHubRepository -RepositoryName $repositoryName -AutoInit
+            $tag = "myTag"
+            $existingref = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $masterBranchName
+            $sha = $existingref.object.sha
+            New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag -Sha $sha
+
+            Context 'On updating an existing tag to a different SHA' {
+                It 'Should throw an exception if the SHA is invalid' {
+                    { Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag -Sha "1234" } |
+                    Should Throw
+                }
+            }
+
+            Context 'On updating a tag to a valid SHA' {
+                Update-MasterSHA
+                $masterSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch "master").object.sha
+                $oldSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag).object.sha
+                Update-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag -Sha $masterSHA
+
+                It 'Should return the updated SHA when the reference is queried after update' {
+                    $newSHA = $(Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag).object.sha
                     $newSHA | Should be $masterSHA
                     $newSHA | Should Not be $oldSHA
                 }
@@ -216,4 +464,3 @@ catch
         $script:originalConfigFile = $null
     }
 }
-
