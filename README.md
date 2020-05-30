@@ -15,6 +15,7 @@
 *   [Legal and Licensing](#legal-and-licensing)
 *   [Governance](#governance)
 *   [Code of Conduct](#code-of-conduct)
+*   [Reporting Security Issues](#reporting-security-issues)
 *   [Privacy Policy](#privacy-policy)
 
 ----------
@@ -156,6 +157,12 @@ Governance policy for this project is described [here](GOVERNANCE.md).
 ## Code of Conduct
 
 For more info, see [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md)
+
+----------
+
+## Reporting Security Issues
+
+Please refer to [SECURITY.md](./SECURITY.md).
 
 ----------
 
