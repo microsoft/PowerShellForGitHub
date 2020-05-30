@@ -71,7 +71,7 @@ try
         }
 
         Context 'For getting milestones from a repo' {
-            $existingMilestones = Get-GitHubMilestone -Uri $repo.svn_url -State Closed
+            $existingMilestones =@(Get-GitHubMilestone -Uri $repo.svn_url -State Closed)
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
@@ -104,7 +104,7 @@ try
         }
 
         Context 'For getting milestones from a repository and deleting them' {
-            $existingMilestones = Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending)
 
             It 'Should have the expected number of milestones' {
                 $existingMilestones.Count | Should be 4
@@ -114,7 +114,7 @@ try
                 Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number
             }
 
-            $existingMilestones = Get-GitHubMilestone -Uri $repo.svn_url -State All
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All)
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have no milestones' {

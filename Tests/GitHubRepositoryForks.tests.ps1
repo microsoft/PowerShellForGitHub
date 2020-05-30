@@ -13,11 +13,11 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 try
 {
     Describe 'Creating a new fork for user' {
-        $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        $originalForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub)
 
         Context 'When a new fork is created' {
             $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
-            $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
+            $newForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest)
 
             It 'Should have one more fork than before' {
                 ($newForks.Count - $originalForks.Count) | Should be 1
@@ -32,13 +32,11 @@ try
     }
 
     Describe 'Creating a new fork for an org' {
-        $originalForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        $originalForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub)
 
         Context 'When a new fork is created' {
-            <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
-
             $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
-            $newForks = Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest
+            $newForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest)
 
             It 'Should have one more fork than before' {
                 ($newForks.Count - $originalForks.Count) | Should be 1

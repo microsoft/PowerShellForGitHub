@@ -37,13 +37,17 @@ try
         }
 
         Context 'Get columns for a project' {
-            $results = Get-GitHubProjectColumn -Project $project.id
+            $results = @(Get-GitHubProjectColumn -Project $project.id)
             It 'Should get column' {
                 $results | Should Not BeNullOrEmpty
             }
 
+            It 'Should only have one column' {
+                $results.Count | Should Be 1
+            }
+
             It 'Name is correct' {
-                $results.name | Should be $defaultColumn
+                $results[0].name | Should Be $defaultColumn
             }
         }
     }
@@ -65,32 +69,36 @@ try
 
         Context 'Modify column name' {
             $null = Set-GitHubProjectColumn -Column $column.id -Name $defaultColumnUpdate
-            $results = Get-GitHubProjectColumn -Column $column.id
+            $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Should get column' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Name has been updated' {
-                $results.name | Should be $defaultColumnUpdate
+                $result.name | Should Be $defaultColumnUpdate
             }
         }
 
         Context 'Move column to first position' {
             $null = Move-GitHubProjectColumn -Column $columntwo.id -First
-            $results = Get-GitHubProjectColumn -Project $project.id
+            $results = @(Get-GitHubProjectColumn -Project $project.id)
+
+            It 'Should still have more than one column in the project' {
+                $results.Count | Should Be 2
+            }
 
             It 'Column is now in the first position' {
-                $results[0].name | Should be $defaultColumnTwo
+                $results[0].name | Should Be $defaultColumnTwo
             }
         }
 
         Context 'Move column using after parameter' {
             $null = Move-GitHubProjectColumn -Column $columntwo.id -After $column.id
-            $results = Get-GitHubProjectColumn -Project $project.id
+            $results = @(Get-GitHubProjectColumn -Project $project.id)
 
             It 'Column is now not in the first position' {
-                $results[1].name | Should be $defaultColumnTwo
+                $results[1].name | Should Be $defaultColumnTwo
             }
         }
 
@@ -116,14 +124,14 @@ try
             }
 
             $column.id = (New-GitHubProjectColumn -Project $project.id -Name $defaultColumn).id
-            $results = Get-GitHubProjectColumn -Column $column.id
+            $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $results.name | Should be $defaultColumn
+                $result.name | Should Be $defaultColumn
             }
         }
     }

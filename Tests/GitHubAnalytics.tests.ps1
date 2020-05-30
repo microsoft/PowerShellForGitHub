@@ -16,7 +16,7 @@ try
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
         Context 'When initially created, there are no issues' {
-            $issues = Get-GitHubIssue -Uri $repo.svn_url
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url)
 
             It 'Should return expected number of issues' {
                 $issues.Count | Should be 0
@@ -34,30 +34,26 @@ try
             $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
             $newIssues[-1] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url)
             It 'Should return only open issues' {
                 $issues.Count | Should be 2
             }
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -State All)
             It 'Should return all issues' {
                 $issues.Count | Should be 4
             }
 
             $createdOnOrAfterDate = Get-Date -Date $newIssues[0].created_at
             $createdOnOrBeforeDate = Get-Date -Date $newIssues[2].created_at
-            $issues = (Get-GitHubIssue -Uri $repo.svn_url) | Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) }
+            $issues = @((Get-GitHubIssue -Uri $repo.svn_url) | Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) })
 
             It 'Smart object date conversion works for comparing dates' {
                 $issues.Count | Should be 2
             }
 
             $createdDate = Get-Date -Date $newIssues[1].created_at
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') }
-
-            # Account for differences in array handling between PowerShell 7 vs earlier versions.
-            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-            $issues = ,$issues
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') })
 
             It 'Able to filter based on date and state' {
                 $issues.Count | Should be 1
@@ -67,7 +63,7 @@ try
         Context 'When issues are retrieved with a specific MediaTypes' {
             $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([guid]::NewGuid())
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html'
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
             It 'Should return an issue with body_html' {
                 $issues[0].body_html | Should not be $null
             }
@@ -192,10 +188,6 @@ try
 
             $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repositoryUrl)
 
-            # Account for differences in array handling between PowerShell 7 vs earlier versions.
-            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-            #$collaborators = ,$collaborators
-
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should be 1
             }
@@ -209,11 +201,7 @@ try
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
         $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
 
-        $contributors = Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics
-
-        # Account for differences in array handling between PowerShell 7 vs earlier versions.
-        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-        $contributors = ,$contributors
+        $contributors = @(Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics)
 
         It 'Should return expected number of contributors' {
             $contributors.Count | Should be 1
@@ -254,16 +242,10 @@ try
     }
 
     Describe 'Getting repositories from organization' {
-        <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
-
-        $original = Get-GitHubRepository -OrganizationName $script:organizationName
+        $original = @(Get-GitHubRepository -OrganizationName $script:organizationName)
 
         $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
-        $current = Get-GitHubRepository -OrganizationName $script:organizationName
-
-        # Account for differences in array handling between PowerShell 7 vs earlier versions.
-        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-        $current = ,$current
+        $current = @(Get-GitHubRepository -OrganizationName $script:organizationName)
 
         It 'Should return expected number of organization repositories' {
             ($current.Count - $original.Count) | Should be 1
@@ -276,7 +258,7 @@ try
         $repositoryName = [guid]::NewGuid().Guid
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
 
-        $contributors = Get-GitHubRepositoryContributor -OwnerName $script:ownerName -RepositoryName $repositoryName -IncludeStatistics
+        $contributors = @(Get-GitHubRepositoryContributor -OwnerName $script:ownerName -RepositoryName $repositoryName -IncludeStatistics)
 
         $uniqueContributors = $contributors |
             Select-Object -ExpandProperty author |
@@ -314,11 +296,7 @@ try
         $repositoryName = [guid]::NewGuid().Guid
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
 
-        $branches = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName
-
-        # Account for differences in array handling between PowerShell 7 vs earlier versions.
-        # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-        $branches = ,$branches
+        $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
 
         It 'Should return expected number of repository branches' {
             $branches.Count | Should be 1

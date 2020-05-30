@@ -36,11 +36,7 @@ try
         }
 
         Context 'For getting comments from an issue' {
-            $existingComments = Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number
-
-            # Account for differences in array handling between PowerShell 7 vs earlier versions.
-            # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-            $existingComments = ,$existingComments
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have the expected number of comments' {
                 $existingComments.Count | Should be 1
@@ -52,7 +48,7 @@ try
         }
 
         Context 'For getting comments from an issue with a specific MediaType' {
-            $existingComments = Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number -MediaType 'Html'
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number -MediaType 'Html')
 
             It 'Should have the expected body_html on the first comment' {
                 $existingComments[0].body_html | Should not be $null
@@ -73,7 +69,7 @@ try
         }
 
         Context 'For getting comments from a repository and deleting them' {
-            $existingComments = Get-GitHubComment -Uri $repo.svn_url
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
             It 'Should have the expected number of comments' {
                 $existingComments.Count | Should be 2
@@ -83,7 +79,7 @@ try
                 Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id
             }
 
-            $existingComments = Get-GitHubComment -Uri $repo.svn_url
+            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
             It 'Should have no comments' {
                 $existingComments.Count | Should be 0

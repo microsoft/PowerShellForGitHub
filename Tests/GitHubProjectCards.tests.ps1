@@ -52,7 +52,7 @@ try
         }
 
         Context 'Get cards for a column' {
-            $results = Get-GitHubProjectCard -Column $column.id
+            $results = @(Get-GitHubProjectCard -Column $column.id)
             It 'Should get cards' {
                 $results | Should Not BeNullOrEmpty
             }
@@ -63,24 +63,24 @@ try
         }
 
         Context 'Get all cards for a column' {
-            $results = Get-GitHubProjectCard -Column $column.id -ArchivedState All
+            $results = @(Get-GitHubProjectCard -Column $column.id -ArchivedState All)
             It 'Should get all cards' {
                 $results.Count | Should Be 2
             }
         }
 
         Context 'Get archived cards for a column' {
-            $results = Get-GitHubProjectCard -Column $column.id -ArchivedState Archived
+            $result = Get-GitHubProjectCard -Column $column.id -ArchivedState Archived
             It 'Should get archived card' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Note is correct' {
-                $results.note | Should be $defaultArchivedCard
+                $result.note | Should be $defaultArchivedCard
             }
 
             It 'Should be archived' {
-                $results.Archived | Should be $true
+                $result.Archived | Should be $true
             }
         }
     }
@@ -103,46 +103,46 @@ try
 
         Context 'Modify card note' {
             $null = Set-GitHubProjectCard -Card $card.id -Note $defaultCardUpdated
-            $results = Get-GitHubProjectCard -Card $card.id
+            $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Should get card' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Note has been updated' {
-                $results.note | Should be $defaultCardUpdated
+                $result.note | Should be $defaultCardUpdated
             }
         }
 
         Context 'Archive a card' {
             $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
-            $results = Get-GitHubProjectCard -Card $cardArchived.id
+            $result = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Card is archived' {
-                $results.Archived | Should be $true
+                $result.Archived | Should be $true
             }
         }
 
         Context 'Restore a card' {
             $null = Set-GitHubProjectCard -Card $cardArchived.id -Restore
-            $results = Get-GitHubProjectCard -Card $cardArchived.id
+            $result = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Card is not archived' {
-                $results.Archived | Should be $false
+                $result.Archived | Should be $false
             }
         }
 
         Context 'Move card position within column' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top
-            $results = Get-GitHubProjectCard -Column $column.id
+            $results = @(Get-GitHubProjectCard -Column $column.id)
 
             It 'Card is now top' {
                 $results[0].note | Should be $defaultCardTwo
@@ -151,7 +151,7 @@ try
 
         Context 'Move card using after parameter' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -After $card.id
-            $results = Get-GitHubProjectCard -Column $column.id
+            $results = @(Get-GitHubProjectCard -Column $column.id)
 
             It 'Card now exists in new column' {
                 $results[1].note | Should be $defaultCardTwo
@@ -160,7 +160,7 @@ try
 
         Context 'Move card to another column' {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top -ColumnId $columnTwo.id
-            $results = Get-GitHubProjectCard -Column $columnTwo.id
+            $results = @(Get-GitHubProjectCard -Column $columnTwo.id)
 
             It 'Card now exists in new column' {
                 $results[0].note | Should be $defaultCardTwo
@@ -189,14 +189,14 @@ try
             }
 
             $card.id = (New-GitHubProjectCard -Column $column.id -Note $defaultCard).id
-            $results = Get-GitHubProjectCard -Card $card.id
+            $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Card exists' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Note is correct' {
-                $results.note | Should be $defaultCard
+                $result.note | Should be $defaultCard
             }
         }
 
@@ -214,14 +214,14 @@ try
             }
 
             $card.id = (New-GitHubProjectCard -Column $column.id -ContentId $issue.id -ContentType 'Issue').id
-            $results = Get-GitHubProjectCard -Card $card.id
+            $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Card exists' {
-                $results | Should Not BeNullOrEmpty
+                $result | Should Not BeNullOrEmpty
             }
 
             It 'Content url is for an issue' {
-                $results.content_url | Should match 'issues'
+                $result.content_url | Should match 'issues'
             }
         }
     }

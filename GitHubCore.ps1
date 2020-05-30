@@ -667,7 +667,11 @@ function Invoke-GHRestMethodMultipleResult
             }
 
             $result = Invoke-GHRestMethod @params
-            $finalResult += $result.result
+            if ($null -ne $result.result)
+            {
+                $finalResult += $result.result
+            }
+
             $nextLink = $result.nextLink
             $currentDescription = "$Description (getting additional results)"
         }

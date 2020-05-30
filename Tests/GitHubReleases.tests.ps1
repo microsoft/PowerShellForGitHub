@@ -17,7 +17,7 @@ try
         Describe 'Getting releases from repository' {
             $ownerName = "dotnet"
             $repositoryName = "core"
-            $releases = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName
+            $releases = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName)
 
             Context 'When getting all releases' {
                 It 'Should return multiple releases' {
@@ -26,11 +26,7 @@ try
             }
 
             Context 'When getting the latest releases' {
-                $latest = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest
-
-                # Account for differences in array handling between PowerShell 7 vs earlier versions
-                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-                $latest = ,$latest
+                $latest = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest)
 
                 It 'Should return one value' {
                     $latest.Count | Should Be 1
@@ -44,11 +40,7 @@ try
 
             Context 'When getting a specific release' {
                 $specificIndex = 5
-                $specific = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id
-
-                # Account for differences in array handling between PowerShell 7 vs earlier versions
-                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-                $specific = ,$specific
+                $specific = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
 
                 It 'Should return one value' {
                     $specific.Count | Should Be 1
@@ -61,11 +53,7 @@ try
 
             Context 'When getting a tagged release' {
                 $taggedIndex = 8
-                $tagged = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name
-
-                # Account for differences in array handling between PowerShell 7 vs earlier versions
-                # In PowerShell 7 ([PSCustomObject]@{}).Count is 1.  In earlier versions, it's $null.
-                $tagged = ,$tagged
+                $tagged = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
 
                 It 'Should return one value' {
                     $tagged.Count | Should Be 1
@@ -84,7 +72,7 @@ try
             try {
                 Set-GitHubConfiguration -DefaultOwnerName "dotnet"
                 Set-GitHubConfiguration -DefaultRepositoryName "core"
-                $releases = Get-GitHubRelease
+                $releases = @(Get-GitHubRelease)
 
                 Context 'When getting all releases' {
                     It 'Should return multiple releases' {
