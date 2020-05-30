@@ -295,7 +295,7 @@ This module supports testing using the [Pester UT framework](https://github.com/
 To install it:
 
 ```powershell
-Install-Module -Name Pester
+Install-Module -Name Pester -RequiredVersion 4.10.1 -AllowClobber -SkipPublisherCheck -Force
 ```
 
 #### Configuring Your Environment

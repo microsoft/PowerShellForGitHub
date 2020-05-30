@@ -1,0 +1,4 @@
+# Need to make sure that this file always has consistent line endings since we store the hash
+# of it in GitHubConfiguration.ps1 in order to be able to determine if it has been modified
+# or not.
+Tests/Config/Settings.ps1 text eol=crlf
