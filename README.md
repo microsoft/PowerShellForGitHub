@@ -1,7 +1,12 @@
 # PowerShellForGitHub PowerShell Module
 
-[![[GitHub version]](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub.svg)](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub)
+[![[GitHub version]](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub.svg)](https://github.com/microsoft/PowerShellForGitHub/releases)
+[![powershellgallery](https://img.shields.io/powershellgallery/v/PowerShellForGitHub)](https://www.powershellgallery.com/packages/PowerShellForGitHub)
+[![downloads](https://img.shields.io/powershellgallery/dt/PowerShellForGitHub.svg?label=downloads)](https://www.powershellgallery.com/packages/PowerShellForGitHub)
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2FQuackFu)](https://twitter.com/intent/tweet?text=%23PowerShellForGitHub%20%40QuackFu%20&original_referer=https://github.com/microsoft/PowerShellForGitHub)
 
 #### Table of Contents
 
