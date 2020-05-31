@@ -187,7 +187,8 @@ function New-GitHubRepository
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating $RepositoryName"
+        'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader"
+        'Description' = "Creating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
