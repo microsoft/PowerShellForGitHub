@@ -13,6 +13,9 @@
     # Script module or binary module file associated with this manifest.
     RootModule = 'PowerShellForGitHub.psm1'
 
+    # Format files (.ps1xml) to be loaded when importing this module
+    FormatsToProcess = 'PowerShellForGitHub.Format.ps1xml'
+
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules = @(
         # Ideally this list would be kept completely alphabetical, but other scripts (like

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+  <ViewDefinitions>
+    <!--================== GitHub.Repository Type View =================-->
+    <View>
+      <Name>GitHub.Repository</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.Repository</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>full_name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>private</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>description</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>
