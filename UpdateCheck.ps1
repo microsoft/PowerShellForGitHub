@@ -81,7 +81,11 @@ function Invoke-UpdateCheck
                 $script:HasLatestVersion = $latestVersion -eq $moduleVersion
                 if ($script:HasLatestVersion)
                 {
-                    Write-Log "[$moduleName] update check complete.  Running latest version: $($latestVersion.ToString())" -Level Verbose
+                    Write-Log "[$moduleName] update check complete.  Running latest version: $latestVersion" -Level Verbose
+                }
+                elseif ($moduleVersion -gt $latestVersion)
+                {
+                    Write-Log "[$moduleName] update check complete.  This version ($moduleVersion) is newer than the latest published version ($latestVersion)." -Level Verbose
                 }
                 else
                 {
