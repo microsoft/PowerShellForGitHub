@@ -25,5 +25,121 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <!--=============== GitHub.RepositoryTopic Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryTopic</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryTopic</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>names</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
+    <!--=============== GitHub.RepositoryContributor Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryContributor</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryContributor</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>login</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>type</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>contributions</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--=============== GitHub.RepositoryCollaborator Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryCollaborator</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryCollaborator</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader />
+          <TableColumnHeader>
+            <Label>permissions.admin</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>permissions.push</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>permissions.pull</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>login</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.permissions.admin
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.permissions.push
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.permissions.pull
+                </ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--=============== GitHub.RepositoryTag Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryTag</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryTag</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader />
+          <TableColumnHeader>
+            <Label>commit.sha</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.commit.sha
+                </ScriptBlock>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>
