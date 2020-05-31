@@ -19,7 +19,7 @@ try
             $referrerList = Get-GitHubReferrerTraffic -Uri $repo.svn_url
 
             It 'Should return expected number of referrers' {
-                @($referrerList).Count | Should be 0
+                $referrerList.Count | Should be 0
             }
 
             Remove-GitHubRepository -Uri $repo.svn_url
@@ -33,7 +33,7 @@ try
             $pathList = Get-GitHubPathTraffic -Uri $repo.svn_url
 
             It 'Should return expected number of popular content' {
-                @($pathList).Count | Should be 0
+                $pathList.Count | Should be 0
             }
 
             Remove-GitHubRepository -Uri $repo.svn_url

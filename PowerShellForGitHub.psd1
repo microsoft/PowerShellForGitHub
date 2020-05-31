@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.13.1'
+    ModuleVersion = '0.14.0'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
@@ -43,7 +43,8 @@
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
         'NugetTools.ps1',
-        'Telemetry.ps1')
+        'Telemetry.ps1',
+        'UpdateCheck.ps1')
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '4.0'
@@ -179,7 +180,7 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-            # ReleaseNotes = ''
+            ReleaseNotes = 'https://github.com/microsoft/PowerShellForGitHub/blob/master/CHANGELOG.md'
         }
     }
 

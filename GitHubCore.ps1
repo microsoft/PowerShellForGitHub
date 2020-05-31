@@ -129,6 +129,8 @@ function Invoke-GHRestMethod
         [switch] $NoStatus
     )
 
+    Invoke-UpdateCheck
+
     # Normalize our Uri fragment.  It might be coming from a method implemented here, or it might
     # be coming from the Location header in a previous response.  Either way, we don't want there
     # to be a leading "/" or trailing '/'
@@ -667,7 +669,11 @@ function Invoke-GHRestMethodMultipleResult
             }
 
             $result = Invoke-GHRestMethod @params
-            $finalResult += $result.result
+            if ($null -ne $result.result)
+            {
+                $finalResult += $result.result
+            }
+
             $nextLink = $result.nextLink
             $currentDescription = "$Description (getting additional results)"
         }
@@ -681,8 +687,7 @@ function Invoke-GHRestMethodMultipleResult
             Set-TelemetryEvent -EventName $TelemetryEventName -Properties $TelemetryProperties -Metrics $telemetryMetrics
         }
 
-        # Ensure we're always returning our results as an array, even if there is a single result.
-        return @($finalResult)
+        return $finalResult
     }
     catch
     {
