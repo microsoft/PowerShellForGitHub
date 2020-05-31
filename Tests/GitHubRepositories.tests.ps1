@@ -25,8 +25,8 @@ try
                 $privateRepo = $privateRepo
             }
 
-            $publicRepos = Get-GitHubRepository -Visibility Public
-            $privateRepos = Get-GitHubRepository -Visibility Private
+            $publicRepos = @(Get-GitHubRepository -Visibility Public)
+            $privateRepos = @(Get-GitHubRepository -Visibility Private)
 
             It "Should have the public repo" {
                 $publicRepo.Name | Should BeIn $publicRepos.Name
@@ -50,7 +50,7 @@ try
         }
 
         Context 'For any user' {
-            $repos = Get-GitHubRepository -OwnerName 'octocat' -Type Public
+            $repos = @(Get-GitHubRepository -OwnerName 'octocat' -Type Public)
 
             It "Should have results for The Octocat" {
                 $repos.Count | Should -BeGreaterThan 0
@@ -66,7 +66,7 @@ try
                 $repo = $repo
             }
 
-            $repos = Get-GitHubRepository -OrganizationName $script:organizationName -Type All
+            $repos = @(Get-GitHubRepository -OrganizationName $script:organizationName -Type All)
             It "Should have results for the organization" {
                 $repo.name | Should BeIn $repos.name
             }
@@ -89,14 +89,14 @@ try
                 $repo = $repo
             }
 
-            $returned = Get-GitHubRepository -Uri $repo.svn_url
+            $result = Get-GitHubRepository -Uri $repo.svn_url
             It "Should be a single result using Uri ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
+                $result | Should -BeOfType PSCustomObject
             }
 
-            $returned = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
+            $result = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
             It "Should be a single result using Elements ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
+                $result | Should -BeOfType PSCustomObject
             }
 
             It 'Should not permit additional parameters' {
