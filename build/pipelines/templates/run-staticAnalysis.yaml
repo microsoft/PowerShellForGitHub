@@ -10,5 +10,15 @@ steps:
 
   - powershell: |
        $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
-       $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
+      ./build/scripts/ConvertTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -OutPath ../Pester/scriptAnalyzer-results.xml
     displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish ScriptAnalyzer Test Results'
+    inputs:
+      testRunTitle: 'Windows Test Results for PSScriptAnalyzer'
+      buildPlatform: 'Windows'
+      testRunner: NUnit
+      testResultsFiles: '../Pester/scriptAnalyzer-results.xml'
+      failTaskOnFailedTests: true # required to fail build when tests fail
+    condition: succeededOrFailed()
