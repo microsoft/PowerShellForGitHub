@@ -27,7 +27,7 @@ try
                 $newForks[0].full_name | Should be "$($script:ownerName)/PowerShellForGitHub"
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 
@@ -46,7 +46,7 @@ try
                 $newForks[0].full_name | Should be "$($script:organizationName)/PowerShellForGitHub"
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
         }
     }
 }
