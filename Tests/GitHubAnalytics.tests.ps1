@@ -16,10 +16,10 @@ try
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
         Context 'When initially created, there are no issues' {
-            $issues = Get-GitHubIssue -Uri $repo.svn_url
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url)
 
             It 'Should return expected number of issues' {
-                @($issues).Count | Should be 0
+                $issues.Count | Should be 0
             }
         }
 
@@ -34,29 +34,29 @@ try
             $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
             $newIssues[-1] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url)
             It 'Should return only open issues' {
-                @($issues).Count | Should be 2
+                $issues.Count | Should be 2
             }
 
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -State All)
             It 'Should return all issues' {
-                @($issues).Count | Should be 4
+                $issues.Count | Should be 4
             }
 
             $createdOnOrAfterDate = Get-Date -Date $newIssues[0].created_at
             $createdOnOrBeforeDate = Get-Date -Date $newIssues[2].created_at
-            $issues = (Get-GitHubIssue -Uri $repo.svn_url) | Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) }
+            $issues = @((Get-GitHubIssue -Uri $repo.svn_url) | Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) })
 
             It 'Smart object date conversion works for comparing dates' {
-                @($issues).Count | Should be 2
+                $issues.Count | Should be 2
             }
 
             $createdDate = Get-Date -Date $newIssues[1].created_at
-            $issues = Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') }
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -State All | Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') })
 
             It 'Able to filter based on date and state' {
-                @($issues).Count | Should be 1
+                $issues.Count | Should be 1
             }
         }
 
@@ -69,7 +69,7 @@ try
             }
         }
 
-        $null = Remove-GitHubRepository -Uri ($repo.svn_url)
+        $null = Remove-GitHubRepository -Uri ($repo.svn_url) -Confirm:$false
     }
 
     Describe 'Obtaining repository with biggest number of issues' {
@@ -88,18 +88,18 @@ try
             $issueCounts = $issueCounts | Sort-Object -Property Count -Descending
 
             It 'Should return expected number of issues for each repository' {
-                @($issueCounts[0].Count) | Should be 3
-                @($issueCounts[1].Count) | Should be 0
+                $issueCounts[0].Count | Should be 3
+                $issueCounts[1].Count | Should be 0
             }
 
             It 'Should return expected repository names' {
-                @($issueCounts[0].Uri) | Should be ($repo1.svn_url)
-                @($issueCounts[1].Uri) | Should be ($repo2.svn_url)
+                $issueCounts[0].Uri | Should be $repo1.svn_url
+                $issueCounts[1].Uri | Should be $repo2.svn_url
             }
         }
 
-        $null = Remove-GitHubRepository -Uri ($repo1.svn_url)
-        $null = Remove-GitHubRepository -Uri ($repo2.svn_url)
+        $null = Remove-GitHubRepository -Uri ($repo1.svn_url) -Confirm:$false
+        $null = Remove-GitHubRepository -Uri ($repo2.svn_url) -Confirm:$false
     }
 
 
@@ -186,13 +186,13 @@ try
             $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
             $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
 
-            $collaborators = Get-GitHubRepositoryCollaborator -Uri $repositoryUrl
+            $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repositoryUrl)
 
             It 'Should return expected number of collaborators' {
-                @($collaborators).Count | Should be 1
+                $collaborators.Count | Should be 1
             }
 
-            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
         }
     }
 
@@ -201,13 +201,13 @@ try
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
         $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
 
-        $contributors = Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics
+        $contributors = @(Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics)
 
         It 'Should return expected number of contributors' {
-            @($contributors).Count | Should be 1
+            $contributors.Count | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 
     if ($script:accessTokenConfigured)
@@ -242,25 +242,23 @@ try
     }
 
     Describe 'Getting repositories from organization' {
-        <# Temporary hack due to issues with this test in ADO #> . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Config\Settings.ps1')
-
-        $original = Get-GitHubRepository -OrganizationName $script:organizationName
+        $original = @(Get-GitHubRepository -OrganizationName $script:organizationName)
 
         $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
-        $current = Get-GitHubRepository -OrganizationName $script:organizationName
+        $current = @(Get-GitHubRepository -OrganizationName $script:organizationName)
 
         It 'Should return expected number of organization repositories' {
-            (@($current).Count - @($original).Count) | Should be 1
+            ($current.Count - $original.Count) | Should be 1
         }
 
-        $null = Remove-GitHubRepository -Uri $repo.svn_url
+        $null = Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 
     Describe 'Getting unique contributors from contributors array' {
         $repositoryName = [guid]::NewGuid().Guid
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
 
-        $contributors = Get-GitHubRepositoryContributor -OwnerName $script:ownerName -RepositoryName $repositoryName -IncludeStatistics
+        $contributors = @(Get-GitHubRepositoryContributor -OwnerName $script:ownerName -RepositoryName $repositoryName -IncludeStatistics)
 
         $uniqueContributors = $contributors |
             Select-Object -ExpandProperty author |
@@ -268,10 +266,10 @@ try
             Sort-Object
 
         It 'Should return expected number of unique contributors' {
-            @($uniqueContributors).Count | Should be 1
+            $uniqueContributors.Count | Should be 1
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 
     Describe 'Getting repository name from url' {
@@ -298,17 +296,17 @@ try
         $repositoryName = [guid]::NewGuid().Guid
         $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
 
-        $branches = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
 
         It 'Should return expected number of repository branches' {
-            @($branches).Count | Should be 1
+            $branches.Count | Should be 1
         }
 
         It 'Should return the name of the branches' {
-            @($branches[0].name) | Should be "master"
+            $branches[0].name | Should be 'master'
         }
 
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName
+        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
     }
 }
 finally

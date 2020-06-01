@@ -452,12 +452,17 @@ function Remove-GitHubComment
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Confirm:$false
+
+        Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubComment')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -491,16 +496,19 @@ function Remove-GitHubComment
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
-        'Method' = 'Delete'
-        'Description' =  "Removing comment $CommentID for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
+            'Method' = 'Delete'
+            'Description' =  "Removing comment $CommentID for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 

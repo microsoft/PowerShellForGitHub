@@ -34,8 +34,8 @@ try
                 $privateRepo = $privateRepo
             }
 
-            $publicRepos = Get-GitHubRepository -Visibility Public
-            $privateRepos = Get-GitHubRepository -Visibility Private
+            $publicRepos = @(Get-GitHubRepository -Visibility Public)
+            $privateRepos = @(Get-GitHubRepository -Visibility Private)
 
             It "Should have the public repo" {
                 $publicRepo.name | Should BeIn $publicRepos.name
@@ -53,13 +53,13 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $publicRepo.svn_url
-                Remove-GitHubRepository -Uri $privateRepo.svn_url
+                Remove-GitHubRepository -Uri $publicRepo.svn_url -Confirm:$false
+                Remove-GitHubRepository -Uri $privateRepo.svn_url -Confirm:$false
             }
         }
 
         Context 'For any user' {
-            $repos = Get-GitHubRepository -OwnerName 'octocat' -Type Public
+            $repos = @(Get-GitHubRepository -OwnerName 'octocat' -Type Public)
 
             It "Should have results for The Octocat" {
                 $repos.Count | Should -BeGreaterThan 0
@@ -75,13 +75,13 @@ try
                 $repo = $repo
             }
 
-            $repos = Get-GitHubRepository -OrganizationName $script:organizationName -Type All
+            $repos = @(Get-GitHubRepository -OrganizationName $script:organizationName -Type All)
             It "Should have results for the organization" {
                 $repo.name | Should BeIn $repos.name
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
 
@@ -98,14 +98,14 @@ try
                 $repo = $repo
             }
 
-            $returned = Get-GitHubRepository -Uri $repo.svn_url
+            $result = Get-GitHubRepository -Uri $repo.svn_url
             It "Should be a single result using Uri ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
+                $result | Should -BeOfType PSCustomObject
             }
 
-            $returned = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
+            $result = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
             It "Should be a single result using Elements ParameterSet" {
-                $returned | Should -BeOfType PSCustomObject
+                $result | Should -BeOfType PSCustomObject
             }
 
             It 'Should not permit additional parameters' {
@@ -118,7 +118,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
@@ -183,7 +183,7 @@ try
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
                 ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo"
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Confirm:$false
             }
         }
     }

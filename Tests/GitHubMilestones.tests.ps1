@@ -71,7 +71,7 @@ try
         }
 
         Context 'For getting milestones from a repo' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State Closed)
+            $existingMilestones =@(Get-GitHubMilestone -Uri $repo.svn_url -State Closed)
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
@@ -111,10 +111,10 @@ try
             }
 
             foreach($milestone in $existingMilestones) {
-                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number
+                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number -Confirm:$false
             }
 
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url)
+            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All)
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have no milestones' {
@@ -123,7 +123,7 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally
