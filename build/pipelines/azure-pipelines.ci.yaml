@@ -25,7 +25,7 @@ jobs:
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
-#  - template: ./templates/run-unitTests.yaml
+  - template: ./templates/run-unitTests.yaml
 
 - job: Linux
   pool:
@@ -33,7 +33,7 @@ jobs:
   dependsOn: Windows # Run in series instead of parallel because the UT's are modifying the same shared state
   steps:
   - template: ./templates/run-staticAnalysis.yaml
-#  - template: ./templates/run-unitTests.yaml
+  - template: ./templates/run-unitTests.yaml
 
 - job: macOS
   pool:
@@ -42,4 +42,4 @@ jobs:
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
-#  - template: ./templates/run-unitTests.yaml
+  - template: ./templates/run-unitTests.yaml
