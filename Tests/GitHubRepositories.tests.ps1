@@ -44,8 +44,8 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $publicRepo.svn_url
-                Remove-GitHubRepository -Uri $privateRepo.svn_url
+                Remove-GitHubRepository -Uri $publicRepo.svn_url -Confirm:$false
+                Remove-GitHubRepository -Uri $privateRepo.svn_url -Confirm:$false
             }
         }
 
@@ -72,7 +72,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
 
@@ -109,7 +109,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
@@ -134,7 +134,7 @@ try
             ## cleanup temp testing repository
             AfterEach -Scriptblock {
                 ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
-                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo"
+                Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Confirm:$false
             }
         }
     }

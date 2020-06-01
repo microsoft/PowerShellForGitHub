@@ -110,8 +110,8 @@ try
                 $existingMilestones.Count | Should be 4
             }
 
-            foreach ($milestone in $existingMilestones) {
-                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number
+            foreach($milestone in $existingMilestones) {
+                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number -Confirm:$false
             }
 
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All)
@@ -123,7 +123,7 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally

@@ -217,12 +217,17 @@ function Remove-GitHubRepository
 
     .EXAMPLE
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete
+
+    .EXAMPLE
+        Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
+
+        Remove repository with the given URI, without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubRepository')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -250,18 +255,20 @@ function Remove-GitHubRepository
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
+    if ($PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName"
+            'Method' = 'Delete'
+            'Description' =  "Deleting $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName"
-        'Method' = 'Delete'
-        'Description' =  "Deleting $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        return Invoke-GHRestMethod @params
     }
-
-    return Invoke-GHRestMethod @params
 }
 
 function Get-GitHubRepository
