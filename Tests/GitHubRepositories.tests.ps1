@@ -4,8 +4,6 @@
 <#
 .Synopsis
    Tests for GitHubRepositories.ps1 module
-.Description
-    Many cmdlets are indirectly tested in the course of other tests (New-GitHubRepository, Remove-GitHubRepository), and may not have explicit tests here
 #>
 
 # This is common test code setup logic for all Pester test files
