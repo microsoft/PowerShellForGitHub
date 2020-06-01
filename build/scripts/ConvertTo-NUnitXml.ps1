@@ -458,6 +458,10 @@ function ConvertTo-NUnitXml
 $scriptName = Split-Path -Leaf -Path $PSCommandPath
 try
 {
+    # intentional static analysis failures for testing purposes
+    $neverUsed = $true
+    if ($foo -eq $null) { $bar = $false }
+
     Write-Host "$($scriptName): Trying to create NUnit XML file based off of the provided PSScriptAnalyzer results."
 
     $Path = Resolve-UnverifiedPath -Path $Path
