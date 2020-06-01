@@ -131,7 +131,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url-Confirm:$false
             }
 
             It 'Should get repository' {
@@ -155,7 +155,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
 
-            $delete = Remove-GitHubRepository -RepositoryName $repo.name
+            $delete = Remove-GitHubRepository -RepositoryName $repo.name -Confirm:$false
             $repo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
             It 'Should get no content' {
                 $repo | Should BeNullOrEmpty
@@ -195,7 +195,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
 
             It 'Should have the new updated description' {
@@ -218,7 +218,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
 
             It 'Should have the expected topic' {
@@ -242,7 +242,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
 
             $languages = Get-GitHubRepositoryLanguage -OwnerName $repo.owner.login -RepositoryName $repo.name
@@ -264,7 +264,7 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
 
             $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.name
