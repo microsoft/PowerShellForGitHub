@@ -11,7 +11,6 @@ steps:
   - powershell: |
        $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
        $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
-
        $null = New-Item -Path ..\ -Name ScriptAnalyzer -ItemType Directory -Force
       ./build/scripts/ConvertTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -OutPath ../ScriptAnalyzer/test-results.xml
     displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
