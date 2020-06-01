@@ -435,13 +435,14 @@ function ConvertTo-NUnitXml
         }
 
         # Finally, we need to update a few attributes in the root test-results
-        $xml.'test-results'.total = $totalTests
-        $xml.'test-results'.failures = $totalFailures
+        $xml.'test-results'.total = $totalTests.ToString()
+        $xml.'test-results'.failures = $totalFailures.ToString()
 
-        # Treat this like an ASSERT
+        # Catch an odd edge case if somehow there was a rule that failed that wasn't in the list
+        # of rules returned.
         if ($totalFailures -ne $ScriptAnalyzerResult.Count)
         {
-            Write-Warning "The total generated number of failures ($totalFailures) does not match the expected number of failures ($($ScriptAnalyzerResult.Count))."
+            Write-Error "The total generated number of failures ($totalFailures) does not match the expected number of failures ($($ScriptAnalyzerResult.Count))."
         }
 
         return $xml
