@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Issue Reporting
+    url: https://github.com/microsoft/PowerShellForGitHub/blob/master/SECURITY.md
+    about: Please report security vulnerabilities by following the directions here.
