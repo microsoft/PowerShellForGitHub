@@ -44,4 +44,4 @@ steps:
       codeCoverageTool: 'JaCoCo'
       summaryFileLocation: '../Pester/coverage.xml'
       failIfCoverageEmpty: true
-    condition: and(succeededOrFailed(), eq(variables['System.PullRequest.IsFork'], false))
+    condition: succeededOrFailed()
