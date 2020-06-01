@@ -17,7 +17,7 @@ try
         Describe 'Getting releases from repository' {
             $ownerName = "dotnet"
             $repositoryName = "core"
-            $releases = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName
+            $releases = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName)
 
             Context 'When getting all releases' {
                 It 'Should return multiple releases' {
@@ -26,24 +26,24 @@ try
             }
 
             Context 'When getting the latest releases' {
-                $latest = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest
+                $latest = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest)
 
                 It 'Should return one value' {
-                    @($latest).Count | Should Be 1
+                    $latest.Count | Should Be 1
                 }
 
                 It 'Should return the first release from the full releases list' {
-                    $releases[0].url | Should Be $releases[0].url
-                    $releases[0].name | Should Be $releases[0].name
+                    $latest[0].url | Should Be $releases[0].url
+                    $latest[0].name | Should Be $releases[0].name
                 }
             }
 
             Context 'When getting a specific release' {
                 $specificIndex = 5
-                $specific = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id
+                $specific = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
 
                 It 'Should return one value' {
-                    @($specific).Count | Should Be 1
+                    $specific.Count | Should Be 1
                 }
 
                 It 'Should return the correct release' {
@@ -53,10 +53,10 @@ try
 
             Context 'When getting a tagged release' {
                 $taggedIndex = 8
-                $tagged = Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name
+                $tagged = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
 
                 It 'Should return one value' {
-                    @($tagged).Count | Should Be 1
+                    $tagged.Count | Should Be 1
                 }
 
                 It 'Should return the correct release' {
@@ -72,7 +72,7 @@ try
             try {
                 Set-GitHubConfiguration -DefaultOwnerName "dotnet"
                 Set-GitHubConfiguration -DefaultRepositoryName "core"
-                $releases = Get-GitHubRelease
+                $releases = @(Get-GitHubRelease)
 
                 Context 'When getting all releases' {
                     It 'Should return multiple releases' {

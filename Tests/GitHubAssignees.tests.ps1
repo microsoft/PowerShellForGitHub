@@ -44,7 +44,7 @@ try
         Context 'For adding an assignee to an issue'{
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
             $assigneeUserName = $assigneeList[0].login
-            $assignees = @($assigneeUserName)
+            $assignees = $assigneeUserName
             New-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 

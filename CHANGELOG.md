@@ -1,6 +1,51 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+  [0.14.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.14.0) - (2020/05/30)
+### Features:
++ The module will now asynchronously check for updates up to once per day.  This can be disabled
+  if desired with the `Set-GitHubConfiguration -DisableUpdateCheck`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/185) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/a9f48a8aec796195664c3d86eb11755a1394d34e)
++ It turns out that `Group-GitHubPullRequest` which was written back in `0.2.0` was never actually
+  exported.  Now it is.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/180) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b7e1ea1cb912493e110b9854b0ec7700462254a0)
+
+### Fixes:
+- Fixes the behavior of `Get-GitHubRepository`.  It actually had a number of issues:
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/179) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/c4c1ec344a357489d248b9cf1bc2837484d4915f)
+  - `-GetAllPublicRepositories` didn't acutally work.  Now it does, along with the newly
+     added `Since` parameters.
+  - Fixed the ParameterSet handling for all parameters to make sure that users can only specify
+    the correct combination of parameters.
+- Fixes multi-result behavior across all versions of PowerShell.  You can now reliably capture
+  the result of an API call like this: `@(Get-GitHubRepository ...)` and be assured that you'll
+  get an array result with the proper count of items.  As a result, this fixes all remaining failing
+  UT's on PowerShell 7.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/199) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/bcd0a5616e1395ca480bc7f3b64776eada2a6670)
+- Fixed an erroneous exception that occurred when calling `New-GitHubRepository` when specifying
+  a `TeamId`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/196) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/587e2042621091c79cc06be2aa9cc6ea836561f4)
+- The module is now PSScriptAnalyzer clean (again).  This also fixed pipeline handling in
+  `Group-GitHubPullRequest`, `Group-GitHubIssue` and `ConvertFrom-GitHubMarkdown`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/180) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b7e1ea1cb912493e110b9854b0ec7700462254a0)
+- Fixed some documentation which referenced that private repos were only available to paid GitHub
+  plans.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/191) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3c70b8d2702a4a7b5674bb72decacb385f1a47a8)
+- Fixed a bug preventing quering for a specifically named branch with `Get-GitHubRepositoryBranch`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/188) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/5807d00ed0a3acd293057d8a9c06a9d68b6030db)
+- Correctly fixed the hash that catches whether or not a developer has updated the settings file used
+  when running this module's unit tests.  It involved updating the hash and then also ensuring we
+  always check the file out with consistent line endings.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/181) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/93689d69eedc50f084982a6fba21183857507dbb) &&
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/183) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b4439f4a6b12f89d755851b313eff0e9ea0b3ab5)
+- Documentation updates around configuring unattended authentication.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/173) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3440909f5f1264865ccfca85ce2364af3ce85425)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
   [0.13.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.1) - (2020/05/12)
 ### Fixes:
 - Ensure progress bar for Wait-JobWithAnimation gets marked as Completed

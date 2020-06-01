@@ -41,7 +41,7 @@ function New-GitHubRepository
 
     .PARAMETER Private
         By default, this repository will created Public.  Specify this to create
-        a private repository.  Creating private repositories requires a paid GitHub account.
+        a private repository.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -139,7 +139,7 @@ function New-GitHubRepository
         $uriFragment = "orgs/$OrganizationName/repos"
     }
 
-    if ($PSBoundParameters.ContainsKey('TeamId') -and (-not $PSBoundParameters.Contains('OrganizationName')))
+    if ($PSBoundParameters.ContainsKey('TeamId') -and (-not $PSBoundParameters.ContainsKey('OrganizationName')))
     {
         $message = 'TeamId may only be specified when creating a repository under an organization.'
         Write-Log -Message $message -Level Error
@@ -717,8 +717,7 @@ function Update-GitHubRepository
         Update the default branch for this repository.
 
     .PARAMETER Private
-        Specify this to make the repository repository.  Creating private repositories requires a
-        paid GitHub account.
+        Specify this to make the repository private.
         To change a repository to be public, specify -Private:$false
 
     .PARAMETER NoIssues

@@ -89,6 +89,8 @@ function Initialize-CommonTestSetup
     Reset-GitHubConfiguration
     Set-GitHubConfiguration -DisableTelemetry # We don't want UT's to impact telemetry
     Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
+    Set-GitHubConfiguration -DefaultNoStatus # Status corrupts the raw CI logs for Linux and Mac, and makes runs take slightly longer.
+    Set-GitHubConfiguration -DisableUpdateCheck # The update check is unnecessary during tests.
 }
 
 Initialize-CommonTestSetup
