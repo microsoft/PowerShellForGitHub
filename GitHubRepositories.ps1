@@ -1033,12 +1033,18 @@ function Set-GitHubRepositoryTopic
         'Clear' = $PSBoundParameters.ContainsKey('Clear')
     }
 
-    $description = "Replacing topics in $RepositoryName"
-    if ($Clear) { $description = "Clearing topics in $RepositoryName" }
+    if ($Clear)
+    {
+        $description = "Clearing topics in $RepositoryName"
+        $Name=@()
+    }
+    else
+    {
+        $description = "Replacing topics in $RepositoryName"
+    }
 
-    $names = @($Name)
     $hashBody = @{
-        'names' = $names
+        'names' = $Name
     }
 
     $params = @{
