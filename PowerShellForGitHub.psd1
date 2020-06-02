@@ -159,6 +159,7 @@
     )
 
     AliasesToExport = @(
+        'Delete-GitHubBranch',
         'Delete-GitHubComment',
         'Delete-GitHubIssueComment',
         'Delete-GitHubLabel',
@@ -167,10 +168,13 @@
         'Delete-GitHubProjectCard',
         'Delete-GitHubProjectColumn'
         'Delete-GitHubRepository',
+        'Delete-GitHubRepositoryBranch',
         'Get-GitHubBranch',
         'Get-GitHubComment',
         'New-GitHubAssignee',
+        'New-GitHubBranch',
         'New-GitHubComment',
+        'Remove-GitHubBranch'
         'Remove-GitHubComment',
         'Set-GitHubComment',
         'Transfer-GitHubRepositoryOwnership'
