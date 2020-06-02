@@ -10,7 +10,7 @@
         *   [Querying Pull Requests](#querying-pull-requests)
         *   [Querying Collaborators](#querying-collaborators)
         *   [Querying Contributors](#querying-contributors)
-        *   [Quering Team and Organization Membership](#querying-team-and-organization-membership)
+        *   [Querying Team and Organization Membership](#querying-team-and-organization-membership)
     *   [Labels](#labels)
         *   [Getting Labels for a Repository](#getting-labels-for-a-repository)
         *   [Getting Labels for an issue](#getting-labels-for-an-issue)
@@ -56,6 +56,15 @@
         *   [Get events from a repository](#get-events-from-a-repository)
         *   [Get events from an issue](#get-events-from-an-issue)
         *   [Get a single event](#get-a-single-event])
+    *   [Projects](#Projects)
+        *   [Get projects for a repository](#get-projects-for-a-repository)
+        *   [Get projects for a user](#get-projects-for-a-user)
+        *   [Create a project](#create-a-project)
+        *   [Add a column to a project](#add-a-column-to-a-project)
+        *   [Add a card to a column](#add-a-card-to-a-column)
+        *   [Add an existing issue as a card to a column](#add-an-existing-issue-as-a-card-to-a-column)
+        *   [Move a card to be after a certain card in the same column](Move-a-card-to-be-after-a-certain-card-in-the-same-column)
+        *   [Move a card to the bottom of another column](Move-a-card-to-the-bottom-of-another-column)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -271,7 +280,7 @@ Get-GitHubRepositoryContributor -OwnerName 'PowerShell' -RepositoryName 'PowerSh
     Sort-Object
 ```
 
-#### Quering Team and Organization Membership
+#### Querying Team and Organization Membership
 
 ```powershell
 $organizationMembers = Get-GitHubOrganizationMembers -OrganizationName 'OrganizationName'
@@ -304,7 +313,7 @@ New-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration 
 
 #### Removing a Label From a Repository
 ```powershell
-Remove-GitHubLabel -OwnerName PowerShell -RepositoryName desiredstateconfiguration -Name TestLabel
+Remove-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Name TestLabel
 ```
 
 #### Adding Labels to an Issue
@@ -315,7 +324,7 @@ Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryNam
 
 #### Removing a Label From an Issue
 ```powershell
-Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName desiredstateconfiguration -Name TestLabel -Issue 1
+Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color
@@ -398,7 +407,7 @@ Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub 
 
 #### Get assignees
 ```powershell
-Get-GitHubAsignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Check assignee permission
@@ -497,6 +506,50 @@ Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 
 #### Get a single event
 ```powershell
 Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
+```
+
+----------
+
+### Projects
+
+#### Get projects for a repository
+```powershell
+Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Get projects for a user
+```powershell
+Get-GitHubProject -UserName octocat
+```
+
+#### Create a project
+```powershell
+New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -Name TestProject
+```
+
+#### Add a column to a project
+```powershell
+New-GitHubProjectColumn -Project 1 -Name 'To Do'
+```
+
+#### Add a card to a column
+```powershell
+New-GitHubProjectCard -Column 2 -Note 'Fix this bug'
+```
+
+#### Add an existing issue as a card to a column
+```powershell
+New-GitHubProjectCard -Column 2 -ContentId 3 -ContentType Issue
+```
+
+#### Move a card to be after a certain card in the same column
+```powershell
+Move-GitHubProjectCard -Card 4 -After 5
+```
+
+#### Move a card to the bottom of another column
+```powershell
+Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
 ```
 
 ----------

@@ -44,7 +44,7 @@ try
         Context 'For adding an assignee to an issue'{
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
             $assigneeUserName = $assigneeList[0].login
-            $assignees = @($assigneeUserName)
+            $assignees = $assigneeUserName
             New-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
@@ -52,7 +52,7 @@ try
                 $issue.assignee.login | Should be $assigneeUserName
             }
 
-            Remove-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees
+            Remove-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees -Confirm:$false
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have removed the user from issue' {
@@ -61,7 +61,7 @@ try
         }
     }
 
-    Remove-GitHubRepository -Uri $repo.svn_url
+    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
 }
 finally
 {

@@ -7,7 +7,7 @@
     CompanyName = 'Microsoft Corporation'
     Copyright = 'Copyright (C) Microsoft Corporation.  All rights reserved.'
 
-    ModuleVersion = '0.11.0'
+    ModuleVersion = '0.14.0'
     Description = 'PowerShell wrapper for GitHub API'
 
     # Script module or binary module file associated with this manifest.
@@ -32,6 +32,9 @@
         'GitHubMilestones.ps1',
         'GitHubMiscellaneous.ps1',
         'GitHubOrganizations.ps1',
+        'GitHubProjects.ps1',
+        'GitHubProjectCards.ps1',
+        'GitHubProjectColumns.ps1',
         'GitHubPullRequests.ps1',
         'GitHubReferences.ps1',
         'GitHubReleases.ps1',
@@ -40,8 +43,8 @@
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
-        'NugetTools.ps1',
-        'Telemetry.ps1')
+        'Telemetry.ps1',
+        'UpdateCheck.ps1')
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '4.0'
@@ -68,6 +71,9 @@
         'Get-GitHubMilestone',
         'Get-GitHubOrganizationMember',
         'Get-GitHubPathTraffic',
+        'Get-GitHubProject',
+        'Get-GitHubProjectCard',
+        'Get-GitHubProjectColumn',
         'Get-GitHubPullRequest',
         'Get-GitHubRateLimit',
         'Get-GitHubReference',
@@ -88,15 +94,21 @@
         'Get-GitHubUserContextualInformation',
         'Get-GitHubViewTraffic',
         'Group-GitHubIssue',
+        'Group-GitHubPullRequest',
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Lock-GitHubIssue',
+        'Move-GitHubProjectCard',
+        'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
         'New-GithubAssignee',
         'New-GitHubComment',
         'New-GitHubIssue',
         'New-GitHubLabel',
         'New-GitHubMilestone',
+        'New-GitHubProject',
+        'New-GitHubProjectCard',
+        'New-GitHubProjectColumn',
         'New-GitHubPullRequest',
         'New-GithubReference',
         'New-GitHubRepository',
@@ -106,6 +118,9 @@
         'Remove-GitHubIssueLabel',
         'Remove-GitHubLabel',
         'Remove-GitHubMilestone',
+        'Remove-GitHubProject',
+        'Remove-GitHubProjectCard',
+        'Remove-GitHubProjectColumn',
         'Remove-GitHubReference',
         'Remove-GitHubRepository',
         'Rename-GitHubRepository',
@@ -117,6 +132,9 @@
         'Set-GitHubIssueLabel',
         'Set-GitHubLabel',
         'Set-GitHubMilestone',
+        'Set-GitHubProject',
+        'Set-GitHubProjectCard',
+        'Set-GitHubProjectColumn',
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
@@ -134,6 +152,9 @@
         'Delete-GitHubComment',
         'Delete-GitHubLabel',
         'Delete-GitHubMilestone',
+        'Delete-GitHubProject',
+        'Delete-GitHubProjectCard',
+        'Delete-GitHubProjectColumn'
         'Delete-GitHubReference',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
@@ -164,7 +185,7 @@
             # IconUri = ''
 
             # ReleaseNotes of this module
-            # ReleaseNotes = ''
+            ReleaseNotes = 'https://github.com/microsoft/PowerShellForGitHub/blob/master/CHANGELOG.md'
         }
     }
 
@@ -189,4 +210,3 @@
     # HelpInfo URI of this module
     # HelpInfoURI = ''
 }
-

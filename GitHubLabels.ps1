@@ -206,6 +206,7 @@ function New-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -315,11 +316,17 @@ function Remove-GitHubLabel
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel
 
         Removes the label called "TestLabel" from the PowerShellForGitHub project.
+
+    .EXAMPLE
+        Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Confirm:$false
+
+        Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubLabel')]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -354,18 +361,21 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
-        'Method' = 'Delete'
-        'Description' =  "Deleting label $Name from $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
+            'Method' = 'Delete'
+            'Description' =  "Deleting label $Name from $RepositoryName"
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 
 function Update-GitHubLabel
@@ -551,6 +561,7 @@ function Set-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -611,7 +622,7 @@ function Set-GitHubLabel
         if ($labelName -notin $labelNames)
         {
             # Remove label if it exists but is not in desired label list
-            $null = Remove-GitHubLabel -Name $labelName @commonParams
+            $null = Remove-GitHubLabel -Name $labelName @commonParams -Confirm:$false
         }
     }
 }
@@ -662,6 +673,7 @@ function Add-GitHubIssueLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -763,6 +775,7 @@ function Set-GitHubIssueLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -860,11 +873,16 @@ function Remove-GitHubIssueLabel
         Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
 
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
+
+    .EXAMPLE
+        Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1 -Confirm:$false
+
+        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubLabel')]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -910,18 +928,21 @@ function Remove-GitHubIssueLabel
         $description = "Deleting all labels from issue $Issue in $RepositoryName"
     }
 
-    $params = @{
-        'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
-        'Method' = 'Delete'
-        'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    {
+        $params = @{
+            'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
+            'Method' = 'Delete'
+            'Description' =  $description
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }
 
 # A set of labels that a project might want to initially populate their repository with

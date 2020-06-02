@@ -1,4 +1,1 @@
 Tests/Config/Settings.ps1
-Microsoft.ApplicationInsights.dll
-Microsoft.Diagnostics.Tracing.EventSource.dll
-Microsoft.Threading.Tasks.dll

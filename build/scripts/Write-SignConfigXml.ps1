@@ -154,21 +154,24 @@ function Get-HashtableFromModuleManifest
         [System.IO.FileInfo] $Path
     )
 
-    try
+    process
     {
-        $content = Get-Content -Path $Path -Encoding UTF8 -Raw
-        $scriptBlock = [scriptblock]::Create($content)
+        try
+        {
+            $content = Get-Content -Path $Path -Encoding UTF8 -Raw
+            $scriptBlock = [scriptblock]::Create($content)
 
-        [string[]] $allowedCommands = @()
-        [string[]] $allowedVariables = @()
-        $allowEnvronmentVariables = $false
-        $scriptBlock.CheckRestrictedLanguage($allowedCommands, $allowedVariables, $allowEnvronmentVariables)
+            [string[]] $allowedCommands = @()
+            [string[]] $allowedVariables = @()
+            $allowEnvronmentVariables = $false
+            $scriptBlock.CheckRestrictedLanguage($allowedCommands, $allowedVariables, $allowEnvronmentVariables)
 
-        return & $scriptBlock
-    }
-    catch
-    {
-        throw
+            Write-Output -InputObject (& $scriptBlock)
+        }
+        catch
+        {
+            throw
+        }
     }
 }
 
@@ -183,7 +186,7 @@ function Get-FilesFromModuleManifest
         The path to the .psd1 file for the module.
 
     .OUTPUTS
-        [string[]] A list of full paths of all PowerShell files referenced by ModuleManifestPath.
+        [FileInfo[]] A list of full paths of all PowerShell files referenced by ModuleManifestPath.
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "This is the preferred way of writing output for Azure DevOps.")]
@@ -195,23 +198,26 @@ function Get-FilesFromModuleManifest
         [System.IO.FileInfo] $Path
     )
 
-    Write-Host "$($scriptName): Getting list of PowerShell files referenced by [$Path]."
-
-    $manifest = Get-HashtableFromModuleManifest -Path $Path
-
-    $files = @($Path)
-    $moduleRoot = Split-Path -Path $Path -Parent
-    if (-not [String]::IsNullOrEmpty($manifest['RootModule']))
+    process
     {
-        $files += Join-Path -Path $moduleRoot -ChildPath $manifest['RootModule']
-    }
+        Write-Host "$($scriptName): Getting list of PowerShell files referenced by [$Path]."
 
-    foreach ($file in $manifest['NestedModules'])
-    {
-        $files += Join-Path -Path $moduleRoot -ChildPath $file
-    }
+        $manifest = Get-HashtableFromModuleManifest -Path $Path
 
-    return $files
+        $files = @($Path)
+        $moduleRoot = Split-Path -Path $Path -Parent
+        if (-not [String]::IsNullOrEmpty($manifest['RootModule']))
+        {
+            $files += (Get-Item -Path (Join-Path -Path $moduleRoot -ChildPath $manifest['RootModule']))
+        }
+
+        foreach ($file in $manifest['NestedModules'])
+        {
+            $files += (Get-Item -Path (Join-Path -Path $moduleRoot -ChildPath $file))
+        }
+
+        Write-Output -InputObject $files
+    }
 }
 
 # Script body

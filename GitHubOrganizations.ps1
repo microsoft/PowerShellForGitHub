@@ -32,6 +32,7 @@ function Get-GitHubOrganizationMember
         Get-GitHubOrganizationMember -OrganizationName PowerShell
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [CmdletBinding(SupportsShouldProcess)]
     param
     (
@@ -96,6 +97,7 @@ function Test-GitHubOrganizationMember
         Test-GitHubOrganizationMember -OrganizationName PowerShell -UserName Octocat
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
     param

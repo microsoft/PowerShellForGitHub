@@ -76,11 +76,6 @@ function Set-GitHubConfiguration
         Change the Application Insights instance that telemetry will be reported to (if telemetry
         hasn't been disabled via DisableTelemetry).
 
-    .PARAMETER AssemblyPath
-        The location that any dependent assemblies that this module depends on can be located.
-        If the assemblies can't be found at this location, nor in a temporary cache or in
-        the module's directory, the assemblies will be downloaded and temporarily cached.
-
     .PARAMETER DefaultNoStatus
         Control if the -NoStatus switch should be passed-in by default to all methods.
 
@@ -109,6 +104,10 @@ function Set-GitHubConfiguration
     .PARAMETER DisableTelemetry
         Specify this switch to stop the module from reporting any of its usage (which would be used
         for diagnostics purposes).
+
+    .PARAMETER DisableUpdateCheck
+        Specify this switch to stop the daily update check with PowerShellGallery which can
+        inform you when there is a newer version of this module available.
 
     .PARAMETER LogPath
         The location of the log file that all activity will be written to if DisableLogging remains
@@ -178,8 +177,6 @@ function Set-GitHubConfiguration
 
         [string] $ApplicationInsightsKey,
 
-        [string] $AssemblyPath,
-
         [switch] $DefaultNoStatus,
 
         [string] $DefaultOwnerName,
@@ -193,6 +190,8 @@ function Set-GitHubConfiguration
         [switch] $DisableSmarterObjects,
 
         [switch] $DisableTelemetry,
+
+        [switch] $DisableUpdateCheck,
 
         [string] $LogPath,
 
@@ -273,7 +272,6 @@ function Get-GitHubConfiguration
         [ValidateSet(
             'ApiHostName',
             'ApplicationInsightsKey',
-            'AssemblyPath',
             'DefaultNoStatus',
             'DefaultOwnerName',
             'DefaultRepositoryName',
@@ -281,6 +279,7 @@ function Get-GitHubConfiguration
             'DisablePiiProtection',
             'DisableSmarterObjects',
             'DisableTelemetry',
+            'DisableUpdateCheck',
             'LogPath',
             'LogProcessId',
             'LogRequestBody',
@@ -610,11 +609,11 @@ function Import-GitHubConfiguration
     $config = [PSCustomObject]@{
         'apiHostName' = 'github.com'
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
-        'assemblyPath' = [String]::Empty
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
         'disablePiiProtection' = $false
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false
+        'disableUpdateCheck' = $false
         'defaultNoStatus' = $false
         'defaultOwnerName' = [String]::Empty
         'defaultRepositoryName' = [String]::Empty
@@ -632,7 +631,7 @@ function Import-GitHubConfiguration
         # The hash is used to identify if the user has made changes to the config file prior to running the UT's locally.
         # It intentionally cannot be modified via Set-GitHubConfiguration and must be updated directly in the
         # source code here should the default Settings.ps1 file ever be changed.
-        'testConfigSettingsHash' = 'A76CA42A587D10247F887F9257DB7BF5F988E8714A7C0E29D7B100A20F5D35B8E3306AC5B9BBC8851EC19846A90BB3C80FC7C594D0347A772B2B10BADB1B3E68'
+        'testConfigSettingsHash' = '272EE14CED396100A7AFD23EA21CA262470B7F4D80E47B7ABD90508B86210775F020EEF79D322F4C22A53835F700E1DFD13D0509C1D08DD6F9771B3F0133EDAB'
     }
 
     $jsonObject = Read-GitHubConfiguration -Path $Path
@@ -836,13 +835,14 @@ function Set-GitHubAuthentication
         SecureString for use in future PowerShell sessions.
 
     .EXAMPLE
-        $secureString = ("<Your Access Token>" | ConvertTo-SecureString)
+        $secureString = ("<Your Access Token>" | ConvertTo-SecureString -AsPlainText -Force)
         $cred = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
         Set-GitHubAuthentication -Credential $cred
+        $secureString = $null # clear this out now that it's no longer needed
+        $cred = $null # clear this out now that it's no longer needed
 
-        Uses the API token stored in the password field of the provided credential object for
-        authentication, and stores it in a file on the machine as a SecureString for use in
-        future PowerShell sessions.
+        Allows you to specify your access token as a plain-text string ("<Your Access Token>")
+        which will be securely stored on the machine for use in all future PowerShell sessions.
 
     .EXAMPLE
         Set-GitHubAuthentication -SessionOnly

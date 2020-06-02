@@ -48,13 +48,11 @@ function Wait-JobWithAnimation
     $animationFrames = '|','/','-','\'
     $framesPerSecond = 9
 
-    # We'll wrap the description (if provided) in brackets for display purposes.
-    if ($Description -ne "")
-    {
-        $Description = "[$Description]"
-    }
-
+    $progressId = 1
     $iteration = 0
+    [int] $seconds = 0
+    $secondWord = 'seconds'
+
     while ($runningJobs.Count -gt 0)
     {
         # We'll run into issues if we try to modify the same collection we're iterating over
@@ -92,24 +90,48 @@ function Wait-JobWithAnimation
             $runingJobs.Clear()
         }
 
-        Write-InteractiveHost "`r$($animationFrames[$($iteration % $($animationFrames.Length))])  Elapsed: $([int]($iteration / $framesPerSecond)) second(s) $Description" -NoNewline -f Yellow
-        Start-Sleep -Milliseconds ([int](1000/$framesPerSecond))
+        $seconds = [int]($iteration / $framesPerSecond)
+        $secondWord = 'seconds'
+        if (1 -eq $seconds)
+        {
+            $secondWord = 'second'
+        }
+
+        $animationFrameNumber = $iteration % $($animationFrames.Length)
+        $progressParams = @{
+            'Activity' = $Description
+            'Status' = "$($animationFrames[$animationFrameNumber]) Elapsed: $seconds $secondWord"
+            'PercentComplete' = $(($animationFrameNumber / $animationFrames.Length) * 100)
+            'Id' = $progressId
+        }
+
+        Write-Progress @progressParams
+        Start-Sleep -Milliseconds ([int](1000 / $framesPerSecond))
         $iteration++
+    }
+
+    # Ensure that we complete the progress bar once the command is done, regardless of outcome.
+    Write-Progress -Activity $Description -Id $progressId -Completed
+
+    # We'll wrap the description (if provided) in brackets for display purposes.
+    if (-not [string]::IsNullOrWhiteSpace($Description))
+    {
+        $Description = "[$Description]"
     }
 
     if ($allJobsCompleted)
     {
-        Write-InteractiveHost "`rDONE - Operation took $([int]($iteration / $framesPerSecond)) second(s) $Description" -NoNewline -f Green
+        Write-InteractiveHost "`rDONE - Operation took $seconds $secondWord $Description" -NoNewline -f Green
 
         # We forcibly set Verbose to false here since we don't need it printed to the screen, since we just did above -- we just need to log it.
-        Write-Log -Message "DONE - Operation took $([int]($iteration / $framesPerSecond)) second(s) $Description" -Level Verbose -Verbose:$false
+        Write-Log -Message "DONE - Operation took $seconds $secondWord $Description" -Level Verbose -Verbose:$false
     }
     else
     {
-        Write-InteractiveHost "`rDONE (FAILED) - Operation took $([int]($iteration / $framesPerSecond)) second(s) $Description" -NoNewline -f Red
+        Write-InteractiveHost "`rDONE (FAILED) - Operation took $seconds $secondWord $Description" -NoNewline -f Red
 
         # We forcibly set Verbose to false here since we don't need it printed to the screen, since we just did above -- we just need to log it.
-        Write-Log -Message "DONE (FAILED) - Operation took $([int]($iteration / $framesPerSecond)) second(s) $Description" -Level Verbose -Verbose:$false
+        Write-Log -Message "DONE (FAILED) - Operation took $seconds $secondWord $Description" -Level Verbose -Verbose:$false
     }
 
     Write-InteractiveHost ""
@@ -240,6 +262,7 @@ function Write-Log
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We need to be able to access the PID for logging purposes, and it is accessed via a global variable.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidOverwritingBuiltInCmdlets", "", Justification="Write-Log is an internal function being incorrectly exported by PSDesiredStateConfiguration.  See PowerShell/PowerShell#7209")]
     param(
         [Parameter(ValueFromPipeline)]
         [AllowEmptyCollection()]
@@ -596,19 +619,27 @@ function Write-InteractiveHost
         [System.ConsoleColor] $BackgroundColor
     )
 
-    # Determine if the host is interactive
-    if ([Environment]::UserInteractive -and `
-        ![Bool]([Environment]::GetCommandLineArgs() -like '-noni*') -and `
-        (Get-Host).Name -ne 'Default Host')
+    begin
     {
-        # Special handling for OutBuffer (generated for the proxy function)
-        $outBuffer = $null
-        if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer))
-        {
-            $PSBoundParameters['OutBuffer'] = 1
-        }
+        $hostIsInteractive = ([Environment]::UserInteractive -and
+            ![Bool]([Environment]::GetCommandLineArgs() -like '-noni*') -and
+            ((Get-Host).Name -ne 'Default Host'))
+    }
 
-        Write-Host @PSBoundParameters
+    process
+    {
+        # Determine if the host is interactive
+        if ($hostIsInteractive)
+        {
+            # Special handling for OutBuffer (generated for the proxy function)
+            $outBuffer = $null
+            if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer))
+            {
+                $PSBoundParameters['OutBuffer'] = 1
+            }
+
+            Write-Host @PSBoundParameters
+        }
     }
 }
 
@@ -657,15 +688,18 @@ function Resolve-UnverifiedPath
         [string] $Path
     )
 
-    $resolvedPath = Resolve-Path -Path $Path -ErrorVariable resolvePathError -ErrorAction SilentlyContinue
+    process
+    {
+        $resolvedPath = Resolve-Path -Path $Path -ErrorVariable resolvePathError -ErrorAction SilentlyContinue
 
-    if ($null -eq $resolvedPath)
-    {
-        return $resolvePathError[0].TargetObject
-    }
-    else
-    {
-        return $resolvedPath.ProviderPath
+        if ($null -eq $resolvedPath)
+        {
+            Write-Output -InputObject ($resolvePathError[0].TargetObject)
+        }
+        else
+        {
+            Write-Output -InputObject ($resolvedPath.ProviderPath)
+        }
     }
 }
 

@@ -322,16 +322,21 @@ function Get-GitHubIssue
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethodMultipleResult @params
+    try
+    {
+        $result = Invoke-GHRestMethodMultipleResult @params
 
-    if ($IgnorePullRequests)
-    {
-        return ($result | Where-Object { $null -eq (Get-Member -InputObject $_ -Name pull_request) })
+        if ($IgnorePullRequests)
+        {
+            return ($result | Where-Object { $null -eq (Get-Member -InputObject $_ -Name pull_request) })
+        }
+        else
+        {
+            return $result
+        }
+
     }
-    else
-    {
-        return $result
-    }
+    finally {}
 }
 
 function Get-GitHubIssueTimeline
@@ -378,6 +383,7 @@ function Get-GitHubIssueTimeline
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -861,6 +867,7 @@ function Unlock-GitHubIssue
     SupportsShouldProcess,
     DefaultParameterSetName='Elements')]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
 param(
     [Parameter(ParameterSetName='Elements')]
     [string] $OwnerName,
