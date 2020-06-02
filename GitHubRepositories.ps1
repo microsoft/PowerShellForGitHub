@@ -1036,7 +1036,7 @@ function Set-GitHubRepositoryTopic
     if ($Clear)
     {
         $description = "Clearing topics in $RepositoryName"
-        $Name=@()
+        $Name = @()
     }
     else
     {
