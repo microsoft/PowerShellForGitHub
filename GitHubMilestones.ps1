@@ -500,12 +500,17 @@ function Remove-GitHubMilestone
         Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 
         Deletes a Github milestone from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Confirm:$false
+
+        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact="High")]
     [Alias('Delete-GitHubMilestone')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -538,15 +543,18 @@ function Remove-GitHubMilestone
         'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
-        'Method' = 'Delete'
-        'Description' =  "Removing milestone $Milestone for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Milestone, "Remove milestone"))
+    {
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
+            'Method' = 'Delete'
+            'Description' =  "Removing milestone $Milestone for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
 
-    return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params
+    }
 }

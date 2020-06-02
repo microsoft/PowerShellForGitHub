@@ -76,7 +76,7 @@ try
             }
 
             foreach($comment in $existingComments) {
-                Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id
+                Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id -Confirm:$false
             }
 
             $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
@@ -86,7 +86,7 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally

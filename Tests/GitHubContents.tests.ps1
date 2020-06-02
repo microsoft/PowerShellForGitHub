@@ -162,7 +162,7 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally

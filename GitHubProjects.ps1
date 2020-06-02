@@ -466,6 +466,11 @@ function Remove-GitHubProject
         Remove project with ID '4387531'.
 
     .EXAMPLE
+        Remove-GitHubProject -Project 4387531 -Confirm:$false
+
+        Remove project with ID '4387531' without prompting for confirmation.
+
+    .EXAMPLE
         $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Remove-GitHubProject -Project $project.id
 
@@ -476,7 +481,6 @@ function Remove-GitHubProject
         SupportsShouldProcess,
         ConfirmImpact = 'High')]
     [Alias('Delete-GitHubProject')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory)]

@@ -193,129 +193,122 @@ function Invoke-GHRestMethod
         $headers.Add("Content-Type", "application/json; charset=UTF-8")
     }
 
+    if (-not $PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
+    {
+        return
+    }
+
     try
     {
         Write-Log -Message $Description -Level Verbose
         Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
 
+        $result = $null
         $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
         if ($NoStatus)
         {
-            if ($PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
+            $params = @{}
+            $params.Add("Uri", $url)
+            $params.Add("Method", $Method)
+            $params.Add("Headers", $headers)
+            $params.Add("UseDefaultCredentials", $true)
+            $params.Add("UseBasicParsing", $true)
+            $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+
+            if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
             {
-                $params = @{}
-                $params.Add("Uri", $url)
-                $params.Add("Method", $Method)
-                $params.Add("Headers", $headers)
-                $params.Add("UseDefaultCredentials", $true)
-                $params.Add("UseBasicParsing", $true)
-                $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
-
-                if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
+                $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
+                $params.Add("Body", $bodyAsBytes)
+                Write-Log -Message "Request includes a body." -Level Verbose
+                if (Get-GitHubConfiguration -Name LogRequestBody)
                 {
-                    $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
-                    $params.Add("Body", $bodyAsBytes)
-                    Write-Log -Message "Request includes a body." -Level Verbose
-                    if (Get-GitHubConfiguration -Name LogRequestBody)
-                    {
-                        Write-Log -Message $Body -Level Verbose
-                    }
+                    Write-Log -Message $Body -Level Verbose
                 }
+            }
 
-                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-                $result = Invoke-WebRequest @params
-                if ($Method -eq 'Delete')
-                {
-                    Write-Log -Message "Successfully removed." -Level Verbose
-                }
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+            $result = Invoke-WebRequest @params
+            if ($Method -eq 'Delete')
+            {
+                Write-Log -Message "Successfully removed." -Level Verbose
             }
         }
         else
         {
             $jobName = "Invoke-GHRestMethod-" + (Get-Date).ToFileTime().ToString()
 
-            if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
-            {
-                [scriptblock]$scriptBlock = {
-                    param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $LogRequestBody, $ScriptRootPath)
+            [scriptblock]$scriptBlock = {
+                param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $LogRequestBody, $ScriptRootPath)
 
-                    # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
-                    # the context of this script block since we're running in a different
-                    # PowerShell process and need access to Get-HttpWebResponseContent and
-                    # config values referenced within Write-Log.
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
+                # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
+                # the context of this script block since we're running in a different
+                # PowerShell process and need access to Get-HttpWebResponseContent and
+                # config values referenced within Write-Log.
+                . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
+                . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
 
-                    $params = @{}
-                    $params.Add("Uri", $Url)
-                    $params.Add("Method", $Method)
-                    $params.Add("Headers", $Headers)
-                    $params.Add("UseDefaultCredentials", $true)
-                    $params.Add("UseBasicParsing", $true)
-                    $params.Add("TimeoutSec", $TimeoutSec)
+                $params = @{}
+                $params.Add("Uri", $Url)
+                $params.Add("Method", $Method)
+                $params.Add("Headers", $Headers)
+                $params.Add("UseDefaultCredentials", $true)
+                $params.Add("UseBasicParsing", $true)
+                $params.Add("TimeoutSec", $TimeoutSec)
 
-                    if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
+                if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
+                {
+                    $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
+                    $params.Add("Body", $bodyAsBytes)
+                    Write-Log -Message "Request includes a body." -Level Verbose
+                    if ($LogRequestBody)
                     {
-                        $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
-                        $params.Add("Body", $bodyAsBytes)
-                        Write-Log -Message "Request includes a body." -Level Verbose
-                        if ($LogRequestBody)
-                        {
-                            Write-Log -Message $Body -Level Verbose
-                        }
+                        Write-Log -Message $Body -Level Verbose
                     }
+                }
 
+                try
+                {
+                    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+                    Invoke-WebRequest @params
+                }
+                catch [System.Net.WebException]
+                {
+                    # We need to access certain headers in the exception handling,
+                    # but the actual *values* of the headers of a WebException don't get serialized
+                    # when the RemoteException wraps it.  To work around that, we'll extract the
+                    # information that we actually care about *now*, and then we'll throw our own exception
+                    # that is just a JSON object with the data that we'll later extract for processing in
+                    # the main catch.
+                    $ex = @{}
+                    $ex.Message = $_.Exception.Message
+                    $ex.StatusCode = $_.Exception.Response.StatusCode
+                    $ex.StatusDescription = $_.Exception.Response.StatusDescription
+                    $ex.InnerMessage = $_.ErrorDetails.Message
                     try
                     {
-                        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-                        Invoke-WebRequest @params
+                        $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
                     }
-                    catch [System.Net.WebException]
+                    catch
                     {
-                        # We need to access certain headers in the exception handling,
-                        # but the actual *values* of the headers of a WebException don't get serialized
-                        # when the RemoteException wraps it.  To work around that, we'll extract the
-                        # information that we actually care about *now*, and then we'll throw our own exception
-                        # that is just a JSON object with the data that we'll later extract for processing in
-                        # the main catch.
-                        $ex = @{}
-                        $ex.Message = $_.Exception.Message
-                        $ex.StatusCode = $_.Exception.Response.StatusCode
-                        $ex.StatusDescription = $_.Exception.Response.StatusDescription
-                        $ex.InnerMessage = $_.ErrorDetails.Message
-                        try
-                        {
-                            $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
-                        }
-                        catch
-                        {
-                            Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
-                        }
-
-                        throw (ConvertTo-Json -InputObject $ex -Depth 20)
+                        Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
                     }
-                }
 
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
-                    $url,
-                    $Method,
-                    $headers,
-                    $Body,
-                    $ValidBodyContainingRequestMethods,
-                    (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
-                    (Get-GitHubConfiguration -Name LogRequestBody),
-                    $PSScriptRoot)
-
-                if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
-                {
-                    Wait-JobWithAnimation -Name $jobName -Description $Description
-                }
-
-                if ($PSCmdlet.ShouldProcess($jobName, "Receive-Job"))
-                {
-                    $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
+                    throw (ConvertTo-Json -InputObject $ex -Depth 20)
                 }
             }
+
+            $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
+                $url,
+                $Method,
+                $headers,
+                $Body,
+                $ValidBodyContainingRequestMethods,
+                (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
+                (Get-GitHubConfiguration -Name LogRequestBody),
+                $PSScriptRoot)
+
+            Wait-JobWithAnimation -Name $jobName -Description $Description
+            $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
 
             if ($remoteErrors.Count -gt 0)
             {
