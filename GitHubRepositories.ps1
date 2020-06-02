@@ -155,7 +155,7 @@ function New-GitHubRepository
     {
         Write-Log -Level Warning -Message ('The Private switch is being replaced by the Visibility parameter.  ' +
             'Please update any scripts/usage that you may have to migrate to the Visibility parameter, ' +
-            'as the Private switch will be replaced in a future update.')
+            'as the Private switch will be deprecated in a future update.')
 
         if ($PSBoundParameters.ContainsKey('Visibility'))
         {
@@ -816,8 +816,12 @@ function Update-GitHubRepository
     .EXAMPLE
         Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
+        Changes the description of the specified repository.
+
     .EXAMPLE
-        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
+        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Visibility 'Private'
+
+        Changes the visibility of the specified repository to 'Private'.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -884,7 +888,7 @@ function Update-GitHubRepository
     {
         Write-Log -Level Warning -Message ('The Private switch is being replaced by the Visibility parameter.  ' +
             'Please update any scripts/usage that you may have to migrate to the Visibility parameter, ' +
-            'as the Private switch will be replaced in a future update.')
+            'as the Private switch will be deprecated in a future update.')
 
         if ($PSBoundParameters.ContainsKey('Visibility'))
         {
