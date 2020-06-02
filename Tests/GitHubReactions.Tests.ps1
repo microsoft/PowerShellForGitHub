@@ -59,7 +59,7 @@ try
                 $existingReactions.Count | Should be 2
             }
 
-            $existingReactions | Remove-GitHubReaction
+            $existingReactions | Remove-GitHubReaction -Confirm:$false
 
             $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
 

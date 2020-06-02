@@ -176,6 +176,9 @@ function Set-GitHubReaction
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER PassThru
+        If specified, this will emit the result of the operation to the pipeline.
+
     .EXAMPLE
         Set-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket
 
@@ -207,9 +210,8 @@ function Set-GitHubReaction
         [Alias("number")]
         [int64] $Issue,
 
-        [ValidateSet('+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes')]
-        [Parameter(Mandatory, ParameterSetName='Elements')]
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [ValidateSet('+1', '-1', 'Laugh', 'Confused', 'Heart', 'Hooray', 'Rocket', 'Eyes')]
+        [Parameter(Mandatory)]
         [string] $ReactionType,
 
         [switch] $PassThru,
@@ -237,7 +239,7 @@ function Set-GitHubReaction
         'UriFragment' = $uriFragment
         'Description' =  $description
         'Method' = 'Post'
-        'Body' = @{ content = $ReactionType } | ConvertTo-Json
+        'Body' = @{ content = $ReactionType.ToLower() } | ConvertTo-Json
         'AcceptHeader' = $script:squirrelAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -295,10 +297,15 @@ function Remove-GitHubReaction
     .EXAMPLE
         Remove-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionId 1234
 
-        Remove a reaction by Id on Issue 12626 from the PowerShell\PowerShell project.
+        Remove a reaction by Id on Issue 12626 from the PowerShell\PowerShell project interactively.
 
     .EXAMPLE
-        Get-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket | Remove-GitHubReaction
+        Remove-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionId 1234 -Confirm:$false
+
+        Remove a reaction by Id on Issue 12626 from the PowerShell\PowerShell project non-interactively.
+
+    .EXAMPLE
+        Get-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket | Remove-GitHubReaction -Confirm:$false
 
         Gets a reaction using Get-GitHubReaction and pipes it into Remove-GitHubReaction.
 
@@ -307,8 +314,8 @@ function Remove-GitHubReaction
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact='High')]
     [Alias('Delete-GitHubReaction')]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements', ValueFromPipelineByPropertyName)]
@@ -320,16 +327,12 @@ function Remove-GitHubReaction
         [Parameter(Mandatory, ParameterSetName='Uri')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='Elements', ValueFromPipelineByPropertyName)]
-        [Parameter(Mandatory, ParameterSetName='Uri', ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [int64] $Issue,
 
-        [Parameter(Mandatory, ParameterSetName='Elements', ValueFromPipelineByPropertyName, ValueFromPipeline)]
-        [Parameter(Mandatory, ParameterSetName='Uri', ValueFromPipelineByPropertyName, ValueFromPipeline)]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ValueFromPipeline)]
         [Alias('Id')]
         [int64] $ReactionId,
-
-        [switch] $PassThru,
 
         [string] $AccessToken,
 
@@ -351,17 +354,20 @@ function Remove-GitHubReaction
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/reactions/$ReactionId"
         $description = "Removing reaction $ReactionId for Issue $Issue in $RepositoryName"
 
-        $params = @{
-            'UriFragment' = $uriFragment
-            'Description' =  $description
-            'Method' = 'Delete'
-            'AcceptHeader' = $script:squirrelAcceptHeader
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
+        if ($PSCmdlet.ShouldProcess($ReactionId, "Removing reaction for Issue $Issue in $RepositoryName"))
+        {
+            $params = @{
+                'UriFragment' = $uriFragment
+                'Description' =  $description
+                'Method' = 'Delete'
+                'AcceptHeader' = $script:squirrelAcceptHeader
+                'AccessToken' = $AccessToken
+                'TelemetryEventName' = $MyInvocation.MyCommand.Name
+                'TelemetryProperties' = $telemetryProperties
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            }
 
-        return Invoke-GHRestMethod @params
+            return Invoke-GHRestMethod @params
+        }
     }
 }
