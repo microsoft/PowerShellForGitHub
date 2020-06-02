@@ -5,7 +5,7 @@ function Get-GitHubReaction
 {
 <#
     .SYNOPSIS
-        Retrieve reations of a given GitHub issue.
+        Retrieve reactions of a given GitHub issue.
 
     .DESCRIPTION
         Retrieve reactions of a given GitHub issue.
@@ -29,7 +29,7 @@ function Get-GitHubReaction
         The issue number.
 
     .PARAMETER ReactionType
-        The type of reaction you want to retrieve. This is aslo called the 'content' in the GitHub API.
+        The type of reaction you want to retrieve. This is also called the 'content' in the GitHub API.
         Valid options are based off: https://developer.github.com/v3/reactions/#reaction-types
 
     .PARAMETER AccessToken
@@ -83,7 +83,7 @@ function Get-GitHubReaction
         [Alias("number")]
         [int64] $Issue,
 
-        [ValidateSet('+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes')]
+        [ValidateSet('+1', '-1', 'Laugh', 'Confused', 'Heart', 'Hooray', 'Rocket', 'Eyes')]
         [string] $ReactionType,
 
         [string] $AccessToken,
@@ -103,8 +103,9 @@ function Get-GitHubReaction
     }
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/reactions"
-    if ($PSBoundParameters.ContainsKey('ReactionType')) {
-        $uriFragment += "?content=" + [Uri]::EscapeDataString($ReactionType)
+    if ($PSBoundParameters.ContainsKey('ReactionType'))
+    {
+        $uriFragment += "?content=" + [Uri]::EscapeDataString($ReactionType.ToLower())
     }
 
     $description = "Getting reactions for Issue $Issue in $RepositoryName"
@@ -112,7 +113,7 @@ function Get-GitHubReaction
     $params = @{
         'UriFragment' = $uriFragment
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.squirrel-girl-preview+json'
+        'AcceptHeader' = $script:squirrelAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -122,7 +123,8 @@ function Get-GitHubReaction
     $result = Invoke-GHRestMethodMultipleResult @params
 
     # Add metadata to reactions so that they compose with Remove-GitHubReaction
-    if ($result) {
+    if ($result)
+    {
         $result | Add-Member -NotePropertyMembers @{
             OwnerName = $OwnerName
             RepositoryName = $RepositoryName
@@ -137,7 +139,7 @@ function Set-GitHubReaction
 {
 <#
     .SYNOPSIS
-        Sets a reation of a given GitHub issue.
+        Sets a reaction of a given GitHub issue.
 
     .DESCRIPTION
         Sets a reaction of a given GitHub issue.
@@ -236,7 +238,7 @@ function Set-GitHubReaction
         'Description' =  $description
         'Method' = 'Post'
         'Body' = @{ content = $ReactionType } | ConvertTo-Json
-        'AcceptHeader' = 'application/vnd.github.squirrel-girl-preview+json'
+        'AcceptHeader' = $script:squirrelAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -244,7 +246,8 @@ function Set-GitHubReaction
     }
 
     $result = Invoke-GHRestMethod @params
-    if ($PSBoundParameters.ContainsKey('PassThru')) {
+    if ($PSBoundParameters.ContainsKey('PassThru'))
+    {
         return $result
     }
 }
@@ -253,10 +256,10 @@ function Remove-GitHubReaction
 {
 <#
     .SYNOPSIS
-        Removes a reation on a given GitHub issue.
+        Removes a reaction on a given GitHub issue.
 
     .DESCRIPTION
-        Removes a reation on a given GitHub issue.
+        Removes a reaction on a given GitHub issue.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -306,6 +309,7 @@ function Remove-GitHubReaction
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Alias('Delete-GitHubReaction')]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements', ValueFromPipelineByPropertyName)]
         [string] $OwnerName,
@@ -351,7 +355,7 @@ function Remove-GitHubReaction
             'UriFragment' = $uriFragment
             'Description' =  $description
             'Method' = 'Delete'
-            'AcceptHeader' = 'application/vnd.github.squirrel-girl-preview+json'
+            'AcceptHeader' = $script:squirrelAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
