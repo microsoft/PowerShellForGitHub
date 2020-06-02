@@ -76,11 +76,6 @@ function Set-GitHubConfiguration
         Change the Application Insights instance that telemetry will be reported to (if telemetry
         hasn't been disabled via DisableTelemetry).
 
-    .PARAMETER AssemblyPath
-        The location that any dependent assemblies that this module depends on can be located.
-        If the assemblies can't be found at this location, nor in a temporary cache or in
-        the module's directory, the assemblies will be downloaded and temporarily cached.
-
     .PARAMETER DefaultNoStatus
         Control if the -NoStatus switch should be passed-in by default to all methods.
 
@@ -182,8 +177,6 @@ function Set-GitHubConfiguration
 
         [string] $ApplicationInsightsKey,
 
-        [string] $AssemblyPath,
-
         [switch] $DefaultNoStatus,
 
         [string] $DefaultOwnerName,
@@ -279,7 +272,6 @@ function Get-GitHubConfiguration
         [ValidateSet(
             'ApiHostName',
             'ApplicationInsightsKey',
-            'AssemblyPath',
             'DefaultNoStatus',
             'DefaultOwnerName',
             'DefaultRepositoryName',
@@ -617,7 +609,6 @@ function Import-GitHubConfiguration
     $config = [PSCustomObject]@{
         'apiHostName' = 'github.com'
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
-        'assemblyPath' = [String]::Empty
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
         'disablePiiProtection' = $false
         'disableSmarterObjects' = $false
