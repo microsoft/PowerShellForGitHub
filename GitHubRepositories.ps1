@@ -819,9 +819,9 @@ function Update-GitHubRepository
         Changes the description of the specified repository.
 
     .EXAMPLE
-        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Visibility 'Private'
+        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Visibility 'Public'
 
-        Changes the visibility of the specified repository to 'Private'.
+        Changes the visibility of the specified repository to be public.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
