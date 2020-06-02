@@ -15,7 +15,7 @@
                 <PropertyName>full_name</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>private</PropertyName>
+                <PropertyName>visibility</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>description</PropertyName>
