@@ -98,8 +98,7 @@ function Invoke-GHRestMethod
 
     .NOTES
         This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access to the headers
-        that are returned in the response (specifically 'MS-ClientRequestId') for logging purposes, and
-        Invoke-RestMethod drops those headers.
+        that are returned in the response, and Invoke-RestMethod drops those headers.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -144,10 +143,7 @@ function Invoke-GHRestMethod
 
     # Telemetry-related
     $stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
-    $localTelemetryProperties = @{
-        'UriFragment' = $UriFragment
-        'WaitForCompletion' = ($WaitForCompletion -eq $true)
-    }
+    $localTelemetryProperties = @{}
     $TelemetryProperties.Keys | ForEach-Object { $localTelemetryProperties[$_] = $TelemetryProperties[$_] }
     $errorBucket = $TelemetryExceptionBucket
     if ([String]::IsNullOrEmpty($errorBucket))
@@ -198,13 +194,14 @@ function Invoke-GHRestMethod
         return
     }
 
+    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
+
     try
     {
         Write-Log -Message $Description -Level Verbose
         Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
 
         $result = $null
-        $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
         if ($NoStatus)
         {
             $params = @{}
@@ -293,7 +290,8 @@ function Invoke-GHRestMethod
                         Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
                     }
 
-                    throw (ConvertTo-Json -InputObject $ex -Depth 20)
+                    $jsonConversionDepth = 20 # Seems like it should be more than sufficient
+                    throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
                 }
             }
 
@@ -326,7 +324,7 @@ function Invoke-GHRestMethod
         if (-not [String]::IsNullOrEmpty($TelemetryEventName))
         {
             $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
-            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
+            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics -NoStatus:$NoStatus
         }
 
         $finalResult = $result.Content
@@ -454,14 +452,14 @@ function Invoke-GHRestMethod
             {
                 # Will be thrown if $ex.Message isn't JSON content
                 Write-Log -Exception $_ -Level Error
-                Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+                Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
                 throw
             }
         }
         else
         {
             Write-Log -Exception $_ -Level Error
-            Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+            Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
             throw
         }
 
@@ -524,7 +522,7 @@ function Invoke-GHRestMethod
 
         $newLineOutput = ($output -join [Environment]::NewLine)
         Write-Log -Message $newLineOutput -Level Error
-        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
         throw $newLineOutput
     }
 }
