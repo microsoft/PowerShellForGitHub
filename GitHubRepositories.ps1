@@ -925,6 +925,7 @@ function Update-GitHubRepository
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
+        'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader"
         'Description' =  "Updating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
