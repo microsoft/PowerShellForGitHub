@@ -176,9 +176,6 @@ function Set-GitHubReaction
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .PARAMETER PassThru
-        If specified, this will emit the result of the operation to the pipeline.
-
     .EXAMPLE
         Set-GitHubReaction -OwnerName PowerShell -RepositoryName PowerShell -Issue 12626 -ReactionType rocket
 
@@ -214,8 +211,6 @@ function Set-GitHubReaction
         [Parameter(Mandatory)]
         [string] $ReactionType,
 
-        [switch] $PassThru,
-
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -247,11 +242,7 @@ function Set-GitHubReaction
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-    if ($PSBoundParameters.ContainsKey('PassThru'))
-    {
-        return $result
-    }
+    return Invoke-GHRestMethod @params
 }
 
 function Remove-GitHubReaction
