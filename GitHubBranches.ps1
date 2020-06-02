@@ -210,8 +210,10 @@ function New-GitHubRepositoryBranch
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('New-GitHubBranch')]
     param(
         [Parameter(ParameterSetName = 'Elements')]
@@ -334,10 +336,15 @@ function Remove-GitHubRepositoryBranch
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+        DefaultParameterSetName = 'Elements',
+        ConfirmImpact="High")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Remove-GitHubBranch')]
+    [Alias('Delete-GitHubRepositoryBranch')]
+    [Alias('Delete-GitHubBranch')]
     param(
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
