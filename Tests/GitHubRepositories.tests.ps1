@@ -127,6 +127,10 @@ try
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repoName = $repoName
+                $repo = $repo
             }
 
             It 'Should get repository' {
@@ -152,10 +156,13 @@ try
         Context -Name 'For deleting a repository' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
             }
 
             It 'Should get no content' {
-                $delete = Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
+                Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
         }
@@ -168,6 +175,9 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $newRepoName = $newRepoName
             }
 
             It "Should have the expected new repository name - by URI" {
@@ -191,6 +201,9 @@ try
         Context -Name 'For creating a repository' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
             }
 
             It 'Should have the new updated description' {
@@ -215,6 +228,9 @@ try
         Context -Name 'For creating and getting a repository topic' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
             }
 
             It 'Should have the expected topic' {
@@ -240,6 +256,9 @@ try
         Context -Name 'For getting repository languages' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
             }
 
             It 'Should be empty' {
@@ -263,6 +282,9 @@ try
         Context -Name 'For getting repository tags' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
             }
 
             It 'Should be empty' {
