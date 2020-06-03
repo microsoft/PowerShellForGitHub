@@ -142,7 +142,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url-Confirm:$false
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
