@@ -247,7 +247,7 @@ try
                 $languages | Should -BeNullOrEmpty
             }
 
-            It 'Should be contain PowerShell' {
+            It 'Should contain PowerShell' {
                 $languages = Get-GitHubRepositoryLanguage -OwnerName "microsoft" -RepositoryName "PowerShellForGitHub"
                 $languages.PowerShell | Should -Not -BeNullOrEmpty
             }
