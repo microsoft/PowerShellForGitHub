@@ -40,15 +40,8 @@ function New-GitHubRepository
         This is only valid when creating a repository in an organization.
 
     .PARAMETER Private
-        By default, this repository will be created Public.  Specify this to create a private
-        repository. This parameter controls the same setting as the 'Visibility' parameter and only
-        one should be specified. This parameter will be deprecated in a future release.
-
-    .PARAMETER Visibility
-        Specifies the visibility level of the repository. This controls the same setting as
-        the 'Private' parameter and only one should be specified. Internal is only available if
-        your organization is associated with an enterprise account using GitHub Enterprise Cloud
-        or GitHub Enterprise Server 2.20+
+        By default, this repository will be created Public.  Specify this to create
+        a private repository.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -119,9 +112,6 @@ function New-GitHubRepository
 
         [switch] $Private,
 
-        [ValidateSet('Public', 'Private', 'Internal')]
-        [string] $Visibility,
-
         [switch] $NoIssues,
 
         [switch] $NoProjects,
@@ -151,24 +141,6 @@ function New-GitHubRepository
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSBoundParameters.ContainsKey('Private'))
-    {
-        Write-Log -Level Warning -Message ('The Private switch is being replaced by the Visibility parameter.  ' +
-            'Please update any scripts/usage that you may have to migrate to the Visibility parameter, ' +
-            'as the Private switch will be deprecated in a future update.')
-
-        if ($PSBoundParameters.ContainsKey('Visibility'))
-        {
-            if (($Private -and ($Visibility -ne 'Private')) -or ((-not $Private) -and ($Visibility -ne 'Public')))
-            {
-                $message = ('The Private and Visibility parameters control the same repo property.  ' +
-                    'If both are specified, their values must be the same.')
-                Write-Log -Message $message -Level Error
-                throw $message
-            }
-        }
-    }
-
     $uriFragment = 'user/repos'
     if ($PSBoundParameters.ContainsKey('OrganizationName') -and
         (-not [String]::IsNullOrEmpty($OrganizationName)))
@@ -194,7 +166,6 @@ function New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('LicenseTemplate')) { $hashBody['license_template'] = $LicenseTemplate }
     if ($PSBoundParameters.ContainsKey('TeamId')) { $hashBody['team_id'] = $TeamId }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
-    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility.ToLower() }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -209,7 +180,7 @@ function New-GitHubRepository
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader"
+        'AcceptHeader' = $script:baptisteAcceptHeader
         'Description' = "Creating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -759,16 +730,8 @@ function Update-GitHubRepository
         Update the default branch for this repository.
 
     .PARAMETER Private
-        Specify this to make the repository private. To change a repository to be public,
-        specify -Private:$false.  This parameter controls the same setting as the 'Visibility'
-        parameter and only one should be specified. This parameter will be deprecated in a future
-        release.
-
-    .PARAMETER Visibility
-        Specifies the visibility level of the repository. This controls the same setting as
-        the 'Private' parameter and only one should be specified. Internal is only available if
-        your organization is associated with an enterprise account using GitHub Enterprise Cloud
-        or GitHub Enterprise Server 2.20+
+        Specify this to make the repository private.
+        To change a repository to be public, specify -Private:$false
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -819,7 +782,7 @@ function Update-GitHubRepository
         Changes the description of the specified repository.
 
     .EXAMPLE
-        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Visibility 'Public'
+        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
 
         Changes the visibility of the specified repository to be public.
 #>
@@ -846,9 +809,6 @@ function Update-GitHubRepository
         [string] $DefaultBranch,
 
         [switch] $Private,
-
-        [ValidateSet('Public', 'Private', 'Internal')]
-        [string] $Visibility,
 
         [switch] $NoIssues,
 
@@ -884,24 +844,6 @@ function Update-GitHubRepository
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSBoundParameters.ContainsKey('Private'))
-    {
-        Write-Log -Level Warning -Message ('The Private switch is being replaced by the Visibility parameter.  ' +
-            'Please update any scripts/usage that you may have to migrate to the Visibility parameter, ' +
-            'as the Private switch will be deprecated in a future update.')
-
-        if ($PSBoundParameters.ContainsKey('Visibility'))
-        {
-            if (($Private -and ($Visibility -ne 'Private')) -or ((-not $Private) -and ($Visibility -ne 'Public')))
-            {
-                $message = ('The Private and Visibility parameters control the same repo property.  ' +
-                    'If both are specified, their values must be the same.')
-                Write-Log -Message $message -Level Error
-                throw $message
-            }
-        }
-    }
-
     $hashBody = @{
         'name' = $RepositoryName
     }
@@ -910,7 +852,6 @@ function Update-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Homepage')) { $hashBody['homepage'] = $Homepage }
     if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $hashBody['default_branch'] = $DefaultBranch }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
-    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility.ToLower() }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -925,7 +866,7 @@ function Update-GitHubRepository
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader"
+        'AcceptHeader' = $script:baptisteAcceptHeader
         'Description' =  "Updating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name

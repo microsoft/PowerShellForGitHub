@@ -18,7 +18,7 @@ try
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {
                 $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-                $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Visibility Private
+                $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
 
                 # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
                 $publicRepo = $publicRepo
