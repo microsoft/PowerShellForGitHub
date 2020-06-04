@@ -553,6 +553,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Jess Pomfret (@jpomfret)](https://github.com/jpomfret)**
 - **[Giuseppe Campanelli (@themilanfan)](https://github.com/themilanfan)**
 - **[Christoph Bergmeister (@bergmeister)](https://github.com/bergmeister)**
+- **[Simon Heather (@X-Guardian)](https://github.com/X-Guardian)**
 
 ----------
 
