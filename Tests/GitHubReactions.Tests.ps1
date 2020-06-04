@@ -46,13 +46,12 @@ try
             }
 
             It 'Should have the expected reaction content' {
-
                 $specificReactions.content | Should be $otherReactionType
                 $specificReactions.RepositoryName | Should be $repo.name
             }
         }
 
-        Context 'For getting reactions from a repository and deleting them' {
+        Context 'For getting reactions from an Issue and deleting them' {
             $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have the expected number of reactions' {
