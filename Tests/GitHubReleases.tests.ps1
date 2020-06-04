@@ -45,6 +45,7 @@ try
                 $latest[0].url | Should -Be $releases[0].url
                 $latest[0].name | Should -Be $releases[0].name
             }
+        }
 
             It 'Should have expected type and additional properties' {
                 $latest[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
@@ -60,6 +61,7 @@ try
             It 'Should return one value' {
                 $latest.Count | Should -Be 1
             }
+        }
 
             It 'Should return the first release from the full releases list' {
                 $latest[0].url | Should -Be $releases[0].url
@@ -77,6 +79,7 @@ try
                 $latest[0].ReleaseId | Should -Be $latestAgain[0].ReleaseId
             }
         }
+    }
 
         Context 'When getting a specific release' {
             $specificIndex = 5
@@ -135,6 +138,66 @@ try
             Set-GitHubConfiguration -DefaultOwnerName $originalOwnerName
             Set-GitHubConfiguration -DefaultRepositoryName $originalRepositoryName
         }
+        finally
+        {
+            Set-GitHubConfiguration -DefaultOwnerName $originalOwnerName
+            Set-GitHubConfiguration -DefaultRepositoryName $originalRepositoryName
+        }
+    }
+
+    Describe 'Creating, changing and deleting releases' {
+        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
+
+        Context 'When creating a simple new release' {
+            $release = New-GitHubRelease -Uri $repo.svn_url -TagName $script:defaultTagName
+            $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+
+            It 'Should be queryable' {
+                $queried.id | Should -Be $release.id
+                $queried.tag_name | Should -Be $script:defaultTagName
+            }
+
+            It 'Should have the expected default property values' {
+                $queried.name | Should -BeNullOrEmpty
+                $queried.body | Should -BeNullOrEmpty
+                $queried.draft | Should -BeFalse
+                $queried.prerelease | Should -BeFalse
+            }
+
+            It 'Should be modifiable' {
+                Set-GitHubRelease -Uri $repo.svn_url -Release $release.id -Name $script:defaultReleaseName -Body $script:defaultReleaseBody -Draft -PreRelease
+                $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+                $queried.name | Should -Be $script:defaultReleaseName
+                $queried.body | Should -Be $script:defaultReleaseBody
+                $queried.draft | Should -BeTrue
+                $queried.prerelease | Should -BeTrue
+            }
+
+            It 'Should be removable' {
+                Remove-GitHubRelease -Uri $repo.svn_url -Release $release.id -Confirm:$false
+                { Get-GitHubRelease -Uri $repo.svn_url -Release $release.id } | Should -Throw
+            }
+
+            It 'Should be creatable with non-default property values' {
+                $release = New-GitHubRelease -Uri $repo.svn_url -TagName $script:defaultTagName -Name $script:defaultReleaseName -Body $script:defaultReleaseBody -Draft -PreRelease
+                $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+                $queried.id | Should -Be $release.id
+                $queried.tag_name | Should -Be $script:defaultTagName
+                $queried.name | Should -Be $script:defaultReleaseName
+                $queried.body | Should -Be $script:defaultReleaseBody
+                $queried.draft | Should -BeTrue
+                $queried.prerelease | Should -BeTrue
+                Remove-GitHubRelease -Uri $repo.svn_url -Release $release.id -Confirm:$false
+            }
+        }
+
+        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+    }
+
+    Describe 'Creating, changing and deleting release assets' {
+
+            # TODO
+
     }
 }
 finally

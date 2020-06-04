@@ -112,6 +112,7 @@ filter Get-GitHubRelease
     [OutputType({$script:GitHubReleaseTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
+<<<<<<< HEAD
         [Parameter(ParameterSetName='Elements')]
         [Parameter(ParameterSetName="Elements-ReleaseId")]
         [Parameter(ParameterSetName="Elements-Latest")]
@@ -122,6 +123,26 @@ filter Get-GitHubRelease
         [Parameter(ParameterSetName="Elements-ReleaseId")]
         [Parameter(ParameterSetName="Elements-Latest")]
         [Parameter(ParameterSetName="Elements-Tag")]
+=======
+        [Parameter(
+            ParameterSetName='Elements')]
+        [Parameter(
+            ParameterSetName='Elements-ReleaseId')]
+        [Parameter(
+            ParameterSetName='Elements-Latest')]
+        [Parameter(
+            ParameterSetName='Elements-Tag')]
+        [string] $OwnerName,
+
+        [Parameter(
+            ParameterSetName='Elements')]
+        [Parameter(
+            ParameterSetName='Elements-ReleaseId')]
+        [Parameter(
+            ParameterSetName='Elements-Latest')]
+        [Parameter(
+            ParameterSetName='Elements-Tag')]
+>>>>>>> 0f9278b... Working on tests
         [string] $RepositoryName,
 
         [Parameter(
@@ -131,6 +152,7 @@ filter Get-GitHubRelease
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
+<<<<<<< HEAD
             ParameterSetName="Uri-ReleaseId")]
         [Parameter(
             Mandatory,
@@ -140,34 +162,52 @@ filter Get-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-Tag")]
+=======
+            ParameterSetName='Uri-ReleaseId')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri-Latest')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri-Tag')]
+>>>>>>> 0f9278b... Working on tests
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+<<<<<<< HEAD
             ValueFromPipelineByPropertyName,
             ParameterSetName="Elements-ReleaseId")]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-ReleaseId")]
+=======
+            ParameterSetName='Elements-ReleaseId')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri-ReleaseId')]
+>>>>>>> 0f9278b... Working on tests
         [Alias('ReleaseId')]
         [int64] $Release,
 
         [Parameter(
             Mandatory,
-            ParameterSetName="Elements-Latest")]
+            ParameterSetName='Elements-Latest')]
         [Parameter(
             Mandatory,
-            ParameterSetName="Uri-Latest")]
+            ParameterSetName='Uri-Latest')]
         [switch] $Latest,
 
         [Parameter(
             Mandatory,
-            ParameterSetName="Elements-Tag")]
+            ParameterSetName='Elements-Tag')]
         [Parameter(
             Mandatory,
-            ParameterSetName="Uri-Tag")]
+            ParameterSetName='Uri-Tag')]
         [string] $Tag,
 
         [string] $AccessToken,
@@ -222,6 +262,7 @@ filter Get-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
+<<<<<<< HEAD
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubReleaseAdditionalProperties)
 }
 
@@ -281,6 +322,17 @@ filter Add-GitHubReleaseAdditionalProperties
 
         Write-Output $item
     }
+=======
+    $multipleResult = Invoke-GHRestMethodMultipleResult @params
+
+    # Add additional property to ease pipelining
+    foreach ($result in $multipleResult)
+    {
+        Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
+    }
+
+    return $multipleResult
+>>>>>>> 0f9278b... Working on tests
 }
 
 function New-GitHubRelease
@@ -359,7 +411,9 @@ function New-GitHubRelease
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('html_url')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -417,7 +471,12 @@ function New-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Set-GitHubRelease
@@ -496,10 +555,15 @@ function Set-GitHubRelease
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('html_url')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ReleaseId')]
         [int64] $Release,
 
         [string] $TagName,
@@ -555,7 +619,12 @@ function Set-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Remove-GitHubRelease
@@ -609,7 +678,7 @@ function Remove-GitHubRelease
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
-        ConfirmImpact="High")]
+        ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubRelease')]
     param(
@@ -621,10 +690,15 @@ function Remove-GitHubRelease
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('html_url')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ReleaseId')]
         [int64] $Release,
 
         [string] $AccessToken,
@@ -868,7 +942,7 @@ function New-GitHubReleaseAsset
         The path to the file to upload as a new asset.
 
     .PARAMETER Label
-        An alternate short description o fthe asset.  Used in place of the filename.
+        An alternate short description of the asset.  Used in place of the filename.
 
     .PARAMETER ContentType
         The MIME Media Type for the file being uploaded.  By default, this will be inferred based
@@ -1147,7 +1221,7 @@ function Remove-GitHubReleaseAsset
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
-        ConfirmImpact="High")]
+        ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubReleaseAsset')]
     param(
