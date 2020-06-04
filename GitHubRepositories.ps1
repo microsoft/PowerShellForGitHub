@@ -188,7 +188,12 @@ function New-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Remove-GitHubRepository
@@ -258,7 +263,9 @@ function Remove-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [switch] $Force,
@@ -409,7 +416,9 @@ function Get-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(ParameterSetName='Organization')]
@@ -601,7 +610,15 @@ function Get-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    $multipleResult = Invoke-GHRestMethodMultipleResult @params
+
+    # Add additional property to ease pipelining
+    foreach ($result in $multipleResult)
+    {
+        Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
+    }
+
+    return $multipleResult
 }
 
 function Rename-GitHubRepository
@@ -689,10 +706,11 @@ function Rename-GitHubRepository
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias("html_url")]
+        [Alias("RepositoryUrl")]
         [string] $Uri,
 
-        [parameter(Mandatory)][String]$NewName,
+        [parameter(Mandatory)]
+        [String]$NewName,
 
         [switch] $Force,
 
@@ -733,7 +751,12 @@ function Rename-GitHubRepository
                 'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
             }
 
-            return Invoke-GHRestMethod @params
+            $result = Invoke-GHRestMethod @params
+
+            # Add additional property to ease pipelining
+            Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
+
+            return $result
         }
     }
 }
@@ -841,7 +864,9 @@ function Update-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $Description,
@@ -916,7 +941,12 @@ function Update-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Get-GitHubRepositoryTopic
@@ -972,7 +1002,9 @@ function Get-GitHubRepositoryTopic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1003,6 +1035,11 @@ function Get-GitHubRepositoryTopic
     }
 
     return Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Set-GitHubRepositoryTopic
@@ -1066,10 +1103,13 @@ function Set-GitHubRepositoryTopic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='UriName')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='UriClear')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -1132,6 +1172,11 @@ function Set-GitHubRepositoryTopic
     }
 
     return Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
+
+    return $result
 }
 
 function Get-GitHubRepositoryContributor
@@ -1203,7 +1248,9 @@ function Get-GitHubRepositoryContributor
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [switch] $IncludeAnonymousContributors,
@@ -1302,7 +1349,9 @@ function Get-GitHubRepositoryCollaborator
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1390,7 +1439,9 @@ function Get-GitHubRepositoryLanguage
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1474,7 +1525,9 @@ function Get-GitHubRepositoryTag
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1502,7 +1555,15 @@ function Get-GitHubRepositoryTag
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    $multipleResult = Invoke-GHRestMethodMultipleResult @params
+
+    # Add additional property to ease pipelining
+    foreach ($result in $multipleResult)
+    {
+        Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
+    }
+
+    return $multipleResult
 }
 
 function Move-GitHubRepositoryOwnership
@@ -1563,7 +1624,9 @@ function Move-GitHubRepositoryOwnership
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -1605,5 +1668,10 @@ function Move-GitHubRepositoryOwnership
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    # Add additional property to ease pipelining
+    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
+
+    return $result
 }

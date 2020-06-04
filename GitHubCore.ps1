@@ -782,6 +782,41 @@ function Split-GitHubUri
     }
 }
 
+function Join-GitHubUri
+{
+<#
+    .SYNOPSIS
+        Combines the provided repository elements into a repository URL.
+
+    .DESCRIPTION
+        Combines the provided repository elements into a repository URL.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+
+    .OUTPUTS
+        [String] - The repository URL.
+#>
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryName
+    )
+
+
+    $hostName = (Get-GitHubConfiguration -Name 'ApiHostName')
+    return "https://$hostName/$OwnerName/$RepositoryName"
+}
+
 function Resolve-RepositoryElements
 {
 <#
