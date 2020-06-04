@@ -227,6 +227,115 @@ filter New-GitHubRepository
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
+function New-GitHubRepositoryFromTemplate
+{
+<#
+    .SYNOPSIS
+        Creates a new repository on GitHub from a template repository.
+
+    .DESCRIPTION
+        Creates a new repository on GitHub from a template repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER RepositoryName
+        Name of the repository to be created.
+
+    .PARAMETER TemplateOwnerName
+        Owner of the template repository.
+
+    .PARAMETER TeamplateRepositoryName
+        Name of the template repository.
+
+    .PARAMETER OwnerName
+        Owner of the repository to be created. If not specified, the DefaultOwnerName configuration
+        property value will be used.
+
+        .PARAMETER Description
+        A short description of the repository.
+
+    .PARAMETER Private
+        By default, this repository will created Public.  Specify this to create a private
+        repository.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -OwnerName Me -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+
+        Creates a new GitHub repository from the specified template repository
+#>
+    [CmdletBinding(SupportsShouldProcess)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $RepositoryName,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TemplateOwnerName,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TemplateRepositoryName,
+
+        [string] $OwnerName,
+
+        [string] $Description,
+
+        [switch] $Private,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+
+    $telemetryProperties = @{
+        RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
+        OwnerName = (Get-PiiSafeString -PlainText $OwnerName)
+    }
+
+    $uriFragment = "repos/$TemplateOwnerName/$TemplateRepositoryName/generate"
+
+    $hashBody = @{
+        owner = $OwnerName
+        name = $RepositoryName
+    }
+
+    if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
+    if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Post'
+        'Description' =  "Creating $RepositoryName from Template"
+        'AcceptHeader' = $script:baptisteAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+            -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
+}
+
 filter Remove-GitHubRepository
 {
 <#
