@@ -29,6 +29,11 @@
         *   [Updating the current authenticated user](#updating-the-current-authenticated-user)
         *   [Getting any user](#getting-any-user)
         *   [Getting all users](#getting-all-users)
+    *   [Repositories](#Repositories])
+        *   [Create a repository](#Create-a-repository)
+        *   [Create a repository in an organization](#Create-a-repository-in-an-organization)
+        *   [Create a repository in an organization and grant access to a team](#Create-a-repository-in-an-organization-and-grant-access-to-a-team)
+        *   [Create a repository from a template repository](#Create-a-repository-from-a-template-repository)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -97,7 +102,9 @@ The logging is affected by configuration properties (which can be checked with
     different log file for each PowerShell process. An easy way to view the filtered
     entries for a session is (replacing `PID` with the PID that you are interested in):
 
-    Get-Content -Path <logPath> -Encoding UTF8 | Where { $_ -like '*[[]PID[]]*' }
+```powershell
+Get-Content -Path <logPath> -Encoding UTF8 | Where { $_ -like '*[[]PID[]]*' }
+```
 
 ----------
 
@@ -411,6 +418,35 @@ Get-GitHubUser -UserName octocat
 Get-GitHubUser
 ```
 > Warning: This will take a while.  It's getting _every_ GitHub user.
+
+----------
+
+### Repositories
+
+#### Create a repository
+
+```powershell
+New-GitHubRepository -RepositoryName TestRepo
+```
+
+#### Create a repository in an organization
+
+```powershell
+New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg
+```
+
+#### Create a repository in an organization and grant access to a team
+
+```powershell
+$myTeam = Get-GitHubTeam -OrganizationName MyOrg | Where-Object -Property name -eq MyTeam
+New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $myTeam.id
+```
+
+#### Create a repository from a template repository
+
+```powershell
+New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -OwnerName MyOrg -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+```
 
 ----------
 
