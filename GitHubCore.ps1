@@ -280,7 +280,7 @@ function Invoke-GHRestMethod
         $params.Add("UseBasicParsing", $true)
         $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
         if (-not [String]::IsNullOrWhiteSpace($InFile)) { $params.Add('InFile', $InFile) }
-        if (-not [String]::IsNullOrWhiteSpace($OutFile)) { $params.Add('OutFile', $outFile) }
+        if (-not [String]::IsNullOrWhiteSpace($outFile)) { $params.Add('OutFile', $outFile) }
 
         if (($Method -in $ValidBodyContainingRequestMethods) -and (-not [String]::IsNullOrEmpty($Body)))
         {
