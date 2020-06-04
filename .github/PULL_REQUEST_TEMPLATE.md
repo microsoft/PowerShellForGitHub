@@ -6,7 +6,6 @@
 -->
 #### Description
 
-
 #### Issues Fixed
 <!--
     If this PR does not fix an open issue, replace this comment block with None.
@@ -17,6 +16,11 @@
 - Fixes #124
 -->
 
+#### References
+<!--
+    If you are adding/changing functionality based on the GitHub API, please provide
+    a link to the relevant documentation so that the changes can be more easily verified.
+-->
 
 #### Checklist
 <!--
