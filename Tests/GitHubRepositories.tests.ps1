@@ -4,8 +4,6 @@
 <#
 .Synopsis
    Tests for GitHubRepositories.ps1 module
-.Description
-    Many cmdlets are indirectly tested in the course of other tests (New-GitHubRepository, Remove-GitHubRepository), and may not have explicit tests here
 #>
 
 # This is common test code setup logic for all Pester test files
@@ -14,6 +12,15 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
+    # Define Script-scoped, readonly, hidden variables.
+    @{
+        defaultRepoDesc = "This is a description."
+        defaultRepoHomePage = "https://www.microsoft.com/"
+        defaultRepoTopic = "microsoft"
+    }.GetEnumerator() | ForEach-Object {
+        Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
+    }
+
     Describe 'Getting repositories' {
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {
@@ -25,22 +32,23 @@ try
                 $privateRepo = $privateRepo
             }
 
-            $publicRepos = @(Get-GitHubRepository -Visibility Public)
-            $privateRepos = @(Get-GitHubRepository -Visibility Private)
-
             It "Should have the public repo" {
-                $publicRepo.Name | Should BeIn $publicRepos.Name
-                $publicRepo.Name | Should Not BeIn $privateRepos.Name
+                $publicRepos = @(Get-GitHubRepository -Visibility Public)
+                $privateRepos = @(Get-GitHubRepository -Visibility Private)
+                $publicRepo.name | Should -BeIn $publicRepos.name
+                $publicRepo.name | Should -Not -BeIn $privateRepos.name
             }
 
             It "Should have the private repo" {
-                $privateRepo.Name | Should BeIn $privateRepos.Name
-                $privateRepo.Name | Should Not BeIn $publicRepos.Name
+                $publicRepos = @(Get-GitHubRepository -Visibility Public)
+                $privateRepos = @(Get-GitHubRepository -Visibility Private)
+                $privateRepo.name | Should -BeIn $privateRepos.name
+                $privateRepo.name | Should -Not -BeIn $publicRepos.name
             }
 
             It 'Should not permit bad combination of parameters' {
-                { Get-GitHubRepository -Type All -Visibility All } | Should Throw
-                { Get-GitHubRepository -Type All -Affiliation Owner } | Should Throw
+                { Get-GitHubRepository -Type All -Visibility All } | Should -Throw
+                { Get-GitHubRepository -Type All -Affiliation Owner } | Should -Throw
             }
 
             AfterAll -ScriptBlock {
@@ -50,11 +58,10 @@ try
         }
 
         Context 'For any user' {
-            $repos = @(Get-GitHubRepository -OwnerName 'octocat' -Type Public)
-
             It "Should have results for The Octocat" {
+                $repos = @(Get-GitHubRepository -OwnerName 'octocat' -Type Public)
                 $repos.Count | Should -BeGreaterThan 0
-                $repos[0].owner.login | Should Be 'octocat'
+                $repos[0].owner.login | Should -Be 'octocat'
             }
         }
 
@@ -66,9 +73,9 @@ try
                 $repo = $repo
             }
 
-            $repos = @(Get-GitHubRepository -OrganizationName $script:organizationName -Type All)
             It "Should have results for the organization" {
-                $repo.name | Should BeIn $repos.name
+                $repos = @(Get-GitHubRepository -OrganizationName $script:organizationName -Type All)
+                $repo.name | Should -BeIn $repos.name
             }
 
             AfterAll -ScriptBlock {
@@ -82,30 +89,30 @@ try
         }
 
         Context 'For a specific repo' {
-            BeforeAll -Scriptblock {
+            BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
                 # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
                 $repo = $repo
             }
 
-            $result = Get-GitHubRepository -Uri $repo.svn_url
             It "Should be a single result using Uri ParameterSet" {
+                $result = Get-GitHubRepository -Uri $repo.svn_url
                 $result | Should -BeOfType PSCustomObject
             }
 
-            $result = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name
             It "Should be a single result using Elements ParameterSet" {
+                $result = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $result | Should -BeOfType PSCustomObject
             }
 
             It 'Should not permit additional parameters' {
-                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.Name -Type All } | Should Throw
+                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Type All } | Should -Throw
             }
 
             It 'Should require both OwnerName and RepositoryName' {
-                { Get-GitHubRepository -RepositoryName $repo.Name } | Should Throw
-                { Get-GitHubRepository -Uri "https://github.com/$script:ownerName" } | Should Throw
+                { Get-GitHubRepository -RepositoryName $repo.name } | Should -Throw
+                { Get-GitHubRepository -Uri "https://github.com/$script:ownerName" } | Should -Throw
             }
 
             AfterAll -ScriptBlock {
@@ -114,27 +121,179 @@ try
         }
     }
 
-    Describe 'Modifying repositories' {
+    Describe 'Creating repositories' {
+
+        Context -Name 'For creating a repository' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repoName = $repoName
+                $repo = $repo
+            }
+
+            It 'Should get repository' {
+                $repo | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $repo.name | Should -Be $repoName
+            }
+
+            It 'Description is correct' {
+                $repo.description | Should -Be $defaultRepoDesc
+            }
+
+            AfterAll -ScriptBlock {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+        }
+    }
+
+    Describe 'Deleting repositories' {
+
+        Context -Name 'For deleting a repository' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It 'Should get no content' {
+                Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
+                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
+            }
+        }
+    }
+
+    Describe 'Renaming repositories' {
+
         Context -Name 'For renaming a repository' -Fixture {
             BeforeEach -Scriptblock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
-                $newRepoName = "$($repo.Name)$suffixToAddToRepo"
-                Write-Verbose "New repo name shall be: '$newRepoName'"
+                $newRepoName = "$($repo.name)$suffixToAddToRepo"
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $newRepoName = $newRepoName
             }
+
             It "Should have the expected new repository name - by URI" {
                 $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
+                $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
                 $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
-                $renamedRepo.Name | Should be $newRepoName
+                $renamedRepo.name | Should -Be $newRepoName
             }
-            ## cleanup temp testing repository
+
             AfterEach -Scriptblock {
-                ## variables from BeforeEach scriptblock are accessible here, but not variables from It scriptblocks, so need to make URI (instead of being able to use $renamedRepo variable from It scriptblock)
                 Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Confirm:$false
+            }
+        }
+    }
+
+    Describe 'Updating repositories' {
+
+        Context -Name 'For creating a repository' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It 'Should have the new updated description' {
+                $modifiedRepoDesc = $defaultRepoDesc + "_modified"
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Description $modifiedRepoDesc
+                $updatedRepo.description | Should -Be $modifiedRepoDesc
+            }
+
+            It 'Should have the new updated homepage url' {
+                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Homepage $defaultRepoHomePage
+                $updatedRepo.homepage | Should -Be $defaultRepoHomePage
+            }
+
+            AfterAll -ScriptBlock {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+        }
+    }
+
+    Describe 'Get/set repository topic' {
+
+        Context -Name 'For creating and getting a repository topic' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It 'Should have the expected topic' {
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
+                $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $topic.names | Should -Be $defaultRepoTopic
+            }
+
+            It 'Should have no topics' {
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
+                $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $topic.names | Should -BeNullOrEmpty
+            }
+
+            AfterAll -ScriptBlock {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+        }
+    }
+
+    Describe 'Get repository languages' {
+
+        Context -Name 'For getting repository languages' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It 'Should be empty' {
+                $languages = Get-GitHubRepositoryLanguage -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $languages | Should -BeNullOrEmpty
+            }
+
+            It 'Should contain PowerShell' {
+                $languages = Get-GitHubRepositoryLanguage -OwnerName "microsoft" -RepositoryName "PowerShellForGitHub"
+                $languages.PowerShell | Should -Not -BeNullOrEmpty
+            }
+
+            AfterAll -ScriptBlock {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+        }
+    }
+
+    Describe 'Get repository tags' {
+
+        Context -Name 'For getting repository tags' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It 'Should be empty' {
+                $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $tags | Should -BeNullOrEmpty
+            }
+
+            AfterAll -ScriptBlock {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }

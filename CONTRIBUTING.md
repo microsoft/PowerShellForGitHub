@@ -485,6 +485,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Matt Boren (@mtboren)](http://github.com/mtboren)**
 - **[Shannon Deminick (@Shazwazza)](http://github.com/Shazwazza)**
 - **[Jess Pomfret (@jpomfret)](https://github.com/jpomfret)**
+- **[Giuseppe Campanelli (@themilanfan)](https://github.com/themilanfan)**
 
 ----------
 
