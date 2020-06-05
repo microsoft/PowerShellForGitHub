@@ -107,6 +107,134 @@ try
             }
         }
     }
+
+    Describe 'GitHubBranches\New-GitHubRepositoryBranch' {
+        Context 'When creating a new GitHub repository branch' {
+            BeforeAll -Scriptblock {
+                $repoName = [Guid]::NewGuid().Guid
+                $originBranchName = 'master'
+                $newBranchName = 'develop'
+                $newGitHubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    AutoInit = $true
+                }
+                $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    Name = $newBranchName
+                    OriginBranchName = $originBranchName
+                }
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $branch | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $branch.ref | Should -Be "refs/heads/$newBranchName"
+            }
+
+            It 'Should have created the branch' {
+                $getGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    Name = $newBranchName
+                }
+                { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                    Should -Not -Throw
+            }
+
+            Context 'When the origin branch cannot be found' {
+                BeforeAll -Scriptblock {
+                    $missingOriginBranchName = 'Missing-Branch'
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = "Origin branch $missingOriginBranchName not found"
+
+                    $newGitHubRepositoryBranchParms = @{
+                        OwnerName = $script:ownerName
+                        RepositoryName = $repoName
+                        Name = $newBranchName
+                        OriginBranchName = $missingOriginBranchName
+                    }
+                    { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
+                        Should -Throw $errorMessage
+                }
+            }
+
+            Context 'When Get-GitHubRepositoryBranch throws an undefined HttpResponseException' {
+                It 'Should throw the correct exception' {
+                    $newGitHubRepositoryBranchParms = @{
+                        OwnerName = $script:ownerName
+                        RepositoryName = 'test'
+                        Name = 'test'
+                        OriginBranchName = 'test'
+                    }
+                    { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
+                        Should -Throw 'Not Found'
+                }
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+    }
+
+    Describe 'GitHubBranches\Remove-GitHubRepositoryBranch' {
+        BeforeAll -Scriptblock {
+            $repoName = [Guid]::NewGuid().Guid
+            $originBranchName = 'master'
+            $newBranchName = 'develop'
+            $newGitHubRepositoryParms = @{
+                RepositoryName = $repoName
+                AutoInit = $true
+            }
+            $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+            $newGitHubRepositoryBranchParms = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repoName
+                Name = $newBranchName
+                OriginBranchName = $originBranchName
+            }
+            $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+        }
+
+        It 'Should not throw an exception' {
+            $removeGitHubRepositoryBranchParms = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repoName
+                Name = $newBranchName
+            }
+            { Remove-GitHubRepositoryBranch @removeGitHubRepositoryBranchParms } |
+                Should -Not -Throw
+        }
+
+        It 'Should have removed the branch' {
+            $getGitHubRepositoryBranchParms = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repoName
+                Name = $newBranchName
+            }
+            { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                Should -Throw
+        }
+
+        AfterAll -ScriptBlock {
+            if ($repo)
+            {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+        }
+    }
 }
 finally
 {
