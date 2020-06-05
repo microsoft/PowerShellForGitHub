@@ -1728,7 +1728,9 @@ filter Set-GitHubRepositoryAdditionalProperties
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             $repositoryUrl = $item.html_url
-            if ([String]::IsNullOrEmpty($repositoryUrl))
+            if ([String]::IsNullOrEmpty($repositoryUrl) -and
+                $PSBoundParameters.ContainsKey('OwnerName') -and
+                $PSBoundParameters.ContainsKey('RepositoryName'))
             {
                 $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
             }
