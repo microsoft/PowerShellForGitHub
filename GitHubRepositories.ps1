@@ -1,6 +1,18 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+@{
+    GitHubRepositoryTypeName = 'GitHub.Repository'
+    GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
+    GitHubRepositoryContributorTypeName = 'GitHub.RepositoryContributor'
+    GitHubRepositoryCollaboratorTypeName = 'GitHub.RepositoryCollaborator'
+    GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
+    GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
+
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
 function New-GitHubRepository
 {
 <#
@@ -92,6 +104,7 @@ function New-GitHubRepository
         New-GitHubRepository -RepositoryName MyNewRepo -Organization MyOrg -DisallowRebaseMerge
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    #[OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory)]
@@ -1674,4 +1687,57 @@ function Move-GitHubRepositoryOwnership
     Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
 
     return $result
+}
+
+filter Set-GitHubRepositoryAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is option based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is option based on what InputObject contains.
+#>
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubRepositoryTypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $repositoryUrl = $item.html_url
+            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            {
+                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+            }
+
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+        }
+
+        if ($null -ne $item.owner)
+        {
+            Set-GitHubUserAdditionalProperties -InputObject $item.owner
+        }
+
+        Write-Output $item
+    }
 }

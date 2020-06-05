@@ -95,6 +95,13 @@ function Set-GitHubConfiguration
         Specify this switch to disable the hashing of potential PII data prior to submitting the
         data to telemetry (if telemetry hasn't been disabled via DisableTelemetry).
 
+    .PARAMETER DisablePipelineSupport
+        By default, this module will modify all objects returned by the API calls by adding
+        additional, consistent properties to those objects which ease pipelining those objects
+        into other functions.  This is highly convenient functionality.  You would only want to
+        disable this functionality if you are experiencing some edge case problems and are awaiting
+        a proper fix.
+
     .PARAMETER DisableSmarterObjects
         By default, this module will modify all objects returned by the API calls to update
         any properties that can be converted to objects (like strings for Date/Time's being
@@ -189,6 +196,8 @@ function Set-GitHubConfiguration
 
         [switch] $DisablePiiProtection,
 
+        [switch] $DisablePipelineSupport,
+
         [switch] $DisableSmarterObjects,
 
         [switch] $DisableTelemetry,
@@ -279,6 +288,7 @@ function Get-GitHubConfiguration
             'DefaultRepositoryName',
             'DisableLogging',
             'DisablePiiProtection',
+            'DisablePipelineSupport',
             'DisableSmarterObjects',
             'DisableTelemetry',
             'DisableUpdateCheck',
@@ -613,6 +623,7 @@ function Import-GitHubConfiguration
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
         'disablePiiProtection' = $false
+        'disablePipelineSupport' = $false
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false
         'disableUpdateCheck' = $false

@@ -1,7 +1,14 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubUser
+@{
+    GitHubUserTypeName = 'GitHub.User'
+
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+ function Get-GitHubUser
 {
 <#
     .SYNOPSIS
@@ -80,15 +87,18 @@ function Get-GitHubUser
 
     if ($Current)
     {
-        return Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params
+        return (Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params |
+            Set-GitHubUserAdditionalProperties)
     }
     elseif ([String]::IsNullOrEmpty($User))
     {
-        return Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params
+        return (Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params |
+            Set-GitHubUserAdditionalProperties)
     }
     else
     {
-        return Invoke-GHRestMethod -UriFragment "users/$User" -Description "Getting user $User" -Method 'Get' @params
+        return (Invoke-GHRestMethod -UriFragment "users/$User" -Description "Getting user $User" -Method 'Get' @params |
+            Set-GitHubUserAdditionalProperties)
     }
 }
 
@@ -276,4 +286,36 @@ function Update-GitHubCurrentUser
     }
 
     return Invoke-GHRestMethod @params
+}
+
+filter Set-GitHubUserAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub User objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+#>
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubUserTypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'OwnerName' -Value $item.login -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'UserName' -Value $item.login -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'UserId' -Value $item.id -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
+    }
 }
