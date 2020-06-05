@@ -252,9 +252,10 @@ function New-GitHubRepositoryBranch
     {
         $originBranch = Get-GitHubRepositoryBranch -OwnerName $OwnerName -RepositoryName $RepositoryName -Name $OriginBranchName
     }
-    catch [System.Management.Automation.RemoteException]
+    catch
     {
-        if (($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
+        if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
+            ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
         {
             throw "Origin branch $OriginBranchName not found"
         }
@@ -262,10 +263,6 @@ function New-GitHubRepositoryBranch
         {
             throw $_
         }
-    }
-    catch
-    {
-        throw $_
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
