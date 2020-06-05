@@ -8,7 +8,7 @@
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
- function Get-GitHubUser
+filter Get-GitHubUser
 {
 <#
     .SYNOPSIS
@@ -70,7 +70,11 @@
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(ParameterSetName='ListAndSearch')]
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ListAndSearch')]
+        [Alias('UserName')]
         [string] $User,
 
         [Parameter(ParameterSetName='Current')]
@@ -106,7 +110,7 @@
     }
 }
 
-function Get-GitHubUserContextualInformation
+filter Get-GitHubUserContextualInformation
 {
 <#
     .SYNOPSIS
@@ -150,7 +154,11 @@ function Get-GitHubUserContextualInformation
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [Alias('UserName')]
         [string] $User,
 
         [ValidateSet('Organization', 'Repository', 'Issue', 'PullRequest')]
@@ -198,7 +206,8 @@ function Get-GitHubUserContextualInformation
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Set-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
 }
 
 function Update-GitHubCurrentUser
