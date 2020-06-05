@@ -290,6 +290,88 @@ try
         }
     }
 
+    Describe 'GitHubRepositories\New-GitHubRepositoryFromTemplate' {
+        BeforeAll -ScriptBlock {
+            $templateRepoName = ([Guid]::NewGuid().Guid)
+            $testGitIgnoreTemplate=(Get-GitHubGitIgnore)[0]
+            $testLicenseTemplate=(Get-GitHubLicense)[0].key
+
+            $newGitHubRepositoryParms = @{
+                RepositoryName = $templateRepoName
+                Description = $defaultRepoDesc
+                HomePage = $defaultRepoHomePage
+                NoIssues = $true
+                NoProjects = $true
+                NoWiki = $true
+                DisallowSquashMerge = $true
+                DisallowMergeCommit = $true
+                DisallowRebaseMerge = $false
+                DeleteBranchOnMerge = $true
+                GitIgnoreTemplate = $testGitIgnoreTemplate
+                LicenseTemplate = $testLicenseTemplate
+                IsTemplate = $true
+            }
+            $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
+        }
+
+        Context -Name 'When creating a public repository from a template' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newRepoDesc = 'New Repo Description'
+                $newGitHubRepositoryFromTemplateParms = @{
+                    RepositoryName = $repoName
+                    OwnerName = $script:ownerName
+                    TemplateOwnerName = $templateRepoName.owner.login
+                    TemplateRepositoryName = $templateRepoName
+                    Description = $newRepoDesc
+                }
+                $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.private | Should -BeFalse
+                $repo.owner.login | Should -Be $script:ownerName
+                $repo.description | Should -Be $newRepoDesc
+                $repo.homepage | Should -Be $templateRepo.homepage
+                $repo.has_issues | Should -BeFalse
+                $repo.has_projects | Should -BeFalse
+                $repo.has_Wiki | Should -BeFalse
+                $repo.allow_squash_merge | Should -BeFalse
+                $repo.allow_merge_commit | Should -BeFalse
+                $repo.allow_rebase_merge | Should -BeTrue
+                $repo.delete_branch_on_merge | Should -BeTrue
+                $repo.is_template | Should -BeFalse
+            }
+
+            It 'Should have created a .gitignore file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path '.gitignore' } | Should -Not -Throw
+            }
+
+            It 'Should have created a LICENSE file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path 'LICENSE' } | Should -Not -Throw
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            if ($repo)
+            {
+                Remove-GitHubRepository -Uri $templateRepo.svn_url -Confirm:$false
+            }
+        }
+    }
+
     Describe 'Getting repositories' {
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {

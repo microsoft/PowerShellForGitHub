@@ -244,7 +244,7 @@ function New-GitHubRepositoryFromTemplate
     .PARAMETER TemplateOwnerName
         Owner of the template repository.
 
-    .PARAMETER TeamplateRepositoryName
+    .PARAMETER TemplateRepositoryName
         Name of the template repository.
 
     .PARAMETER OwnerName
