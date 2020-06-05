@@ -3,7 +3,7 @@
 
 @{
     GitHubUserTypeName = 'GitHub.User'
-
+    GitHubUserContextualInformationTypeName = 'GitHub.UserContextualInformation'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -45,6 +45,9 @@
         which provides an email entry for this endpoint.  If the user does not set a public
         email address for email, then it will have a value of null.
 
+    .OUTPUTS
+        GitHub.User
+
     .EXAMPLE
         Get-GitHubUser -User octocat
 
@@ -63,6 +66,7 @@
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ListAndSearch')]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -132,6 +136,9 @@ function Get-GitHubUserContextualInformation
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.UserContextualInformation
+
     .EXAMPLE
         Get-GitHubUserContextualInformation -User octocat
 
@@ -139,6 +146,7 @@ function Get-GitHubUserContextualInformation
         Get-GitHubUserContextualInformation -User octocat -Subject Repository -SubjectId 1300192
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubUserContextualInformationTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -190,7 +198,7 @@ function Get-GitHubUserContextualInformation
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Set-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
 }
 
 function Update-GitHubCurrentUser
@@ -236,6 +244,9 @@ function Update-GitHubCurrentUser
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.User
+
     .EXAMPLE
         Update-GitHubCurrentUser -Location 'Seattle, WA' -Hireable:$false
 
@@ -243,6 +254,7 @@ function Update-GitHubCurrentUser
         are not currently hireable.
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [string] $Name,
@@ -285,7 +297,7 @@ function Update-GitHubCurrentUser
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Set-GitHubUserAdditionalProperties)
 }
 
 filter Set-GitHubUserAdditionalProperties
@@ -296,24 +308,63 @@ filter Set-GitHubUserAdditionalProperties
 
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the user.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the user.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
     param(
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
-        [PSCustomObject[]] $InputObject
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubUserTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
     )
 
     foreach ($item in $InputObject)
     {
-        $item.PSObject.TypeNames.Insert(0, $script:GitHubUserTypeName)
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            Add-Member -InputObject $item -Name 'OwnerName' -Value $item.login -MemberType NoteProperty -Force
-            Add-Member -InputObject $item -Name 'UserName' -Value $item.login -MemberType NoteProperty -Force
-            Add-Member -InputObject $item -Name 'UserId' -Value $item.id -MemberType NoteProperty -Force
+            $userName = $item.login
+            if ([String]::IsNullOrEmpty($userName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $userName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($userName))
+            {
+                Add-Member -InputObject $item -Name 'OwnerName' -Value $item.login -MemberType NoteProperty -Force
+                Add-Member -InputObject $item -Name 'UserName' -Value $item.login -MemberType NoteProperty -Force
+            }
+
+            $userId = $item.id
+            if (($userId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $userId = $Id
+            }
+
+            if ($userId -ne 0)
+            {
+                Add-Member -InputObject $item -Name 'UserId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
         }
 
         Write-Output $item

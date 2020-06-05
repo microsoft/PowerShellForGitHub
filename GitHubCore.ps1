@@ -803,6 +803,7 @@ function Join-GitHubUri
         [String] - The repository URL.
 #>
     [CmdletBinding()]
+    [OutputType([String])]
     param
     (
         [Parameter(Mandatory)]

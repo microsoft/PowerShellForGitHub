@@ -8,12 +8,11 @@
     GitHubRepositoryCollaboratorTypeName = 'GitHub.RepositoryCollaborator'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
-
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
-function New-GitHubRepository
+filter New-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -97,6 +96,9 @@ function New-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         New-GitHubRepository -RepositoryName MyNewRepo -AutoInit
 
@@ -104,10 +106,12 @@ function New-GitHubRepository
         New-GitHubRepository -RepositoryName MyNewRepo -Organization MyOrg -DisallowRebaseMerge
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    #[OutputType({$script:GitHubRepositoryTypeName})]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [string] $RepositoryName,
 
@@ -201,15 +205,11 @@ function New-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
-function Remove-GitHubRepository
+filter Remove-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -320,7 +320,7 @@ function Remove-GitHubRepository
     }
 }
 
-function Get-GitHubRepository
+filter Get-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -390,6 +390,9 @@ function Get-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         Get-GitHubRepository
 
@@ -418,10 +421,13 @@ function Get-GitHubRepository
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='AuthenticatedUser')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(ParameterSetName='ElementsOrUser')]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ElementsOrUser')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName='ElementsOrUser')]
@@ -434,7 +440,9 @@ function Get-GitHubRepository
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(ParameterSetName='Organization')]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Organization')]
         [string] $OrganizationName,
 
         [ValidateSet('All', 'Public', 'Private')]
@@ -543,7 +551,6 @@ function Get-GitHubRepository
         }
 
         'Organization' {
-
             $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
             $uriFragment = "orgs/$OrganizationName/repos"
@@ -623,18 +630,11 @@ function Get-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $multipleResult = Invoke-GHRestMethodMultipleResult @params
-
-    # Add additional property to ease pipelining
-    foreach ($result in $multipleResult)
-    {
-        Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
-    }
-
-    return $multipleResult
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
-function Rename-GitHubRepository
+filter Rename-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -673,6 +673,9 @@ function Rename-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
 
@@ -707,6 +710,7 @@ function Rename-GitHubRepository
         SupportsShouldProcess,
         DefaultParameterSetName='Uri',
         ConfirmImpact="High")]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory=$true, ParameterSetName='Elements')]
@@ -732,49 +736,41 @@ function Rename-GitHubRepository
         [switch] $NoStatus
     )
 
-    process
+    if ($Force -and (-not $Confirm))
     {
-        $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+        $ConfirmPreference = 'None'
+    }
 
-        if ($Force -and (-not $Confirm))
-        {
-            $ConfirmPreference = 'None'
+    $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+    if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
+    {
+        Write-InvocationLog -Invocation $MyInvocation
+        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         }
 
-        if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
-        {
-            Write-InvocationLog -Invocation $MyInvocation
-            $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
-            $OwnerName = $elements.ownerName
-            $RepositoryName = $elements.repositoryName
-
-            $telemetryProperties = @{
-                'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-                'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-            }
-
-            $params = @{
-                'UriFragment' = "repos/$OwnerName/$RepositoryName"
-                'Method' = 'Patch'
-                Body = ConvertTo-Json -InputObject @{name = $NewName}
-                'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
-                'AccessToken' = $AccessToken
-                'TelemetryEventName' = $MyInvocation.MyCommand.Name
-                'TelemetryProperties' = $telemetryProperties
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-            }
-
-            $result = Invoke-GHRestMethod @params
-
-            # Add additional property to ease pipelining
-            Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
-
-            return $result
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName"
+            'Method' = 'Patch'
+            Body = ConvertTo-Json -InputObject @{name = $NewName}
+            'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
+
+        return (Invoke-GHRestMethod @params |
+            Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
     }
 }
 
-function Update-GitHubRepository
+filter Update-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -854,6 +850,9 @@ function Update-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
@@ -867,6 +866,7 @@ function Update-GitHubRepository
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -954,15 +954,11 @@ function Update-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value $result.html_url -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
-function Get-GitHubRepositoryTopic
+filter Get-GitHubRepositoryTopic
 {
 <#
     .SYNOPSIS
@@ -996,6 +992,9 @@ function Get-GitHubRepositoryTopic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.RepositoryTopic
+
     .EXAMPLE
         Get-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -1005,6 +1004,7 @@ function Get-GitHubRepositoryTopic
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTopicTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1047,15 +1047,11 @@ function Get-GitHubRepositoryTopic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Set-GitHubRepositoryTopic
+filter Set-GitHubRepositoryTopic
 {
 <#
     .SYNOPSIS
@@ -1095,6 +1091,9 @@ function Set-GitHubRepositoryTopic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.RepositoryTopic
+
     .EXAMPLE
         Set-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Clear
 
@@ -1104,6 +1103,7 @@ function Set-GitHubRepositoryTopic
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ElementsName')]
+    [OutputType({$script:GitHubRepositoryTopicTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='ElementsName')]
@@ -1184,15 +1184,11 @@ function Set-GitHubRepositoryTopic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Get-GitHubRepositoryContributor
+filter Get-GitHubRepositoryContributor
 {
 <#
     .SYNOPSIS
@@ -1240,7 +1236,7 @@ function Get-GitHubRepositoryContributor
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of contributors for the repository.
+        GitHub.User
 
     .EXAMPLE
         Get-GitHubRepositoryContributor -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -1251,6 +1247,7 @@ function Get-GitHubRepositoryContributor
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1303,10 +1300,10 @@ function Get-GitHubRepositoryContributor
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
 }
 
-function Get-GitHubRepositoryCollaborator
+filter Get-GitHubRepositoryCollaborator
 {
 <#
     .SYNOPSIS
@@ -1341,7 +1338,7 @@ function Get-GitHubRepositoryCollaborator
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of collaborators for the repository.
+        GitHub.User
 
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -1352,7 +1349,8 @@ function Get-GitHubRepositoryCollaborator
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        [OutputType({$script:GitHubUserTypeName})]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1392,10 +1390,10 @@ function Get-GitHubRepositoryCollaborator
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
 }
 
-function Get-GitHubRepositoryLanguage
+filter Get-GitHubRepositoryLanguage
 {
 <#
     .SYNOPSIS
@@ -1430,8 +1428,8 @@ function Get-GitHubRepositoryLanguage
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of languages for the specified repository.  The value shown
-        for each language is the number of bytes of code written in that language.
+        GitHub.RepositoryLanguage - The value shown for each language is the number
+        of bytes of code written in that language.
 
     .EXAMPLE
         Get-GitHubRepositoryLanguage -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -1442,6 +1440,7 @@ function Get-GitHubRepositoryLanguage
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryLanguageTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1482,10 +1481,11 @@ function Get-GitHubRepositoryLanguage
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryLanguageTypeName)
 }
 
-function Get-GitHubRepositoryTag
+filter Get-GitHubRepositoryTag
 {
 <#
     .SYNOPSIS
@@ -1518,6 +1518,9 @@ function Get-GitHubRepositoryTag
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .OUTPUTS
+        GitHub.RepositoryTag
 
     .EXAMPLE
         Get-GitHubRepositoryTag -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -1568,18 +1571,11 @@ function Get-GitHubRepositoryTag
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $multipleResult = Invoke-GHRestMethodMultipleResult @params
-
-    # Add additional property to ease pipelining
-    foreach ($result in $multipleResult)
-    {
-        Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
-    }
-
-    return $multipleResult
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTagTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Move-GitHubRepositoryOwnership
+filter Move-GitHubRepositoryOwnership
 {
 <#
     .SYNOPSIS
@@ -1620,12 +1616,16 @@ function Move-GitHubRepositoryOwnership
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.RepositoryTopic
+
     .EXAMPLE
         Move-GitHubRepositoryOwnership -OwnerName Microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Alias('Transfer-GitHubRepositoryOwnership')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
@@ -1681,12 +1681,8 @@ function Move-GitHubRepositoryOwnership
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'RepositoryUrl' -Value (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName) -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params |
+        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
 filter Set-GitHubRepositoryAdditionalProperties
@@ -1698,20 +1694,27 @@ filter Set-GitHubRepositoryAdditionalProperties
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
 
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
     .PARAMETER OwnerName
         Owner of the repository.  This information might be obtainable from InputObject, so this
-        is option based on what InputObject contains.
+        is optional based on what InputObject contains.
 
     .PARAMETER RepositoryName
         Name of the repository.  This information might be obtainable from InputObject, so this
-        is option based on what InputObject contains.
+        is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
     param(
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
         [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryTypeName,
 
         [string] $OwnerName,
 
@@ -1720,22 +1723,25 @@ filter Set-GitHubRepositoryAdditionalProperties
 
     foreach ($item in $InputObject)
     {
-        $item.PSObject.TypeNames.Insert(0, $script:GitHubRepositoryTypeName)
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             $repositoryUrl = $item.html_url
-            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            if ([String]::IsNullOrEmpty($repositoryUrl))
             {
                 $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
             }
 
-            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
-        }
+            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
 
-        if ($null -ne $item.owner)
-        {
-            Set-GitHubUserAdditionalProperties -InputObject $item.owner
+            if ($null -ne $item.owner)
+            {
+                Set-GitHubUserAdditionalProperties -InputObject $item.owner
+            }
         }
 
         Write-Output $item
