@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubTeam
+@{
+    GitHubTeamTypeName = 'GitHub.Team'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubTeam
 {
 <#
     .SYNOPSIS
@@ -42,16 +48,17 @@ function Get-GitHubTeam
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] The team(s) that match the user's request.
+        GitHub.Team
 
     .EXAMPLE
         Get-GitHubTeam -OrganizationName PowerShell
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubTeamTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param
     (
         [Parameter(ParameterSetName='Elements')]
@@ -62,17 +69,21 @@ function Get-GitHubTeam
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Organization')]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Single')]
         [ValidateNotNullOrEmpty()]
         [string] $TeamId,
@@ -125,10 +136,11 @@ function Get-GitHubTeam
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Set-GitHubTeamAdditionalProperties)
 }
 
-function Get-GitHubTeamMember
+filter Get-GitHubTeamMember
 {
 <#
     .SYNOPSIS
@@ -159,29 +171,34 @@ function Get-GitHubTeamMember
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of members on the team within the organization.
+        GitHub.User
 
     .EXAMPLE
         $members = Get-GitHubTeamMember -Organization PowerShell -TeamName Everybody
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ID')]
+    [OutputType({$script:GitHubUserTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Name')]
         [ValidateNotNullOrEmpty()]
         [String] $TeamName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='ID')]
         [int64] $TeamId,
 
@@ -223,5 +240,80 @@ function Get-GitHubTeamMember
         'NoStatus' = $NoStatus
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
+}
+
+filter Set-GitHubTeamAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Team objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the team.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the team.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubTeamTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $teamName = $item.name
+            if ([String]::IsNullOrEmpty($teamName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $teamName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($teamName))
+            {
+                Add-Member -InputObject $item -Name 'TeamName' -Value $teamName -MemberType NoteProperty -Force
+            }
+
+            $teamId = $item.id
+            if (($teamId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $teamId = $Id
+            }
+
+            if ($teamId -ne 0)
+            {
+                Add-Member -InputObject $item -Name 'TeamId' -Value $teamId -MemberType NoteProperty -Force
+            }
+
+            # Apply these properties to any embedded parent teams as well.
+            if ($null -ne $item.parent)
+            {
+                $null = Set-GitHubTeamAdditionalProperties -InputObject $item.parent
+            }
+        }
+
+        Write-Output $item
+    }
 }

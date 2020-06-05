@@ -428,6 +428,7 @@ filter Get-GitHubRepository
         [Parameter(
             ValueFromPipelineByPropertyName,
             ParameterSetName='ElementsOrUser')]
+        [Alias('UserName')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName='ElementsOrUser')]
@@ -1742,7 +1743,12 @@ filter Set-GitHubRepositoryAdditionalProperties
 
             if ($null -ne $item.owner)
             {
-                Set-GitHubUserAdditionalProperties -InputObject $item.owner
+                $null = Set-GitHubUserAdditionalProperties -InputObject $item.owner
+            }
+
+            if ($null -ne $item.organization)
+            {
+                $null = Set-GitHubOrganizationAdditionalProperties -InputObject $item.organization
             }
         }
 

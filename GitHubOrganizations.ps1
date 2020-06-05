@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubOrganizationMember
+@{
+    GitHubOrganizationTypeName = 'GitHub.Organization'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+ function Get-GitHubOrganizationMember
 {
 <#
     .SYNOPSIS
@@ -140,5 +146,75 @@ function Test-GitHubOrganizationMember
     catch
     {
         return $false
+    }
+}
+
+
+filter Set-GitHubOrganizationAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Organization objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the organization.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the organization.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubOrganizationTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $organizationName = $item.login
+            if ([String]::IsNullOrEmpty($organizationName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $organizationName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($organizationName))
+            {
+                Add-Member -InputObject $item -Name 'OrganizationName' -Value $organizationName -MemberType NoteProperty -Force
+            }
+
+            $organizationId = $item.id
+            if (($organizationId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $organizationId = $Id
+            }
+
+            if ($organizationId -ne 0)
+            {
+                Add-Member -InputObject $item -Name 'OrganizationId' -Value $organizationId -MemberType NoteProperty -Force
+            }
+        }
+
+        Write-Output $item
     }
 }

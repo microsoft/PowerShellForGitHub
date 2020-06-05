@@ -359,7 +359,6 @@ filter Set-GitHubUserAdditionalProperties
 
             if (-not [String]::IsNullOrEmpty($userName))
             {
-                Add-Member -InputObject $item -Name 'OwnerName' -Value $userName -MemberType NoteProperty -Force
                 Add-Member -InputObject $item -Name 'UserName' -Value $userName -MemberType NoteProperty -Force
             }
 
@@ -373,7 +372,6 @@ filter Set-GitHubUserAdditionalProperties
             {
                 Add-Member -InputObject $item -Name 'UserId' -Value $userId -MemberType NoteProperty -Force
             }
-
         }
 
         Write-Output $item
