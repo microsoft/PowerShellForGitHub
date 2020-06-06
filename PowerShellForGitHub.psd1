@@ -141,6 +141,7 @@
         'New-GitHubRepositoryBranch',
         'New-GitHubRepositoryBranchProtectionRule',
         'New-GitHubRepositoryFork',
+        'New-GithubTeam',
         'Remove-GitHubAssignee',
         'Remove-GitHubComment',
         'Remove-GitHubGist',
@@ -160,6 +161,7 @@
         'Remove-GitHubRepository',
         'Remove-GitHubRepositoryBranch'
         'Remove-GitHubRepositoryBranchProtectionRule',
+        'Remove-GitHubTeam',
         'Rename-GitHubGistFile',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
@@ -192,6 +194,12 @@
         'Test-GitHubOrganizationMember',
         'Test-GitHubRepositoryVulnerabilityAlert',
         'Unlock-GitHubIssue'
+        'Unlock-GitHubIssue',
+        'Update-GitHubCurrentUser',
+        'Update-GitHubIssue',
+        'Update-GitHubLabel',
+        'Update-GitHubRepository',
+        'Update-GitHubTeam'
     )
 
     AliasesToExport = @(
@@ -214,6 +222,7 @@
         'Delete-GitHubRepository',
         'Delete-GitHubRepositoryBranch',
         'Delete-GitHubRepositoryBranchProtectionRule',
+        'Delete-GitHubTeam',
         'Fork-GitHubGist',
         'Get-GitHubAsset',
         'Get-GitHubBranch',
