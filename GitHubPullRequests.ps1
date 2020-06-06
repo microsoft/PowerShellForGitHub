@@ -421,6 +421,7 @@ filter Add-GitHubPullRequestAdditionalProperties
         The type that should be assigned to the object.
 #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
             Mandatory,
@@ -442,10 +443,7 @@ filter Add-GitHubPullRequestAdditionalProperties
                 Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
             }
 
-            if (-not [String]::IsNullOrEmpty($item.id))
-            {
-                Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
-            }
+            Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
 
             if ($null -ne $item.user)
             {

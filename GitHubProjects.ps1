@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubProject
+@{
+    GitHubProjectTypeName = 'GitHub.Project'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubProject
 {
 <#
     .DESCRIPTION
@@ -44,6 +50,9 @@ function Get-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Project
+
     .EXAMPLE
         Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -77,6 +86,7 @@ function Get-GitHubProject
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName = 'Elements')]
@@ -85,7 +95,11 @@ function Get-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory, ParameterSetName = 'Organization')]
@@ -94,7 +108,8 @@ function Get-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'User')]
         [string] $UserName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Project')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'Project')]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [ValidateSet('Open', 'Closed', 'All')]
@@ -165,11 +180,11 @@ function Get-GitHubProject
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectAdditionalProperties)
 
 }
 
-function New-GitHubProject
+filter New-GitHubProject
 {
 <#
     .DESCRIPTION
@@ -212,6 +227,9 @@ function New-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Project
+
     .EXAMPLE
         New-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestProject
 
@@ -235,6 +253,7 @@ function New-GitHubProject
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName = 'Elements')]
@@ -243,7 +262,11 @@ function New-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory, ParameterSetName = 'Organization')]
@@ -317,10 +340,10 @@ function New-GitHubProject
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
 }
 
-function Set-GitHubProject
+filter Set-GitHubProject
 {
 <#
     .DESCRIPTION
@@ -357,6 +380,9 @@ function Set-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Project
+
     .EXAMPLE
         Set-GitHubProject -Project 999999 -State Closed
 
@@ -369,11 +395,12 @@ function Set-GitHubProject
         Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
         repository and set state to closed.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [string] $Description,
@@ -436,10 +463,10 @@ function Set-GitHubProject
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
 }
 
-function Remove-GitHubProject
+filter Remove-GitHubProject
 {
 <#
     .DESCRIPTION
@@ -491,7 +518,8 @@ function Remove-GitHubProject
     [Alias('Delete-GitHubProject')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [switch] $Force,
@@ -529,4 +557,47 @@ function Remove-GitHubProject
         return Invoke-GHRestMethod @params
     }
 
+}
+
+filter Add-GitHubProjectAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Project objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubProjectTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'ProjectId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.creator)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.creator
+            }
+       }
+
+        Write-Output $item
+    }
 }

@@ -231,7 +231,7 @@ filter Add-GitHubRepositoryAdditionalProperties
         The type that should be assigned to the object.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
             Mandatory,
@@ -253,10 +253,7 @@ filter Add-GitHubRepositoryAdditionalProperties
                 Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
             }
 
-            if (-not [String]::IsNullOrEmpty($item.id))
-            {
-                Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
-            }
+            Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
 
             if ($null -ne $item.author)
             {

@@ -1707,7 +1707,7 @@ filter Add-GitHubRepositoryAdditionalProperties
         is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Internal helper that doesn't change system state.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
             Mandatory,
