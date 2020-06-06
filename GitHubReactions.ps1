@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubReaction
+filter Get-GitHubReaction
 {
 <#
     .SYNOPSIS
@@ -67,6 +67,7 @@ function Get-GitHubReaction
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -135,7 +136,7 @@ function Get-GitHubReaction
     }
 }
 
-function Set-GitHubReaction
+filter Set-GitHubReaction
 {
 <#
     .SYNOPSIS
@@ -191,6 +192,7 @@ function Set-GitHubReaction
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -245,7 +247,7 @@ function Set-GitHubReaction
     return Invoke-GHRestMethod @params
 }
 
-function Remove-GitHubReaction
+filter Remove-GitHubReaction
 {
 <#
     .SYNOPSIS
@@ -308,6 +310,7 @@ function Remove-GitHubReaction
         DefaultParameterSetName='Elements',
         ConfirmImpact='High')]
     [Alias('Delete-GitHubReaction')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements', ValueFromPipelineByPropertyName)]
         [string] $OwnerName,
@@ -330,35 +333,33 @@ function Remove-GitHubReaction
         [switch] $NoStatus
     )
 
-    process {
-        Write-InvocationLog
+    Write-InvocationLog
 
-        $elements = Resolve-RepositoryElements
-        $OwnerName = $elements.ownerName
-        $RepositoryName = $elements.repositoryName
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
 
-        $telemetryProperties = @{
-            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/reactions/$ReactionId"
+    $description = "Removing reaction $ReactionId for Issue $Issue in $RepositoryName"
+
+    if ($PSCmdlet.ShouldProcess($ReactionId, "Removing reaction for Issue $Issue in $RepositoryName"))
+    {
+        $params = @{
+            'UriFragment' = $uriFragment
+            'Description' =  $description
+            'Method' = 'Delete'
+            'AcceptHeader' = $script:squirrelAcceptHeader
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/reactions/$ReactionId"
-        $description = "Removing reaction $ReactionId for Issue $Issue in $RepositoryName"
-
-        if ($PSCmdlet.ShouldProcess($ReactionId, "Removing reaction for Issue $Issue in $RepositoryName"))
-        {
-            $params = @{
-                'UriFragment' = $uriFragment
-                'Description' =  $description
-                'Method' = 'Delete'
-                'AcceptHeader' = $script:squirrelAcceptHeader
-                'AccessToken' = $AccessToken
-                'TelemetryEventName' = $MyInvocation.MyCommand.Name
-                'TelemetryProperties' = $telemetryProperties
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            }
-
-            return Invoke-GHRestMethod @params
-        }
+        return Invoke-GHRestMethod @params
     }
 }
