@@ -150,7 +150,7 @@ function Test-GitHubOrganizationMember
 }
 
 
-filter Set-GitHubOrganizationAdditionalProperties
+filter Add-GitHubOrganizationAdditionalProperties
 {
 <#
     .SYNOPSIS

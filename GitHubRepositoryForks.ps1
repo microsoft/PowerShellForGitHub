@@ -100,7 +100,7 @@ filter Get-GitHubRepositoryFork
     }
 
     return (Invoke-GHRestMethodMultipleResult @params  |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
 filter New-GitHubRepositoryFork
@@ -210,7 +210,7 @@ filter New-GitHubRepositoryFork
     }
 
     $result = (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 
     Write-Log -Message 'Forking a repository happens asynchronously.  You may have to wait a short period of time (up to 5 minutes) before you can access the git objects.' -Level Warning
     return $result

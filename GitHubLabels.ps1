@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubLabel
+@{
+    GitHubLabelTypeName = 'GitHub.Label'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -45,6 +51,9 @@ function Get-GitHubLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Label
+
     .EXAMPLE
         Get-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -59,6 +68,7 @@ function Get-GitHubLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
@@ -73,10 +83,11 @@ function Get-GitHubLabel
         [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ParameterSetName='NameUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Uri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='NameUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory, ParameterSetName='NameUri')]
@@ -84,12 +95,14 @@ function Get-GitHubLabel
         [Alias('LabelName')]
         [string] $Name,
 
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
+        [Alias('IssueId')]
         [int64] $Issue,
 
-        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneElements')]
+        [Alias('MilestoneId')]
         [int64] $Milestone,
 
         [string] $AccessToken,
@@ -150,10 +163,11 @@ function Get-GitHubLabel
         $params["Description"] =  "Getting label $Name for $RepositoryName"
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function New-GitHubLabel
+filter New-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -197,6 +211,9 @@ function New-GitHubLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Label
+
     .EXAMPLE
         New-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Color BBBBBB
 
@@ -205,6 +222,7 @@ function New-GitHubLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -216,7 +234,9 @@ function New-GitHubLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -224,8 +244,8 @@ function New-GitHubLabel
         [string] $Name,
 
         [Parameter(Mandatory)]
-        [Alias('LabelColor')]
         [ValidateScript({if ($_ -match '^#?[ABCDEF0-9]{6}$') { $true } else { throw "Color must be provided in hex." }})]
+        [Alias('LabelColor')]
         [string] $Color = "EEEEEE",
 
         [string] $Description,
@@ -271,10 +291,11 @@ function New-GitHubLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Remove-GitHubLabel
+filter Remove-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -345,7 +366,9 @@ function Remove-GitHubLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -393,7 +416,7 @@ function Remove-GitHubLabel
     }
 }
 
-function Update-GitHubLabel
+filter Update-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -441,6 +464,9 @@ function Update-GitHubLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Label
+
     .EXAMPLE
         Update-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -NewName NewTestLabel -LabelColor BBBB00
 
@@ -450,6 +476,7 @@ function Update-GitHubLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -460,7 +487,9 @@ function Update-GitHubLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -511,10 +540,11 @@ function Update-GitHubLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Set-GitHubLabel
+filter Set-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -560,7 +590,7 @@ function Set-GitHubLabel
 
     .NOTES
         This method does not rename any existing labels, as it doesn't have any context regarding
-        which Issue the new name is for.  Therefore, it is possible that by running this function
+        which Label the new name is for.  Therefore, it is possible that by running this function
         on a repository with Issues that have already been assigned Labels, you may experience data
         loss as a minor correction to you (maybe fixing a typo) will result in the old Label being
         removed (and thus unassigned from existing Issues) and then the new one created.
@@ -586,7 +616,9 @@ function Set-GitHubLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [object[]] $Label,
@@ -642,7 +674,7 @@ function Set-GitHubLabel
     }
 }
 
-function Add-GitHubIssueLabel
+filter Add-GitHubIssueLabel
 {
 <#
     .DESCRIPTION
@@ -679,6 +711,9 @@ function Add-GitHubIssueLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Label
+
     .EXAMPLE
         Add-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Name $labels
 
@@ -687,6 +722,7 @@ function Add-GitHubIssueLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -698,7 +734,9 @@ function Add-GitHubIssueLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -741,10 +779,11 @@ function Add-GitHubIssueLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Set-GitHubIssueLabel
+filter Set-GitHubIssueLabel
 {
 <#
     .DESCRIPTION
@@ -781,6 +820,9 @@ function Set-GitHubIssueLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Label
+
     .EXAMPLE
         Set-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
 
@@ -789,6 +831,7 @@ function Set-GitHubIssueLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -800,7 +843,9 @@ function Set-GitHubIssueLabel
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -843,10 +888,11 @@ function Set-GitHubIssueLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Remove-GitHubIssueLabel
+filter Remove-GitHubIssueLabel
 {
 <#
     .DESCRIPTION
@@ -908,13 +954,21 @@ function Remove-GitHubIssueLabel
         ConfirmImpact="High")]
     [Alias('Delete-GitHubLabel')]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -972,6 +1026,62 @@ function Remove-GitHubIssueLabel
         }
 
         return Invoke-GHRestMethod @params
+    }
+}
+
+filter Add-GitHubLabelAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Label objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+#>
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubLabelTypeName,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                $PSBoundParameters.ContainsKey('RepositoryName'))
+            {
+                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'LabelId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'LabelName' -Value $item.name -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
     }
 }
 

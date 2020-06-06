@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubPullRequest
+@{
+    GitHubPullRequestTypeName = 'GitHub.PullRequest'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubPullRequest
 {
 <#
     .SYNOPSIS
@@ -59,7 +65,7 @@ function Get-GitHubPullRequest
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of Pull Requests that match the specified criteria.
+        GitHub.Repository
 
     .EXAMPLE
         $pullRequests = Get-GitHubPullRequest -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
@@ -80,10 +86,14 @@ function Get-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $PullRequest,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('PullRequestId')]
+        [int64] $PullRequest,
 
         [ValidateSet('Open', 'Closed', 'All')]
         [string] $State = 'Open',
@@ -161,10 +171,11 @@ function Get-GitHubPullRequest
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubPullRequestAdditionalProperties -TypeName $script:GitHubPullRequestTypeName)
 }
 
-function New-GitHubPullRequest
+filter New-GitHubPullRequest
 {
     <#
     .SYNOPSIS
@@ -232,7 +243,7 @@ function New-GitHubPullRequest
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject] An object describing the created pull request.
+        GitHub.Repository
 
     .EXAMPLE
         $prParams = @{
@@ -266,10 +277,13 @@ function New-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Title')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -287,10 +301,13 @@ function New-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements_Issue')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
+        [Alias('IssueId')]
         [int] $Issue,
 
         [Parameter(Mandatory)]
@@ -387,5 +404,87 @@ function New-GitHubPullRequest
         $restParams['AcceptHeader'] = $acceptHeader
     }
 
-    return Invoke-GHRestMethod @restParams
+    return (Invoke-GHRestMethod @restParams |
+        Add-GitHubPullRequestAdditionalProperties -TypeName $script:GitHubPullRequestTypeName)
+}
+
+filter Add-GitHubPullRequestAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubPullRequestTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if (-not [String]::IsNullOrEmpty($item.html_url))
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
+            }
+
+            if (-not [String]::IsNullOrEmpty($item.id))
+            {
+                Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.user)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
+            }
+
+            if ($null -ne $item.label)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
+            }
+
+            if ($null -ne $item.milestone)
+            {
+                $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
+            }
+
+            if ($null -ne $item.assignee)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignee
+            }
+
+            if ($null -ne $item.assignees)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignees
+            }
+
+            if ($null -ne $item.requested_reviewers)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.requested_reviewers
+            }
+
+            if ($null -ne $item.requested_teams)
+            {
+                $null = Add-GitHubTeamAdditionalProperties -InputObject $item.requested_teams
+            }
+
+            # TODO: What type are item.head and item.base?
+        }
+
+        Write-Output $item
+    }
 }

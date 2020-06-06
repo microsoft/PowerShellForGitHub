@@ -50,11 +50,6 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Set-GitHubUserAdditionalProperties',
-
-
-
-
         'Add-GitHubIssueLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',

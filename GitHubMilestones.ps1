@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# For more information refer to"
+@{
+    GitHubMilestoneTypeName = 'GitHub.Milestone'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+# For more information refer to:
 #  https://github.community/t5/How-to-use-Git-and-GitHub/Milestone-quot-Due-On-quot-field-defaults-to-7-00-when-set-by-v3/m-p/6901
 $script:minimumHoursToEnsureDesiredDateInPacificTime = 9
 
-function Get-GitHubMilestone
+filter Get-GitHubMilestone
 {
 <#
     .DESCRIPTION
@@ -48,6 +54,9 @@ function Get-GitHubMilestone
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Milestone
+
     .EXAMPLE
         Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub
         Get the milestones for the Microsoft\PowerShellForGitHub project.
@@ -69,12 +78,14 @@ function Get-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneElements')]
+        [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
         [Parameter(ParameterSetName='RepositoryUri')]
@@ -162,7 +173,7 @@ function Get-GitHubMilestone
     return Invoke-GHRestMethodMultipleResult @params
 }
 
-function New-GitHubMilestone
+filter New-GitHubMilestone
 {
 <#
     .DESCRIPTION
@@ -207,6 +218,9 @@ function New-GitHubMilestone
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Milestone
+
     .EXAMPLE
         New-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
@@ -235,7 +249,11 @@ function New-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
@@ -308,7 +326,7 @@ function New-GitHubMilestone
     return Invoke-GHRestMethod @params
 }
 
-function Set-GitHubMilestone
+filter Set-GitHubMilestone
 {
 <#
     .DESCRIPTION
@@ -356,6 +374,9 @@ function Set-GitHubMilestone
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Milestone
+
     .EXAMPLE
         Set-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
 
@@ -384,11 +405,22 @@ function Set-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Elements')]
+        [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
         [Parameter(Mandatory, ParameterSetName='Uri')]
@@ -462,7 +494,7 @@ function Set-GitHubMilestone
     return Invoke-GHRestMethod @params
 }
 
-function Remove-GitHubMilestone
+filter Remove-GitHubMilestone
 {
 <#
     .DESCRIPTION
@@ -527,12 +559,17 @@ function Remove-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ParameterSetName='Elements')]
-        [string] $Milestone,
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Uri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Elements')]
+        [Alias('MilestoneNumber')]
+        [int64] $Milestone,
 
         [switch] $Force,
 
@@ -571,5 +608,66 @@ function Remove-GitHubMilestone
         }
 
         return Invoke-GHRestMethod @params
+    }
+}
+
+filter Add-GitHubMilestoneAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Milestone objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+#>
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubMilestoneTypeName,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                $PSBoundParameters.ContainsKey('RepositoryName'))
+            {
+                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'MilestoneId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'MilestoneNumber' -Value $item.number -MemberType NoteProperty -Force
+
+            if ($null -ne $item.creator)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.creator
+            }
+        }
+
+        Write-Output $item
     }
 }

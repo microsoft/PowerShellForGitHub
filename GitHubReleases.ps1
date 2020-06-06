@@ -214,11 +214,11 @@ filter Get-GitHubRelease
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Set-GitHubReleaseAdditionalProperties -TypeName $script:GitHubReleaseTypeName)
+        Add-GitHubReleaseAdditionalProperties -TypeName $script:GitHubReleaseTypeName)
 }
 
 
-filter Set-GitHubRepositoryAdditionalProperties
+filter Add-GitHubRepositoryAdditionalProperties
 {
 <#
     .SYNOPSIS
@@ -260,7 +260,7 @@ filter Set-GitHubRepositoryAdditionalProperties
 
             if ($null -ne $item.author)
             {
-                $null = Set-GitHubUserAdditionalProperties -InputObject $item.author
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
             }
         }
 

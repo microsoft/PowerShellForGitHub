@@ -206,7 +206,7 @@ filter New-GitHubRepository
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
 filter Remove-GitHubRepository
@@ -632,7 +632,7 @@ filter Get-GitHubRepository
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
 filter Rename-GitHubRepository
@@ -767,7 +767,7 @@ filter Rename-GitHubRepository
         }
 
         return (Invoke-GHRestMethod @params |
-            Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+            Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
     }
 }
 
@@ -956,7 +956,7 @@ filter Update-GitHubRepository
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
 filter Get-GitHubRepositoryTopic
@@ -1049,7 +1049,7 @@ filter Get-GitHubRepositoryTopic
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
 filter Set-GitHubRepositoryTopic
@@ -1186,7 +1186,7 @@ filter Set-GitHubRepositoryTopic
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
 filter Get-GitHubRepositoryContributor
@@ -1301,7 +1301,7 @@ filter Get-GitHubRepositoryContributor
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
 filter Get-GitHubRepositoryCollaborator
@@ -1391,7 +1391,7 @@ filter Get-GitHubRepositoryCollaborator
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
 filter Get-GitHubRepositoryLanguage
@@ -1483,7 +1483,7 @@ filter Get-GitHubRepositoryLanguage
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryLanguageTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryLanguageTypeName)
 }
 
 filter Get-GitHubRepositoryTag
@@ -1573,7 +1573,7 @@ filter Get-GitHubRepositoryTag
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTagTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTagTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
 filter Move-GitHubRepositoryOwnership
@@ -1683,10 +1683,10 @@ filter Move-GitHubRepositoryOwnership
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
 }
 
-filter Set-GitHubRepositoryAdditionalProperties
+filter Add-GitHubRepositoryAdditionalProperties
 {
 <#
     .SYNOPSIS
@@ -1743,12 +1743,12 @@ filter Set-GitHubRepositoryAdditionalProperties
 
             if ($null -ne $item.owner)
             {
-                $null = Set-GitHubUserAdditionalProperties -InputObject $item.owner
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
             }
 
             if ($null -ne $item.organization)
             {
-                $null = Set-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+                $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
             }
         }
 

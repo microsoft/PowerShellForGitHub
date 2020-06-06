@@ -137,7 +137,7 @@ filter Get-GitHubTeam
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Set-GitHubTeamAdditionalProperties)
+        Add-GitHubTeamAdditionalProperties)
 }
 
 filter Get-GitHubTeamMember
@@ -240,10 +240,10 @@ filter Get-GitHubTeamMember
         'NoStatus' = $NoStatus
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Set-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-filter Set-GitHubTeamAdditionalProperties
+filter Add-GitHubTeamAdditionalProperties
 {
 <#
     .SYNOPSIS
@@ -310,7 +310,7 @@ filter Set-GitHubTeamAdditionalProperties
             # Apply these properties to any embedded parent teams as well.
             if ($null -ne $item.parent)
             {
-                $null = Set-GitHubTeamAdditionalProperties -InputObject $item.parent
+                $null = Add-GitHubTeamAdditionalProperties -InputObject $item.parent
             }
         }
 

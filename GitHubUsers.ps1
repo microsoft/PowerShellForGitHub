@@ -96,17 +96,17 @@ filter Get-GitHubUser
     if ($Current)
     {
         return (Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params |
-            Set-GitHubUserAdditionalProperties)
+            Add-GitHubUserAdditionalProperties)
     }
     elseif ([String]::IsNullOrEmpty($User))
     {
         return (Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params |
-            Set-GitHubUserAdditionalProperties)
+            Add-GitHubUserAdditionalProperties)
     }
     else
     {
         return (Invoke-GHRestMethod -UriFragment "users/$User" -Description "Getting user $User" -Method 'Get' @params |
-            Set-GitHubUserAdditionalProperties)
+            Add-GitHubUserAdditionalProperties)
     }
 }
 
@@ -207,7 +207,7 @@ filter Get-GitHubUserContextualInformation
     }
 
     return (Invoke-GHRestMethod @params |
-        Set-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
+        Add-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
 }
 
 function Update-GitHubCurrentUser
@@ -306,10 +306,10 @@ function Update-GitHubCurrentUser
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Set-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethod @params | Add-GitHubUserAdditionalProperties)
 }
 
-filter Set-GitHubUserAdditionalProperties
+filter Add-GitHubUserAdditionalProperties
 {
 <#
     .SYNOPSIS
