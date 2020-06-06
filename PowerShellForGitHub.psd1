@@ -111,6 +111,7 @@
         'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
+        'New-GithubTeam',
         'Remove-GitHubAssignee',
         'Remove-GitHubIssueComment',
         'Remove-GitHubIssueLabel',
@@ -120,6 +121,7 @@
         'Remove-GitHubProjectCard',
         'Remove-GitHubProjectColumn',
         'Remove-GitHubRepository',
+        'Remove-GitHubTeam',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
@@ -141,7 +143,8 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
-        'Update-GitHubRepository'
+        'Update-GitHubRepository',
+        'Update-GitHubTeam'
     )
 
     AliasesToExport = @(
@@ -153,6 +156,7 @@
         'Delete-GitHubProjectCard',
         'Delete-GitHubProjectColumn'
         'Delete-GitHubRepository',
+        'Delete-GitHubTeam',
         'Get-GitHubBranch',
         'Get-GitHubComment',
         'New-GitHubComment',
