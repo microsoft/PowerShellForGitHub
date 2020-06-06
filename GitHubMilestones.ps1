@@ -170,7 +170,7 @@ filter Get-GitHubMilestone
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubMilestoneAdditionalProperties)
 }
 
 filter New-GitHubMilestone
@@ -323,7 +323,7 @@ filter New-GitHubMilestone
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubMilestoneAdditionalProperties)
 }
 
 filter Set-GitHubMilestone
@@ -491,7 +491,7 @@ filter Set-GitHubMilestone
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubMilestoneAdditionalProperties)
 }
 
 filter Remove-GitHubMilestone
@@ -622,14 +622,6 @@ filter Add-GitHubMilestoneAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
-
-    .PARAMETER OwnerName
-        Owner of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .PARAMETER RepositoryName
-        Name of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
@@ -640,11 +632,7 @@ filter Add-GitHubMilestoneAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubMilestoneTypeName,
-
-        [string] $OwnerName,
-
-        [string] $RepositoryName
+        [string] $TypeName = $script:GitHubMilestoneTypeName
     )
 
     foreach ($item in $InputObject)
@@ -653,13 +641,7 @@ filter Add-GitHubMilestoneAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ($PSBoundParameters.ContainsKey('OwnerName') -and
-                $PSBoundParameters.ContainsKey('RepositoryName'))
-            {
-                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
-            }
-
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'MilestoneId' -Value $item.id -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'MilestoneNumber' -Value $item.number -MemberType NoteProperty -Force
 

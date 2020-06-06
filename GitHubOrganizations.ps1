@@ -7,7 +7,7 @@
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
- function Get-GitHubOrganizationMember
+filter Get-GitHubOrganizationMember
 {
 <#
     .SYNOPSIS
@@ -32,7 +32,8 @@
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of members within the organization.
+        GitHub.User
+        List of members within the organization.
 
     .EXAMPLE
         Get-GitHubOrganizationMember -OrganizationName PowerShell
@@ -66,7 +67,7 @@
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
 function Test-GitHubOrganizationMember
