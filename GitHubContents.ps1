@@ -1,4 +1,4 @@
-function Get-GitHubContent
+filter Get-GitHubContent
 {
     <#
     .SYNOPSIS
@@ -73,9 +73,12 @@ function Get-GitHubContent
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipeline)]
         [string] $Path,
 
         [ValidateSet('Raw', 'Html', 'Object')]
