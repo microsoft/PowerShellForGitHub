@@ -464,7 +464,7 @@ filter Add-GitHubProjectColumnAdditionalProperties
 {
 <#
     .SYNOPSIS
-        Adds type name and additional properties to ease pipelining to GitHub Project objects.
+        Adds type name and additional properties to ease pipelining to GitHub Project Column objects.
 
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
@@ -491,7 +491,7 @@ filter Add-GitHubProjectColumnAdditionalProperties
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             Add-Member -InputObject $item -Name 'ColumnId' -Value $item.id -MemberType NoteProperty -Force
-       }
+        }
 
         Write-Output $item
     }

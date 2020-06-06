@@ -596,7 +596,7 @@ filter Add-GitHubProjectAdditionalProperties
             {
                 $null = Add-GitHubUserAdditionalProperties -InputObject $item.creator
             }
-       }
+        }
 
         Write-Output $item
     }

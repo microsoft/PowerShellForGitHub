@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubProjectCard
+@{
+    GitHubProjectCardTypeName = 'GitHub.ProjectCard'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubProjectCard
 {
 <#
     .DESCRIPTION
@@ -26,6 +32,9 @@ function Get-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectCard
+
     .EXAMPLE
         Get-GitHubProjectCard -Column 999999
 
@@ -49,12 +58,21 @@ function Get-GitHubProjectCard
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Column')]
+    [OutputType({$script:GitHubProjectCardTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Column')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Column')]
+        [Alias('ColumnId')]
         [int64] $Column,
 
-        [Parameter(Mandatory, ParameterSetName = 'Card')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Card')]
+        [Alias('CardId')]
         [int64] $Card,
 
         [ValidateSet('All', 'Archived', 'NotArchived')]
@@ -107,10 +125,10 @@ function Get-GitHubProjectCard
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectCardAdditionalProperties)
 }
 
-function New-GitHubProjectCard
+filter New-GitHubProjectCard
 {
 <#
     .DESCRIPTION
@@ -142,6 +160,9 @@ function New-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectCard
+
     .EXAMPLE
         New-GitHubProjectCard -Column 999999 -Note 'Note on card'
 
@@ -165,10 +186,14 @@ function New-GitHubProjectCard
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Note')]
+    [OutputType({$script:GitHubProjectCardTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ColumnId')]
         [int64] $Column,
 
         [Parameter(Mandatory, ParameterSetName = 'Note')]
@@ -223,10 +248,10 @@ function New-GitHubProjectCard
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
 }
 
-function Set-GitHubProjectCard
+filter Set-GitHubProjectCard
 {
 <#
     .DESCRIPTION
@@ -257,6 +282,9 @@ function Set-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectCard
+
     .EXAMPLE
         Set-GitHubProjectCard -Card 999999 -Note UpdatedNote
 
@@ -273,11 +301,15 @@ function Set-GitHubProjectCard
         Restores the card with ID 999999.
 #>
     [CmdletBinding(
-    SupportsShouldProcess,
-    DefaultParameterSetName = 'Note')]
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'Note')]
+    [OutputType({$script:GitHubProjectCardTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('CardId')]
         [int64] $Card,
 
         [string] $Note,
@@ -332,10 +364,10 @@ function Set-GitHubProjectCard
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
 }
 
-function Remove-GitHubProjectCard
+filter Remove-GitHubProjectCard
 {
 <#
     .DESCRIPTION
@@ -380,7 +412,10 @@ function Remove-GitHubProjectCard
     [Alias('Delete-GitHubProjectCard')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('CardId')]
         [int64] $Card,
 
         [switch] $Force,
@@ -419,7 +454,7 @@ function Remove-GitHubProjectCard
     }
 }
 
-function Move-GitHubProjectCard
+filter Move-GitHubProjectCard
 {
 <#
     .DESCRIPTION
@@ -474,11 +509,13 @@ function Move-GitHubProjectCard
         Moves the project card with ID 999999 to the position after the card ID 888888, in
         the column with ID 123456.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('CardId')]
         [int64] $Card,
 
         [switch] $Top,
@@ -543,4 +580,47 @@ function Move-GitHubProjectCard
     }
 
     return Invoke-GHRestMethod @params
+}
+
+
+filter Add-GitHubProjectCardAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Project Card objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubProjectColumnTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'CardId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.creator)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.creator
+            }
+        }
+
+        Write-Output $item
+    }
 }
