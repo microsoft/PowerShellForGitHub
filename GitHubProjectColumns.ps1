@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubProjectColumn
+@{
+    GitHubProjectColumnTypeName = 'GitHub.ProjectColumn'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
@@ -25,6 +31,9 @@ function Get-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectColumn
+
     .EXAMPLE
         Get-GitHubProjectColumn -Project 999999
 
@@ -38,13 +47,22 @@ function Get-GitHubProjectColumn
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Project')]
+    [OutputType({$script:GitHubProjectColumnTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Project')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Project')]
+        [Alias('ProjectId')]
         [int64] $Project,
 
-        [Parameter(Mandatory, ParameterSetName = 'Column')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Column')]
+        [Alias('ColumnId')]
         [int64] $Column,
 
         [string] $AccessToken,
@@ -84,10 +102,10 @@ function Get-GitHubProjectColumn
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectColumnAdditionalProperties)
 }
 
-function New-GitHubProjectColumn
+filter New-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
@@ -111,18 +129,24 @@ function New-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectColumn
+
     .EXAMPLE
         New-GitHubProjectColumn -Project 999999 -Name 'Done'
 
         Creates a column called 'Done' for the project with ID 999999.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubProjectColumnTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [Parameter(Mandatory)]
@@ -157,10 +181,10 @@ function New-GitHubProjectColumn
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectColumnAdditionalProperties)
 }
 
-function Set-GitHubProjectColumn
+filter Set-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
@@ -184,17 +208,23 @@ function Set-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.ProjectColumn
+
     .EXAMPLE
         Set-GitHubProjectColumn -Column 999999 -Name NewColumnName
 
         Set the project column name to 'NewColumnName' with column with ID 999999.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubProjectColumnTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ColumnId')]
         [int64] $Column,
 
         [Parameter(Mandatory)]
@@ -228,10 +258,10 @@ function Set-GitHubProjectColumn
         'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectColumnAdditionalProperties)
 }
 
-function Remove-GitHubProjectColumn
+filter Remove-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
@@ -276,7 +306,10 @@ function Remove-GitHubProjectColumn
     [Alias('Delete-GitHubProjectColumn')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ColumnId')]
         [int64] $Column,
 
         [switch] $Force,
@@ -315,7 +348,7 @@ function Remove-GitHubProjectColumn
     }
 }
 
-function Move-GitHubProjectColumn
+filter Move-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
@@ -361,12 +394,14 @@ function Move-GitHubProjectColumn
 
         Moves the project column with ID 999999 to the position after column with ID 888888.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ColumnId')]
         [int64] $Column,
 
         [switch] $First,
@@ -423,4 +458,41 @@ function Move-GitHubProjectColumn
     }
 
     return Invoke-GHRestMethod @params
+}
+
+filter Add-GitHubProjectColumnAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Project objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubProjectColumnTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'ColumnId' -Value $item.id -MemberType NoteProperty -Force
+       }
+
+        Write-Output $item
+    }
 }
