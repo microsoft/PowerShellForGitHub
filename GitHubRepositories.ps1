@@ -1712,6 +1712,8 @@ filter Add-GitHubRepositoryAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
@@ -1728,7 +1730,8 @@ filter Add-GitHubRepositoryAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $repositoryUrl = $item.html_url
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
             if ([String]::IsNullOrEmpty($repositoryUrl) -and
                 $PSBoundParameters.ContainsKey('OwnerName') -and
                 $PSBoundParameters.ContainsKey('RepositoryName'))

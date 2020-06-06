@@ -269,6 +269,8 @@ filter Add-GitHubTeamAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]

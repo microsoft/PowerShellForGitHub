@@ -478,6 +478,8 @@ filter Add-GitHubProjectColumnAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]

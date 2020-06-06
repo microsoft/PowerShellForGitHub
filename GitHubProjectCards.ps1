@@ -601,6 +601,8 @@ filter Add-GitHubProjectCardAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]

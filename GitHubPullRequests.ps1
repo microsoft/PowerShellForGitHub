@@ -92,7 +92,7 @@ filter Get-GitHubPullRequest
         [string] $Uri,
 
         [Parameter(ValueFromPipelineByPropertyName)]
-        [Alias('PullRequestId')]
+        [Alias('PullRequestNumber')]
         [int64] $PullRequest,
 
         [ValidateSet('Open', 'Closed', 'All')]
@@ -426,6 +426,8 @@ filter Add-GitHubPullRequestAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
@@ -438,19 +440,18 @@ filter Add-GitHubPullRequestAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if (-not [String]::IsNullOrEmpty($item.html_url))
-            {
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
-            }
-
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $item.number -MemberType NoteProperty -Force
 
             if ($null -ne $item.user)
             {
                 $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
             }
 
-            if ($null -ne $item.label)
+            if ($null -ne $item.labels)
             {
                 $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
             }
@@ -478,6 +479,11 @@ filter Add-GitHubPullRequestAdditionalProperties
             if ($null -ne $item.requested_teams)
             {
                 $null = Add-GitHubTeamAdditionalProperties -InputObject $item.requested_teams
+            }
+
+            if ($null -ne $item.merged_by)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.merged_by
             }
 
             # TODO: What type are item.head and item.base?

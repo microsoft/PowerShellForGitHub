@@ -236,6 +236,8 @@ filter Add-GitHubRepositoryAdditionalProperties
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
@@ -250,7 +252,9 @@ filter Add-GitHubRepositoryAdditionalProperties
         {
             if (-not [String]::IsNullOrEmpty($item.html_url))
             {
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $item.html_url -MemberType NoteProperty -Force
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             }
 
             Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force

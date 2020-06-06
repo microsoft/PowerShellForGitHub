@@ -727,19 +727,24 @@ function Split-GitHubUri
         [PSCustomObject] - The OwnerName and RepositoryName elements from the provided URL
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub'
 
         PowerShellForGitHub
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -RepositoryName
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub' -RepositoryName
 
         PowerShellForGitHub
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OwnerName
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub' -OwnerName
 
-        PowerShell
+        microsoft
+
+    .EXAMPLE
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub'
+
+        @{'ownerName' = 'microsoft'; 'repositoryName' = 'PowerShellForGitHub'}
 #>
     [CmdletBinding(DefaultParameterSetName='RepositoryName')]
     param
@@ -776,9 +781,13 @@ function Split-GitHubUri
     {
         return $components.ownerName
     }
-    elseif ($RepositoryName -or ($PSCmdlet.ParameterSetName -eq 'RepositoryName'))
+    elseif ($RepositoryName)
     {
         return $components.repositoryName
+    }
+    else
+    {
+        return $components
     }
 }
 
