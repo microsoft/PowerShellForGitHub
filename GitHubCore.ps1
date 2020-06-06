@@ -4,15 +4,18 @@
 @{
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
-    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
-    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
-    mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
-    nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
     baptisteAcceptHeader = 'application/vnd.github.baptiste-preview+json'
-    scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
     dorianAcceptHeader = 'application/vnd.github.dorian-preview+json'
     londonAcceptHeader = 'application/vnd.github.london-preview+json'
-
+    machineManAcceptHeader = 'application/vnd.github.machine-man-preview'
+    mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
+    mockingbirdAcceptHeader = 'application/vnd.github.mockingbird-preview'
+    nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
+    sailerVAcceptHeader = 'application/vnd.github.sailer-v-preview+json'
+    scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
+    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
+    starfoxAcceptHeader = 'application/vnd.github.starfox-preview+json'
+    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -747,6 +750,7 @@ function Split-GitHubUri
         @{'ownerName' = 'microsoft'; 'repositoryName' = 'PowerShellForGitHub'}
 #>
     [CmdletBinding(DefaultParameterSetName='RepositoryName')]
+    [OutputType([Hashtable])]
     param
     (
         [Parameter(Mandatory)]

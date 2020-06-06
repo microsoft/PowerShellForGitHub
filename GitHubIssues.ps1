@@ -3,7 +3,6 @@
 
 @{
     GitHubIssueTypeName = 'GitHub.Issue'
-    GitHubIssueTimelineEventTypeName = 'GitHub.IssueTimelineEvent'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -392,7 +391,7 @@ filter Get-GitHubIssueTimeline
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        GitHub.IssueTimelineEvent
+        GitHub.Event
 
     .EXAMPLE
         Get-GitHubIssueTimeline -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 24
@@ -400,7 +399,7 @@ filter Get-GitHubIssueTimeline
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubIssueTimelineEventTypeName})]
+    [OutputType({$script:GitHubEventTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -442,14 +441,14 @@ filter Get-GitHubIssueTimeline
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/timeline"
         'Description' =  "Getting timeline for Issue #$Issue in $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.mockingbird-preview'
+        'AcceptHeader' = $script:mockingbirdAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubIssueAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubEventAdditionalProperties)
 }
 
 filter New-GitHubIssue

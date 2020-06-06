@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubEvent
+@{
+    GitHubEventTypeName = 'GitHub.Event'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubEvent
 {
 <#
     .DESCRIPTION
@@ -22,7 +28,7 @@ function Get-GitHubEvent
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER EventID
+    .PARAMETER EventId
         The ID of a specific event to get. If not supplied, will return back all events for this repository.
 
     .PARAMETER Issue
@@ -38,6 +44,9 @@ function Get-GitHubEvent
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Event
+
     .EXAMPLE
         Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -46,6 +55,7 @@ function Get-GitHubEvent
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='RepositoryElements')]
+    [OutputType({$script:GitHubEventTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
@@ -58,17 +68,19 @@ function Get-GitHubEvent
         [Parameter(Mandatory, ParameterSetName='EventElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='EventUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventUri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='EventUri')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
-        [int64] $EventID,
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventElements')]
+        [int64] $EventId,
 
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [string] $AccessToken,
@@ -92,10 +104,10 @@ function Get-GitHubEvent
     $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events"
     $description = "Getting events for $RepositoryName"
 
-    if ($PSBoundParameters.ContainsKey('EventID'))
+    if ($PSBoundParameters.ContainsKey('EventId'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventID"
-        $description = "Getting event $EventID for $RepositoryName"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventId"
+        $description = "Getting event $EventId for $RepositoryName"
     }
     elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
@@ -104,10 +116,10 @@ function Get-GitHubEvent
     }
 
     $acceptHeaders = @(
-        'application/vnd.github.starfox-preview+json',
-        'application/vnd.github.sailer-v-preview+json',
-        'application/vnd.github.symmetra-preview+json',
-        'application/vnd.github.machine-man-preview')
+        $script:starfoxAcceptHeader,
+        $script:sailerVAcceptHeader,
+        $script:symmetraAcceptHeader,
+        $script:machineManAcceptHeader)
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -119,5 +131,57 @@ function Get-GitHubEvent
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubEventAdditionalProperties)
+}
+
+filter Add-GitHubEventAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Event objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubEventTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'EventId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.actor)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.actor
+            }
+
+            if ($null -ne $item.issue)
+            {
+                $null = Add-GitHubIssueAdditionalProperties -InputObject $item.issue
+            }
+        }
+
+        Write-Output $item
+    }
 }
