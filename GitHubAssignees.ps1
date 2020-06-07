@@ -389,7 +389,12 @@ function Remove-GithubAssignee
         'assignees' = $Assignee
     }
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"

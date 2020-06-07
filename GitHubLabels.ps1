@@ -371,7 +371,12 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove label"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
@@ -948,7 +953,12 @@ function Remove-GitHubIssueLabel
         $description = "Deleting all labels from issue $Issue in $RepositoryName"
     }
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove label"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
     {
         $params = @{
             'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"

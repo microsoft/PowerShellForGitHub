@@ -508,7 +508,12 @@ function Remove-GitHubProject
     $uriFragment = "projects/$Project"
     $description = "Deleting project $Project"
 
-    if ($Force -or $PSCmdlet.ShouldProcess($project, "Remove project"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($project, "Remove project"))
     {
         $params = @{
             'UriFragment' = $uriFragment

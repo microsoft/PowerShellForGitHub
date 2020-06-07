@@ -397,7 +397,12 @@ function Remove-GitHubProjectCard
     $uriFragment = "/projects/columns/cards/$Card"
     $description = "Deleting card $Card"
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Card, "Remove card"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Card, "Remove card"))
     {
         $params = @{
             'UriFragment' = $uriFragment

@@ -553,7 +553,12 @@ function Remove-GitHubMilestone
         'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Milestone, "Remove milestone"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Milestone, "Remove milestone"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"

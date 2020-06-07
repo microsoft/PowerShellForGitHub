@@ -506,7 +506,12 @@ function Remove-GitHubComment
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
-    if ($Force -or $PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"

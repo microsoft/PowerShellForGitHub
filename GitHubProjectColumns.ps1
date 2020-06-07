@@ -293,7 +293,12 @@ function Remove-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column"
     $description = "Deleting column $Column"
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Column, "Remove column"))
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Column, "Remove column"))
     {
         $params = @{
             'UriFragment' = $uriFragment

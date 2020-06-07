@@ -265,7 +265,13 @@ function Remove-GitHubRepository
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
-    if ($Force -or $PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
+
+    if ($Force -and -not $Confirm)
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName"
@@ -682,7 +688,13 @@ function Rename-GitHubRepository
     process
     {
         $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
-        if ($Force -or $PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
+
+        if ($Force -and -not $Confirm)
+        {
+            $ConfirmPreference = 'None'
+        }
+
+        if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation
             $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
