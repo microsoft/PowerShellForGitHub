@@ -37,6 +37,7 @@
         'GitHubProjectColumns.ps1',
         'GitHubPullRequests.ps1',
         'GitHubReleases.ps1',
+        'GitHubReferences.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
         'GitHubRepositoryTraffic.ps1',
@@ -109,6 +110,7 @@
         'New-GitHubProjectCard',
         'New-GitHubProjectColumn',
         'New-GitHubPullRequest',
+        'New-GitHubReference',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
         'Remove-GithubAssignee',
@@ -119,6 +121,7 @@
         'Remove-GitHubProject',
         'Remove-GitHubProjectCard',
         'Remove-GitHubProjectColumn',
+        'Remove-GitHubReference',
         'Remove-GitHubRepository',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
@@ -141,6 +144,7 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
+        'Update-GitHubReference',
         'Update-GitHubRepository'
     )
 
@@ -150,7 +154,8 @@
         'Delete-GitHubMilestone',
         'Delete-GitHubProject',
         'Delete-GitHubProjectCard',
-        'Delete-GitHubProjectColumn'
+        'Delete-GitHubProjectColumn',
+        'Delete-GitHubReference',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
         'Transfer-GitHubRepositoryOwnership'
