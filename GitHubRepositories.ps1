@@ -251,7 +251,7 @@ function New-GitHubRepositoryFromTemplate
         Owner of the repository to be created. If not specified, the DefaultOwnerName configuration
         property value will be used.
 
-        .PARAMETER Description
+    .PARAMETER Description
         A short description of the repository.
 
     .PARAMETER Private
@@ -269,23 +269,33 @@ function New-GitHubRepositoryFromTemplate
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -OwnerName Me -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+        New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo -OwnerName Me
 
         Creates a new GitHub repository from the specified template repository
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false
+        )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
-        Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        Justification="Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TemplateOwnerName,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            Position = 3)]
         [ValidateNotNullOrEmpty()]
         [string] $TemplateRepositoryName,
 
