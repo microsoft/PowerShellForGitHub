@@ -574,6 +574,9 @@ function Remove-GitHubTeam
     .PARAMETER TeamName
         The name of the team.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -614,6 +617,8 @@ function Remove-GitHubTeam
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -639,6 +644,10 @@ function Remove-GitHubTeam
     $team = Get-GitHubTeam @getGitHubTeamParms
 
     $uriFragment = "/orgs/$OrganizationName/teams/$($team.slug)"
+
+    if ($Force -and -not $Confirm){
+        $ConfirmPreference = 'None'
+    }
 
     if ($PSCmdlet.ShouldProcess($TeamName, "Remove Team"))
     {
