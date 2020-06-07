@@ -643,6 +643,7 @@ function Rename-GitHubRepository
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Force
+
         Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
 #>
     [CmdletBinding(
