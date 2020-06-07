@@ -267,10 +267,12 @@ function New-GitHubRepositoryBranch
             Whatif = $false
             Confirm = $false
         }
-        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+        if ($PSBoundParameters.ContainsKey('AccessToken'))
+        {
             $getGitHubRepositoryBranchParms['AccessToken'] = $AccessToken
         }
-        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+        if ($PSBoundParameters.ContainsKey('NoStatus'))
+        {
             $getGitHubRepositoryBranchParms['NoStatus'] = $NoStatus
         }
         $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
@@ -421,7 +423,8 @@ function Remove-GitHubRepositoryBranch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
 
-    if ($Force -and -not $Confirm){
+    if ($Force -and -not $Confirm)
+    {
         $ConfirmPreference = 'None'
     }
 
@@ -436,7 +439,8 @@ function Remove-GitHubRepositoryBranch
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         Invoke-GHRestMethod @params | Out-Null
