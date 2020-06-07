@@ -57,10 +57,14 @@ function Get-GitHubReference
         Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master
 
     .EXAMPLE
-        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master -MatchPrefix
+        Get-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch powershell -MatchPrefix
+
+        Get the branch 'powershell' and if it doesn't exist, get all branches beginning with 'powershell'
 
     .EXAMPLE
-        Get-GitHubReference -OwnerName microsoft -RepositoryName -All
+        Get-GitHubReference -Uri https://github.com/You/YourRepo -All
+
+        Get all references in the repository specified by URI
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -128,7 +132,7 @@ function Get-GitHubReference
         $reference = Resolve-Reference $Tag $Branch
 
         if ($MatchPrefix) {
-            $uriFragment = $uriFragment +  "/matching-refs/$reference"
+            $uriFragment = $uriFragment + "/matching-refs/$reference"
             $description =  "Getting references matching $reference for $RepositoryName"
         }
         else
@@ -148,7 +152,6 @@ function Get-GitHubReference
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    Write-Host $uriFragment
     return Invoke-GHRestMethodMultipleResult @params
 }
 
@@ -202,7 +205,7 @@ function New-GitHubReference
         New-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag powershellTagV1 -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
 
     .EXAMPLE
-        New-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+        New-GitHubReference  -Uri https://github.com/You/YourRepo -Branch master -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
@@ -316,7 +319,11 @@ function Update-GitHubReference
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Update-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Reference heads/master -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+        Update-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch myBranch -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+
+    .EXAMPLE
+        Update-GithubReference -Uri https://github.com/You/YourRepo -Tag myTag -Sha aa218f56b14c9653891f9e74264a383fa43fefbd
+
     #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -431,10 +438,12 @@ function Remove-GitHubReference
         Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag powershellTagV1
 
     .EXAMPLE
-        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch master
+        Remove-GitHubReference -Uri https://github.com/You/YourRepo -Branch master
 
     .EXAMPLE
-        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Branch milestone1 -Confirm:$false
+        Remove-GitHubReference -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag milestone1 -Confirm:$false
+
+        Remove the tag milestone1 without prompting for confirmation
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact="High")]
     [Alias('Delete-GitHubReference')]

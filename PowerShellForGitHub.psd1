@@ -77,6 +77,7 @@
         'Get-GitHubRateLimit',
         'Get-GitHubReferrerTraffic',
         'Get-GitHubRelease',
+        'Get-GitHubReference',
         'Get-GitHubRepository',
         'Get-GitHubRepositoryBranch',
         'Get-GitHubRepositoryCollaborator',

@@ -69,7 +69,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Create a new tag in a repository' {
@@ -104,7 +104,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Getting branch(es) from repository' {
@@ -174,7 +174,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Getting tag(s) from repository' {
@@ -221,8 +221,8 @@ try
             Context 'On getting tags by prefix from a repository' {
                 $tag1 = "elements_" + $([Guid]::NewGuid().ToString())
                 $tag2 = "elements_" + $([Guid]::NewGuid().ToString())
-                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $tag1 -Sha $sha
-                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Branch $tag2 -Sha $sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag1 -Sha $sha
+                New-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag $tag2 -Sha $sha
 
                 $references = Get-GitHubReference -OwnerName $ownerName -RepositoryName $repositoryName -Tag "elements" -MatchPrefix
 
@@ -241,12 +241,12 @@ try
                 $references = Get-GitHubReference -Uri $repo.svn_url -Tag "uri" -MatchPrefix
 
                 It 'Should return all tags matching the prefix' {
-                    $expected = @("refs/tags/$branch1", "refs/tags/$branch2")
+                    $expected = @("refs/tags/$tag1", "refs/tags/$tag2")
                     $references.ref | Should Be $expected
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
         Describe 'Getting all references from repository' {
             $repositoryName = [Guid]::NewGuid()
@@ -276,7 +276,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Delete a branch from a repository' {
@@ -333,7 +333,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Delete a Tag from a Repository' {
@@ -389,7 +389,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Update a branch in a repository' {
@@ -420,7 +420,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
 
         Describe 'Update a tag in a repository' {
@@ -451,7 +451,7 @@ try
                 }
             }
 
-            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName
+            $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
         }
     }
 }
