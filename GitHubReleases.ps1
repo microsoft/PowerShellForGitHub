@@ -112,7 +112,6 @@ filter Get-GitHubRelease
     [OutputType({$script:GitHubReleaseTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-<<<<<<< HEAD
         [Parameter(ParameterSetName='Elements')]
         [Parameter(ParameterSetName="Elements-ReleaseId")]
         [Parameter(ParameterSetName="Elements-Latest")]
@@ -123,26 +122,6 @@ filter Get-GitHubRelease
         [Parameter(ParameterSetName="Elements-ReleaseId")]
         [Parameter(ParameterSetName="Elements-Latest")]
         [Parameter(ParameterSetName="Elements-Tag")]
-=======
-        [Parameter(
-            ParameterSetName='Elements')]
-        [Parameter(
-            ParameterSetName='Elements-ReleaseId')]
-        [Parameter(
-            ParameterSetName='Elements-Latest')]
-        [Parameter(
-            ParameterSetName='Elements-Tag')]
-        [string] $OwnerName,
-
-        [Parameter(
-            ParameterSetName='Elements')]
-        [Parameter(
-            ParameterSetName='Elements-ReleaseId')]
-        [Parameter(
-            ParameterSetName='Elements-Latest')]
-        [Parameter(
-            ParameterSetName='Elements-Tag')]
->>>>>>> 0f9278b... Working on tests
         [string] $RepositoryName,
 
         [Parameter(
@@ -152,7 +131,6 @@ filter Get-GitHubRelease
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-<<<<<<< HEAD
             ParameterSetName="Uri-ReleaseId")]
         [Parameter(
             Mandatory,
@@ -162,35 +140,17 @@ filter Get-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-Tag")]
-=======
-            ParameterSetName='Uri-ReleaseId')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Latest')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Tag')]
->>>>>>> 0f9278b... Working on tests
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
-<<<<<<< HEAD
             ValueFromPipelineByPropertyName,
             ParameterSetName="Elements-ReleaseId")]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-ReleaseId")]
-=======
-            ParameterSetName='Elements-ReleaseId')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri-ReleaseId')]
->>>>>>> 0f9278b... Working on tests
         [Alias('ReleaseId')]
         [int64] $Release,
 
@@ -262,80 +222,10 @@ filter Get-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-<<<<<<< HEAD
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubReleaseAdditionalProperties)
 }
 
-
-filter Add-GitHubReleaseAdditionalProperties
-{
-<#
-    .SYNOPSIS
-        Adds type name and additional properties to ease pipelining to GitHub Release objects.
-
-    .PARAMETER InputObject
-        The GitHub object to add additional properties to.
-
-    .PARAMETER TypeName
-        The type that should be assigned to the object.
-
-    .INPUTS
-        [PSCustomObject]
-
-    .OUTPUTS
-        GitHub.Release
-#>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
-    param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline)]
-        [AllowNull()]
-        [AllowEmptyCollection()]
-        [PSCustomObject[]] $InputObject,
-
-        [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubReleaseTypeName
-    )
-
-    foreach ($item in $InputObject)
-    {
-        $item.PSObject.TypeNames.Insert(0, $TypeName)
-
-        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
-        {
-            if (-not [String]::IsNullOrEmpty($item.html_url))
-            {
-                $elements = Split-GitHubUri -Uri $item.html_url
-                $repositoryUrl = Join-GitHubUri @elements
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
-            }
-
-            Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
-
-            if ($null -ne $item.author)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
-            }
-        }
-
-        Write-Output $item
-    }
-=======
-    $multipleResult = Invoke-GHRestMethodMultipleResult @params
-
-    # Add additional property to ease pipelining
-    foreach ($result in $multipleResult)
-    {
-        Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
-    }
-
-    return $multipleResult
->>>>>>> 0f9278b... Working on tests
-}
-
-function New-GitHubRelease
+filter New-GitHubRelease
 {
 <#
     .SYNOPSIS
@@ -413,7 +303,7 @@ function New-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias('html_url')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -479,7 +369,7 @@ function New-GitHubRelease
     return $result
 }
 
-function Set-GitHubRelease
+filter Set-GitHubRelease
 {
 <#
     .SYNOPSIS
@@ -557,7 +447,7 @@ function Set-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias('html_url')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -627,7 +517,7 @@ function Set-GitHubRelease
     return $result
 }
 
-function Remove-GitHubRelease
+filter Remove-GitHubRelease
 {
 <#
     .SYNOPSIS
@@ -692,7 +582,7 @@ function Remove-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias('html_url')]
+        [Alias('ReositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -733,7 +623,7 @@ function Remove-GitHubRelease
     }
 }
 
-function Get-GitHubReleaseAsset
+filter Get-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -757,6 +647,9 @@ function Get-GitHubReleaseAsset
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Release
+        The ID of a specific release to see the assets for.
+
     .PARAMETER Asset
         The ID of the specific asset to download.
 
@@ -777,10 +670,15 @@ function Get-GitHubReleaseAsset
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+        Get-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
-    .NOTES
-        Requires push access to the repository.
+        Gets a list of all the assets associated with this release
+
+    .EXAMPLE
+        Get-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 1234567890 -Path 'c:\users\PowerShellForGitHub\downloads\asset.zip' -Force
+
+        Downloads the asset 1234567890 to 'c:\users\PowerShellForGitHub\downloads\asset.zip' and
+        overwrites the file that may already be there.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -800,35 +698,47 @@ function Get-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-Info')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-Download')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-List')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements-List')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-List')]
+        [Alias('ReleaseId')]
         [int64] $Release,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements-Info')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements-Download')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-Info')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri-Download')]
+        [Alias('AssetId')]
         [int64] $Asset,
 
         [Parameter(
@@ -908,7 +818,7 @@ function Get-GitHubReleaseAsset
     }
 }
 
-function New-GitHubReleaseAsset
+filter New-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -960,7 +870,7 @@ function New-GitHubReleaseAsset
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
+        New-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
 
     .NOTES
         GitHub renames asset filenames that have special characters, non-alphanumeric characters,
@@ -983,15 +893,20 @@ function New-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('ReleaseId')]
         [int64] $Release,
 
         [Parameter(
@@ -1064,7 +979,7 @@ function New-GitHubReleaseAsset
     return Invoke-GHRestMethod @params
 }
 
-function Set-GitHubReleaseAsset
+filter Set-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -1095,7 +1010,7 @@ function Set-GitHubReleaseAsset
         The new filename of the asset.
 
     .PARAMETER Label
-        An alternate short description o fthe asset.  Used in place of the filename.
+        An alternate short description of the asset.  Used in place of the filename.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -1109,6 +1024,8 @@ function Set-GitHubReleaseAsset
 
     .EXAMPLE
         Set-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 123456 -Name bar.zip
+
+        Renames the asset 123456 to be 'bar.zip'.
 
     .NOTES
         Requires push access to the repository.
@@ -1127,10 +1044,15 @@ function Set-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('AssetId')]
         [int64] $Asset,
 
         [string] $Name,
@@ -1173,7 +1095,7 @@ function Set-GitHubReleaseAsset
     return Invoke-GHRestMethod @params
 }
 
-function Remove-GitHubReleaseAsset
+filter Remove-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -1211,10 +1133,10 @@ function Remove-GitHubReleaseAsset
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
+        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 1234567890
 
     .EXAMPLE
-        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890 -Confirm:$false
+        Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 1234567890 -Confirm:$false
 
         Will not prompt for confirmation, as -Confirm:$false was specified.
 #>
@@ -1233,10 +1155,15 @@ function Remove-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('AssetId')]
         [int64] $Asset,
 
         [string] $AccessToken,
@@ -1268,5 +1195,62 @@ function Remove-GitHubReleaseAsset
     if ($PSCmdlet.ShouldProcess($Asset, "Deleting asset"))
     {
         return Invoke-GHRestMethod @params
+    }
+}
+
+filter Add-GitHubReleaseAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Release objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Release
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubReleaseTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if (-not [String]::IsNullOrEmpty($item.html_url))
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.author)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
+            }
+        }
+
+        Write-Output $item
     }
 }

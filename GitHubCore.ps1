@@ -132,6 +132,7 @@ function Invoke-GHRestMethod
 
         [string] $AcceptHeader = $script:defaultAcceptHeader,
 
+        [ValidateNotNullOrEmpty()]
         [string] $InFile,
 
         [string] $ContentType = $script:defaultJsonBodyContentType,
@@ -154,14 +155,14 @@ function Invoke-GHRestMethod
     Invoke-UpdateCheck
 
     # Minor error checking around $InFile
-    if ((-not [String]::IsNullOrWhiteSpace($InFile)) -and ($Method -ne 'Post'))
+    if ($PSBoundParameters.ContainsKey('InFile') -and ($Method -ne 'Post'))
     {
         $message = '-InFile may only be specified with Post requests.'
         Write-Log -Message $message -Level Error
         throw $message
     }
 
-    if ((-not [String]::IsNullOrWhiteSpace($InFile)) -and (-not [String]::IsNullOrWhiteSpace($Body)))
+    if ($PSBoundParameters.ContainsKey('InFile') -and (-not [String]::IsNullOrWhiteSpace($Body)))
     {
         $message = 'Cannot specify BOTH InFile and Body'
         Write-Log -Message $message -Level Error
@@ -238,6 +239,8 @@ function Invoke-GHRestMethod
         if ($PSBoundParameters.ContainsKey('InFile') -and [String]::IsNullOrWhiteSpace($ContentType))
         {
             $file = Get-Item -Path $InFile
+            $localTelemetryProperties['FileExtension'] = $file.Extension
+
             if ($script:extensionToContentType.ContainsKey($file.Extension))
             {
                 $ContentType = $script:extensionToContentType[$file.Extension]
