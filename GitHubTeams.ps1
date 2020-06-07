@@ -158,11 +158,41 @@ filter Get-GitHubTeam
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubTeamAdditionalProperties)
+    $result = Invoke-GHRestMethodMultipleResult @params | Add-GitHubTeamAdditionalProperties
+
+    if ($PSBoundParameters.ContainsKey('TeamName'))
+    {
+        $team = $result | Where-Object -Property name -eq $TeamName
+
+        if ($null -eq $team)
+        {
+            throw "Team '$TeamName' not found"
+        }
+        else
+        {
+            $uriFragment = "/teams/$($team.Id)"
+            $description = "Getting team $($team.Id)"
+
+            $params = @{
+                UriFragment = $uriFragment
+                Description =  $description
+                Method = 'Get'
+                AccessToken = $AccessToken
+                TelemetryEventName = $MyInvocation.MyCommand.Name
+                TelemetryProperties = $telemetryProperties
+                NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+                    -Name NoStatus -ConfigValueName DefaultNoStatus)
+            }
+
+            $result = Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties
+        }
+    }
+
+    return $result
 }
 
 filter Get-GitHubTeamMember
@@ -395,13 +425,16 @@ function New-GitHubTeam
             Whatif = $false
             Confirm = $false
         }
-        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+        if ($PSBoundParameters.ContainsKey('AccessToken'))
+        {
             $getGitHubTeamParms['AccessToken'] = $AccessToken
         }
-        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+        if ($PSBoundParameters.ContainsKey('NoStatus'))
+        {
             $getGitHubTeamParms['NoStatus'] = $NoStatus
         }
         $team = Get-GitHubTeam @getGitHubTeamParms
+
         $hashBody['parent_team_id'] = $team.id
     }
 
@@ -413,7 +446,8 @@ function New-GitHubTeam
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -508,10 +542,12 @@ function Update-GitHubTeam
         Whatif = $false
         Confirm = $false
     }
-    if ($PSBoundParameters.ContainsKey('AccessToken')) {
+    if ($PSBoundParameters.ContainsKey('AccessToken'))
+    {
         $getGitHubTeamParms['AccessToken'] = $AccessToken
     }
-    if ($PSBoundParameters.ContainsKey('NoStatus')) {
+    if ($PSBoundParameters.ContainsKey('NoStatus'))
+    {
         $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
     $team = Get-GitHubTeam @getGitHubTeamParms
@@ -532,10 +568,12 @@ function Update-GitHubTeam
             Whatif = $false
             Confirm = $false
         }
-        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+        if ($PSBoundParameters.ContainsKey('AccessToken'))
+        {
             $getGitHubTeamParms['AccessToken'] = $AccessToken
         }
-        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+        if ($PSBoundParameters.ContainsKey('NoStatus'))
+        {
             $getGitHubTeamParms['NoStatus'] = $NoStatus
         }
         $team = Get-GitHubTeam @getGitHubTeamParms
@@ -551,7 +589,8 @@ function Update-GitHubTeam
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -635,10 +674,12 @@ function Remove-GitHubTeam
         Whatif = $false
         Confirm = $false
     }
-    if ($PSBoundParameters.ContainsKey('AccessToken')) {
+    if ($PSBoundParameters.ContainsKey('AccessToken'))
+    {
         $getGitHubTeamParms['AccessToken'] = $AccessToken
     }
-    if ($PSBoundParameters.ContainsKey('NoStatus')) {
+    if ($PSBoundParameters.ContainsKey('NoStatus'))
+    {
         $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
     $team = Get-GitHubTeam @getGitHubTeamParms
@@ -660,7 +701,8 @@ function Remove-GitHubTeam
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
             TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return Invoke-GHRestMethod @params
