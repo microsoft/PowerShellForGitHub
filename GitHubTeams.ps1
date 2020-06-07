@@ -392,10 +392,14 @@ function New-GitHubTeam
         $getGitHubTeamParms = @{
             OrganizationName = $OrganizationName
             TeamName = $ParentTeamName
-            AccessToken = $AccessToken
-            NoStatus = $NoStatus
             Whatif = $false
             Confirm = $false
+        }
+        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+            $getGitHubTeamParms['AccessToken'] = $AccessToken
+        }
+        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+            $getGitHubTeamParms['NoStatus'] = $NoStatus
         }
         $team = Get-GitHubTeam @getGitHubTeamParms
         $hashBody['parent_team_id'] = $team.id
@@ -501,10 +505,14 @@ function Update-GitHubTeam
     $getGitHubTeamParms = @{
         OrganizationName = $OrganizationName
         TeamName = $teamName
-        AccessToken = $AccessToken
-        NoStatus = $NoStatus
         Whatif = $false
         Confirm = $false
+    }
+    if ($PSBoundParameters.ContainsKey('AccessToken')) {
+        $getGitHubTeamParms['AccessToken'] = $AccessToken
+    }
+    if ($PSBoundParameters.ContainsKey('NoStatus')) {
+        $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
     $team = Get-GitHubTeam @getGitHubTeamParms
 
@@ -521,10 +529,14 @@ function Update-GitHubTeam
         $getGitHubTeamParms = @{
             OrganizationName = $OrganizationName
             TeamName = $ParentTeamName
-            AccessToken = $AccessToken
-            NoStatus = $NoStatus
             Whatif = $false
             Confirm = $false
+        }
+        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+            $getGitHubTeamParms['AccessToken'] = $AccessToken
+        }
+        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+            $getGitHubTeamParms['NoStatus'] = $NoStatus
         }
         $team = Get-GitHubTeam @getGitHubTeamParms
 
@@ -615,10 +627,14 @@ function Remove-GitHubTeam
     $getGitHubTeamParms = @{
         OrganizationName = $OrganizationName
         TeamName = $TeamName
-        AccessToken = $AccessToken
-        NoStatus = $NoStatus
         Whatif = $false
         Confirm = $false
+    }
+    if ($PSBoundParameters.ContainsKey('AccessToken')) {
+        $getGitHubTeamParms['AccessToken'] = $AccessToken
+    }
+    if ($PSBoundParameters.ContainsKey('NoStatus')) {
+        $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
     $team = Get-GitHubTeam @getGitHubTeamParms
 
