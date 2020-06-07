@@ -194,41 +194,51 @@ function New-GitHubRepositoryBranch
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        None
+
     .OUTPUTS
-        [PSCustomObject] details of the created branch.
+        PSCustomObject
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name New-Branch1
+        New-GitHubRepositoryBranch -Name New-Branch1 -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Creates a new branch in the specified repository from the master branch.
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Name New-Branch2 -OriginBranchName 'New-Branch1'
+        New-GitHubRepositoryBranch -Name New-Branch2 -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OriginBranchName 'New-Branch1'
 
         Creates a new branch in the specified repository from the specified origin branch.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements')]
+        DefaultParameterSetName = 'Elements',
+        PositionalBinding = $false
+    )]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
-        Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        Justification = "Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+        Justification = "One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('New-GitHubBranch')]
     param(
+        [Parameter(
+            Mandatory,
+            Position = 1)]
+        [string] $Name,
+
+        [Parameter(
+            Mandatory,
+            Position = 2,
+            ParameterSetName = 'Uri')]
+        [string] $Uri,
+
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName = 'Uri')]
-        [string] $Uri,
-
-        [Parameter(Mandatory)]
-        [string] $Name,
 
         [string] $OriginBranchName = 'master',
 
@@ -237,7 +247,7 @@ function New-GitHubRepositoryBranch
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
+    Write-InvocationLog -Invocation $MyInvocation
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -250,19 +260,43 @@ function New-GitHubRepositoryBranch
 
     try
     {
-        $originBranch = Get-GitHubRepositoryBranch -OwnerName $OwnerName -RepositoryName $RepositoryName -Name $OriginBranchName
+        $getGitHubRepositoryBranchParms = @{
+            OwnerName = $OwnerName
+            RepositoryName = $RepositoryName
+            Name = $OriginBranchName
+            Whatif = $false
+            Confirm = $false
+        }
+        if ($PSBoundParameters.ContainsKey('AccessToken')) {
+            $getGitHubRepositoryBranchParms['AccessToken'] = $AccessToken
+        }
+        if ($PSBoundParameters.ContainsKey('NoStatus')) {
+            $getGitHubRepositoryBranchParms['NoStatus'] = $NoStatus
+        }
+        $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
     }
     catch
     {
-        if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
-            ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
+        # Temporary code to handle current differences in exception object between PS5 and PS7
+        $throwObject = $_
+
+        if ($PSVersionTable.PSedition -eq 'Core')
         {
-            throw "Origin branch $OriginBranchName not found"
+            if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
+            ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
+            {
+                $throwObject = "Origin branch $OriginBranchName not found"
+            }
         }
         else
         {
-            throw $_
+            if ($_.Exception.Message -like '*Not Found*')
+            {
+                $throwObject = "Origin branch $OriginBranchName not found"
+            }
         }
+
+        throw $throwObject
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
@@ -323,46 +357,53 @@ function Remove-GitHubRepositoryBranch
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        None
+
     .OUTPUTS
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name Test
+        Remove-GitHubRepositoryBranch  -Name TestBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Removes the Test branch from the specified repository.
+        Removes the specified branch from the specified repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements',
+        PositionalBinding = $false,
         ConfirmImpact="High")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
-        Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        Justification = "Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+        Justification = "One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Remove-GitHubBranch')]
     [Alias('Delete-GitHubRepositoryBranch')]
     [Alias('Delete-GitHubBranch')]
     param(
+        [Parameter(
+            Mandatory,
+            Position = 1)]
+        [string] $Name,
+
+        [Parameter(
+            Mandatory,
+            Position = 2,
+            ParameterSetName = 'Uri')]
+        [string] $Uri,
+
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [Parameter(
-            Mandatory,
-            ParameterSetName = 'Uri')]
-        [string] $Uri,
-
-        [Parameter(Mandatory)]
-        [string] $Name,
-
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
-
-    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -375,17 +416,22 @@ function Remove-GitHubRepositoryBranch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
 
-    $params = @{
-        'UriFragment' = $uriFragment
-        'Method' = 'Delete'
-        'Description' = "Deleting branch $Name from $RepositoryName"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    if ($PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
+    {
+        Write-InvocationLog -Invocation $MyInvocation
 
-    return Invoke-GHRestMethod @params
+        $params = @{
+            'UriFragment' = $uriFragment
+            'Method' = 'Delete'
+            'Description' = "Deleting branch $Name from $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params | Out-Null
+    }
 }
 
 filter Add-GitHubBranchAdditionalProperties
