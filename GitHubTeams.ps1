@@ -332,13 +332,15 @@ function New-GitHubTeam
         Creates a new GitHub team in the specified organization
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.')]
+        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
+        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false
-        )]
+    )]
     param
     (
         [Parameter(Mandatory, Position = 1)]
@@ -455,14 +457,16 @@ function Update-GitHubTeam
         Updates the description for the specified GitHub team in the specified organization.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.')]
+        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
+        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
-        [CmdletBinding(
-            SupportsShouldProcess,
-            PositionalBinding = $false
-            )]
-        param
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false
+    )]
+    param
     (
         [Parameter(Mandatory, Position = 1)]
         [ValidateNotNullOrEmpty()]
@@ -574,14 +578,16 @@ function Remove-GitHubTeam
         Removes the specified GitHub team from the specified organization
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.')]
+        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
+        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false,
         ConfirmImpact = 'High'
-        )]
+    )]
     [Alias('Delete-GitHubTeam')]
     param
     (
@@ -597,8 +603,6 @@ function Remove-GitHubTeam
 
         [switch] $NoStatus
     )
-
-    Write-InvocationLog -Invocation $MyInvocation
 
     $telemetryProperties = @{
         OrganizationName = (Get-PiiSafeString -PlainText $RepositoryName)
@@ -619,6 +623,8 @@ function Remove-GitHubTeam
 
     if ($PSCmdlet.ShouldProcess($TeamName, "Remove Team"))
     {
+        Write-InvocationLog -Invocation $MyInvocation
+
         $params = @{
             UriFragment = $uriFragment
             Method = 'Delete'
