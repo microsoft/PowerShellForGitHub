@@ -347,6 +347,9 @@ function Remove-GitHubRepositoryBranch
     .PARAMETER Name
         Name of the branch to be removed.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -400,6 +403,8 @@ function Remove-GitHubRepositoryBranch
         [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -416,7 +421,7 @@ function Remove-GitHubRepositoryBranch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
 
-    if ($PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
     {
         Write-InvocationLog -Invocation $MyInvocation
 
