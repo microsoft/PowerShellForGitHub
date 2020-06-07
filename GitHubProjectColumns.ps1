@@ -252,6 +252,9 @@ function Remove-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubProjectColumn -Column 999999
 
@@ -259,6 +262,11 @@ function Remove-GitHubProjectColumn
 
     .EXAMPLE
         Remove-GitHubProjectColumn -Column 999999 -Confirm:$False
+
+        Removes the project column with ID 999999 without prompting for confirmation.
+
+    .EXAMPLE
+        Remove-GitHubProjectColumn -Column 999999 -Force
 
         Removes the project column with ID 999999 without prompting for confirmation.
 #>
@@ -273,7 +281,9 @@ function Remove-GitHubProjectColumn
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -283,7 +293,7 @@ function Remove-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column"
     $description = "Deleting column $Column"
 
-    if ($PSCmdlet.ShouldProcess($Column, "Remove column"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Column, "Remove column"))
     {
         $params = @{
             'UriFragment' = $uriFragment

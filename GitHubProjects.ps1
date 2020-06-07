@@ -460,6 +460,9 @@ function Remove-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubProject -Project 4387531
 
@@ -467,6 +470,11 @@ function Remove-GitHubProject
 
     .EXAMPLE
         Remove-GitHubProject -Project 4387531 -Confirm:$false
+
+        Remove project with ID '4387531' without prompting for confirmation.
+
+    .EXAMPLE
+        Remove-GitHubProject -Project 4387531 -Force
 
         Remove project with ID '4387531' without prompting for confirmation.
 
@@ -488,7 +496,9 @@ function Remove-GitHubProject
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -498,7 +508,7 @@ function Remove-GitHubProject
     $uriFragment = "projects/$Project"
     $description = "Deleting project $Project"
 
-    if ($PSCmdlet.ShouldProcess($project, "Remove project"))
+    if ($Force -or $PSCmdlet.ShouldProcess($project, "Remove project"))
     {
         $params = @{
             'UriFragment' = $uriFragment

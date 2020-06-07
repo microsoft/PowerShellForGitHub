@@ -496,6 +496,9 @@ function Remove-GitHubMilestone
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 
@@ -505,6 +508,11 @@ function Remove-GitHubMilestone
         Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Confirm:$false
 
         Deletes a Github milestone from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Force
+
+        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -528,7 +536,9 @@ function Remove-GitHubMilestone
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -543,7 +553,7 @@ function Remove-GitHubMilestone
         'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
-    if ($PSCmdlet.ShouldProcess($Milestone, "Remove milestone"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Milestone, "Remove milestone"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"

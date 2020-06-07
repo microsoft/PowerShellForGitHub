@@ -312,6 +312,9 @@ function Remove-GitHubLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel
 
@@ -321,6 +324,11 @@ function Remove-GitHubLabel
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Confirm:$false
 
         Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Force
+
+        Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -347,7 +355,9 @@ function Remove-GitHubLabel
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -361,7 +371,7 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove label"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Name"
@@ -869,6 +879,9 @@ function Remove-GitHubIssueLabel
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
 
@@ -878,6 +891,11 @@ function Remove-GitHubIssueLabel
         Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1 -Confirm:$false
 
         Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1 -Force
+
+        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -903,7 +921,9 @@ function Remove-GitHubIssueLabel
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -928,7 +948,7 @@ function Remove-GitHubIssueLabel
         $description = "Deleting all labels from issue $Issue in $RepositoryName"
     }
 
-    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove label"))
     {
         $params = @{
             'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"

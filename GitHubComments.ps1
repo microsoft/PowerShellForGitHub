@@ -448,6 +448,9 @@ function Remove-GitHubComment
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 
@@ -455,6 +458,11 @@ function Remove-GitHubComment
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Confirm:$false
+
+        Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
+
+    .EXAMPLE
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Force
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
@@ -481,7 +489,9 @@ function Remove-GitHubComment
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -496,7 +506,7 @@ function Remove-GitHubComment
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
-    if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
+    if ($Force -or $PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"

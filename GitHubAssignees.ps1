@@ -324,6 +324,9 @@ function Remove-GithubAssignee
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
@@ -333,6 +336,11 @@ function Remove-GithubAssignee
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Force
+
+        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -359,7 +367,9 @@ function Remove-GithubAssignee
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -379,7 +389,7 @@ function Remove-GithubAssignee
         'assignees' = $Assignee
     }
 
-    if ($PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
     {
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"

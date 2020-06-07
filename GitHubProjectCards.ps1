@@ -356,6 +356,9 @@ function Remove-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999
 
@@ -363,6 +366,11 @@ function Remove-GitHubProjectCard
 
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999 -Confirm:$False
+
+        Remove project card with ID 999999 without prompting for confirmation.
+
+    .EXAMPLE
+        Remove-GitHubProjectCard -Card 999999 -Force
 
         Remove project card with ID 999999 without prompting for confirmation.
 #>
@@ -377,7 +385,9 @@ function Remove-GitHubProjectCard
 
         [string] $AccessToken,
 
-        [switch] $NoStatus
+        [switch] $NoStatus,
+
+        [switch] $Force
     )
 
     Write-InvocationLog
@@ -387,7 +397,7 @@ function Remove-GitHubProjectCard
     $uriFragment = "/projects/columns/cards/$Card"
     $description = "Deleting card $Card"
 
-    if ($PSCmdlet.ShouldProcess($Card, "Remove card"))
+    if ($Force -or $PSCmdlet.ShouldProcess($Card, "Remove card"))
     {
         $params = @{
             'UriFragment' = $uriFragment
