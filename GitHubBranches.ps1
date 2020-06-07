@@ -421,7 +421,11 @@ function Remove-GitHubRepositoryBranch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
 
-    if ($Force -or $PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
+    if ($Force -and -not $Confirm){
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
     {
         Write-InvocationLog -Invocation $MyInvocation
 
