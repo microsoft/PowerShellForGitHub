@@ -623,17 +623,22 @@ function Rename-GitHubRepository
 
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
+
         Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
+
         Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
+
         Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+
         Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
 
     .EXAMPLE
