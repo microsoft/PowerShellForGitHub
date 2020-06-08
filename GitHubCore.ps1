@@ -223,8 +223,15 @@ function Invoke-GHRestMethod
                 }
             }
 
+            # Temporarily Disable Progress Bar during Invoke-WebRequest
+            $tempProgressPreference = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'
+
             [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $result = Invoke-WebRequest @params
+
+            $progressPreference = $tempProgressPreference
+
             if ($Method -eq 'Delete')
             {
                 Write-Log -Message "Successfully removed." -Level Verbose
@@ -265,8 +272,14 @@ function Invoke-GHRestMethod
 
                 try
                 {
+                    # Temporarily Disable Progress Bar during Invoke-WebRequest
+                    $tempProgressPreference = $ProgressPreference
+                    $ProgressPreference = 'SilentlyContinue'
+
                     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                     Invoke-WebRequest @params
+
+                    $progressPreference = $tempProgressPreference
                 }
                 catch [System.Net.WebException]
                 {
