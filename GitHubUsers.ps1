@@ -300,14 +300,14 @@ filter Get-GitHubUserContextualInformation
     return $result
 }
 
-function Update-GitHubCurrentUser
+function Set-GitHubProfile
 {
 <#
     .SYNOPSIS
-        Updates information about the current authenticated user on GitHub.
+        Updates profile information for the current authenticated user on GitHub.
 
     .DESCRIPTION
-        Updates information about the current authenticated user on GitHub.
+        Updates profile information for the current authenticated user on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -347,13 +347,14 @@ function Update-GitHubCurrentUser
         GitHub.User
 
     .EXAMPLE
-        Update-GitHubCurrentUser -Location 'Seattle, WA' -Hireable:$false
+        Set-GitHubProfile -Location 'Seattle, WA' -Hireable:$false
 
         Updates the current user to indicate that their location is "Seattle, WA" and that they
         are not currently hireable.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType({$script:GitHubUserTypeName})]
+    [Alias('Update-GitHubCurrentUser')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [string] $Name,

@@ -81,7 +81,7 @@ try
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
 
-            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
+            Restore-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
         }
 
         AfterAll {
@@ -376,7 +376,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -396,7 +396,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = '#AAAAAA'
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -416,7 +416,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -436,7 +436,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Description $newDescription
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Description $newDescription
 
             It 'Label should have different name' {
                 $result.name | Should -Be $label.name
@@ -458,7 +458,7 @@ try
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -480,7 +480,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
-            $result = $repo | Update-GitHubLabel -Label $label.name -Color $newColor
+            $result = $repo | Set-GitHubLabel -Label $label.name -Color $newColor
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -500,7 +500,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
-            $result = $label | Update-GitHubLabel -NewName $newName
+            $result = $label | Set-GitHubLabel -NewName $newName
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -522,7 +522,7 @@ try
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
-            $result = $label | Update-GitHubLabel -NewName $newName -Color $newColor -Description $newDescription
+            $result = $label | Set-GitHubLabel -NewName $newName -Color $newColor -Description $newDescription
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -550,7 +550,7 @@ try
         }
 
         Context 'Applying a default set of labels' {
-            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
+            Restore-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
 
             $labels = @($repo | Get-GitHubLabel)
 
@@ -578,7 +578,7 @@ try
             )
 
             $originalLabels = @($repo | Get-GitHubLabel)
-            $null = $repo | Set-GitHubLabel -Label $newLabels
+            $null = $repo | Restore-GitHubLabel -Label $newLabels
             $labels = @($repo | Get-GitHubLabel)
 
             It 'Should return the expected number of labels' {
@@ -595,37 +595,29 @@ try
             }
 
             It 'Should have retained the ID''s of the pre-existing labels' {
-                $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[0].name }
-                $label = $labels | Where-Object { $_.name -eq $newLabels[0].name }
-                $label.id | Should -Be $originalLabel.id
+                for ($i = 0; $i -le 2; $i++)
+                {
+                    $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[$i].name }
+                    $label = $labels | Where-Object { $_.name -eq $newLabels[$i].name }
+                    $label.id | Should -Be $originalLabel.id
+                }
 
-                $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[1].name }
-                $label = $labels | Where-Object { $_.name -eq $newLabels[1].name }
-                $label.id | Should -Be $originalLabel.id
-
-                $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[2].name }
-                $label = $labels | Where-Object { $_.name -eq $newLabels[2].name }
-                $label.id | Should -Be $originalLabel.id
-
-                $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[3].name }
-                $label = $labels | Where-Object { $_.name -eq $newLabels[3].name }
-                $originalLabel | Should -BeNullOrEmpty
-                $label | Should -Not -BeNullOrEmpty
-
-                $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[4].name }
-                $label = $labels | Where-Object { $_.name -eq $newLabels[4].name }
-                $originalLabel | Should -BeNullOrEmpty
-                $label | Should -Not -BeNullOrEmpty
+                for ($i = 3; $i -le 4; $i++)
+                {
+                    $originalLabel = $originalLabels | Where-Object { $_.name -eq $newLabels[$i].name }
+                    $label = $labels | Where-Object { $_.name -eq $newLabels[$i].name }
+                    $originalLabel | Should -BeNullOrEmpty
+                    $label | Should -Not -BeNullOrEmpty
+                }
             }
         }
-
     }
 
     Describe 'Adding labels to an issue' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Set-GitHubLabel -Label $defaultLabels
+            $repo | Restore-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -853,7 +845,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Set-GitHubLabel -Label $defaultLabels
+            $repo | Restore-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -919,7 +911,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Set-GitHubLabel -Label $defaultLabels
+            $repo | Restore-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -1086,7 +1078,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Set-GitHubLabel -Label $defaultLabels
+            $repo | Restore-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -1235,7 +1227,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Set-GitHubLabel -Label $defaultLabels
+            $repo | Restore-GitHubLabel -Label $defaultLabels
 
             $milestone = $repo | New-GitHubMilestone -Title 'test milestone'
 

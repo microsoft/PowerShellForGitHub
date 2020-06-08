@@ -133,16 +133,20 @@
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
+        'Restore-GitHubLabel',
         'Set-GitHubAuthentication',
         'Set-GitHubConfiguration',
         'Set-GitHubContent',
+        'Set-GitHubIssue',
         'Set-GitHubIssueComment',
         'Set-GitHubIssueLabel',
         'Set-GitHubLabel',
         'Set-GitHubMilestone',
+        'Set-GitHubProfile',
         'Set-GitHubProject',
         'Set-GitHubProjectCard',
         'Set-GitHubProjectColumn',
+        'Set-GitHubRepository'
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
@@ -171,6 +175,10 @@
         'Remove-GitHubComment',
         'Set-GitHubComment',
         'Transfer-GitHubRepositoryOwnership'
+        'Update-GitHubIssue',
+        'Update-GitHubLabel',
+        'Update-GitHubCurrentUser',
+        'Update-GitHubRepository'
     )
 
     # Cmdlets to export from this module

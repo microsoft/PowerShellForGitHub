@@ -182,21 +182,21 @@ try
                 $milestone.open_issues | Should -Be 0
             }
 
-            $issue = $issue | Update-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber
             $milestone = $milestone | Get-GitHubMilestone
             It "Should be associated to the milestone now" {
                 $issue.milestone.number | Should -Be $milestone.MilestoneNumber
                 $milestone.open_issues | Should -Be 1
             }
 
-            $issue = $issue | Update-GitHubIssue -Milestone 0
+            $issue = $issue | Set-GitHubIssue -Milestone 0
             $milestone = $milestone | Get-GitHubMilestone
             It 'Should no longer be associated to the milestone' {
                 $issue.milestone | Should -BeNullOrEmpty
                 $milestone.open_issues | Should -Be 0
             }
 
-            $issue = $issue | Update-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber
             $milestone = $milestone | Get-GitHubMilestone
             It "Should be associated to the milestone again" {
                 $issue.milestone.number | Should -Be $milestone.MilestoneNumber

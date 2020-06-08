@@ -662,8 +662,8 @@ try
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
-            It "Should be possible to rename with Update-GitHubRepository too" {
-                $renamedRepo = $repo | Update-GitHubRepository -NewName $newRepoName -Confirm:$false
+            It "Should be possible to rename with Set-GitHubRepository too" {
+                $renamedRepo = $repo | Set-GitHubRepository -NewName $newRepoName -Confirm:$false
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
@@ -674,7 +674,7 @@ try
         }
     }
 
-    Describe 'GitHubRepositories\Update-GitHubRepository' {
+    Describe 'GitHubRepositories\Set-GitHubRepository' {
 
         Context -Name 'When updating a public repository' -Fixture {
             BeforeAll -ScriptBlock {
@@ -699,7 +699,7 @@ try
                         DeleteBranchOnMerge = $true
                         IsTemplate = $true
                     }
-                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
                 It 'Should return an object of the correct type' {
@@ -731,7 +731,7 @@ try
                         DisallowMergeCommit = $false
                         DisallowRebaseMerge = $true
                     }
-                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
                 It 'Should return an object of the correct type' {
@@ -753,7 +753,7 @@ try
                         RepositoryName = $repoName
                         Archived = $true
                     }
-                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
                 It 'Should return an object of the correct type' {
@@ -784,7 +784,7 @@ try
                     RepositoryName = $repoName
                     Private = $false
                 }
-                $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
             }
 
             It 'Should return an object of the correct type' {
@@ -794,6 +794,16 @@ try
             It 'Should return the correct properties' {
                 $updatedRepo.name | Should -Be $repoName
                 $updatedRepo.private | Should -BeFalse
+
+            It 'Should have the new updated description' {
+                $modifiedRepoDesc = $defaultRepoDesc + "_modified"
+                $updatedRepo = Set-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Description $modifiedRepoDesc
+                $updatedRepo.description | Should -Be $modifiedRepoDesc
+            }
+
+            It 'Should have the new updated homepage url' {
+                $updatedRepo = Set-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Homepage $defaultRepoHomePage
+                $updatedRepo.homepage | Should -Be $defaultRepoHomePage
             }
 
             AfterAll -ScriptBlock {

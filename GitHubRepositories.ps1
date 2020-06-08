@@ -1015,11 +1015,11 @@ filter Rename-GitHubRepository
     )
 
     # This method was created by mistake and is now retained to avoid a breaking change.
-    # Update-GitHubRepository is able to handle this scenario just fine.
-    return Update-GitHubRepository @PSBoundParameters
+    # Set-GitHubRepository is able to handle this scenario just fine.
+    return Set-GitHubRepository @PSBoundParameters
 }
 
-filter Update-GitHubRepository
+filter Set-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -1125,18 +1125,18 @@ filter Update-GitHubRepository
         GitHub.Repository
 
     .EXAMPLE
-        Update-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
+        Set-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
         Changes the description of the specified repository.
 
     .EXAMPLE
-        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
+        Set-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
 
         Changes the visibility of the specified repository to be public.
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
-            Update-GitHubRepository -NewName 'PoShForGitHub' -Force
+            Set-GitHubRepository -NewName 'PoShForGitHub' -Force
 
         Renames the repository without any user confirmation prompting.  This is identical to using
         Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
@@ -1146,6 +1146,7 @@ filter Update-GitHubRepository
         DefaultParameterSetName='Elements',
         ConfirmImpact='High')]
     [OutputType({$script:GitHubRepositoryTypeName})]
+    [Alias('Update-GitHubRepository')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
