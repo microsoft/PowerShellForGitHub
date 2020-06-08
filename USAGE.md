@@ -572,7 +572,7 @@ $HasPermission = Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerS
 
 #### Add assignee to an issue
 ```powershell
-New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+Add-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
 ```
 
 #### Remove assignee from an issue

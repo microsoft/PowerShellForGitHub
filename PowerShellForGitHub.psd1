@@ -55,6 +55,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-GitHubAssignee',
         'Add-GitHubIssueLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
@@ -109,7 +110,7 @@
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
-        'New-GitHubAssignee',
+        'New-GitHubComment',
         'New-GitHubIssue',
         'New-GitHubIssueComment',
         'New-GitHubLabel',
@@ -171,6 +172,7 @@
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
         'Get-GitHubComment',
+        'New-GitHubAssignee',
         'New-GitHubComment',
         'Remove-GitHubComment',
         'Set-GitHubComment',
