@@ -254,7 +254,7 @@ filter New-GitHubRelease
 
     .PARAMETER Commitish
         The commitsh value that determines where the Git tag is created from.
-        Cn be any branch or commit SHA.  Unused if the Git tag already exists.
+        Can be any branch or commit SHA.  Unused if the Git tag already exists.
         Will default to the repository's default branch (usually 'master').
 
     .PARAMETER Name
@@ -313,6 +313,7 @@ filter New-GitHubRelease
 
         [string] $Name,
 
+        [Alias('Description')]
         [string] $Body,
 
         [switch] $Draft,
@@ -401,7 +402,7 @@ filter Set-GitHubRelease
 
     .PARAMETER Commitish
         The commitsh value that determines where the Git tag is created from.
-        Cn be any branch or commit SHA.  Unused if the Git tag already exists.
+        Can be any branch or commit SHA.  Unused if the Git tag already exists.
         Will default to the repository's default branch (usually 'master').
 
     .PARAMETER Name
@@ -462,6 +463,7 @@ filter Set-GitHubRelease
 
         [string] $Name,
 
+        [Alias('Description')]
         [string] $Body,
 
         [switch] $Draft,
@@ -914,7 +916,9 @@ filter New-GitHubReleaseAsset
             ParameterSetName='UploadUrl')]
         [string] $UploadUrl,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory
+            ValueFromPipeline)]
         [ValidateScript({if (Test-Path -Path $_ -PathType Leaf) { $true } else { throw "$_ does not exist or is inaccessible." }})]
         [string] $Path,
 
@@ -958,10 +962,10 @@ filter New-GitHubReleaseAsset
     $Path = Resolve-UnverifiedPath -Path $Path
     $file = Get-Item -Path $Path
     $fileName = $file.Name
-    $fileNameEncoded = [System.Web.HTTPUtility]::UrlEncode($fileName)
+    $fileNameEncoded = [Uri]::EscapeDataString($fileName)
     $queryParams = @("name=$fileNameEncoded")
 
-    $labelEncoded = [System.Web.HTTPUtility]::UrlEncode($Label)
+    $labelEncoded = [Uri]::EscapeDataString($Label)
     if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
 
     $params = @{
