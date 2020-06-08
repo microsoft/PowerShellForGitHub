@@ -704,7 +704,7 @@ function Invoke-GHRestMethodMultipleResult
     }
 }
 
-function Split-GitHubUri
+filter Split-GitHubUri
 {
 <#
     .SYNOPSIS
@@ -753,7 +753,9 @@ function Split-GitHubUri
     [OutputType([Hashtable])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [string] $Uri,
 

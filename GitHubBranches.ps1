@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubRepositoryBranch
+@{
+    GitHubBranchTypeName = 'GitHub.Branch'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubRepositoryBranch
 {
 <#
     .SYNOPSIS
@@ -39,7 +45,8 @@ function Get-GitHubRepositoryBranch
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject[]] List of branches within the given repository.
+        GitHub.Branch
+        List of branches within the given repository.
 
     .EXAMPLE
         Get-GitHubRepositoryBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -54,6 +61,7 @@ function Get-GitHubRepositoryBranch
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubBranchTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Get-GitHubBranch')]
@@ -66,9 +74,13 @@ function Get-GitHubRepositoryBranch
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('BranchName')]
         [string] $Name,
 
         [switch] $ProtectedOnly,
@@ -104,6 +116,48 @@ function Get-GitHubRepositoryBranch
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubBranchAdditionalProperties)
 }
 
+filter Add-GitHubBranchAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Branch objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubBranchTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.commit.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            Add-Member -InputObject $item -Name 'BranchName' -Value $item.name -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
+    }
+}
