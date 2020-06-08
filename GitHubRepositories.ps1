@@ -202,6 +202,9 @@ function Remove-GitHubRepository
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -211,9 +214,6 @@ function Remove-GitHubRepository
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GitHubRepository -OwnerName You -RepositoryName YourRepoToDelete
@@ -248,11 +248,11 @@ function Remove-GitHubRepository
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog -Invocation $MyInvocation
@@ -617,6 +617,9 @@ function Rename-GitHubRepository
     .PARAMETER NewName
         The new name to set for the given GitHub repository
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -678,11 +681,11 @@ function Rename-GitHubRepository
 
         [parameter(Mandatory)][String]$NewName,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     process

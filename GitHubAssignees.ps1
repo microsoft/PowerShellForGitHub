@@ -314,6 +314,9 @@ function Remove-GithubAssignee
     .PARAMETER Assignee
         Usernames of assignees to remove from an issue. NOTE: Only users with push access can remove assignees from an issue. Assignees are silently ignored otherwise.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -323,9 +326,6 @@ function Remove-GithubAssignee
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
@@ -365,11 +365,11 @@ function Remove-GithubAssignee
         [Parameter(Mandatory)]
         [string[]] $Assignee,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog

@@ -302,6 +302,9 @@ function Remove-GitHubLabel
         Name of the label to be deleted.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -311,9 +314,6 @@ function Remove-GitHubLabel
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GitHubLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel
@@ -353,11 +353,11 @@ function Remove-GitHubLabel
         [Alias('LabelName')]
         [string] $Name,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog
@@ -874,6 +874,9 @@ function Remove-GitHubIssueLabel
         Name of the label to be deleted. If not provided, will delete all labels on the issue.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -883,9 +886,6 @@ function Remove-GitHubIssueLabel
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestLabel -Issue 1
@@ -924,11 +924,11 @@ function Remove-GitHubIssueLabel
         [Alias('LabelName')]
         [string] $Name,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog

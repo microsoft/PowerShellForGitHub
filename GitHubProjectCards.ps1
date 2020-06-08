@@ -346,6 +346,9 @@ function Remove-GitHubProjectCard
     .PARAMETER Card
         ID of the card to remove.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -355,9 +358,6 @@ function Remove-GitHubProjectCard
         with no command line status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999
@@ -383,11 +383,11 @@ function Remove-GitHubProjectCard
         [Parameter(Mandatory)]
         [int64] $Card,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog

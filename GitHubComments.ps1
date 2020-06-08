@@ -438,6 +438,9 @@ function Remove-GitHubComment
     .PARAMETER CommentID
         The id of the comment to delete.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -447,9 +450,6 @@ function Remove-GitHubComment
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
-
-    .PARAMETER Force
-        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
@@ -487,11 +487,11 @@ function Remove-GitHubComment
         [Parameter(Mandatory)]
         [string] $CommentID,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
-        [switch] $NoStatus,
-
-        [switch] $Force
+        [switch] $NoStatus
     )
 
     Write-InvocationLog
