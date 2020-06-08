@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubComment
+@{
+    GitHubCommentTypeName = 'GitHub.Comment'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubComment
 {
 <#
     .DESCRIPTION
@@ -22,7 +28,7 @@ function Get-GitHubComment
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER CommentID
+    .PARAMETER Comment
         The ID of a specific comment to get. If not supplied, will return back all comments for this repository.
 
     .PARAMETER Issue
@@ -55,6 +61,9 @@ function Get-GitHubComment
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Comment
+
     .EXAMPLE
         Get-GitHubComment-OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -63,6 +72,7 @@ function Get-GitHubComment
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='RepositoryElements')]
+    [OutputType({$script:GitHubCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
@@ -75,17 +85,20 @@ function Get-GitHubComment
         [Parameter(Mandatory, ParameterSetName='CommentElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='CommentUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='CommentUri')]
-        [Parameter(Mandatory, ParameterSetName='CommentElements')]
-        [string] $CommentID,
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentElements')]
+        [Alias('CommentId')]
+        [string] $Comment,
 
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [Parameter(ParameterSetName='RepositoryUri')]
@@ -130,13 +143,13 @@ function Get-GitHubComment
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
-        'ProvidedComment' = $PSBoundParameters.ContainsKey('CommentID')
+        'ProvidedComment' = $PSBoundParameters.ContainsKey('Comment')
     }
 
-    if ($PSBoundParameters.ContainsKey('CommentID'))
+    if ($PSBoundParameters.ContainsKey('Comment'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentId"
-        $description = "Getting comment $CommentID for $RepositoryName"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
+        $description = "Getting comment $Comment for $RepositoryName"
     }
     elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
@@ -187,10 +200,10 @@ function Get-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubCommentAdditionalProperties)
 }
 
-function New-GitHubComment
+filter New-GitHubComment
 {
 <#
     .DESCRIPTION
@@ -235,6 +248,9 @@ function New-GitHubComment
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Comment
+
     .EXAMPLE
         New-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
@@ -243,6 +259,7 @@ function New-GitHubComment
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -254,10 +271,15 @@ function New-GitHubComment
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [Parameter(Mandatory)]
@@ -299,10 +321,10 @@ function New-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubCommentAdditionalProperties)
 }
 
-function Set-GitHubComment
+filter Set-GitHubComment
 {
 <#
     .DESCRIPTION
@@ -323,8 +345,8 @@ function Set-GitHubComment
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER CommentID
-        The comment ID of the comment to edit.
+    .PARAMETER Comment
+        The ID of the comment to edit.
 
     .PARAMETER Body
         The new contents of the comment.
@@ -347,14 +369,18 @@ function Set-GitHubComment
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Comment
+
     .EXAMPLE
-        Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+        Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
 
         Update an existing comment in an issue for the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -366,11 +392,16 @@ function Set-GitHubComment
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
-        [string] $CommentID,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('CommentId')]
+        [int64] $Comment,
 
         [Parameter(Mandatory)]
         [string] $Body,
@@ -392,7 +423,7 @@ function Set-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
+        'Comment' =  (Get-PiiSafeString -PlainText $Comment)
     }
 
     $hashBody = @{
@@ -400,10 +431,10 @@ function Set-GitHubComment
     }
 
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Update comment $CommentID for $RepositoryName"
+        'Description' =  "Update comment $Comment for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -411,10 +442,10 @@ function Set-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubCommentAdditionalProperties)
 }
 
-function Remove-GitHubComment
+filter Remove-GitHubComment
 {
 <#
     .DESCRIPTION
@@ -435,8 +466,8 @@ function Remove-GitHubComment
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER CommentID
-        The id of the comment to delete.
+    .PARAMETER Comment
+        The ID of the comment to delete.
 
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
@@ -452,12 +483,12 @@ function Remove-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Confirm:$false
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 
@@ -481,11 +512,16 @@ function Remove-GitHubComment
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
-        [string] $CommentID,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('CommentId')]
+        [int64] $Comment,
 
         [switch] $Force,
 
@@ -503,7 +539,7 @@ function Remove-GitHubComment
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
+        'Comment' =  (Get-PiiSafeString -PlainText $Comment)
     }
 
     if ($Force -and (-not $Confirm))
@@ -511,12 +547,12 @@ function Remove-GitHubComment
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))
+    if ($PSCmdlet.ShouldProcess($Comment, "Remove comment"))
     {
         $params = @{
-            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$CommentID"
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
             'Method' = 'Delete'
-            'Description' =  "Removing comment $CommentID for $RepositoryName"
+            'Description' =  "Removing comment $Comment for $RepositoryName"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
@@ -527,3 +563,48 @@ function Remove-GitHubComment
     }
 }
 
+filter Add-GitHubCommentAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Comment objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubCommentTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            if ($null -ne $item.user)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
+            }
+        }
+
+        Write-Output $item
+    }
+}
