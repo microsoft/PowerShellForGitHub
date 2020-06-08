@@ -404,7 +404,7 @@ Any labels already in the repository that are not in this array will be removed 
 
 ```powershell
 $labels = @( @{ 'name' = 'Label1'; 'color' = 'BBBB00'; 'description' = 'My label description' }, @{ 'name' = 'Label2'; 'color' = 'FF00000' })
-Restore-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Label $labels
+Initialize-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfiguration -Label $labels
 ```
 
 ----------

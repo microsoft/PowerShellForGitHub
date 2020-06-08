@@ -81,7 +81,7 @@ try
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
 
-            Restore-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
+            Initialize-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
         }
 
         AfterAll {
@@ -550,7 +550,7 @@ try
         }
 
         Context 'Applying a default set of labels' {
-            Restore-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
+            Initialize-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
 
             $labels = @($repo | Get-GitHubLabel)
 
@@ -578,7 +578,7 @@ try
             )
 
             $originalLabels = @($repo | Get-GitHubLabel)
-            $null = $repo | Restore-GitHubLabel -Label $newLabels
+            $null = $repo | Initialize-GitHubLabel -Label $newLabels
             $labels = @($repo | Get-GitHubLabel)
 
             It 'Should return the expected number of labels' {
@@ -617,7 +617,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Restore-GitHubLabel -Label $defaultLabels
+            $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -845,7 +845,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Restore-GitHubLabel -Label $defaultLabels
+            $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -911,7 +911,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Restore-GitHubLabel -Label $defaultLabels
+            $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -1078,7 +1078,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Restore-GitHubLabel -Label $defaultLabels
+            $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
         AfterAll {
@@ -1227,7 +1227,7 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-            $repo | Restore-GitHubLabel -Label $defaultLabels
+            $repo | Initialize-GitHubLabel -Label $defaultLabels
 
             $milestone = $repo | New-GitHubMilestone -Title 'test milestone'
 

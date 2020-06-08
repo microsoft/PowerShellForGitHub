@@ -638,7 +638,7 @@ filter Set-GitHubLabel
     return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
 }
 
-filter Restore-GitHubLabel
+filter Initialize-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -698,7 +698,7 @@ filter Restore-GitHubLabel
         GitHub.Repository
 
     .EXAMPLE
-        Restore-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
+        Initialize-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
 
         Removes any labels not in this Label array, ensure the current assigned color and descriptions
         match what's in the array for the labels that do already exist, and then creates new labels
