@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubAssignee
+filter Get-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -32,6 +32,9 @@ function Get-GitHubAssignee
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.User
+
     .EXAMPLE
         Get-GitHubAssigneeList -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -40,6 +43,7 @@ function Get-GitHubAssignee
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -51,7 +55,9 @@ function Get-GitHubAssignee
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -79,10 +85,10 @@ function Get-GitHubAssignee
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-function Test-GitHubAssignee
+filter Test-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -117,7 +123,8 @@ function Test-GitHubAssignee
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [bool] If the assignee can be assigned to issues in the repository.
+        [bool]
+        If the assignee can be assigned to issues in the repository.
 
     .EXAMPLE
         Test-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
@@ -127,7 +134,7 @@ function Test-GitHubAssignee
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-        [OutputType([bool])]
+    [OutputType([bool])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -139,9 +146,12 @@ function Test-GitHubAssignee
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Alias('UserName')]
         [string] $Assignee,
 
         [string] $AccessToken,
@@ -183,7 +193,7 @@ function Test-GitHubAssignee
     }
 }
 
-function New-GithubAssignee
+filter New-GithubAssignee
 {
 <#
     .DESCRIPTION
@@ -221,6 +231,9 @@ function New-GithubAssignee
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Issue
+
     .EXAMPLE
         New-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
 
@@ -229,6 +242,7 @@ function New-GithubAssignee
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubIssueTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -240,14 +254,23 @@ function New-GithubAssignee
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueId')]
         [int64] $Issue,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [ValidateCount(1, 10)]
+        [Alias('UserName')]
         [string[]] $Assignee,
 
         [string] $AccessToken,
@@ -284,10 +307,10 @@ function New-GithubAssignee
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
 }
 
-function Remove-GithubAssignee
+filter Remove-GithubAssignee
 {
 <#
     .DESCRIPTION
@@ -327,6 +350,9 @@ function Remove-GithubAssignee
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.Issue
+
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
@@ -346,6 +372,7 @@ function Remove-GithubAssignee
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
+    [OutputType({$script:GitHubIssueTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -356,13 +383,22 @@ function Remove-GithubAssignee
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueId')]
         [int64] $Issue,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [Alias('UserName')]
         [string[]] $Assignee,
 
         [switch] $Force,
@@ -408,6 +444,6 @@ function Remove-GithubAssignee
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        return Invoke-GHRestMethod @params
+        return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
     }
 }
