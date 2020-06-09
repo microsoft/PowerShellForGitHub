@@ -49,7 +49,8 @@ try
         }
 
         Context 'When getting the latest releases via the pipeline' {
-            $latest = @($repo | Get-GitHubRelease -Latest)
+            $latest = @(Get-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName |
+                Get-GitHubRelease -Latest)
 
             It 'Should return one value' {
                 $latest.Count | Should -Be 1

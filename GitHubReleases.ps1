@@ -219,7 +219,7 @@ filter Get-GitHubRelease
 }
 
 
-filter Add-GitHubRepositoryAdditionalProperties
+filter Add-GitHubReleaseAdditionalProperties
 {
 <#
     .SYNOPSIS
