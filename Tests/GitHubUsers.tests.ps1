@@ -50,7 +50,7 @@ try
 
         Context 'Specific user as a parameter' {
             BeforeAll {
-                $user = Get-GitHubUser -User $script:ownerName
+                $user = Get-GitHubUser -UserName $script:ownerName
 
                 # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
                 $user = $user
@@ -93,12 +93,12 @@ try
 
         Context 'Checking context on a repo' {
             It 'Should indicate ownership as a parameter' {
-                $context = Get-GitHubUserContextualInformation -User $script:ownerName -RepositoryId $repo.id
+                $context = Get-GitHubUserContextualInformation -UserName $script:ownerName -RepositoryId $repo.id
                 'Owns this repository' | Should -BeIn $context.contexts.message
             }
 
             It 'Should indicate ownership with the repo on the pipeline' {
-                $context = $repo | Get-GitHubUserContextualInformation -User $script:ownerName
+                $context = $repo | Get-GitHubUserContextualInformation -UserName $script:ownerName
                 'Owns this repository' | Should -BeIn $context.contexts.message
             }
 
@@ -108,7 +108,7 @@ try
             }
 
             It 'Should indicate ownership with the user on the pipeline' {
-                $user = Get-GitHubUser -User $script:ownerName
+                $user = Get-GitHubUser -UserName $script:ownerName
                 $context = $user | Get-GitHubUserContextualInformation -RepositoryId $repo.id
                 'Owns this repository' | Should -BeIn $context.contexts.message
             }
@@ -116,7 +116,7 @@ try
 
         Context 'Checking context on an issue with the pipeline' {
             $issue = New-GitHubIssue -Uri $repo.RepositoryUrl -Title ([guid]::NewGuid().Guid)
-            $context = $issue | Get-GitHubUserContextualInformation -User $script:ownerName
+            $context = $issue | Get-GitHubUserContextualInformation -UserName $script:ownerName
 
             It 'Should indicate the user created the issue' {
                 $context.contexts[0].octicon | Should -Be 'issue-opened'

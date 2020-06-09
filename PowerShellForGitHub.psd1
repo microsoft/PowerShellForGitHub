@@ -95,6 +95,7 @@
         'Group-GitHubPullRequest',
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
+        'Join-GitHubUri',
         'Lock-GitHubIssue',
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',

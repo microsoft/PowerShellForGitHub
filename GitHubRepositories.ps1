@@ -103,6 +103,9 @@ filter New-GitHubRepository
         New-GitHubRepository -RepositoryName MyNewRepo -AutoInit
 
     .EXAMPLE
+        'MyNewRepo' | New-GitHubRepository -AutoInit
+
+    .EXAMPLE
         New-GitHubRepository -RepositoryName MyNewRepo -Organization MyOrg -DisallowRebaseMerge
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -263,6 +266,12 @@ filter Remove-GitHubRepository
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Force
 
         Remove repository with the given URI, without prompting for confirmation.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -Uri https://github.com/You/YourRepoToDelete
+        $repo | Remove-GitHubRepository -Force
+
+        You can also pipe in a repo that was returned from a previous command.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -411,9 +420,19 @@ filter Get-GitHubRepository
         Gets all of the repositories for the user octocat
 
     .EXAMPLE
+        Get-GitHubUser -UserName octocat | Get-GitHubRepository
+
+        Gets all of the repositories for the user octocat
+
+    .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/microsoft/PowerShellForGitHub
 
         Gets information about the microsoft/PowerShellForGitHub repository.
+
+    .EXAMPLE
+        $repo | Get-GitHubRepository
+
+        You can pipe in a previous repository to get its information again.
 
     .EXAMPLE
         Get-GitHubRepository -OrganizationName PowerShell
@@ -716,10 +735,14 @@ filter Rename-GitHubRepository
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -730,7 +753,7 @@ filter Rename-GitHubRepository
         [string] $Uri,
 
         [parameter(Mandatory)]
-        [String]$NewName,
+        [String] $NewName,
 
         [switch] $Force,
 
@@ -760,7 +783,7 @@ filter Rename-GitHubRepository
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName"
             'Method' = 'Patch'
-            Body = ConvertTo-Json -InputObject @{name = $NewName}
+            'Body' = ConvertTo-Json -InputObject @{name = $NewName}
             'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -796,6 +819,9 @@ filter Update-GitHubRepository
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
+
+    .PARAMETER Name
+        Rename the repository to this new name.
 
     .PARAMETER Description
         A short description of the repository.
@@ -865,6 +891,13 @@ filter Update-GitHubRepository
         Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
 
         Changes the visibility of the specified repository to be public.
+
+    .EXAMPLE
+        Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
+            Update-GitHubRepository -Name 'PoShForGitHub' -Confirm:$false
+
+        Renames the repository without any user confirmation prompting.  This is identical to using
+        Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -884,6 +917,9 @@ filter Update-GitHubRepository
             ParameterSetName='Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $Name,
 
         [string] $Description,
 
@@ -927,8 +963,17 @@ filter Update-GitHubRepository
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $hashBody = @{
-        'name' = $RepositoryName
+    $hashBody = @{}
+
+    if ($PSBoundParameters.ContainsKey('Name'))
+    {
+        $existingName = if ($PSCmdlet.ParameterSetName -eq 'Uri') { $Uri } else { $OwnerName, $RepositoryName -join '/' }
+        if (-not $PSCmdlet.ShouldProcess($existingName, "Rename repository to '$Name'"))
+        {
+            return
+        }
+
+        $hashBody['name'] = $Name
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
@@ -1078,7 +1123,7 @@ filter Set-GitHubRepositoryTopic
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Topic
         Array of topics to add to the repository.
 
     .PARAMETER Clear
@@ -1101,7 +1146,7 @@ filter Set-GitHubRepositoryTopic
         Set-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Clear
 
     .EXAMPLE
-        Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Name ('octocat', 'powershell', 'github')
+        Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Topic ('octocat', 'powershell', 'github')
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -1130,11 +1175,14 @@ filter Set-GitHubRepositoryTopic
 
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             ParameterSetName='ElementsName')]
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             ParameterSetName='UriName')]
-        [string[]] $Name,
+        [Alias('Name')]
+        [string[]] $Topic,
 
         [Parameter(
             Mandatory,
@@ -1164,7 +1212,7 @@ filter Set-GitHubRepositoryTopic
     if ($Clear)
     {
         $description = "Clearing topics in $RepositoryName"
-        $Name = @()
+        $Topic = @()
     }
     else
     {
@@ -1172,7 +1220,7 @@ filter Set-GitHubRepositoryTopic
     }
 
     $hashBody = @{
-        'names' = $Name
+        'names' = $Topic
     }
 
     $params = @{
@@ -1620,7 +1668,7 @@ filter Move-GitHubRepositoryOwnership
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        GitHub.RepositoryTopic
+        GitHub.Repository
 
     .EXAMPLE
         Move-GitHubRepositoryOwnership -OwnerName Microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
@@ -1732,13 +1780,19 @@ filter Add-GitHubRepositoryAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.html_url
-            $repositoryUrl = Join-GitHubUri @elements
-            if ([String]::IsNullOrEmpty($repositoryUrl) -and
-                $PSBoundParameters.ContainsKey('OwnerName') -and
-                $PSBoundParameters.ContainsKey('RepositoryName'))
+            $repositoryUrl = [String]::Empty
+            if ([String]::IsNullOrEmpty($item.html_url))
             {
-                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                    $PSBoundParameters.ContainsKey('RepositoryName'))
+                {
+                    $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                }
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
             }
 
             if (-not [String]::IsNullOrEmpty($repositoryUrl))

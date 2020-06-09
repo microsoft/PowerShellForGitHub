@@ -49,9 +49,14 @@ filter Get-GitHubUser
         GitHub.User
 
     .EXAMPLE
-        Get-GitHubUser -User octocat
+        Get-GitHubUser -UserName octocat
 
         Gets information on just the user named 'octocat'
+
+    .EXAMPLE
+        'octocat', 'PowerShellForGitHubTeam' | Get-GitHubUser
+
+        Gets information on the users named 'octocat' and 'PowerShellForGitHubTeam'
 
     .EXAMPLE
         Get-GitHubUser
@@ -74,8 +79,9 @@ filter Get-GitHubUser
             ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             ParameterSetName='ListAndSearch')]
-        [Alias('UserName')]
-        [string] $User,
+        [Alias('Name')]
+        [Alias('User')]
+        [string] $UserName,
 
         [Parameter(ParameterSetName='Current')]
         [switch] $Current,
@@ -105,7 +111,7 @@ filter Get-GitHubUser
     }
     else
     {
-        return (Invoke-GHRestMethod -UriFragment "users/$User" -Description "Getting user $User" -Method 'Get' @params |
+        return (Invoke-GHRestMethod -UriFragment "users/$UserName" -Description "Getting user $User" -Method 'Get' @params |
             Add-GitHubUserAdditionalProperties)
     }
 }
@@ -162,6 +168,10 @@ filter Get-GitHubUserContextualInformation
         Get-GitHubUserContextualInformation -User octocat -RepositoryId 1300192
 
     .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName 'PowerShellForGitHub'
+        $repo | Get-GitHubUserContextualInformation -User octocat
+
+    .EXAMPLE
         Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 70 |
             Get-GitHubUserContextualInformation -User octocat
 #>
@@ -176,8 +186,9 @@ filter Get-GitHubUserContextualInformation
             Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
-        [Alias('UserName')]
-        [string] $User,
+        [Alias('Name')]
+        [Alias('User')]
+        [string] $UserName,
 
         [Parameter(
             Mandatory,
@@ -237,9 +248,9 @@ filter Get-GitHubUserContextualInformation
     }
 
     $params = @{
-        'UriFragment' = "users/$User/hovercard`?" + ($getParams -join '&')
+        'UriFragment' = "users/$UserName/hovercard`?" + ($getParams -join '&')
         'Method' = 'Get'
-        'Description' =  "Getting hovercard information for $User"
+        'Description' =  "Getting hovercard information for $UserName"
         'AcceptHeader' = 'application/vnd.github.hagar-preview+json'
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -247,7 +258,7 @@ filter Get-GitHubUserContextualInformation
     }
 
     return (Invoke-GHRestMethod @params |
-        Add-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $User)
+        Add-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $UserName)
 }
 
 function Update-GitHubCurrentUser

@@ -354,7 +354,7 @@ Update-GitHubCurrentUser -Location 'Seattle, WA' -Hireable:$false
 
 #### Getting any user
 ```powershell
-Get-GitHubUser -Name octocat
+Get-GitHubUser -UserName octocat
 ```
 
 #### Getting all users

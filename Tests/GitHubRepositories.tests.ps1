@@ -418,6 +418,18 @@ try
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
+            It "Should work via the pipeline" {
+                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
+                $renamedRepo.name | Should -Be $newRepoName
+                $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+            }
+
+            It "Should be possible to rename with Update-GitHubRepository too" {
+                $renamedRepo = $repo | Update-GitHubRepository -Name $newRepoName -Confirm:$false
+                $renamedRepo.name | Should -Be $newRepoName
+                $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+            }
+
             AfterEach -Scriptblock {
                 Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Confirm:$false
             }
@@ -555,6 +567,80 @@ try
         }
     }
 
+    Describe 'Common user repository pipeline scenarios' {
+        Context 'For authenticated user' {
+            BeforeAll -Scriptblock {
+                $repo = ([Guid]::NewGuid().Guid) | New-GitHubRepository -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It "Should have expected additional properties and type after creation" {
+                $repo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $repo.RepositoryUrl | Should -Be (Join-GitHubUri -OwnerName $script:ownerName -RepositoryName $repo.name)
+                $repo.RepositoryId | Should -Be $repo.id
+                $repo.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It "Should have expected additional properties and type after creation" {
+                $returned = ($repo | Get-GitHubRepository)
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $returned.RepositoryUrl | Should -Be (Join-GitHubUri -OwnerName $script:ownerName -RepositoryName $returned.name)
+                $returned.RepositoryId | Should -Be $returned.id
+                $returned.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It "Should get the repository by user" {
+                $repos = @($script:ownerName | Get-GitHubUser | Get-GitHubRepository)
+                $repos.name | Should -Contain $repo.name
+            }
+
+            It 'Should be removable by the pipeline' {
+                ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
+                { $repo | Get-GitHubRepository } | Should -Throw
+            }
+        }
+    }
+
+    Describe 'Common organization repository pipeline scenarios' {
+        Context 'For organization' {
+            BeforeAll -Scriptblock {
+                $org = [PSCustomObject]@{'OrganizationName' = $script:organizationName}
+                $repo = $org | New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+                $repo = $repo
+            }
+
+            It "Should have expected additional properties and type after creation" {
+                $repo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $repo.RepositoryUrl | Should -Be (Join-GitHubUri -OwnerName $script:organizationName -RepositoryName $repo.name)
+                $repo.RepositoryId | Should -Be $repo.id
+                $repo.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $repo.organization.PSObject.TypeNames[0] | Should -Be 'GitHub.Organization'
+                $repo.organization.OrganizationName | Should -Be $repo.organization.login
+                $repo.organization.OrganizationId | Should -Be $repo.organization.id
+            }
+
+            It "Should have expected additional properties and type after creation" {
+                $returned = ($repo | Get-GitHubRepository)
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $returned.RepositoryUrl | Should -Be (Join-GitHubUri -OwnerName $script:organizationName -RepositoryName $returned.name)
+                $returned.RepositoryId | Should -Be $returned.id
+                $returned.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $returned.organization.PSObject.TypeNames[0] | Should -Be 'GitHub.Organization'
+                $returned.organization.OrganizationName | Should -Be $returned.organization.login
+                $returned.organization.OrganizationId | Should -Be $returned.organization.id
+            }
+
+            It 'Should be removable by the pipeline' {
+                ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
+                { $repo | Get-GitHubRepository } | Should -Throw
+            }
+        }
+    }
+
     Describe 'Get/set repository topic' {
 
         Context -Name 'For creating and getting a repository topic' -Fixture {
@@ -563,15 +649,31 @@ try
             }
 
             It 'Should have the expected topic' {
-                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
+                $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Topic $defaultRepoTopic
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $topic.names | Should -Be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
-                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
+                $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $topic.names | Should -BeNullOrEmpty
+            }
+
+            It 'Should have the expected topic (using repo via pipeline)' {
+                $null = $repo | Set-GitHubRepositoryTopic -Topic $defaultRepoTopic
+                $topic = $repo | Get-GitHubRepositoryTopic
+                $topic.names | Should -Be $defaultRepoTopic
+                $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
+                $topic.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+
+            It 'Should have the expected topic (using topic via pipeline)' {
+                $null = $defaultRepoTopic | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $topic = $repo | Get-GitHubRepositoryTopic
+                $topic.names | Should -Be $defaultRepoTopic
+                $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
+                $topic.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
 
             AfterAll -ScriptBlock {
