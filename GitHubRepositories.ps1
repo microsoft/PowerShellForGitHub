@@ -1099,7 +1099,7 @@ filter Get-GitHubRepositoryTopic
         Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-filter Set-GitHubRepositoryTopic
+function Set-GitHubRepositoryTopic
 {
 <#
     .SYNOPSIS
@@ -1147,6 +1147,16 @@ filter Set-GitHubRepositoryTopic
 
     .EXAMPLE
         Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Topic ('octocat', 'powershell', 'github')
+
+    .EXAMPLE
+        ('octocat', 'powershell', 'github') | Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+    .NOTES
+        This is implemented as a function rather than a filter because the ValueFromPipeline
+        parameter (Topic) is itself an array which we want to ensure is processed only a single time.
+        This API endpoint doesn't add topics to a repository, it replaces the existing topics with
+        the new set provided, so we need to make sure that we have all the requested topics available
+        to us at the time that the API endpoint is called.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -1197,46 +1207,61 @@ filter Set-GitHubRepositoryTopic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
-
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Clear' = $PSBoundParameters.ContainsKey('Clear')
-    }
-
-    if ($Clear)
+    begin
     {
-        $description = "Clearing topics in $RepositoryName"
-        $Topic = @()
+        $topics = @()
     }
-    else
+
+    process
     {
-        $description = "Replacing topics in $RepositoryName"
+        foreach ($value in $Topic)
+        {
+            $topics += $value
+        }
     }
 
-    $hashBody = @{
-        'names' = $Topic
-    }
+    end
+    {
+        Write-InvocationLog -Invocation $MyInvocation
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Put'
-        'Description' =  $description
-        'AcceptHeader' = $script:mercyAcceptHeader
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            'Clear' = $PSBoundParameters.ContainsKey('Clear')
+        }
+
+        if ($Clear)
+        {
+            $description = "Clearing topics in $RepositoryName"
+        }
+        else
+        {
+            $description = "Replacing topics in $RepositoryName"
+        }
+
+        $hashBody = @{
+            'names' = $topics
+        }
+
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Put'
+            'Description' =  $description
+            'AcceptHeader' = $script:mercyAcceptHeader
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params |
+            Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+    }
 }
 
 filter Get-GitHubRepositoryContributor

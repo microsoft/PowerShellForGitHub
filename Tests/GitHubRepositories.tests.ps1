@@ -651,18 +651,21 @@ try
             It 'Should have the expected topic' {
                 $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Topic $defaultRepoTopic
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+
                 $topic.names | Should -Be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
                 $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+
                 $topic.names | Should -BeNullOrEmpty
             }
 
             It 'Should have the expected topic (using repo via pipeline)' {
                 $null = $repo | Set-GitHubRepositoryTopic -Topic $defaultRepoTopic
                 $topic = $repo | Get-GitHubRepositoryTopic
+
                 $topic.names | Should -Be $defaultRepoTopic
                 $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
                 $topic.RepositoryUrl | Should -Be $repo.RepositoryUrl
@@ -671,9 +674,24 @@ try
             It 'Should have the expected topic (using topic via pipeline)' {
                 $null = $defaultRepoTopic | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $topic = $repo | Get-GitHubRepositoryTopic
+
                 $topic.names | Should -Be $defaultRepoTopic
                 $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
                 $topic.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+
+            It 'Should have the expected multi-topic (using topic via pipeline)' {
+                $topics = @('one', 'two')
+                $null = $topics | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $result = $repo | Get-GitHubRepositoryTopic
+
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.names.count | Should -Be $topics.Count
+                foreach ($topic in $topics)
+                {
+                    $result.names | Should -Contain $topic
+                }
             }
 
             AfterAll -ScriptBlock {
