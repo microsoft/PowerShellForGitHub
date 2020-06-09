@@ -620,6 +620,57 @@ try
             }
         }
     }
+
+    Describe 'Contributors for a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
+
+            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+            $repo = $repo
+        }
+
+        AfterAll {
+            $null = Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
+
+        Context -Name 'Obtaining contributors for repository' -Fixture {
+            $contributors = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
+
+            It 'Should return expected number of contributors' {
+                $contributors.Count | Should be 1
+            }
+
+            It 'Should return expected number of unique contributors' {
+                $uniqueContributors = $contributors |
+                    Select-Object -ExpandProperty author |
+                    Select-Object -ExpandProperty login -Unique
+                    Sort-Object
+
+                $uniqueContributors.Count | Should be 1
+            }
+        }
+    }
+
+    Describe 'Collaborators for a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
+
+            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+            $repo = $repo
+        }
+
+        AfterAll {
+            $null = Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
+
+        Context -Name 'Obtaining collaborators for repository' -Fixture {
+            $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repo.RepositoryUrl)
+
+            It 'Should return expected number of collaborators' {
+                $collaborators.Count | Should be 1
+            }
+        }
+    }
 }
 finally
 {

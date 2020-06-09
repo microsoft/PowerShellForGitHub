@@ -195,6 +195,55 @@ try
             }
         }
     }
+
+    Describe 'Testing Split-GitHubUri' {
+        BeforeAll {
+            $repositoryName = [guid]::NewGuid().Guid
+            $url = "https://github.com/$script:ownerName/$repositoryName"
+
+            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
+            $repositoryName = $repositoryName
+            $url = $url
+        }
+
+        Context 'For getting the OwnerName' {
+            It 'Should return expected repository name' {
+                $name = Split-GitHubUri -Uri $url -RepositoryName
+                $name | Should be $repositoryName
+            }
+
+            It 'Should return expected repository name with the pipeline' {
+                $name = $url | Split-GitHubUri -RepositoryName
+                $name | Should be $repositoryName
+            }
+        }
+
+        Context 'For getting the RepositoryName' {
+            It 'Should return expected owner name' {
+                $name = Split-GitHubUri -Uri $url -OwnerName
+                $name | Should be $script:ownerName
+            }
+
+            It 'Should return expected owner name with the pipeline' {
+                $owner = $url | Split-GitHubUri -OwnerName
+                $owner | Should be $script:ownerName
+            }
+        }
+
+        Context 'For getting both the OwnerName and the RepositoryName' {
+            It 'Should return both OwnerName and RepositoryName' {
+                $elements = Split-GitHubUri -Uri $url
+                $elements.ownerName | Should be $script:ownerName
+                $elements.repositoryName | Should be $repositoryName
+            }
+
+            It 'Should return both OwnerName and RepositoryName with the pipeline' {
+                $elements = $url | Split-GitHubUri
+                $elements.ownerName | Should be $script:ownerName
+                $elements.repositoryName | Should be $repositoryName
+            }
+        }
+    }
 }
 finally
 {

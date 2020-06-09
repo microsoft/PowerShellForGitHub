@@ -12,77 +12,74 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
-    if ($accessTokenConfigured)
-    {
-        Describe 'Getting releases from repository' {
-            $ownerName = "dotnet"
-            $repositoryName = "core"
-            $releases = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName)
+    Describe 'Getting releases from repository' {
+        $ownerName = "dotnet"
+        $repositoryName = "core"
+        $releases = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName)
+
+        Context 'When getting all releases' {
+            It 'Should return multiple releases' {
+                $releases.Count | Should BeGreaterThan 1
+            }
+        }
+
+        Context 'When getting the latest releases' {
+            $latest = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest)
+
+            It 'Should return one value' {
+                $latest.Count | Should Be 1
+            }
+
+            It 'Should return the first release from the full releases list' {
+                $latest[0].url | Should Be $releases[0].url
+                $latest[0].name | Should Be $releases[0].name
+            }
+        }
+
+        Context 'When getting a specific release' {
+            $specificIndex = 5
+            $specific = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
+
+            It 'Should return one value' {
+                $specific.Count | Should Be 1
+            }
+
+            It 'Should return the correct release' {
+                $specific.name | Should Be $releases[$specificIndex].name
+            }
+        }
+
+        Context 'When getting a tagged release' {
+            $taggedIndex = 8
+            $tagged = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
+
+            It 'Should return one value' {
+                $tagged.Count | Should Be 1
+            }
+
+            It 'Should return the correct release' {
+                $tagged.name | Should Be $releases[$taggedIndex].name
+            }
+        }
+    }
+
+    Describe 'Getting releases from default owner/repository' {
+        $originalOwnerName = Get-GitHubConfiguration -Name DefaultOwnerName
+        $originalRepositoryName = Get-GitHubConfiguration -Name DefaultRepositoryName
+
+        try {
+            Set-GitHubConfiguration -DefaultOwnerName "dotnet"
+            Set-GitHubConfiguration -DefaultRepositoryName "core"
+            $releases = @(Get-GitHubRelease)
 
             Context 'When getting all releases' {
                 It 'Should return multiple releases' {
                     $releases.Count | Should BeGreaterThan 1
                 }
             }
-
-            Context 'When getting the latest releases' {
-                $latest = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest)
-
-                It 'Should return one value' {
-                    $latest.Count | Should Be 1
-                }
-
-                It 'Should return the first release from the full releases list' {
-                    $latest[0].url | Should Be $releases[0].url
-                    $latest[0].name | Should Be $releases[0].name
-                }
-            }
-
-            Context 'When getting a specific release' {
-                $specificIndex = 5
-                $specific = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
-
-                It 'Should return one value' {
-                    $specific.Count | Should Be 1
-                }
-
-                It 'Should return the correct release' {
-                    $specific.name | Should Be $releases[$specificIndex].name
-                }
-            }
-
-            Context 'When getting a tagged release' {
-                $taggedIndex = 8
-                $tagged = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
-
-                It 'Should return one value' {
-                    $tagged.Count | Should Be 1
-                }
-
-                It 'Should return the correct release' {
-                    $tagged.name | Should Be $releases[$taggedIndex].name
-                }
-            }
-        }
-
-        Describe 'Getting releases from default owner/repository' {
-            $originalOwnerName = Get-GitHubConfiguration -Name DefaultOwnerName
-            $originalRepositoryName = Get-GitHubConfiguration -Name DefaultRepositoryName
-
-            try {
-                Set-GitHubConfiguration -DefaultOwnerName "dotnet"
-                Set-GitHubConfiguration -DefaultRepositoryName "core"
-                $releases = @(Get-GitHubRelease)
-
-                Context 'When getting all releases' {
-                    It 'Should return multiple releases' {
-                        $releases.Count | Should BeGreaterThan 1
-                    }
-                }
-            } finally {
-                Set-GitHubConfiguration -DefaultOwnerName $originalOwnerName
-                Set-GitHubConfiguration -DefaultRepositoryName $originalRepositoryName
-            }
+        } finally {
+            Set-GitHubConfiguration -DefaultOwnerName $originalOwnerName
+            Set-GitHubConfiguration -DefaultRepositoryName $originalRepositoryName
         }
     }
 }

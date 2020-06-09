@@ -124,11 +124,23 @@ filter Get-GitHubUserContextualInformation
     .PARAMETER User
         The GitHub user to retrieve information for.
 
-    .PARAMETER Subject
-        Identifies which additional information to receive about the user's hovercard.
+    .PARAMETER OrganizationId
+        The ID of an Organization.  When provided, this returns back the context for the user
+        in relation to this Organization.
 
-    .PARAMETER SubjectId
-        The ID for the Subject.  Required when Subject has been specified.
+    .PARAMETER RepositoryId
+        The ID for a Repository.  When provided, this returns back the context for the user
+        in relation to this Repository.
+
+    .PARAMETER IssueId
+        The ID for a Issue.  When provided, this returns back the context for the user
+        in relation to this Issue.
+        NOTE: This is the *id* of the issue and not the issue *number*.
+
+    .PARAMETER PullRequestId
+        The ID for a PullRequest.  When provided, this returns back the context for the user
+        in relation to this Pull Request.
+        NOTE: This is the *id* of the pull request and not the pull request *number*.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -147,9 +159,15 @@ filter Get-GitHubUserContextualInformation
         Get-GitHubUserContextualInformation -User octocat
 
     .EXAMPLE
-        Get-GitHubUserContextualInformation -User octocat -Subject Repository -SubjectId 1300192
+        Get-GitHubUserContextualInformation -User octocat -RepositoryId 1300192
+
+    .EXAMPLE
+        Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 70 |
+            Get-GitHubUserContextualInformation -User octocat
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='NoContext')]
     [OutputType({$script:GitHubUserContextualInformationTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -161,10 +179,29 @@ filter Get-GitHubUserContextualInformation
         [Alias('UserName')]
         [string] $User,
 
-        [ValidateSet('Organization', 'Repository', 'Issue', 'PullRequest')]
-        [string] $Subject,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Organization')]
+        [int64] $OrganizationId,
 
-        [string] $SubjectId,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Repository')]
+        [int64] $RepositoryId,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Issue')]
+        [int64] $IssueId,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='PullRequest')]
+        [int64] $PullRequestId,
 
         [string] $AccessToken,
 
@@ -175,25 +212,28 @@ filter Get-GitHubUserContextualInformation
 
     $getParams = @()
 
-    # Intentionally not using -xor here because we need to know if we're setting the GET parameters as well.
-    if ((-not [String]::IsNullOrEmpty($Subject)) -or (-not [String]::IsNullOrEmpty($SubjectId)))
+    if ($PSCmdlet.ParameterSetName -ne 'NoContext')
     {
-        if ([String]::IsNullOrEmpty($Subject) -or [String]::IsNullOrEmpty($SubjectId))
+        if ($PSCmdlet.ParameterSetName -eq 'Organization')
         {
-            $message = 'If either Subject or SubjectId has been provided, then BOTH must be provided.'
-            Write-Log -Message $message -Level Error
-            throw $message
+            $getParams += 'subject_type=organization'
+            $getParams += "subject_id=$OrganizationId"
         }
-
-        $subjectConverter = @{
-            'Organization' = 'organization'
-            'Repository' = 'repository'
-            'Issue' = 'issue'
-            'PullRequest' = 'pull_request'
+        elseif ($PSCmdlet.ParameterSetName -eq 'Repository')
+        {
+            $getParams += 'subject_type=repository'
+            $getParams += "subject_id=$RepositoryId"
         }
-
-        $getParams += "subject_type=$($subjectConverter[$Subject])"
-        $getParams += "subject_id=$SubjectId"
+        elseif ($PSCmdlet.ParameterSetName -eq 'Issue')
+        {
+            $getParams += 'subject_type=issue'
+            $getParams += "subject_id=$IssueId"
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'PullRequest')
+        {
+            $getParams += 'subject_type=pull_request'
+            $getParams += "subject_id=$PullRequestId"
+        }
     }
 
     $params = @{

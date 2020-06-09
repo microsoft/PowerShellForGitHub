@@ -12,6 +12,7 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
+<<<<<<< HEAD
     Describe 'Obtaining issues for repository' {
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
@@ -102,6 +103,8 @@ try
     }
 
 
+=======
+>>>>>>> 89bfa42... * [BREAKING CHANGE] Changed signature for Get-GitHubUserContextualInformation to be more natural
     # TODO: Re-enable these tests once the module has sufficient support getting the repository into the
     # required state for testing, and to recover back to the original state at the conclusion of the test.
 
@@ -178,135 +181,33 @@ try
     #     }
     # }
 
-    if ($script:accessTokenConfigured)
-    {
-        Describe 'Obtaining collaborators for repository' {
-            $repositoryName = [guid]::NewGuid().Guid
-            $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-            $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
+    # TODO: Re-enable these tests once the module has sufficient support getting the Organization
+    # and repository into the required state for testing, and to recover back to the original state
+    # at the conclusion of the test.
 
-            $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repositoryUrl)
+    # Describe 'Obtaining organization members' {
+    #     $members = Get-GitHubOrganizationMember -OrganizationName $script:organizationName
 
-            It 'Should return expected number of collaborators' {
-                $collaborators.Count | Should be 1
-            }
+    #     It 'Should return expected number of organization members' {
+    #         @($members).Count | Should be 1
+    #     }
+    # }
 
-            $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
-        }
-    }
+    # Describe 'Obtaining organization teams' {
+    #     $teams = Get-GitHubTeam -OrganizationName $script:organizationName
 
-    Describe 'Obtaining contributors for repository' {
-        $repositoryName = [guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-        $repositoryUrl = "https://github.com/$script:ownerName/$repositoryName"
+    #     It 'Should return expected number of organization teams' {
+    #         @($teams).Count | Should be 2
+    #     }
+    # }
 
-        $contributors = @(Get-GitHubRepositoryContributor -Uri $repositoryUrl -IncludeStatistics)
+    # Describe 'Obtaining organization team members' {
+    #     $members = Get-GitHubTeamMember -OrganizationName $script:organizationName -TeamName $script:organizationTeamName
 
-        It 'Should return expected number of contributors' {
-            $contributors.Count | Should be 1
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
-    }
-
-    if ($script:accessTokenConfigured)
-    {
-        # TODO: Re-enable these tests once the module has sufficient support getting the Organization
-        # and repository into the required state for testing, and to recover back to the original state
-        # at the conclusion of the test.
-
-        # Describe 'Obtaining organization members' {
-        #     $members = Get-GitHubOrganizationMember -OrganizationName $script:organizationName
-
-        #     It 'Should return expected number of organization members' {
-        #         @($members).Count | Should be 1
-        #     }
-        # }
-
-        # Describe 'Obtaining organization teams' {
-        #     $teams = Get-GitHubTeam -OrganizationName $script:organizationName
-
-        #     It 'Should return expected number of organization teams' {
-        #         @($teams).Count | Should be 2
-        #     }
-        # }
-
-        # Describe 'Obtaining organization team members' {
-        #     $members = Get-GitHubTeamMember -OrganizationName $script:organizationName -TeamName $script:organizationTeamName
-
-        #     It 'Should return expected number of organization team members' {
-        #         @($members).Count | Should be 1
-        #     }
-        # }
-    }
-
-    Describe 'Getting repositories from organization' {
-        $original = @(Get-GitHubRepository -OrganizationName $script:organizationName)
-
-        $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -OrganizationName $script:organizationName
-        $current = @(Get-GitHubRepository -OrganizationName $script:organizationName)
-
-        It 'Should return expected number of organization repositories' {
-            ($current.Count - $original.Count) | Should be 1
-        }
-
-        $null = Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-    }
-
-    Describe 'Getting unique contributors from contributors array' {
-        $repositoryName = [guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-
-        $contributors = @(Get-GitHubRepositoryContributor -OwnerName $script:ownerName -RepositoryName $repositoryName -IncludeStatistics)
-
-        $uniqueContributors = $contributors |
-            Select-Object -ExpandProperty author |
-            Select-Object -ExpandProperty login -Unique
-            Sort-Object
-
-        It 'Should return expected number of unique contributors' {
-            $uniqueContributors.Count | Should be 1
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
-    }
-
-    Describe 'Getting repository name from url' {
-        $repositoryName = [guid]::NewGuid().Guid
-        $url = "https://github.com/$script:ownerName/$repositoryName"
-        $name = Split-GitHubUri -Uri $url -RepositoryName
-
-        It 'Should return expected repository name' {
-            $name | Should be $repositoryName
-        }
-    }
-
-    Describe 'Getting repository owner from url' {
-        $repositoryName = [guid]::NewGuid().Guid
-        $url = "https://github.com/$script:ownerName/$repositoryName"
-        $owner = Split-GitHubUri -Uri $url -OwnerName
-
-        It 'Should return expected repository owner' {
-            $owner | Should be $script:ownerName
-        }
-    }
-
-    Describe 'Getting branches for repository' {
-        $repositoryName = [guid]::NewGuid().Guid
-        $null = New-GitHubRepository -RepositoryName $repositoryName -AutoInit
-
-        $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
-
-        It 'Should return expected number of repository branches' {
-            $branches.Count | Should be 1
-        }
-
-        It 'Should return the name of the branches' {
-            $branches[0].name | Should be 'master'
-        }
-
-        $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false
-    }
+    #     It 'Should return expected number of organization team members' {
+    #         @($members).Count | Should be 1
+    #     }
+    # }
 }
 finally
 {

@@ -113,8 +113,10 @@ filter New-GitHubRepository
             Mandatory,
             ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
+        [Alias('Name')]
         [string] $RepositoryName,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $OrganizationName,
 
         [string] $Description,
@@ -1743,6 +1745,8 @@ filter Add-GitHubRepositoryAdditionalProperties
             {
                 Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             }
+
+            Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
 
             if ($null -ne $item.owner)
             {
