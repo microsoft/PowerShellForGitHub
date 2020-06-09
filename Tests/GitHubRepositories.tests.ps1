@@ -299,14 +299,6 @@ try
             $newGitHubRepositoryParms = @{
                 RepositoryName = $templateRepoName
                 Description = $defaultRepoDesc
-                HomePage = $defaultRepoHomePage
-                NoIssues = $true
-                NoProjects = $true
-                NoWiki = $true
-                DisallowSquashMerge = $true
-                DisallowMergeCommit = $true
-                DisallowRebaseMerge = $false
-                DeleteBranchOnMerge = $true
                 GitIgnoreTemplate = $testGitIgnoreTemplate
                 LicenseTemplate = $testLicenseTemplate
                 IsTemplate = $true
@@ -321,7 +313,7 @@ try
                 $newGitHubRepositoryFromTemplateParms = @{
                     RepositoryName = $repoName
                     OwnerName = $script:ownerName
-                    TemplateOwnerName = $templateRepoName.owner.login
+                    TemplateOwnerName = $templateRepo.owner.login
                     TemplateRepositoryName = $templateRepoName
                     Description = $newRepoDesc
                 }
@@ -337,14 +329,6 @@ try
                 $repo.private | Should -BeFalse
                 $repo.owner.login | Should -Be $script:ownerName
                 $repo.description | Should -Be $newRepoDesc
-                $repo.homepage | Should -Be $templateRepo.homepage
-                $repo.has_issues | Should -BeFalse
-                $repo.has_projects | Should -BeFalse
-                $repo.has_Wiki | Should -BeFalse
-                $repo.allow_squash_merge | Should -BeFalse
-                $repo.allow_merge_commit | Should -BeFalse
-                $repo.allow_rebase_merge | Should -BeTrue
-                $repo.delete_branch_on_merge | Should -BeTrue
                 $repo.is_template | Should -BeFalse
             }
 
