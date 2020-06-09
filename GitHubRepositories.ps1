@@ -266,7 +266,7 @@ function Remove-GitHubRepository
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }
@@ -692,7 +692,7 @@ function Rename-GitHubRepository
     {
         $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
 
-        if ($Force -and -not $Confirm)
+        if ($Force -and (-not $Confirm))
         {
             $ConfirmPreference = 'None'
         }

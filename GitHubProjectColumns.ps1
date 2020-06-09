@@ -293,7 +293,7 @@ function Remove-GitHubProjectColumn
     $uriFragment = "/projects/columns/$Column"
     $description = "Deleting column $Column"
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

@@ -389,7 +389,7 @@ function Remove-GithubAssignee
         'assignees' = $Assignee
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

@@ -508,7 +508,7 @@ function Remove-GitHubProject
     $uriFragment = "projects/$Project"
     $description = "Deleting project $Project"
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

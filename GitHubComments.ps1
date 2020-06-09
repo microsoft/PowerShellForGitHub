@@ -506,7 +506,7 @@ function Remove-GitHubComment
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

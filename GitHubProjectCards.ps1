@@ -397,7 +397,7 @@ function Remove-GitHubProjectCard
     $uriFragment = "/projects/columns/cards/$Card"
     $description = "Deleting card $Card"
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

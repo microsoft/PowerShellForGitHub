@@ -371,7 +371,7 @@ function Remove-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }
@@ -953,7 +953,7 @@ function Remove-GitHubIssueLabel
         $description = "Deleting all labels from issue $Issue in $RepositoryName"
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }

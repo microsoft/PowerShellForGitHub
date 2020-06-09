@@ -553,7 +553,7 @@ function Remove-GitHubMilestone
         'Milestone' =  (Get-PiiSafeString -PlainText $Milestone)
     }
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }
