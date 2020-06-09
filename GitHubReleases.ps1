@@ -31,8 +31,8 @@ filter Get-GitHubRelease
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER ReleaseId
-        Specific releaseId of a release.
+    .PARAMETER Release
+        The ID of a specific release.
         This is an optional parameter which can limit the results to a single release.
 
     .PARAMETER Latest
@@ -62,7 +62,7 @@ filter Get-GitHubRelease
         Gets all releases for the default configured owner/repository.
 
     .EXAMPLE
-        Get-GitHubRelease -ReleaseId 12345
+        Get-GitHubRelease -Release 12345
 
         Get a specific release for the default configured owner/repository
 
@@ -143,7 +143,8 @@ filter Get-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-ReleaseId")]
-        [string] $ReleaseId,
+        [Alias('ReleaseId')]
+        [int64] $Release,
 
         [Parameter(
             Mandatory,
@@ -180,12 +181,12 @@ filter Get-GitHubRelease
     $uriFragment = "repos/$OwnerName/$RepositoryName/releases"
     $description = "Getting releases for $OwnerName/$RepositoryName"
 
-    if(-not [String]::IsNullOrEmpty($ReleaseId))
+    if ($PSBoundParameters.ContainsKey('Release'))
     {
-        $telemetryProperties['ProvidedReleaseId'] = $true
+        $telemetryProperties['ProvidedRelease'] = $true
 
-        $uriFragment += "/$ReleaseId"
-        $description = "Getting release information for $ReleaseId from $OwnerName/$RepositoryName"
+        $uriFragment += "/$Release"
+        $description = "Getting release information for $Release from $OwnerName/$RepositoryName"
     }
 
     if($Latest)
