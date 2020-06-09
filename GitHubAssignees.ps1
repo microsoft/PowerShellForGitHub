@@ -193,11 +193,11 @@ filter Test-GitHubAssignee
     }
 }
 
-filter New-GithubAssignee
+filter New-GitHubAssignee
 {
 <#
     .DESCRIPTION
-       Adds a list of assignees to a Github Issue for the given repository.
+       Adds a list of assignees to a GitHub Issue for the given repository.
 
        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -235,7 +235,7 @@ filter New-GithubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        New-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
+        New-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
@@ -310,11 +310,11 @@ filter New-GithubAssignee
     return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
 }
 
-filter Remove-GithubAssignee
+filter Remove-GitHubAssignee
 {
 <#
     .DESCRIPTION
-        Removes an assignee from a Github issue.
+        Removes an assignee from a GitHub issue.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -354,12 +354,12 @@ filter Remove-GithubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
+        Remove-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
         Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
+        Remove-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
 
         Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 

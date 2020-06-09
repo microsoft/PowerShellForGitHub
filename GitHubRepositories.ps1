@@ -4,8 +4,7 @@
 @{
     GitHubRepositoryTypeName = 'GitHub.Repository'
     GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
-    GitHubRepositoryContributorTypeName = 'GitHub.RepositoryContributor'
-    GitHubRepositoryCollaboratorTypeName = 'GitHub.RepositoryCollaborator'
+    GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
  }.GetEnumerator() | ForEach-Object {
@@ -1376,7 +1375,28 @@ filter Get-GitHubRepositoryContributor
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
+    $results = Invoke-GHRestMethodMultipleResult @params
+
+    if ($IncludeStatistics)
+    {
+        foreach ($item in $InputObject)
+        {
+            $item.PSObject.TypeNames.Insert(0, $script:GitHubRepositoryContributorStatisticsTypeName)
+
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
+            }
+        }
+    }
+    else
+    {
+        $results = $results | Add-GitHubUserAdditionalProperties
+    }
+
+    return $results
 }
 
 filter Get-GitHubRepositoryCollaborator
@@ -1406,6 +1426,13 @@ filter Get-GitHubRepositoryCollaborator
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER Affiliation
+        Filter collaborators returned by their affiliation. Can be one of:
+           All:     All collaborators the authenticated user can see.
+           Direct:  All collaborators with permissions to an organization-owned repository,
+                     regardless of organization membership status.
+           Outside: All outside collaborators of an organization-owned repository.
 
     .PARAMETER NoStatus
         If this switch is specified, long-running commands will run on the main thread
@@ -1441,6 +1468,9 @@ filter Get-GitHubRepositoryCollaborator
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [ValidateSet('All', 'Direct', 'Outside')]
+        [string] $Affiliation = 'All',
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -1457,8 +1487,12 @@ filter Get-GitHubRepositoryCollaborator
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $getParams = @(
+        "affiliation=$($Affiliation.ToLower())"
+    )
+
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/collaborators"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/collaborators?" + ($getParams -join '&')
         'Description' =  "Getting collaborators for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1607,6 +1641,7 @@ filter Get-GitHubRepositoryTag
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$scrit:GitHubRepositoryTagTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1825,7 +1860,10 @@ filter Add-GitHubRepositoryAdditionalProperties
                 Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             }
 
-            Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
+            if ($item.id -gt 0)
+            {
+                Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
+            }
 
             if ($null -ne $item.owner)
             {

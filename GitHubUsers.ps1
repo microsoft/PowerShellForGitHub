@@ -223,27 +223,41 @@ filter Get-GitHubUserContextualInformation
 
     $getParams = @()
 
+    $contextType = [String]::Empty
+    $contextId = 0
     if ($PSCmdlet.ParameterSetName -ne 'NoContext')
     {
         if ($PSCmdlet.ParameterSetName -eq 'Organization')
         {
             $getParams += 'subject_type=organization'
             $getParams += "subject_id=$OrganizationId"
+
+            $contextType = 'OrganizationId'
+            $contextId = $OrganizationId
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'Repository')
         {
             $getParams += 'subject_type=repository'
             $getParams += "subject_id=$RepositoryId"
+
+            $contextType = 'RepositoryId'
+            $contextId = $RepositoryId
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'Issue')
         {
             $getParams += 'subject_type=issue'
             $getParams += "subject_id=$IssueId"
+
+            $contextType = 'IssueId'
+            $contextId = $IssueId
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'PullRequest')
         {
             $getParams += 'subject_type=pull_request'
             $getParams += "subject_id=$PullRequestId"
+
+            $contextType = 'PullRequestId'
+            $contextId = $PullRequestId
         }
     }
 
@@ -257,8 +271,22 @@ filter Get-GitHubUserContextualInformation
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubUserAdditionalProperties -TypeName $script:GitHubUserContextualInformationTypeName -Name $UserName)
+    $result = Invoke-GHRestMethod @params
+    foreach ($item in $result.contexts)
+    {
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubUserContextualInformationTypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'UserName' -Value $UserName -MemberType NoteProperty -Force
+            if ($PSCmdlet.ParameterSetName -ne 'NoContext')
+            {
+                Add-Member -InputObject $item -Name $contextType -Value $contextId -MemberType NoteProperty -Force
+            }
+        }
+    }
+
+    return $result
 }
 
 function Update-GitHubCurrentUser

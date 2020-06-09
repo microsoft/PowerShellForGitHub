@@ -11,7 +11,7 @@ filter Get-GitHubProjectCard
 {
 <#
     .DESCRIPTION
-        Get the cards for a given Github Project Column.
+        Get the cards for a given GitHub Project Column.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -132,7 +132,7 @@ filter New-GitHubProjectCard
 {
 <#
     .DESCRIPTION
-        Creates a new card for a Github project.
+        Creates a new card for a GitHub project.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

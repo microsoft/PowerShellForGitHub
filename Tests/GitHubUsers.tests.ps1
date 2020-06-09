@@ -105,12 +105,14 @@ try
             It 'Should indicate ownership with the username on the pipeline' {
                 $context = $script:ownerName | Get-GitHubUserContextualInformation -RepositoryId $repo.id
                 'Owns this repository' | Should -BeIn $context.contexts.message
+                $context.contexts[0].PSObject.TypeNames[0] | Should -Be 'GitHub.UserContextualInformation'
             }
 
             It 'Should indicate ownership with the user on the pipeline' {
                 $user = Get-GitHubUser -UserName $script:ownerName
                 $context = $user | Get-GitHubUserContextualInformation -RepositoryId $repo.id
                 'Owns this repository' | Should -BeIn $context.contexts.message
+                $context.contexts[0].PSObject.TypeNames[0] | Should -Be 'GitHub.UserContextualInformation'
             }
         }
 
@@ -120,10 +122,13 @@ try
 
             It 'Should indicate the user created the issue' {
                 $context.contexts[0].octicon | Should -Be 'issue-opened'
+                $context.contexts[0].IssueId | Should -Be $issue.IssueId
+                $context.contexts[0].PSObject.TypeNames[0] | Should -Be 'GitHub.UserContextualInformation'
             }
 
             It 'Should indicate the user owns the repository' {
                 $context.contexts[1].message | Should -Be 'Owns this repository'
+                $context.contexts[1].PSObject.TypeNames[0] | Should -Be 'GitHub.UserContextualInformation'
             }
         }
     }

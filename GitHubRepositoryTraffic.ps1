@@ -107,7 +107,7 @@ filter Get-GitHubPathTraffic
 {
 <#
     .SYNOPSIS
-        Get the top 10 popular contents over the last 14 days for a given Github repository.
+        Get the top 10 popular contents over the last 14 days for a given GitHub repository.
 
     .DESCRIPTION
         Get the top 10 popular contents over the last 14 days for a given GitHub repository.
@@ -200,7 +200,7 @@ filter Get-GitHubViewTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of views and breakdown per day or week for the last 14 days for the given Github Repository.
+        Get the total number of views and breakdown per day or week for the last 14 days for the given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of views and breakdown per day or week for the last 14 days.
@@ -301,7 +301,7 @@ filter Get-GitHubCloneTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of clones and breakdown per day or week for the last 14 days for the given Github Repository.
+        Get the total number of clones and breakdown per day or week for the last 14 days for the given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of clones and breakdown per day or week for the last 14 days.

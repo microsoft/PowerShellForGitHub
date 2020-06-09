@@ -715,6 +715,14 @@ try
             It 'Should contain PowerShell' {
                 $languages = Get-GitHubRepositoryLanguage -OwnerName "microsoft" -RepositoryName "PowerShellForGitHub"
                 $languages.PowerShell | Should -Not -BeNullOrEmpty
+                $languages.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryLanguage'
+            }
+
+            It 'Should contain PowerShell (via pipeline)' {
+                $psfg = Get-GitHubRepository -OwnerName "microsoft" -RepositoryName "PowerShellForGitHub"
+                $languages = $psfg | Get-GitHubRepositoryLanguage
+                $languages.PowerShell | Should -Not -BeNullOrEmpty
+                $languages.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryLanguage'
             }
 
             AfterAll -ScriptBlock {
@@ -732,6 +740,11 @@ try
 
             It 'Should be empty' {
                 $tags = Get-GitHubRepositoryTag -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $tags | Should -BeNullOrEmpty
+            }
+
+            It 'Should be empty (via pipeline)' {
+                $tags = $repo | Get-GitHubRepositoryTag
                 $tags | Should -BeNullOrEmpty
             }
 
@@ -758,6 +771,7 @@ try
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
+                #$contributors[0].PSObject.TypeName = 'GitHub.User'
             }
 
             It 'Should return expected number of unique contributors' {
@@ -767,6 +781,15 @@ try
                     Sort-Object
 
                 $uniqueContributors.Count | Should -Be 1
+            }
+        }
+
+        Context -Name 'Obtaining contributors for repository (via pipeline)' -Fixture {
+            $contributors = @($repo | Get-GitHubRepositoryContributor -IncludeStatistics)
+
+            It 'Should return expected number of contributors' {
+                $contributors.Count | Should -Be 1
+                #$contributors[0].PSObject.TypeName = 'GitHub.User'
             }
         }
     }
@@ -788,6 +811,26 @@ try
 
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should -Be 1
+                $collaborators[0].PSObject.TypeName = 'GitHub.User'
+            }
+        }
+
+        Context -Name 'Obtaining collaborator statistics for repository' -Fixture {
+            $stats = @(Get-GitHubRepositoryCollaborator -Uri $repo.RepositoryUrl -IncludeStatistics)
+
+            It 'Should return expected number of collaborators' {
+                $stats.Count | Should -Be 1
+                $stats[0].PSObject.TypeName = 'GitHub.RepositoryContributorStatistics'
+                $stats[0].author.PSObject.TypeName = 'GitHub.User'
+            }
+        }
+
+        Context -Name 'Obtaining collaborators for repository (via pipeline)' -Fixture {
+            $collaborators = @($repo | Get-GitHubRepositoryCollaborator)
+
+            It 'Should return expected number of collaborators' {
+                $collaborators.Count | Should -Be 1
+                $collaborators[0].PSObject.TypeName = 'GitHub.User'
             }
         }
     }

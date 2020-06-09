@@ -11,7 +11,7 @@ filter Get-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
-        Get the columns for a given Github Project.
+        Get the columns for a given GitHub Project.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -109,7 +109,7 @@ filter New-GitHubProjectColumn
 {
 <#
     .DESCRIPTION
-        Creates a new column for a Github project.
+        Creates a new column for a GitHub project.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

@@ -63,14 +63,14 @@ try
         Context 'For adding an assignee to an issue'{
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.RepositoryUrl)
             $assignees = $assigneeList[0].UserName
-            $null = New-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Assignee $assignees
+            $null = New-GitHubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Assignee $assignees
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have assigned the user to the issue' {
                 $issue.assignee.login | Should -Be $assigneeUserName
             }
 
-            Remove-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Assignee $assignees -Confirm:$false
+            Remove-GitHubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Assignee $assignees -Confirm:$false
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have removed the user from issue' {
@@ -101,14 +101,14 @@ try
         Context 'For adding an assignee to an issue - pipe in the repo'{
             $assigneeList = @($repo | Get-GitHubAssignee)
             $assignees = $assigneeList[0].UserName
-            $null = $repo | New-GithubAssignee -Issue $issue.IssueNumber -Assignee $assignees
+            $null = $repo | New-GitHubAssignee -Issue $issue.IssueNumber -Assignee $assignees
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have assigned the user to the issue' {
                 $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
-            $repo | Remove-GithubAssignee -Issue $issue.IssueNumber -Assignee $assignees -Confirm:$false
+            $repo | Remove-GitHubAssignee -Issue $issue.IssueNumber -Assignee $assignees -Confirm:$false
             $issue = $repo | Get-GitHubIssue -Issue $issue.IssueNumber
 
             It 'Should have removed the user from issue' {
@@ -119,14 +119,14 @@ try
         Context 'For adding an assignee to an issue - pipe in the issue'{
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.RepositoryUrl)
             $assignees = $assigneeList[0].UserName
-            $null = $issue | New-GithubAssignee -Assignee $assignees
+            $null = $issue | New-GitHubAssignee -Assignee $assignees
             $issue = $issue | Get-GitHubIssue
 
             It 'Should have assigned the user to the issue' {
                 $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
-            $issue | Remove-GithubAssignee -Assignee $assignees -Confirm:$false
+            $issue | Remove-GitHubAssignee -Assignee $assignees -Confirm:$false
             $issue = $issue | Get-GitHubIssue
 
             It 'Should have removed the user from issue' {
@@ -137,14 +137,14 @@ try
         Context 'For adding an assignee to an issue - pipe in the assignee'{
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.RepositoryUrl)
             $assignees = $assigneeList[0].UserName
-            $null = $assignees | New-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number
+            $null = $assignees | New-GitHubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.IssueNumber
 
             It 'Should have assigned the user to the issue' {
                 $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
-            $assignees | Remove-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Confirm:$false
+            $assignees | Remove-GitHubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Confirm:$false
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.IssueNumber
 
             It 'Should have removed the user from issue' {

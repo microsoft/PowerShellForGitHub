@@ -27,7 +27,7 @@ try
             }
         }
 
-        $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
+        $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
         Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
 
         Context 'For getting events from a repository' {
@@ -44,7 +44,7 @@ try
     Describe 'Getting events from an issue' {
         $repositoryName = [Guid]::NewGuid()
         $null = New-GitHubRepository -RepositoryName $repositoryName
-        $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
+        $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
 
         Context 'For getting events from a new issue' {
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
@@ -70,7 +70,7 @@ try
     Describe 'Getting an event directly' {
         $repositoryName = [Guid]::NewGuid()
         $null = New-GitHubRepository -RepositoryName $repositoryName
-        $issue = New-GithubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
+        $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title "New Issue"
         Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
         Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
         $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)

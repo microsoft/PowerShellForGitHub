@@ -11,7 +11,7 @@ filter Get-GitHubProject
 {
 <#
     .DESCRIPTION
-        Get the projects for a given Github user, repository or organization.
+        Get the projects for a given GitHub user, repository or organization.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -188,7 +188,7 @@ filter New-GitHubProject
 {
 <#
     .DESCRIPTION
-        Creates a new Github project for the given repository
+        Creates a new GitHub project for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -470,7 +470,7 @@ filter Remove-GitHubProject
 {
 <#
     .DESCRIPTION
-        Removes the projects for a given Github repository.
+        Removes the projects for a given GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

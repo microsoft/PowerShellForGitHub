@@ -350,7 +350,7 @@ function Get-GitHubEmoji
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        Github.Emoji
+        GitHub.Emoji
 
     .EXAMPLE
         Get-GitHubEmoji
