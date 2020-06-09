@@ -223,7 +223,7 @@ function Invoke-GHRestMethod
                 }
             }
 
-            # Disable Progress Bar during Invoke-WebRequest
+            # Disable Progress Bar in function scope during Invoke-WebRequest
             $ProgressPreference = 'SilentlyContinue'
 
             [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -269,7 +269,7 @@ function Invoke-GHRestMethod
 
                 try
                 {
-                    # Disable Progress Bar during Invoke-WebRequest
+                    # Disable Progress Bar in function scope during Invoke-WebRequest
                     $ProgressPreference = 'SilentlyContinue'
 
                     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
