@@ -40,29 +40,29 @@ try
             $newMilestoneDueOnLateEvening = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle3 -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(23)
 
             It "Should have the expected title text" {
-                $existingMilestone.title | Should be $defaultMilestoneTitle1
+                $existingMilestone.title | Should -Be $defaultMilestoneTitle1
             }
 
             It "Should have the expected state" {
-                $existingMilestone.state | Should be "closed"
+                $existingMilestone.state | Should -Be "closed"
             }
 
             It "Should have the expected due_on date" {
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $existingMilestone.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $existingMilestone.due_on).Date | Should -Be $defaultMilestoneDueOn.Date
             }
 
             It "Should have the expected due_on date even if early morning" {
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $newMilestoneDueOnEarlyMorning.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $newMilestoneDueOnEarlyMorning.due_on).Date | Should -Be $defaultMilestoneDueOn.Date
             }
 
             It "Should have the expected due_on date even if late evening" {
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $newMilestoneDueOnLateEvening.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $newMilestoneDueOnLateEvening.due_on).Date | Should -Be $defaultMilestoneDueOn.Date
             }
 
             It "Should allow the addition of an existing issue" {
@@ -75,16 +75,16 @@ try
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 3
+                $existingMilestones.Count | Should -Be 3
             }
 
             It 'Should have the expected title text on the first milestone' {
-                $existingMilestones[0].title | Should be $defaultMilestoneTitle1
+                $existingMilestones[0].title | Should -Be $defaultMilestoneTitle1
             }
 
             It 'Should have the expected issue in the first milestone' {
-                $existingMilestones[0].open_issues | should be 1
-                $issue.milestone.number | Should be 1
+                $existingMilestones[0].open_issues | Should -Be 1
+                $issue.milestone.number | Should -Be 1
             }
         }
 
@@ -93,13 +93,13 @@ try
             $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number -Title $defaultEditedMilestoneTitle -Description $defaultEditedMilestoneDescription
 
             It 'Should have a title/description that is not equal to the original title/description' {
-                $editedMilestone.title | Should not be $newMilestone.title
-                $editedMilestone.description | Should not be $newMilestone.description
+                $editedMilestone.title | Should -Not -Be $newMilestone.title
+                $editedMilestone.description | Should -Not -Be $newMilestone.description
             }
 
             It 'Should have the edited content' {
-                $editedMilestone.title | Should be $defaultEditedMilestoneTitle
-                $editedMilestone.description | Should be $defaultEditedMilestoneDescription
+                $editedMilestone.title | Should -Be $defaultEditedMilestoneTitle
+                $editedMilestone.description | Should -Be $defaultEditedMilestoneDescription
             }
         }
 
@@ -107,7 +107,7 @@ try
             $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending)
 
             It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 4
+                $existingMilestones.Count | Should -Be 4
             }
 
             foreach($milestone in $existingMilestones) {
@@ -118,8 +118,8 @@ try
             $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
 
             It 'Should have no milestones' {
-                $existingMilestones.Count | Should be 0
-                $issue.milestone | Should be $null
+                $existingMilestones.Count | Should -Be 0
+                $issue.milestone | Should -Be $null
             }
         }
 

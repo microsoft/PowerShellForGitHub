@@ -637,7 +637,7 @@ try
             $contributors = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
 
             It 'Should return expected number of contributors' {
-                $contributors.Count | Should be 1
+                $contributors.Count | Should -Be 1
             }
 
             It 'Should return expected number of unique contributors' {
@@ -646,7 +646,7 @@ try
                     Select-Object -ExpandProperty login -Unique
                     Sort-Object
 
-                $uniqueContributors.Count | Should be 1
+                $uniqueContributors.Count | Should -Be 1
             }
         }
     }
@@ -667,7 +667,7 @@ try
             $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repo.RepositoryUrl)
 
             It 'Should return expected number of collaborators' {
-                $collaborators.Count | Should be 1
+                $collaborators.Count | Should -Be 1
             }
         }
     }

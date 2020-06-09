@@ -49,19 +49,19 @@ try
 
             $results = @(Get-GitHubProject -UserName $script:ownerName | Where-Object Name -eq $defaultUserProject)
             It 'Should get project' {
-                $results | Should Not BeNullOrEmpty
+                $results | Should -Not -BeNullOrEmpty
             }
 
             It 'Should only get a single project' {
-                $results.Count | Should Be 1
+                $results.Count | Should -Be 1
             }
 
             It 'Name is correct' {
-                $results[0].name | Should be $defaultUserProject
+                $results[0].name | Should -Be $defaultUserProject
             }
 
             It 'Description is correct' {
-                $results[0].body | Should be $defaultUserProjectDesc
+                $results[0].body | Should -Be $defaultUserProjectDesc
             }
         }
 
@@ -79,19 +79,19 @@ try
 
             $results = @(Get-GitHubProject -OrganizationName $script:organizationName | Where-Object Name -eq $defaultOrgProject)
             It 'Should get project' {
-                $results | Should Not BeNullOrEmpty
+                $results | Should -Not -BeNullOrEmpty
             }
 
             It 'Should only get a single project' {
-                $results.Count | Should Be 1
+                $results.Count | Should -Be 1
             }
 
             It 'Name is correct' {
-                $results[0].name | Should be $defaultOrgProject
+                $results[0].name | Should -Be $defaultOrgProject
             }
 
             It 'Description is correct' {
-                $results[0].body | Should be $defaultOrgProjectDesc
+                $results[0].body | Should -Be $defaultOrgProjectDesc
             }
         }
 
@@ -109,19 +109,19 @@ try
 
             $results = @(Get-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name | Where-Object Name -eq $defaultRepoProject)
             It 'Should get project' {
-                $results | Should Not BeNullOrEmpty
+                $results | Should -Not -BeNullOrEmpty
             }
 
             It 'Should only get a single project' {
-                $results.Count | Should Be 1
+                $results.Count | Should -Be 1
             }
 
             It 'Name is correct' {
-                $results[0].name | Should be $defaultRepoProject
+                $results[0].name | Should -Be $defaultRepoProject
             }
 
             It 'Description is correct' {
-                $results[0].body | Should be $defaultRepoProjectDesc
+                $results[0].body | Should -Be $defaultRepoProjectDesc
             }
         }
 
@@ -140,23 +140,23 @@ try
 
             $results = @(Get-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -State 'Closed' | Where-Object Name -eq $defaultProjectClosed)
             It 'Should get project' {
-                $results | Should Not BeNullOrEmpty
+                $results | Should -Not -BeNullOrEmpty
             }
 
             It 'Should only get a single project' {
-                $results.Count | Should Be 1
+                $results.Count | Should -Be 1
             }
 
             It 'Name is correct' {
-                $results[0].name | Should be $defaultProjectClosed
+                $results[0].name | Should -Be $defaultProjectClosed
             }
 
             It 'Description is correct' {
-                $results[0].body | Should be $defaultProjectClosedDesc
+                $results[0].body | Should -Be $defaultProjectClosedDesc
             }
 
             It 'State is correct' {
-                $results[0].state | Should be "Closed"
+                $results[0].state | Should -Be "Closed"
             }
         }
     }
@@ -177,15 +177,15 @@ try
             $null = Set-GitHubProject -Project $project.id -Description $modifiedUserProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultUserProject
+                $result.name | Should -Be $defaultUserProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $modifiedUserProjectDesc
+                $result.body | Should -Be $modifiedUserProjectDesc
             }
         }
 
@@ -204,23 +204,23 @@ try
             $null = Set-GitHubProject -Project $project.id -Description $modifiedOrgProjectDesc -Private:$false -OrganizationPermission Admin
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultOrgProject
+                $result.name | Should -Be $defaultOrgProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $modifiedOrgProjectDesc
+                $result.body | Should -Be $modifiedOrgProjectDesc
             }
 
             It 'Visibility should be updated to public' {
-                $result.private | Should be $false
+                $result.private | Should -Be $false
             }
 
             It 'Organization permission should be updated to admin' {
-                $result.organization_permission | Should be 'admin'
+                $result.organization_permission | Should -Be 'admin'
             }
 
         }
@@ -240,15 +240,15 @@ try
             $null = Set-GitHubProject -Project $project.id -Description $modifiedRepoProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultRepoProject
+                $result.name | Should -Be $defaultRepoProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $modifiedRepoProjectDesc
+                $result.body | Should -Be $modifiedRepoProjectDesc
             }
         }
     }
@@ -270,15 +270,15 @@ try
             $project.id = (New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc).id
             $result = Get-GitHubProject -Project $project.id
             It 'Project exists' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultUserProject
+                $result.name | Should -Be $defaultUserProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $defaultUserProjectDesc
+                $result.body | Should -Be $defaultUserProjectDesc
             }
         }
 
@@ -298,15 +298,15 @@ try
             $project.id = (New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc).id
             $result = Get-GitHubProject -Project $project.id
             It 'Project exists' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultOrgProject
+                $result.name | Should -Be $defaultOrgProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $defaultOrgProjectDesc
+                $result.body | Should -Be $defaultOrgProjectDesc
             }
         }
 
@@ -326,15 +326,15 @@ try
             $project.id = (New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc).id
             $result = Get-GitHubProject -Project $project.id
             It 'Project Exists' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should be $defaultRepoProject
+                $result.name | Should -Be $defaultRepoProject
             }
 
             It 'Description should be updated' {
-                $result.body | Should be $defaultRepoProjectDesc
+                $result.body | Should -Be $defaultRepoProjectDesc
             }
         }
     }
@@ -350,7 +350,7 @@ try
 
             $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
-                {Get-GitHubProject -Project $project.id} | Should Throw
+                {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
 
@@ -364,7 +364,7 @@ try
 
             $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
-                {Get-GitHubProject -Project $project.id} | Should Throw
+                {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
 
@@ -378,7 +378,7 @@ try
 
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             It 'Project should be removed' {
-                {Get-GitHubProject -Project $project.id} | Should Throw
+                {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
     }

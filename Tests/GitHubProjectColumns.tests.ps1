@@ -39,15 +39,15 @@ try
         Context 'Get columns for a project' {
             $results = @(Get-GitHubProjectColumn -Project $project.id)
             It 'Should get column' {
-                $results | Should Not BeNullOrEmpty
+                $results | Should -Not -BeNullOrEmpty
             }
 
             It 'Should only have one column' {
-                $results.Count | Should Be 1
+                $results.Count | Should -Be 1
             }
 
             It 'Name is correct' {
-                $results[0].name | Should Be $defaultColumn
+                $results[0].name | Should -Be $defaultColumn
             }
         }
     }
@@ -72,11 +72,11 @@ try
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Should get column' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name has been updated' {
-                $result.name | Should Be $defaultColumnUpdate
+                $result.name | Should -Be $defaultColumnUpdate
             }
         }
 
@@ -85,11 +85,11 @@ try
             $results = @(Get-GitHubProjectColumn -Project $project.id)
 
             It 'Should still have more than one column in the project' {
-                $results.Count | Should Be 2
+                $results.Count | Should -Be 2
             }
 
             It 'Column is now in the first position' {
-                $results[0].name | Should Be $defaultColumnTwo
+                $results[0].name | Should -Be $defaultColumnTwo
             }
         }
 
@@ -98,13 +98,13 @@ try
             $results = @(Get-GitHubProjectColumn -Project $project.id)
 
             It 'Column is now not in the first position' {
-                $results[1].name | Should Be $defaultColumnTwo
+                $results[1].name | Should -Be $defaultColumnTwo
             }
         }
 
         Context 'Move command throws appropriate error' {
             It 'Expected error returned' {
-                { Move-GitHubProjectColumn -Column $column.id -First -Last } | Should Throw 'You must use one (and only one) of the parameters First, Last or After.'
+                { Move-GitHubProjectColumn -Column $column.id -First -Last } | Should -Throw 'You must use one (and only one) of the parameters First, Last or After.'
             }
         }
     }
@@ -127,11 +127,11 @@ try
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
-                $result | Should Not BeNullOrEmpty
+                $result | Should -Not -BeNullOrEmpty
             }
 
             It 'Name is correct' {
-                $result.name | Should Be $defaultColumn
+                $result.name | Should -Be $defaultColumn
             }
         }
     }
@@ -147,7 +147,7 @@ try
 
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
             It 'Project column should be removed' {
-                {Get-GitHubProjectColumn -Column $column.id} | Should Throw
+                {Get-GitHubProjectColumn -Column $column.id} | Should -Throw
             }
         }
     }

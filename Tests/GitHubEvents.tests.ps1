@@ -23,7 +23,7 @@ try
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have no events' {
-                $events.Count | Should be 0
+                $events.Count | Should -Be 0
             }
         }
 
@@ -34,7 +34,7 @@ try
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have an event from closing an issue' {
-                $events.Count | Should be 1
+                $events.Count | Should -Be 1
             }
         }
 
@@ -50,7 +50,7 @@ try
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
 
             It 'Should have no events' {
-                $events.Count | Should be 0
+                $events.Count | Should -Be 0
             }
         }
 
@@ -60,7 +60,7 @@ try
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have two events from closing and opening the issue' {
-                $events.Count | Should be 2
+                $events.Count | Should -Be 2
             }
         }
 
@@ -79,7 +79,7 @@ try
             $singleEvent = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -EventID $events[0].id
 
             It 'Should have the correct event type'{
-                $singleEvent.event | Should be 'reopened'
+                $singleEvent.event | Should -Be 'reopened'
             }
         }
 

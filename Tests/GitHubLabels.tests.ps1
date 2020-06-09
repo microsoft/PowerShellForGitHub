@@ -83,7 +83,7 @@ try
             $labels = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should return expected number of labels' {
-                $labels.Count | Should be $:defaultLabels.Count
+                $labels.Count | Should -Be $:defaultLabels.Count
             }
         }
 
@@ -91,7 +91,7 @@ try
             $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name bug
 
             It 'Should return expected label' {
-                $label.name | Should be "bug"
+                $label.name | Should -Be "bug"
             }
         }
 
@@ -107,7 +107,7 @@ try
         $label = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName
 
         It 'New label should be created' {
-            $label.name | Should be $labelName
+            $label.name | Should -Be $labelName
         }
 
         AfterEach {
@@ -127,14 +127,14 @@ try
         $labels = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName)
 
         It 'Should return increased number of labels' {
-            $labels.Count | Should be ($defaultLabels.Count + 1)
+            $labels.Count | Should -Be ($defaultLabels.Count + 1)
         }
 
         Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name $labelName -Confirm:$false
         $labels = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName)
 
         It 'Should return expected number of labels' {
-            $labels.Count | Should be $defaultLabels.Count
+            $labels.Count | Should -Be $defaultLabels.Count
         }
 
         $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
@@ -156,7 +156,7 @@ try
             }
 
             It 'Label should have different color' {
-                $label.color | Should be AAAAAA
+                $label.color | Should -Be AAAAAA
             }
         }
 
@@ -171,8 +171,8 @@ try
             }
 
             It 'Label should have different color' {
-                $label | Should not be $null
-                $label.color | Should be BBBBBB
+                $label | Should -Not -Be $null
+                $label.color | Should -Be BBBBBB
             }
         }
 
@@ -197,16 +197,16 @@ try
         Remove-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "discussion" -Confirm:$false
 
         It 'Should return increased number of labels' {
-            $($labels).Count | Should be ($defaultLabels.Count + 1)
+            $($labels).Count | Should -Be ($defaultLabels.Count + 1)
         }
 
         Set-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Label $defaultLabels
         $labels = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName)
 
         It 'Should return expected number of labels' {
-            $labels.Count | Should be $defaultLabels.Count
+            $labels.Count | Should -Be $defaultLabels.Count
             $bugLabel = $labels | Where-Object {$_.name -eq "bug"}
-            $bugLabel.color | Should be "fc2929"
+            $bugLabel.color | Should -Be "fc2929"
         }
 
         $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
@@ -226,13 +226,13 @@ try
             $addedLabels = @(Add-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
             It 'Should return the number of labels that were just added' {
-                $addedLabels.Count | Should be $defaultLabels.Count
+                $addedLabels.Count | Should -Be $defaultLabels.Count
             }
 
             $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
             It 'Should return the number of labels that were just added from querying the issue again' {
-                $labelIssues.Count | Should be $defaultLabels.Count
+                $labelIssues.Count | Should -Be $defaultLabels.Count
             }
         }
 
@@ -249,7 +249,7 @@ try
         $issue = New-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Title $issueName -Label $issueLabels
 
         It 'Should return the number of labels that were just added' {
-            $issue.labels.Count | Should be $issueLabels.Count
+            $issue.labels.Count | Should -Be $issueLabels.Count
         }
 
         $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false
@@ -273,7 +273,7 @@ try
             $labelIssues = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
 
             It 'Should have removed three labels from the issue' {
-                $labelIssues.Count | Should be ($defaultLabels.Count - 3)
+                $labelIssues.Count | Should -Be ($defaultLabels.Count - 3)
             }
         }
 
@@ -282,7 +282,7 @@ try
             $labelIssues = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
 
             It 'Should have removed all labels from the issue' {
-                $labelIssues.Count | Should be 0
+                $labelIssues.Count | Should -Be 0
             }
         }
 
@@ -304,20 +304,20 @@ try
         $addedLabels = @(Set-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $labelsToAdd)
 
         It 'Should return the issue with 14 labels' {
-            $addedLabels.Count | Should be $labelsToAdd.Count
+            $addedLabels.Count | Should -Be $labelsToAdd.Count
         }
 
         $labelIssues = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
         It 'Should have 14 labels after querying the issue' {
-            $labelIssues.Count | Should be $defaultLabels.Count
+            $labelIssues.Count | Should -Be $defaultLabels.Count
         }
 
         $updatedIssueLabels = $labelsToAdd[0]
         $updatedIssue = Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $updatedIssueLabels
 
         It 'Should have 1 label after updating the issue' {
-            $updatedIssue.labels.Count | Should be $updatedIssueLabels.Count
+            $updatedIssue.labels.Count | Should -Be $updatedIssueLabels.Count
         }
 
         $null = Remove-GitHubRepository -OwnerName $ownerName -RepositoryName $repositoryName -Confirm:$false

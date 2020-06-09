@@ -19,11 +19,11 @@ try
         $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
 
         It 'Should return expected number of repository branches' {
-            $branches.Count | Should be 1
+            $branches.Count | Should -Be 1
         }
 
         It 'Should return the name of the branches' {
-            $branches[0].name | Should be 'master'
+            $branches[0].name | Should -Be 'master'
         }
 
         $null = Remove-GitHubRepository -OwnerName $script:ownerName -RepositoryName $repositoryName -Confirm:$false

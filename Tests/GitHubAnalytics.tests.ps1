@@ -113,7 +113,7 @@ try
     #         $pullRequests = Get-GitHubPullRequest -Uri $script:repositoryUrl
 
     #         It 'Should return expected number of PRs' {
-    #             @($pullRequests).Count | Should be 2
+    #             @($pullRequests).Count | Should -Be 2
     #         }
     #     }
 
@@ -124,7 +124,7 @@ try
     #             Where-Object { ($_.merged_at -ge $mergedStartDate) -and ($_.merged_at -le $mergedEndDate) }
 
     #         It 'Should return expected number of PRs' {
-    #             @($pullRequests).Count | Should be 3
+    #             @($pullRequests).Count | Should -Be 3
     #         }
     #     }
     # }
@@ -139,13 +139,13 @@ try
     #         $pullRequestCounts = $pullRequestCounts | Sort-Object -Property Count -Descending
 
     #         It 'Should return expected number of pull requests for each repository' {
-    #             @($pullRequestCounts[0].Count) | Should be 2
-    #             @($pullRequestCounts[1].Count) | Should be 0
+    #             @($pullRequestCounts[0].Count) | Should -Be 2
+    #             @($pullRequestCounts[1].Count) | Should -Be 0
     #         }
 
     #         It 'Should return expected repository names' {
-    #             @($pullRequestCounts[0].Uri) | Should be $script:repositoryUrl
-    #             @($pullRequestCounts[1].Uri) | Should be $script:repositoryUrl2
+    #             @($pullRequestCounts[0].Uri) | Should -Be $script:repositoryUrl
+    #             @($pullRequestCounts[1].Uri) | Should -Be $script:repositoryUrl2
     #         }
     #     }
 
@@ -170,13 +170,13 @@ try
     #         $pullRequests = Get-GitHubTopPullRequestRepository -Uri @($script:repositoryUrl, $script:repositoryUrl2) -State Closed -MergedOnOrAfter
 
     #         It 'Should return expected number of pull requests for each repository' {
-    #             @($pullRequests[0].Count) | Should be 3
-    #             @($pullRequests[1].Count) | Should be 0
+    #             @($pullRequests[0].Count) | Should -Be 3
+    #             @($pullRequests[1].Count) | Should -Be 0
     #         }
 
     #         It 'Should return expected repository names' {
-    #             @($pullRequests[0].Uri) | Should be $script:repositoryUrl
-    #             @($pullRequests[1].Uri) | Should be $script:repositoryUrl2
+    #             @($pullRequests[0].Uri) | Should -Be $script:repositoryUrl
+    #             @($pullRequests[1].Uri) | Should -Be $script:repositoryUrl2
     #         }
     #     }
     # }
@@ -189,7 +189,7 @@ try
     #     $members = Get-GitHubOrganizationMember -OrganizationName $script:organizationName
 
     #     It 'Should return expected number of organization members' {
-    #         @($members).Count | Should be 1
+    #         @($members).Count | Should -Be 1
     #     }
     # }
 
@@ -197,7 +197,7 @@ try
     #     $teams = Get-GitHubTeam -OrganizationName $script:organizationName
 
     #     It 'Should return expected number of organization teams' {
-    #         @($teams).Count | Should be 2
+    #         @($teams).Count | Should -Be 2
     #     }
     # }
 
@@ -205,7 +205,7 @@ try
     #     $members = Get-GitHubTeamMember -OrganizationName $script:organizationName -TeamName $script:organizationTeamName
 
     #     It 'Should return expected number of organization team members' {
-    #         @($members).Count | Should be 1
+    #         @($members).Count | Should -Be 1
     #     }
     # }
 }

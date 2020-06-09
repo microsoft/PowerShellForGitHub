@@ -31,7 +31,7 @@ try
             $existingComment = Get-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id
 
             It "Should have the expected body text" {
-                $existingComment.body | Should be $defaultCommentBody
+                $existingComment.body | Should -Be $defaultCommentBody
             }
         }
 
@@ -39,11 +39,11 @@ try
             $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have the expected number of comments' {
-                $existingComments.Count | Should be 1
+                $existingComments.Count | Should -Be 1
             }
 
             It 'Should have the expected body text on the first comment' {
-                $existingComments[0].body | Should be $defaultCommentBody
+                $existingComments[0].body | Should -Be $defaultCommentBody
             }
         }
 
@@ -51,7 +51,7 @@ try
             $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number -MediaType 'Html')
 
             It 'Should have the expected body_html on the first comment' {
-                $existingComments[0].body_html | Should not be $null
+                $existingComments[0].body_html | Should -Not -Be $null
             }
         }
 
@@ -60,11 +60,11 @@ try
             $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
 
             It 'Should have a body that is not equal to the original body' {
-                $editedComment.body | Should not be $newComment.Body
+                $editedComment.body | Should -Not -Be $newComment.Body
             }
 
             It 'Should have the edited content' {
-                $editedComment.body | Should be $defaultEditedCommentBody
+                $editedComment.body | Should -Be $defaultEditedCommentBody
             }
         }
 
@@ -72,7 +72,7 @@ try
             $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
             It 'Should have the expected number of comments' {
-                $existingComments.Count | Should be 2
+                $existingComments.Count | Should -Be 2
             }
 
             foreach($comment in $existingComments) {
@@ -82,7 +82,7 @@ try
             $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
 
             It 'Should have no comments' {
-                $existingComments.Count | Should be 0
+                $existingComments.Count | Should -Be 0
             }
         }
 

@@ -37,20 +37,20 @@ try
             $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
 
             It "Should have the expected name" {
-                $folderOutput.name | Should be ""
+                $folderOutput.name | Should -Be ""
             }
             It "Should have the expected path" {
-                $folderOutput.path | Should be ""
+                $folderOutput.path | Should -Be ""
             }
             It "Should have the expected type" {
-                $folderOutput.type | Should be "dir"
+                $folderOutput.type | Should -Be "dir"
             }
             It "Should have the expected entries" {
-                $folderOutput.entries.length | Should be 1
+                $folderOutput.entries.length | Should -Be 1
             }
             It "Should have the expected entry data" {
-                $folderOutput.entries[0].name | Should be $readmeFileName
-                $folderOutput.entries[0].path | Should be $readmeFileName
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
             }
         }
 
@@ -59,20 +59,20 @@ try
             $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
 
             It "Should have the expected name" {
-                $folderOutput.name | Should be ""
+                $folderOutput.name | Should -Be ""
             }
             It "Should have the expected path" {
-                $folderOutput.path | Should be ""
+                $folderOutput.path | Should -Be ""
             }
             It "Should have the expected type" {
-                $folderOutput.type | Should be "dir"
+                $folderOutput.type | Should -Be "dir"
             }
             It "Should have the expected entries" {
-                $folderOutput.entries.length | Should be 1
+                $folderOutput.entries.length | Should -Be 1
             }
             It "Should have the expected entry data" {
-                $folderOutput.entries[0].name | Should be $readmeFileName
-                $folderOutput.entries[0].path | Should be $readmeFileName
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
             }
         }
 
@@ -82,7 +82,7 @@ try
             $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
             It "Should have the expected content" {
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
             }
         }
 
@@ -91,7 +91,7 @@ try
             $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw -ResultAsString
 
             It "Should have the expected content" {
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
             }
         }
 
@@ -129,22 +129,22 @@ try
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName
 
             It "Should have the expected name" {
-                $readmeFileObject.name | Should be $readmeFileName
+                $readmeFileObject.name | Should -Be $readmeFileName
             }
             It "Should have the expected path" {
-                $readmeFileObject.path | Should be $readmeFileName
+                $readmeFileObject.path | Should -Be $readmeFileName
             }
             It "Should have the expected type" {
-                $readmeFileObject.type | Should be "file"
+                $readmeFileObject.type | Should -Be "file"
             }
             It "Should have the expected encoding" {
-                $readmeFileObject.encoding | Should be "base64"
+                $readmeFileObject.encoding | Should -Be "base64"
             }
 
             It "Should have the expected content" {
                 # Convert from base64
                 $readmeFileString = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($readmeFileObject.content))
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
             }
         }
 
@@ -153,20 +153,20 @@ try
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Object -ResultAsString
 
             It "Should have the expected name" {
-                $readmeFileObject.name | Should be $readmeFileName
+                $readmeFileObject.name | Should -Be $readmeFileName
             }
             It "Should have the expected path" {
-                $readmeFileObject.path | Should be $readmeFileName
+                $readmeFileObject.path | Should -Be $readmeFileName
             }
             It "Should have the expected type" {
-                $readmeFileObject.type | Should be "file"
+                $readmeFileObject.type | Should -Be "file"
             }
             It "Should have the expected encoding" {
-                $readmeFileObject.encoding | Should be "base64"
+                $readmeFileObject.encoding | Should -Be "base64"
             }
 
             It "Should have the expected content" {
-                $readmeFileObject.contentAsString | Should be $rawOutput
+                $readmeFileObject.contentAsString | Should -Be $rawOutput
             }
         }
 

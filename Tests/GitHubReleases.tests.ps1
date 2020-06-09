@@ -19,7 +19,7 @@ try
 
         Context 'When getting all releases' {
             It 'Should return multiple releases' {
-                $releases.Count | Should BeGreaterThan 1
+                $releases.Count | Should -BeGreaterThan 1
             }
         }
 
@@ -27,12 +27,12 @@ try
             $latest = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Latest)
 
             It 'Should return one value' {
-                $latest.Count | Should Be 1
+                $latest.Count | Should -Be 1
             }
 
             It 'Should return the first release from the full releases list' {
-                $latest[0].url | Should Be $releases[0].url
-                $latest[0].name | Should Be $releases[0].name
+                $latest[0].url | Should -Be $releases[0].url
+                $latest[0].name | Should -Be $releases[0].name
             }
         }
 
@@ -41,11 +41,11 @@ try
             $specific = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
 
             It 'Should return one value' {
-                $specific.Count | Should Be 1
+                $specific.Count | Should -Be 1
             }
 
             It 'Should return the correct release' {
-                $specific.name | Should Be $releases[$specificIndex].name
+                $specific.name | Should -Be $releases[$specificIndex].name
             }
         }
 
@@ -54,11 +54,11 @@ try
             $tagged = @(Get-GitHubRelease -OwnerName $ownerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
 
             It 'Should return one value' {
-                $tagged.Count | Should Be 1
+                $tagged.Count | Should -Be 1
             }
 
             It 'Should return the correct release' {
-                $tagged.name | Should Be $releases[$taggedIndex].name
+                $tagged.name | Should -Be $releases[$taggedIndex].name
             }
         }
     }
@@ -74,7 +74,7 @@ try
 
             Context 'When getting all releases' {
                 It 'Should return multiple releases' {
-                    $releases.Count | Should BeGreaterThan 1
+                    $releases.Count | Should -BeGreaterThan 1
                 }
             }
         } finally {

@@ -29,19 +29,19 @@ try
             $assigneeList = @(Get-GitHubAssignee -Uri $repo.RepositoryUrl)
 
             It 'Should have returned the one assignee' {
-                $assigneeList.Count | Should be 1
+                $assigneeList.Count | Should -Be 1
             }
 
             $assigneeUserName = $assigneeList[0].login
 
             It 'Should have returned an assignee with a login'{
-                $assigneeUserName | Should not be $null
+                $assigneeUserName | Should -Not -Be $null
             }
 
             $hasPermission = Test-GitHubAssignee -Uri $repo.RepositoryUrl -Assignee $assigneeUserName
 
             It 'Should have returned an assignee with permission to be assigned to an issue'{
-                $hasPermission | Should be $true
+                $hasPermission | Should -Be $true
             }
 
         }
@@ -67,14 +67,14 @@ try
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have assigned the user to the issue' {
-                $issue.assignee.login | Should be $assigneeUserName
+                $issue.assignee.login | Should -Be $assigneeUserName
             }
 
             Remove-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Assignee $assignees -Confirm:$false
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have removed the user from issue' {
-                $issue.assignees.Count | Should be 0
+                $issue.assignees.Count | Should -Be 0
             }
         }
     }
@@ -105,14 +105,14 @@ try
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.number
 
             It 'Should have assigned the user to the issue' {
-                $issue.assignee.UserName | Should be $assigneeUserName
+                $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
             $repo | Remove-GithubAssignee -Issue $issue.IssueNumber -Assignee $assignees -Confirm:$false
             $issue = $repo | Get-GitHubIssue -Issue $issue.IssueNumber
 
             It 'Should have removed the user from issue' {
-                $issue.assignees.Count | Should be 0
+                $issue.assignees.Count | Should -Be 0
             }
         }
 
@@ -123,14 +123,14 @@ try
             $issue = $issue | Get-GitHubIssue
 
             It 'Should have assigned the user to the issue' {
-                $issue.assignee.UserName | Should be $assigneeUserName
+                $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
             $issue | Remove-GithubAssignee -Assignee $assignees -Confirm:$false
             $issue = $issue | Get-GitHubIssue
 
             It 'Should have removed the user from issue' {
-                $issue.assignees.Count | Should be 0
+                $issue.assignees.Count | Should -Be 0
             }
         }
 
@@ -141,14 +141,14 @@ try
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.IssueNumber
 
             It 'Should have assigned the user to the issue' {
-                $issue.assignee.UserName | Should be $assigneeUserName
+                $issue.assignee.UserName | Should -Be $assigneeUserName
             }
 
             $assignees | Remove-GithubAssignee -Uri $repo.RepositoryUrl -Issue $issue.number -Confirm:$false
             $issue = Get-GitHubIssue -Uri $repo.RepositoryUrl -Issue $issue.IssueNumber
 
             It 'Should have removed the user from issue' {
-                $issue.assignees.Count | Should be 0
+                $issue.assignees.Count | Should -Be 0
             }
         }
     }
