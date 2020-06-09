@@ -789,7 +789,17 @@ try
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
-                #$contributors[0].PSObject.TypeName = 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] = 'GitHub.User'
+            }
+        }
+
+        Context -Name 'Obtaining collaborator statistics for repository' -Fixture {
+            $stats = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
+
+            It 'Should return expected number of contributors' {
+                $stats.Count | Should -Be 1
+                $stats[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributorStatistics'
+                $stats[0].author.PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
     }
@@ -811,17 +821,7 @@ try
 
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeName = 'GitHub.User'
-            }
-        }
-
-        Context -Name 'Obtaining collaborator statistics for repository' -Fixture {
-            $stats = @(Get-GitHubRepositoryCollaborator -Uri $repo.RepositoryUrl -IncludeStatistics)
-
-            It 'Should return expected number of collaborators' {
-                $stats.Count | Should -Be 1
-                $stats[0].PSObject.TypeName = 'GitHub.RepositoryContributorStatistics'
-                $stats[0].author.PSObject.TypeName = 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
 
@@ -830,7 +830,7 @@ try
 
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeName = 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
     }

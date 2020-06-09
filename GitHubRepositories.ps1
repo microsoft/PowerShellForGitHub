@@ -1379,7 +1379,7 @@ filter Get-GitHubRepositoryContributor
 
     if ($IncludeStatistics)
     {
-        foreach ($item in $InputObject)
+        foreach ($item in $results)
         {
             $item.PSObject.TypeNames.Insert(0, $script:GitHubRepositoryContributorStatisticsTypeName)
 
