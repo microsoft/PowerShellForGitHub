@@ -104,14 +104,14 @@ filter Get-GitHubUser
         return (Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params |
             Add-GitHubUserAdditionalProperties)
     }
-    elseif ([String]::IsNullOrEmpty($User))
+    elseif ([String]::IsNullOrEmpty($UserName))
     {
         return (Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params |
             Add-GitHubUserAdditionalProperties)
     }
     else
     {
-        return (Invoke-GHRestMethod -UriFragment "users/$UserName" -Description "Getting user $User" -Method 'Get' @params |
+        return (Invoke-GHRestMethod -UriFragment "users/$UserName" -Description "Getting user $UserName" -Method 'Get' @params |
             Add-GitHubUserAdditionalProperties)
     }
 }
