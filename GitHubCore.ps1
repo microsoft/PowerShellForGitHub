@@ -348,7 +348,14 @@ function Invoke-GHRestMethod
 
         if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
         {
-            $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+            # In the case of getting raw content from the repo, we'll end up with a large object/byte
+            # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
+            # a lot of time.  Let's optimize here by not bothering to send in something that we
+            # know is definitely not convertible.
+            if ($finalResult -isnot [Object[]])
+            {
+                $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+            }
         }
 
         $links = $result.Headers['Link'] -split ','
