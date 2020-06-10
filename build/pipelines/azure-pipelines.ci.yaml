@@ -21,26 +21,39 @@ trigger:
 jobs:
 - job: Windows
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(WindowsCIGitHubAccessToken)
+      gitHubOwnerName: $(WindowsCIGitHubOwnerName)
+      gitHubOrganizationName: $(WindowsCIGitHubOrganizationName)
+      platformName: 'Windows'
 
 - job: Linux
   pool:
-    vmImage: 'ubuntu-16.04'
-  dependsOn: Windows # Run in series instead of parallel because the UT's are modifying the same shared state
+    vmImage: 'ubuntu-latest'
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(LinuxCIGitHubAccessToken)
+      gitHubOwnerName: $(LinuxCIGitHubOwnerName)
+      gitHubOrganizationName: $(LinuxCIGitHubOrganizationName)
+      platformName: 'Linux'
 
 - job: macOS
   pool:
-    vmImage: 'macOS-10.14'
-  dependsOn: Linux # Run in series instead of parallel because the UT's are modifying the same shared state
+    vmImage: 'macOS-latest'
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(MacCIGitHubAccessToken)
+      gitHubOwnerName: $(MacCIGitHubOwnerName)
+      gitHubOrganizationName: $(MacCIGitHubOrganizationName)
+      platformName: 'macOS'

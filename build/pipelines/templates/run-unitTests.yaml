@@ -13,6 +13,17 @@
 #  3. GitHubOrganizationName - The default "organization" that will be used for tests.
 #--------------------------------------------------------------------------------------------------
 
+parameters:
+- name: 'gitHubAccessToken'
+  type: string
+- name: 'gitHubOwnerName'
+  type: string
+- name: 'gitHubOrganizationName'
+  type: string
+- name: 'platformName'
+  default: 'Windows'
+  type: string
+
 steps:
   - powershell: |
       Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
@@ -24,14 +35,14 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     displayName: 'Run Unit Tests via Pester'
     env:
-      ciAccessToken: $(GitHubAccessToken)
-      ciOwnerName: $(GitHubOwnerName)
-      ciOrganizationName: $(GitHubOrganizationName)
+      ciAccessToken: ${{ parameters.gitHubAccessToken }}
+      ciOwnerName: ${{ parameters.gitHubOwnerName }}
+      ciOrganizationName: ${{ parameters.gitHubOrganizationName }}
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'
     inputs:
-      testRunTitle: 'Windows Test Results for Pester'
+      testRunTitle: '${{ parameters.platformName }} Test Results for Pester'
       buildPlatform: 'Windows'
       testRunner: NUnit
       testResultsFiles: '../Pester/test-results.xml'

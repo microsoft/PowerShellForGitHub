@@ -3,14 +3,14 @@
 [![[GitHub version]](https://badge.fury.io/gh/microsoft%2FPowerShellForGitHub.svg)](https://github.com/microsoft/PowerShellForGitHub/releases)
 [![powershellgallery](https://img.shields.io/powershellgallery/v/PowerShellForGitHub)](https://www.powershellgallery.com/packages/PowerShellForGitHub)
 [![downloads](https://img.shields.io/powershellgallery/dt/PowerShellForGitHub.svg?label=downloads)](https://www.powershellgallery.com/packages/PowerShellForGitHub)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/microsoft/PowerShellForGitHub)
+[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/microsoft/PowerShellForGitHub)](https://github.com/microsoft/PowerShellForGitHub)
 [![downloads](https://img.shields.io/badge/license-MIT-green)](https://github.com/HowardWolosky/PowerShellForGitHub/blob/master/LICENSE)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3990/badge)](https://bestpractices.coreinfrastructure.org/projects/3990)
 [![tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2FQuackFu)](https://twitter.com/intent/tweet?text=%23PowerShellForGitHub%20%40QuackFu%20&original_referer=https://github.com/microsoft/PowerShellForGitHub)
 <br />
-[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
-[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
-[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
+[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
 <br />
 [![Help Wanted Issues](https://img.shields.io/github/issues/microsoft/PowerShellForGitHub/help%20wanted)](https://github.com/microsoft/PowerShellForGitHub/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![GitHub last commit](https://img.shields.io/github/last-commit/microsoft/PowerShellForGitHub)](https://github.com/HowardWolosky/PowerShellForGitHub/commits/master)

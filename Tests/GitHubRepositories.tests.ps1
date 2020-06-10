@@ -6,6 +6,11 @@
    Tests for GitHubRepositories.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -21,15 +26,275 @@ try
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
 
+    Describe 'GitHubRepositories\New-GitHubRepository' {
+
+        Context -Name 'When creating a repository for the authenticated user' -Fixture {
+
+            Context -Name 'When creating a public repository with default settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeFalse
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When creating a private repository with default settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        Private = $true
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeTrue
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When creating a repository with all possible settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $testGitIgnoreTemplate=(Get-GitHubGitIgnore)[0]
+                    $testLicenseTemplate=(Get-GitHubLicense)[0].key
+
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        Description = $defaultRepoDesc
+                        HomePage = $defaultRepoHomePage
+                        NoIssues = $true
+                        NoProjects = $true
+                        NoWiki = $true
+                        DisallowSquashMerge = $true
+                        DisallowMergeCommit = $true
+                        DisallowRebaseMerge = $false
+                        DeleteBranchOnMerge = $true
+                        GitIgnoreTemplate = $testGitIgnoreTemplate
+                        LicenseTemplate = $testLicenseTemplate
+                        IsTemplate = $true
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.description | Should -Be $defaultRepoDesc
+                    $repo.homepage | Should -Be $defaultRepoHomePage
+                    $repo.has_issues | Should -BeFalse
+                    $repo.has_projects | Should -BeFalse
+                    $repo.has_Wiki | Should -BeFalse
+                    $repo.allow_squash_merge | Should -BeFalse
+                    $repo.allow_merge_commit | Should -BeFalse
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeTrue
+                    $repo.is_template | Should -BeTrue
+                }
+
+                It 'Should have created a .gitignore file' {
+                    { Get-GitHubContent -Uri $repo.svn_url -Path '.gitignore' } | Should -Not -Throw
+                }
+
+                It 'Should have created a LICENSE file' {
+                    { Get-GitHubContent -Uri $repo.svn_url -Path 'LICENSE' } | Should -Not -Throw
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When creating a repository with alternative Merge settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        DisallowSquashMerge = $true
+                        DisallowMergeCommit = $false
+                        DisallowRebaseMerge = $true
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.allow_squash_merge | Should -BeFalse
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When a TeamID is specified' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $mockTeamID=1
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        TeamID = $mockTeamID
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = 'TeamId may only be specified when creating a repository under an organization.'
+                    { New-GitHubRepository @newGitHubRepositoryParms } | Should -Throw $errorMessage
+                }
+            }
+        }
+
+        Context -Name 'When creating an organization repository' -Fixture {
+
+            Context -Name 'When creating a public repository with default settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        OrganizationName = $script:organizationName
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeFalse
+                    $repo.organization.login | Should -Be $script:organizationName
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When creating a private repository with default settings' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        Private = $true
+                        OrganizationName = $script:organizationName
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeTrue
+                    $repo.organization.login | Should -Be $script:organizationName
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+        }
+    }
+
     Describe 'Getting repositories' {
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {
                 $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $publicRepo = $publicRepo
-                $privateRepo = $privateRepo
             }
 
             It "Should have the public repo" {
@@ -68,9 +333,6 @@ try
         Context 'For organizations' {
             BeforeAll -Scriptblock {
                 $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It "Should have results for the organization" {
@@ -91,9 +353,6 @@ try
         Context 'For a specific repo' {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It "Should be a single result using Uri ParameterSet" {
@@ -121,44 +380,11 @@ try
         }
     }
 
-    Describe 'Creating repositories' {
-
-        Context -Name 'For creating a repository' -Fixture {
-            BeforeAll -ScriptBlock {
-                $repoName = ([Guid]::NewGuid().Guid)
-                $repo = New-GitHubRepository -RepositoryName $repoName -Description $defaultRepoDesc -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repoName = $repoName
-                $repo = $repo
-            }
-
-            It 'Should get repository' {
-                $repo | Should -Not -BeNullOrEmpty
-            }
-
-            It 'Name is correct' {
-                $repo.name | Should -Be $repoName
-            }
-
-            It 'Description is correct' {
-                $repo.description | Should -Be $defaultRepoDesc
-            }
-
-            AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-            }
-        }
-    }
-
     Describe 'Deleting repositories' {
 
         Context -Name 'For deleting a repository' -Fixture {
             BeforeEach -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It 'Should get no content using -Confirm:$false' {
@@ -180,9 +406,6 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $newRepoName = $newRepoName
             }
 
             It "Should have the expected new repository name - by URI" {
@@ -201,29 +424,133 @@ try
         }
     }
 
-    Describe 'Updating repositories' {
+    Describe 'GitHubRepositories\Update-GitHubRepository' {
 
-        Context -Name 'For creating a repository' -Fixture {
+        Context -Name 'When updating a public repository' -Fixture {
             BeforeAll -ScriptBlock {
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
+                $repoName = ([Guid]::NewGuid().Guid)
+                $repo = New-GitHubRepository -RepositoryName $repoName
             }
 
-            It 'Should have the new updated description' {
-                $modifiedRepoDesc = $defaultRepoDesc + "_modified"
-                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Description $modifiedRepoDesc
-                $updatedRepo.description | Should -Be $modifiedRepoDesc
+            Context -Name 'When updating a repository with all possible settings' {
+                BeforeAll -ScriptBlock {
+                    $updateGithubRepositoryParms = @{
+                        OwnerName = $repo.owner.login
+                        RepositoryName = $repoName
+                        Private = $true
+                        Description = $defaultRepoDesc
+                        HomePage = $defaultRepoHomePage
+                        NoIssues = $true
+                        NoProjects = $true
+                        NoWiki = $true
+                        DisallowSquashMerge = $true
+                        DisallowMergeCommit = $true
+                        DisallowRebaseMerge = $false
+                        DeleteBranchOnMerge = $true
+                        IsTemplate = $true
+                    }
+                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $updatedRepo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $updatedRepo.name | Should -Be $repoName
+                    $updatedRepo.private | Should -BeTrue
+                    $updatedRepo.description | Should -Be $defaultRepoDesc
+                    $updatedRepo.homepage | Should -Be $defaultRepoHomePage
+                    $updatedRepo.has_issues | Should -BeFalse
+                    $updatedRepo.has_projects | Should -BeFalse
+                    $updatedRepo.has_Wiki | Should -BeFalse
+                    $updatedRepo.allow_squash_merge | Should -BeFalse
+                    $updatedRepo.allow_merge_commit | Should -BeFalse
+                    $updatedRepo.allow_rebase_merge | Should -BeTrue
+                    $updatedRepo.delete_branch_on_merge | Should -BeTrue
+                    $updatedRepo.is_template | Should -BeTrue
+                }
             }
 
-            It 'Should have the new updated homepage url' {
-                $updatedRepo = Update-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Homepage $defaultRepoHomePage
-                $updatedRepo.homepage | Should -Be $defaultRepoHomePage
+            Context -Name 'When updating a repository with alternative Merge settings' {
+                BeforeAll -ScriptBlock {
+                    $updateGithubRepositoryParms = @{
+                        OwnerName = $repo.owner.login
+                        RepositoryName = $repoName
+                        DisallowSquashMerge = $true
+                        DisallowMergeCommit = $false
+                        DisallowRebaseMerge = $true
+                    }
+                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $updatedRepo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $updatedRepo.name | Should -Be $repoName
+                    $updatedRepo.allow_squash_merge | Should -BeFalse
+                    $updatedRepo.allow_merge_commit | Should -BeTrue
+                    $updatedRepo.allow_rebase_merge | Should -BeFalse
+                }
+            }
+
+            Context -Name 'When updating a repository with the Archive setting' {
+                BeforeAll -ScriptBlock {
+                    $updateGithubRepositoryParms = @{
+                        OwnerName = $repo.owner.login
+                        RepositoryName = $repoName
+                        Archived = $true
+                    }
+                    $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $updatedRepo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $updatedRepo.name | Should -Be $repoName
+                    $updatedRepo.archived | Should -BeTrue
+                }
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When updating a private repository' -Fixture {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $repo = New-GitHubRepository -RepositoryName $repoName -Private
+
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    Private = $false
+                }
+                $updatedRepo = Update-GitHubRepository @updateGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.private | Should -BeFalse
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
             }
         }
     }
@@ -233,9 +560,6 @@ try
         Context -Name 'For creating and getting a repository topic' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It 'Should have the expected topic' {
@@ -261,9 +585,6 @@ try
         Context -Name 'For getting repository languages' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It 'Should be empty' {
@@ -287,9 +608,6 @@ try
         Context -Name 'For getting repository tags' -Fixture {
             BeforeAll -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It 'Should be empty' {
