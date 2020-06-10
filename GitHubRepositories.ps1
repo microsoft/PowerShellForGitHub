@@ -761,38 +761,15 @@ filter Rename-GitHubRepository
         [switch] $NoStatus
     )
 
-    if ($Force -and (-not $Confirm))
+    # This method was created by mistake and is now retained to avoid a breaking change.
+    # Update-GitHubRepository is able to handle this scenario just fine.
+    if ($PSBoundParameters.ContainsKey('NewName'))
     {
-        $ConfirmPreference = 'None'
+        $null = $PSBoundParameters.Add('Name', $NewName)
+        $null = $PSBoundParameters.Remove('NewName')
     }
 
-    $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
-    if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
-    {
-        Write-InvocationLog -Invocation $MyInvocation
-        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
-        $OwnerName = $elements.ownerName
-        $RepositoryName = $elements.repositoryName
-
-        $telemetryProperties = @{
-            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        }
-
-        $params = @{
-            'UriFragment' = "repos/$OwnerName/$RepositoryName"
-            'Method' = 'Patch'
-            'Body' = ConvertTo-Json -InputObject @{name = $NewName}
-            'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        return (Invoke-GHRestMethod @params |
-            Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
-    }
+    return Update-GitHubRepository @PSBoundParameters
 }
 
 filter Update-GitHubRepository
@@ -868,6 +845,10 @@ filter Update-GitHubRepository
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution
+        when renaming the repository.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -893,14 +874,15 @@ filter Update-GitHubRepository
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
-            Update-GitHubRepository -Name 'PoShForGitHub' -Confirm:$false
+            Update-GitHubRepository -Name 'PoShForGitHub' -Force
 
         Renames the repository without any user confirmation prompting.  This is identical to using
         Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact='High')]
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
@@ -946,6 +928,8 @@ filter Update-GitHubRepository
 
         [switch] $Archived,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -960,6 +944,11 @@ filter Update-GitHubRepository
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
     }
 
     $hashBody = @{}

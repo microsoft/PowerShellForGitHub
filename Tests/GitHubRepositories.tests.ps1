@@ -409,7 +409,7 @@ try
             }
 
             It "Should have the expected new repository name - by URI" {
-                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Force
+                $renamedRepo = Rename-GitHubRepository -Uri ($repo.RepositoryUrl) -NewName $newRepoName -Force
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
