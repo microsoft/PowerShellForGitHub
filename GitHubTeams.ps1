@@ -360,9 +360,9 @@ function New-GitHubTeam
         PSCustomObject
 
     .EXAMPLE
-        New-GitHubTeam -OrganizationName PowerShell -TeamName MyTeam
+        New-GitHubTeam -OrganizationName PowerShell -TeamName 'Developers'
 
-        Creates a new GitHub team in the specified organization
+        Creates a new GitHub team called 'Developers' in the 'PowerShell' organization.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
@@ -493,9 +493,9 @@ function Update-GitHubTeam
         PSCustomObject
 
     .EXAMPLE
-        Update-GitHubTeam -OrganizationName PowerShell -TeamName MyTeam -Description 'New Description'
+        Update-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Description 'New Description'
 
-        Updates the description for the specified GitHub team in the specified organization.
+        Updates the description for the 'Developers' GitHub team in the 'PowerShell' organization.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
@@ -630,9 +630,14 @@ function Remove-GitHubTeam
         PSCustomObject
 
     .EXAMPLE
-        Remove-GitHubTeam -OrganizationName PowerShell -TeamName MyTeam
+        Remove-GitHubTeam -OrganizationName PowerShell -TeamName Developers
 
-        Removes the specified GitHub team from the specified organization
+        Removes the 'Developers' GitHub team from the 'PowerShell' organization.
+
+    .EXAMPLE
+        Remove-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Force
+
+        Removes the 'Developers' GitHub team from the 'PowerShell' organization without prompting.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
