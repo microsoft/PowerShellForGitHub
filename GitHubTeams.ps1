@@ -400,7 +400,7 @@ function New-GitHubTeam
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{
         OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
@@ -529,7 +529,7 @@ function Update-GitHubTeam
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{
         OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
@@ -692,7 +692,7 @@ function Remove-GitHubTeam
 
     if ($PSCmdlet.ShouldProcess($TeamName, "Remove Team"))
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
 
         $params = @{
             UriFragment = $uriFragment
