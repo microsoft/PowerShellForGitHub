@@ -215,6 +215,9 @@ function Remove-GitHubRepository
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -235,6 +238,11 @@ function Remove-GitHubRepository
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
 
         Remove repository with the given URI, without prompting for confirmation.
+
+    .EXAMPLE
+        Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Force
+
+        Remove repository with the given URI, without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -253,6 +261,8 @@ function Remove-GitHubRepository
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -268,6 +278,12 @@ function Remove-GitHubRepository
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
     if ($PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
     {
         $params = @{
@@ -614,6 +630,9 @@ function Rename-GitHubRepository
     .PARAMETER NewName
         The new name to set for the given GitHub repository
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -626,18 +645,33 @@ function Rename-GitHubRepository
 
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
+
         Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
+
         Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
+
         Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+
         Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Confirm:$false
+
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Force
+
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -660,6 +694,8 @@ function Rename-GitHubRepository
 
         [parameter(Mandatory)][String]$NewName,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -668,6 +704,12 @@ function Rename-GitHubRepository
     process
     {
         $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+
+        if ($Force -and (-not $Confirm))
+        {
+            $ConfirmPreference = 'None'
+        }
+
         if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation

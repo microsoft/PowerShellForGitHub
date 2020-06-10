@@ -119,7 +119,7 @@ try
             }
 
             AfterAll {
-                $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
+                $null = Remove-GitHubProjectColumn -Column $column.id -Force
                 Remove-Variable -Name column
             }
 

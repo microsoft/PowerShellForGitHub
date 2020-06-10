@@ -383,12 +383,17 @@ try
     Describe 'Deleting repositories' {
 
         Context -Name 'For deleting a repository' -Fixture {
-            BeforeAll -ScriptBlock {
+            BeforeEach -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
 
-            It 'Should get no content' {
+            It 'Should get no content using -Confirm:$false' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
+                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
+            }
+
+            It 'Should get no content using -Force' {
+                Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Force
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
         }
@@ -404,7 +409,7 @@ try
             }
 
             It "Should have the expected new repository name - by URI" {
-                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
+                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Force
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
@@ -593,7 +598,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                Remove-GitHubRepository -Uri $repo.svn_url -Force
             }
         }
     }

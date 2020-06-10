@@ -314,6 +314,9 @@ function Remove-GithubAssignee
     .PARAMETER Assignee
         Usernames of assignees to remove from an issue. NOTE: Only users with push access can remove assignees from an issue. Assignees are silently ignored otherwise.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -327,12 +330,17 @@ function Remove-GithubAssignee
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
-        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
+        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
 
-        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Force
+
+        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -357,6 +365,8 @@ function Remove-GithubAssignee
         [Parameter(Mandatory)]
         [string[]] $Assignee,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -377,6 +387,11 @@ function Remove-GithubAssignee
 
     $hashBody = @{
         'assignees' = $Assignee
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
     }
 
     if ($PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
