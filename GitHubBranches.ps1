@@ -428,7 +428,7 @@ function Remove-GitHubRepositoryBranch
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
 
-    if ($Force -and -not $Confirm)
+    if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }
