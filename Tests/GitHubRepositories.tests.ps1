@@ -571,9 +571,6 @@ try
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {
                 $repo = ([Guid]::NewGuid().Guid) | New-GitHubRepository -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It "Should have expected additional properties and type after creation" {
@@ -608,9 +605,6 @@ try
             BeforeAll -Scriptblock {
                 $org = [PSCustomObject]@{'OrganizationName' = $script:organizationName}
                 $repo = $org | New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $repo = $repo
             }
 
             It "Should have expected additional properties and type after creation" {
@@ -757,9 +751,6 @@ try
     Describe 'Contributors for a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {
@@ -807,9 +798,6 @@ try
     Describe 'Collaborators for a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {

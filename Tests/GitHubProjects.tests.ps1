@@ -6,6 +6,11 @@
    Tests for GitHubProjects.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -38,9 +43,6 @@ try
         Context 'Get User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -68,9 +70,6 @@ try
         Context 'Get Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -98,9 +97,6 @@ try
         Context 'Get Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -129,9 +125,6 @@ try
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultProjectClosed -Description $defaultProjectClosedDesc
                 $null = Set-GitHubProject -Project $project.id -State Closed
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -165,9 +158,6 @@ try
         Context 'Modify User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -192,9 +182,6 @@ try
         Context 'Modify Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -228,9 +215,6 @@ try
         Context 'Modify Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -257,9 +241,6 @@ try
         Context 'Create User projects' {
             BeforeAll {
                 $project = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -285,9 +266,6 @@ try
         Context 'Create Organization projects' {
             BeforeAll {
                 $project = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -313,9 +291,6 @@ try
         Context 'Create Repo projects' {
             BeforeAll {
                 $project = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             AfterAll {
@@ -343,9 +318,6 @@ try
         Context 'Remove User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Force
@@ -357,9 +329,6 @@ try
         Context 'Remove Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Force
@@ -371,9 +340,6 @@ try
         Context 'Remove Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $project = $project
             }
 
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false

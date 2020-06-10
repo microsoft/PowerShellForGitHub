@@ -6,6 +6,11 @@
    Tests for GitHubAssignees.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -16,9 +21,6 @@ try
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             $issue = New-GitHubIssue -Uri $repo.RepositoryUrl -Title "Test issue"
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $issue = $issue
         }
 
         AfterAll {
@@ -51,9 +53,6 @@ try
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             $issue = New-GitHubIssue -Uri $repo.RepositoryUrl -Title "Test issue"
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $issue = $issue
         }
 
         AfterAll {
@@ -82,16 +81,10 @@ try
     Describe 'Adding and removing an assignee to an issue via the pipeline'{
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         BeforeEach {
             $issue = New-GitHubIssue -Uri $repo.RepositoryUrl -Title "Test issue"
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $issue = $issue
         }
 
         AfterAll {

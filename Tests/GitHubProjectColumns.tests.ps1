@@ -6,6 +6,11 @@
    Tests for GitHubProjectColumns.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -27,9 +32,6 @@ try
     Describe 'Getting Project Columns' {
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $column = $column
         }
 
         AfterAll {
@@ -56,10 +58,6 @@ try
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
             $columntwo = New-GitHubProjectColumn -Project $project.id -Name $defaultColumnTwo
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $column = $column
-            $columnTwo = $columnTwo
         }
 
         AfterAll {
@@ -113,9 +111,6 @@ try
         Context 'Create project column' {
             BeforeAll {
                 $column = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $column = $column
             }
 
             AfterAll {
@@ -140,9 +135,6 @@ try
         Context 'Remove project column' {
             BeforeAll {
                 $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $column = $column
             }
 
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false

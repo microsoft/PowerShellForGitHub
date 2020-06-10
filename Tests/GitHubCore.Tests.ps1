@@ -6,6 +6,11 @@
    Tests for GitHubCore.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -200,10 +205,6 @@ try
         BeforeAll {
             $repositoryName = [guid]::NewGuid().Guid
             $url = "https://github.com/$script:ownerName/$repositoryName"
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repositoryName = $repositoryName
-            $url = $url
         }
 
         Context 'For getting the OwnerName' {

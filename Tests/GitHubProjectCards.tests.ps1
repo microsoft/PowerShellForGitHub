@@ -6,6 +6,11 @@
    Tests for GitHubProjectCards.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -41,10 +46,6 @@ try
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
             $cardArchived = New-GitHubProjectCard -Column $column.id -Note $defaultArchivedCard
             $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $card = $card
-            $cardArchived = $cardArchived
         }
 
         AfterAll {
@@ -90,11 +91,6 @@ try
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
             $cardTwo = New-GitHubProjectCard -Column $column.id -Note $defaultCardTwo
             $cardArchived = New-GitHubProjectCard -Column $column.id -Note $defaultArchivedCard
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $card = $card
-            $cardTwo = $cardTwo
-            $cardArchived = $cardArchived
         }
 
         AfterAll {
@@ -178,9 +174,6 @@ try
         Context 'Create project card with note' {
             BeforeAll {
                 $card = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $card = $card
             }
 
             AfterAll {
@@ -203,9 +196,6 @@ try
         Context 'Create project card from issue' {
             BeforeAll {
                 $card = @{id = 0}
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $card = $card
             }
 
             AfterAll {
@@ -230,9 +220,6 @@ try
         Context 'Remove card' {
             BeforeAll {
                 $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $card = $card
             }
 
             $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false

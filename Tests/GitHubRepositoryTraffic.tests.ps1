@@ -6,6 +6,11 @@
    Tests for GitHubRepositoryTraffic.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -15,9 +20,6 @@ try
     Describe 'Testing the referrer traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {
@@ -40,9 +42,6 @@ try
     Describe 'Testing the path traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {
@@ -65,9 +64,6 @@ try
     Describe 'Testing the view traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {
@@ -90,9 +86,6 @@ try
     Describe 'Testing the view traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {

@@ -6,6 +6,11 @@
    Tests for GitHubIssues.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -16,9 +21,6 @@ try
         Context 'Current user when additional properties are enabled' {
             BeforeAll {
                 $currentUser = Get-GitHubUser -Current
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $currentUser = $currentUser
             }
 
             It 'Should have the expected type and additional properties' {
@@ -32,9 +34,6 @@ try
             BeforeAll {
                 Set-GitHubConfiguration -DisablePipelineSupport
                 $currentUser = Get-GitHubUser -Current
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $currentUser = $currentUser
             }
 
             AfterAll {
@@ -51,9 +50,6 @@ try
         Context 'Specific user as a parameter' {
             BeforeAll {
                 $user = Get-GitHubUser -UserName $script:ownerName
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $user = $user
             }
 
             It 'Should have the expected type and additional properties' {
@@ -66,9 +62,6 @@ try
         Context 'Specific user with the pipeline' {
             BeforeAll {
                 $user = $script:ownerName | Get-GitHubUser
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $user = $user
             }
 
             It 'Should have the expected type and additional properties' {
@@ -82,9 +75,6 @@ try
     Describe 'Getting user context' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-
-            # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-            $repo = $repo
         }
 
         AfterAll {
