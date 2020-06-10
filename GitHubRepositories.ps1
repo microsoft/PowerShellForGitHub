@@ -310,7 +310,7 @@ function New-GitHubRepositoryFromTemplate
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
