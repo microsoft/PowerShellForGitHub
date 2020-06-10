@@ -369,9 +369,14 @@ function Remove-GitHubRepositoryBranch
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -Name TestBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepositoryBranch  -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
-        Removes the specified branch from the specified repository.
+        Removes the 'develop' branch from the specified repository.
+
+    .EXAMPLE
+        Remove-GitHubRepositoryBranch  -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Force
+
+        Removes the 'develop' branch from the specified repository without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
