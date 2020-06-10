@@ -267,8 +267,8 @@ try
 
             Context 'For removing individual issues'{
                 Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "discussion" -Issue $issue.number -Confirm:$false
-                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number -Confirm:$false
-                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number -Confirm:$false
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "question" -Issue $issue.number -Force
+                Remove-GitHubIssueLabel -OwnerName $ownerName -RepositoryName $repositoryName -Name "bug" -Issue $issue.number -Confirm:$false -Force
                 $labelIssues = @(Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
 
                 It 'Should have removed three labels from the issue' {

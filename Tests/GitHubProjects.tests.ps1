@@ -348,7 +348,7 @@ try
                 $project = $project
             }
 
-            $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+            $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should Throw
             }
@@ -362,7 +362,7 @@ try
                 $project = $project
             }
 
-            $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+            $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should Throw
             }

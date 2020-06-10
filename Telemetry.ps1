@@ -181,6 +181,9 @@ function Invoke-SendTelemetryEvent
                 $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
                 $params.Add("Body", $bodyAsBytes)
 
+                # Disable Progress Bar in function scope during Invoke-WebRequest
+                $ProgressPreference = 'SilentlyContinue'
+
                 $result = Invoke-WebRequest @params
             }
         }
@@ -211,6 +214,9 @@ function Invoke-SendTelemetryEvent
 
                     try
                     {
+                        # Disable Progress Bar in function scope during Invoke-WebRequest
+                        $ProgressPreference = 'SilentlyContinue'
+
                         Invoke-WebRequest @params
                     }
                     catch [System.Net.WebException]

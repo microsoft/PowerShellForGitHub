@@ -40,7 +40,7 @@ function New-GitHubRepository
         This is only valid when creating a repository in an organization.
 
     .PARAMETER Private
-        By default, this repository will created Public.  Specify this to create
+        By default, this repository will be created Public.  Specify this to create
         a private repository.
 
     .PARAMETER NoIssues
@@ -68,6 +68,12 @@ function New-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER DeleteBranchOnMerge
+        Specifies the automatic deleting of head branches when pull requests are merged.
+
+    .PARAMETER IsTemplate
+        Specifies whether the repository is made available as a template.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -120,6 +126,10 @@ function New-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [switch] $DeleteBranchOnMerge,
+
+        [switch] $IsTemplate,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -163,12 +173,15 @@ function New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
     $params = @{
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating $RepositoryName"
+        'AcceptHeader' = $script:baptisteAcceptHeader
+        'Description' = "Creating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -202,6 +215,9 @@ function Remove-GitHubRepository
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -222,6 +238,11 @@ function Remove-GitHubRepository
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Confirm:$false
 
         Remove repository with the given URI, without prompting for confirmation.
+
+    .EXAMPLE
+        Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Force
+
+        Remove repository with the given URI, without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -240,6 +261,8 @@ function Remove-GitHubRepository
             ParameterSetName='Uri')]
         [string] $Uri,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -255,6 +278,12 @@ function Remove-GitHubRepository
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
     if ($PSCmdlet.ShouldProcess($RepositoryName, "Remove repository"))
     {
         $params = @{
@@ -601,6 +630,9 @@ function Rename-GitHubRepository
     .PARAMETER NewName
         The new name to set for the given GitHub repository
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -613,18 +645,33 @@ function Rename-GitHubRepository
 
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
+
         Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
+
         Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
+
         Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
+
         Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Confirm:$false
+
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+
+    .EXAMPLE
+        Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Force
+
+        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -647,6 +694,8 @@ function Rename-GitHubRepository
 
         [parameter(Mandatory)][String]$NewName,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -655,6 +704,12 @@ function Rename-GitHubRepository
     process
     {
         $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
+
+        if ($Force -and (-not $Confirm))
+        {
+            $ConfirmPreference = 'None'
+        }
+
         if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
         {
             Write-InvocationLog -Invocation $MyInvocation
@@ -743,6 +798,12 @@ function Update-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER DeleteBranchOnMerge
+        Specifies the automatic deleting of head branches when pull requests are merged.
+
+    .PARAMETER IsTemplate
+        Specifies whether the repository is made available as a template.
+
     .PARAMETER Archived
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
@@ -760,8 +821,12 @@ function Update-GitHubRepository
     .EXAMPLE
         Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
+        Changes the description of the specified repository.
+
     .EXAMPLE
         Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
+
+        Changes the visibility of the specified repository to be public.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -799,6 +864,10 @@ function Update-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [switch] $DeleteBranchOnMerge,
+
+        [switch] $IsTemplate,
+
         [switch] $Archived,
 
         [string] $AccessToken,
@@ -831,12 +900,15 @@ function Update-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
+        'AcceptHeader' = $script:baptisteAcceptHeader
         'Description' =  "Updating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name

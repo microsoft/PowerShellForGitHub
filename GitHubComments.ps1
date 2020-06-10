@@ -438,6 +438,9 @@ function Remove-GitHubComment
     .PARAMETER CommentID
         The id of the comment to delete.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -455,6 +458,11 @@ function Remove-GitHubComment
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Confirm:$false
+
+        Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
+
+    .EXAMPLE
+        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Force
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
@@ -479,6 +487,8 @@ function Remove-GitHubComment
         [Parameter(Mandatory)]
         [string] $CommentID,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -494,6 +504,11 @@ function Remove-GitHubComment
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'CommentID' =  (Get-PiiSafeString -PlainText $CommentID)
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
     }
 
     if ($PSCmdlet.ShouldProcess($CommentID, "Remove comment"))

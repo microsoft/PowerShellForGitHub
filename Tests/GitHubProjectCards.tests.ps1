@@ -98,7 +98,7 @@ try
         }
 
         AfterAll {
-            $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
+            $null = Remove-GitHubProjectCard -Card $card.id -Force
         }
 
         Context 'Modify card note' {
@@ -209,7 +209,7 @@ try
             }
 
             AfterAll {
-                $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
+                $null = Remove-GitHubProjectCard -Card $card.id -Force
                 Remove-Variable -Name card
             }
 
