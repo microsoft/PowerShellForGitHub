@@ -74,7 +74,7 @@ filter Get-GitHubOrganizationMember
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-function Test-GitHubOrganizationMember
+filter Test-GitHubOrganizationMember
 {
 <#
     .SYNOPSIS
