@@ -17,38 +17,52 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
+    # Define Script-scoped, readonly, hidden variables.
+    @{
+        upstreamOwnerName = 'microsoft'
+        upstreamRepositoryName = 'PowerShellForGitHub'
+    }.GetEnumerator() | ForEach-Object {
+        Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
+    }
+
     Describe 'Creating a new fork for user' {
-        BeforeEach {
-            $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
-        }
-
-        AfterEach {
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-        }
-
         Context 'When a new fork is created' {
-            $newForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest)
+            BeforeAll {
+                $repo = New-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName
+            }
 
-            It 'Should be the latest fork in the list' {
-                $newForks.full_name | Should -Contain "$($script:ownerName)/PowerShellForGitHub"
+            AfterAll {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+
+            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
+
+            It 'Should be in the list' {
+                # Doing this syntax, because due to odd timing with GitHub, it's possible it may
+                # think that there's an existing clone out there and so may name this one "...-1"
+                $ourFork.full_name.StartsWith("$($script:ownerName)/$script:upstreamRepositoryName") | Should -BeTrue
             }
         }
     }
 
     Describe 'Creating a new fork for an org' {
-        BeforeEach {
-            $repo = New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName $script:organizationName
-        }
-
-        AfterEach {
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-        }
-
         Context 'When a new fork is created' {
-            $newForks = @(Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Newest)
+            BeforeAll {
+                $repo = New-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -OrganizationName $script:organizationName
+            }
 
-            It 'Should be the latest fork in the list' {
-                $newForks.full_name | Should -Contain  "$($script:organizationName)/PowerShellForGitHub"
+            AfterAll {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            }
+
+            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:organizationName }
+
+            It 'Should be in the list' {
+                # Doing this syntax, because due to odd timing with GitHub, it's possible it may
+                # think that there's an existing clone out there and so may name this one "...-1"
+                $ourFork.full_name.StartsWith("$($script:organizationName)/$script:upstreamRepositoryName") | Should -BeTrue
             }
         }
     }
