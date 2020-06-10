@@ -247,7 +247,7 @@ function New-GitHubRepositoryBranch
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -430,7 +430,7 @@ function Remove-GitHubRepositoryBranch
 
     if ($PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
 
         $params = @{
             'UriFragment' = $uriFragment
