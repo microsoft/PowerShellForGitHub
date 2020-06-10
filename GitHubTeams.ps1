@@ -691,7 +691,8 @@ function Remove-GitHubTeam
 
     $uriFragment = "/orgs/$OrganizationName/teams/$($team.slug)"
 
-    if ($Force -and -not $Confirm){
+    if ($Force -and (-not $Confirm))
+    {
         $ConfirmPreference = 'None'
     }
 
