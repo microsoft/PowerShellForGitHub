@@ -70,8 +70,8 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                ourFork.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
-                ourFork.RepositoryId | Should -Be $ourFork.id
+                $ourFork.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $ourFork.RepositoryId | Should -Be $ourFork.id
             }
         }
     }
