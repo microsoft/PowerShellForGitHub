@@ -26,21 +26,31 @@ jobs:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(WindowsCIGitHubAccessToken)
+      gitHubOwnerName: $(WindowsCIGitHubOwnerName)
+      gitHubOrganizationName: $(WindowsCIGitHubOrganizationName)
 
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
-  dependsOn: Windows # Run in series instead of parallel because the UT's are modifying the same shared state
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(LinuxCIAccessToken)
+      gitHubOwnerName: $(LinuxCIGitHubOwnerName)
+      gitHubOrganizationName: $(LinuxCIGitHubOrganizationName)
 
 - job: macOS
   pool:
     vmImage: 'macOS-10.14'
-  dependsOn: Linux # Run in series instead of parallel because the UT's are modifying the same shared state
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(MacCIAccessToken)
+      gitHubOwnerName: $(MacCIGitHubOwnerName)
+      gitHubOrganizationName: $(MacCIGitHubOrganizationName)

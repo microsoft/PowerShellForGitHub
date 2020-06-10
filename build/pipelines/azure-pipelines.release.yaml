@@ -31,6 +31,10 @@ jobs:
   steps:
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(GitHubAccessToken)
+      gitHubOwnerName: $(GitHubOwnerName)
+      gitHubOrganizationName: $(GitHubOrganizationName)
 
 - job: Release
   dependsOn: Validate
