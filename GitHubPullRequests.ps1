@@ -453,7 +453,7 @@ filter Add-GitHubPullRequestAdditionalProperties
 
             if ($null -ne $item.labels)
             {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
             }
 
             if ($null -ne $item.milestone)
