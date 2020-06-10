@@ -39,7 +39,7 @@ jobs:
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
     parameters:
-      gitHubAccessToken: $(LinuxCIAccessToken)
+      gitHubAccessToken: $(LinuxCIGitHubAccessToken)
       gitHubOwnerName: $(LinuxCIGitHubOwnerName)
       gitHubOrganizationName: $(LinuxCIGitHubOrganizationName)
 
@@ -51,6 +51,6 @@ jobs:
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
     parameters:
-      gitHubAccessToken: $(MacCIAccessToken)
+      gitHubAccessToken: $(MacCIGitHubAccessToken)
       gitHubOwnerName: $(MacCIGitHubOwnerName)
       gitHubOrganizationName: $(MacCIGitHubOrganizationName)
