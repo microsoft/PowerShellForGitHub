@@ -20,6 +20,9 @@ parameters:
   type: string
 - name: 'gitHubOrganizationName'
   type: string
+- name: 'platformName'
+  default: 'Windows'
+  type: string
 
 steps:
   - powershell: |
@@ -39,7 +42,7 @@ steps:
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'
     inputs:
-      testRunTitle: 'Windows Test Results for Pester'
+      testRunTitle: '${{ parameters.platformName }} Test Results for Pester'
       buildPlatform: 'Windows'
       testRunner: NUnit
       testResultsFiles: '../Pester/test-results.xml'

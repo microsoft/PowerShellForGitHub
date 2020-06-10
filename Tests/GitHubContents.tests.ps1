@@ -105,7 +105,7 @@ try
             It "Should have the expected content" {
                 # GitHub changes the syntax for this file too frequently, so we'll just do some
                 # partial matches to make sure we're getting HTML output for the right repo.
-                $readmeNoBreaks.StartsWith($htmlOutput) | Should -BeTrue
+                $readmeNoBreaks.StartsWith($htmlOutputStart) | Should -BeTrue
                 $readmeNoBreaks.IndexOf($repoGuid) | Should -BeGreaterOrEqual 0
             }
         }
@@ -119,7 +119,7 @@ try
             It "Should have the expected content" {
                 # GitHub changes the syntax for this file too frequently, so we'll just do some
                 # partial matches to make sure we're getting HTML output for the right repo.
-                $readmeNoBreaks.StartsWith($htmlOutput) | Should -BeTrue
+                $readmeNoBreaks.StartsWith($htmlOutputStart) | Should -BeTrue
                 $readmeNoBreaks.IndexOf($repoGuid) | Should -BeGreaterOrEqual 0
             }
         }

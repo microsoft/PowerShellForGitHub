@@ -30,6 +30,7 @@ jobs:
       gitHubAccessToken: $(WindowsCIGitHubAccessToken)
       gitHubOwnerName: $(WindowsCIGitHubOwnerName)
       gitHubOrganizationName: $(WindowsCIGitHubOrganizationName)
+      platformName: 'Windows'
 
 - job: Linux
   pool:
@@ -42,6 +43,7 @@ jobs:
       gitHubAccessToken: $(LinuxCIGitHubAccessToken)
       gitHubOwnerName: $(LinuxCIGitHubOwnerName)
       gitHubOrganizationName: $(LinuxCIGitHubOrganizationName)
+      platformName: 'Linux'
 
 - job: macOS
   pool:
@@ -54,3 +56,4 @@ jobs:
       gitHubAccessToken: $(MacCIGitHubAccessToken)
       gitHubOwnerName: $(MacCIGitHubOwnerName)
       gitHubOrganizationName: $(MacCIGitHubOrganizationName)
+      platformName: 'macOS'

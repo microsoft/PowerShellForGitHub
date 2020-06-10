@@ -35,6 +35,7 @@ jobs:
       gitHubAccessToken: $(GitHubAccessToken)
       gitHubOwnerName: $(GitHubOwnerName)
       gitHubOrganizationName: $(GitHubOrganizationName)
+      platformName: 'Windows'
 
 - job: Release
   dependsOn: Validate
