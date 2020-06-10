@@ -38,12 +38,16 @@ filter Get-GitHubOrganizationMember
     .EXAMPLE
         Get-GitHubOrganizationMember -OrganizationName PowerShell
 #>
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
-    [CmdletBinding(SupportsShouldProcess)]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
@@ -103,17 +107,21 @@ function Test-GitHubOrganizationMember
     .EXAMPLE
         Test-GitHubOrganizationMember -OrganizationName PowerShell -UserName Octocat
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $UserName,
 
