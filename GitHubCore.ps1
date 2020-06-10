@@ -351,8 +351,9 @@ function Invoke-GHRestMethod
             # In the case of getting raw content from the repo, we'll end up with a large object/byte
             # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
             # a lot of time.  Let's optimize here by not bothering to send in something that we
-            # know is definitely not convertible.
-            if ($finalResult -isnot [Object[]])
+            # know is definitely not convertible ([int32] on PS5, [long] on PS7).
+            if (($finalResult -isnot [Object[]]) -or
+                (($finalResult.Count -gt 0) -and ($finalResult[0] -isnot [int]) -and ($finalResult[0] -isnot [long])))
             {
                 $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
             }
@@ -907,7 +908,13 @@ filter ConvertTo-SmarterObject
         return $null
     }
 
-    if ($InputObject -is [System.Collections.IList])
+    if (($InputObject -is [int]) -or ($InputObject -is [long]))
+    {
+        # In some instances, an int/long was being seen as a [PSCustomObject].
+        # This attempts to short-circuit extra work we would have done had that happened.
+        Write-Output -InputObject $InputObject
+    }
+    elseif ($InputObject -is [System.Collections.IList])
     {
         $InputObject |
             ConvertTo-SmarterObject |

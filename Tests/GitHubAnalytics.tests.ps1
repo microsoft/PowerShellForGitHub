@@ -28,7 +28,6 @@ try
             for ($i = 0; $i -lt 4; $i++)
             {
                 $newIssues += New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid().Guid)
-                Start-Sleep -Seconds 5
             }
 
             $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
