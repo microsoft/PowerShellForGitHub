@@ -91,7 +91,9 @@ filter Get-GitHubPullRequest
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(ValueFromPipelineByPropertyName)]
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [Alias('PullRequestNumber')]
         [int64] $PullRequest,
 
@@ -127,7 +129,7 @@ filter Get-GitHubPullRequest
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
     $description = "Getting pull requests for $RepositoryName"
-    if (-not [String]::IsNullOrEmpty($PullRequest))
+    if ($PSBoundParameters.ContainsKey('PullRequest'))
     {
         $uriFragment = $uriFragment + "/$PullRequest"
         $description = "Getting pull request $PullRequest for $RepositoryName"

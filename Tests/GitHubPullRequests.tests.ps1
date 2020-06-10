@@ -61,6 +61,21 @@ try
             }
         }
     }
+
+    Describe 'Getting multiple pull requests from repository' {
+        BeforeAll {
+            $ownerName = 'microsoft'
+            $repositoryName = 'PowerShellForGitHub'
+        }
+
+        Context 'All closed' {
+            $pullRequests = @(Get-GitHubPullRequest -OwnerName $ownerName -RepositoryName $repositoryName -State 'Closed')
+
+            It 'Should return expected number of PRs' {
+                $pullRequests.Count | Should -BeGreaterOrEqual 140
+            }
+        }
+    }
 }
 finally
 {
