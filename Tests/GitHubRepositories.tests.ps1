@@ -758,20 +758,11 @@ try
         }
 
         Context -Name 'Obtaining contributors for repository' -Fixture {
-            $contributors = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
+            $contributors = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl)
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
-                #$contributors[0].PSObject.TypeName = 'GitHub.User'
-            }
-
-            It 'Should return expected number of unique contributors' {
-                $uniqueContributors = $contributors |
-                    Select-Object -ExpandProperty author |
-                    Select-Object -ExpandProperty login -Unique
-                    Sort-Object
-
-                $uniqueContributors.Count | Should -Be 1
+                $contributors[0].PSObject.TypeName = 'GitHub.User'
             }
         }
 
@@ -784,7 +775,7 @@ try
             }
         }
 
-        Context -Name 'Obtaining collaborator statistics for repository' -Fixture {
+        Context -Name 'Obtaining contributor statistics for repository' -Fixture {
             $stats = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
 
             It 'Should return expected number of contributors' {
