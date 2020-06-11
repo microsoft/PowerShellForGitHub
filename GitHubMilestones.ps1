@@ -79,13 +79,27 @@ filter Get-GitHubMilestone
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='MilestoneUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='RepositoryUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='MilestoneUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='MilestoneElements')]
         [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
@@ -140,16 +154,17 @@ filter Get-GitHubMilestone
             }
 
             $getParams += "sort=$($sortConverter[$Sort])"
-        }
 
-        if ($PSBoundParameters.ContainsKey('Direction'))
-        {
-            $directionConverter = @{
-                'Ascending' = 'asc'
-                'Descending' = 'desc'
+            # We only look at this parameter if the user provided Sort as well.
+            if ($PSBoundParameters.ContainsKey('Direction'))
+            {
+                $directionConverter = @{
+                    'Ascending' = 'asc'
+                    'Descending' = 'desc'
+                }
+
+                $getParams += "direction=$($directionConverter[$Direction])"
             }
-
-            $getParams += "direction=$($directionConverter[$Direction])"
         }
 
         if ($PSBoundParameters.ContainsKey('State'))
@@ -257,8 +272,14 @@ filter New-GitHubMilestone
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ParameterSetName='Elements')]
         [string] $Title,
 
         [ValidateSet('Open', 'Closed')]
