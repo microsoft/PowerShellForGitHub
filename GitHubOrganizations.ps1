@@ -158,7 +158,6 @@ filter Test-GitHubOrganizationMember
     }
 }
 
-
 filter Add-GitHubOrganizationAdditionalProperties
 {
 <#
