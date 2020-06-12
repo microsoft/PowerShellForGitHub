@@ -368,53 +368,146 @@ try
         }
     }
 
-    Describe 'Getting repositories' {
-        Context 'For authenticated user' {
+    Describe 'GitHubRepositories\Get-GitHubRepository' {
+        Context 'When getting a repository for the authenticated user' {
             BeforeAll -Scriptblock {
-                $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-                $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
+                $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+                $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Private
             }
 
-            It "Should have the public repo" {
-                $publicRepos = @(Get-GitHubRepository -Visibility Public)
-                $privateRepos = @(Get-GitHubRepository -Visibility Private)
-                $publicRepo.name | Should -BeIn $publicRepos.name
-                $publicRepo.name | Should -Not -BeIn $privateRepos.name
+            Context 'When specify the visibility parameter' {
+                BeforeAll -ScriptBlock {
+                    $publicRepos = Get-GitHubRepository -Visibility Public
+                    $privateRepos = Get-GitHubRepository -Visibility Private
+                }
+
+                It 'Should return objects of the correct type' {
+                    $publicRepos | Should -BeOfType PSCustomObject
+                    $privateRepos | Should -BeOfType PSCustomObject
+                }
+
+                It "Should return the correct membership" {
+                    $publicRepo.name | Should -BeIn $publicRepos.name
+                    $publicRepo.name | Should -Not -BeIn $privateRepos.name
+                    $privateRepo.name | Should -BeIn $privateRepos.name
+                    $privateRepo.name | Should -Not -BeIn $publicRepos.name
+                }
             }
 
-            It "Should have the private repo" {
-                $publicRepos = @(Get-GitHubRepository -Visibility Public)
-                $privateRepos = @(Get-GitHubRepository -Visibility Private)
-                $privateRepo.name | Should -BeIn $privateRepos.name
-                $privateRepo.name | Should -Not -BeIn $publicRepos.name
+            Context 'When specifying the Type parameter' {
+                BeforeAll -ScriptBlock {
+                    $publicRepos = Get-GitHubRepository -Type Public
+                    $privateRepos = Get-GitHubRepository -Type Private
+                    $ownerRepos = Get-GitHubRepository -Type Owner
+                    $allRepos = Get-GitHubRepository -Type All
+                }
+
+                It 'Should return objects of the correct type' {
+                    $publicRepos | Should -BeOfType PSCustomObject
+                    $privateRepos | Should -BeOfType PSCustomObject
+                    $ownerRepos | Should -BeOfType PSCustomObject
+                }
+
+                It "Should return the correct membership" {
+                    $publicRepo.name | Should -BeIn $publicRepos.name
+                    $publicRepo.name | Should -Not -BeIn $privateRepos.name
+                    $privateRepo.name | Should -BeIn $privateRepos.name
+                    $privateRepo.name | Should -Not -BeIn $publicRepos.name
+                    $publicRepo.name | Should -BeIn $ownerRepos.name
+                    $privateRepo.name | Should -BeIn $ownerRepos.name
+                    $publicRepo.name | Should -BeIn $allRepos.name
+                    $privateRepo.name | Should -BeIn $allRepos.name
+                }
             }
 
-            It 'Should not permit bad combination of parameters' {
-                { Get-GitHubRepository -Type All -Visibility All } | Should -Throw
-                { Get-GitHubRepository -Type All -Affiliation Owner } | Should -Throw
+            Context 'When specifying the Affiliation parameter' {
+                BeforeAll -ScriptBlock {
+                    $ownerRepos = Get-GitHubRepository -Affiliation Owner
+                }
+
+                It 'Should return objects of the correct type' {
+                    $ownerRepos | Should -BeOfType PSCustomObject
+                }
+
+                It "Should return the correct membership" {
+                    $publicRepo.name | Should -BeIn $ownerRepos.name
+                    $privateRepo.name | Should -BeIn $ownerRepos.name
+                }
+            }
+
+            Context 'When specifying the Sort and Direction parameters' {
+                BeforeAll -ScriptBlock {
+                    $sortedRepos = Get-GitHubRepository -Sort 'FullName'
+                    $sortedDescendingRepos = Get-GitHubRepository -Sort FullName -Direction Descending
+
+                    $sortedRepoFullNames = [System.Collections.ArrayList]$sortedRepos.full_Name
+                    $sortedRepoFullNames.Sort([System.StringComparer]::OrdinalIgnoreCase)
+                    $sortedDescendingRepoFullNames = [System.Collections.ArrayList]$sortedDescendingRepos.full_Name
+                    $sortedDescendingRepoFullNames.Sort([System.StringComparer]::OrdinalIgnoreCase)
+                    $sortedDescendingRepoFullNames.Reverse()
+                }
+
+                It 'Should return objects of the correct type' {
+                    $sortedRepos | Should -BeOfType PSCustomObject
+                    $sortedDescendingRepos | Should -BeOfType PSCustomObject
+                }
+
+                It "Should return the correct membership order" {
+                    for ($i=1; $i -le $sortedRepos.count; $i++) {
+                        $sortedRepos[$i].full_name | Should -Be $sortedRepoFullNames[$i]
+                        $sortedDescendingRepos[$i].full_name | Should -Be $sortedDescendingRepoFullNames[$i]
+                    }
+                }
+            }
+
+            Context 'When Specifying an invalid Visibility parameter set' {
+                It 'Should throw the correct exception' {
+                    $errorMessage = 'Unable to specify -Type when using -Visibility and/or -Affiliation.'
+                    { Get-GitHubRepository -Type All -Visibility All } | Should -Throw $errorMessage
+                }
+            }
+
+            Context 'When Specifying an invalid Affiliation parameter set' {
+                It 'Should throw the correct exception' {
+                    $errorMessage = 'Unable to specify -Type when using -Visibility and/or -Affiliation.'
+                    { Get-GitHubRepository -Type All -Visibility All } | Should -Throw $errorMessage
+                }
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $publicRepo.svn_url -Confirm:$false
-                Remove-GitHubRepository -Uri $privateRepo.svn_url -Confirm:$false
+                Remove-GitHubRepository -Uri $publicRepo.svn_url -Force
+                Remove-GitHubRepository -Uri $privateRepo.svn_url -Force
             }
         }
 
-        Context 'For any user' {
-            It "Should have results for The Octocat" {
-                $repos = @(Get-GitHubRepository -OwnerName 'octocat' -Type Public)
-                $repos.Count | Should -BeGreaterThan 0
-                $repos[0].owner.login | Should -Be 'octocat'
+        Context 'When getting a repository for a specified owner' {
+            BeforeAll {
+                $ownerName = 'octocat'
+                $repos = Get-GitHubRepository -OwnerName $ownerName
+            }
+
+            It 'Should return objects of the correct type' {
+                $repos | Should -BeOfType PSCustomObject
+            }
+
+            It "Should return one or more results" {
+                $repos.Count | Should -BeGreaterOrEqual 1
+            }
+
+            It 'Should return the correct properties' {
+                foreach ($repo in $repos) {
+                    $repo.owner.login | Should -Be $ownerName
+                }
             }
         }
 
-        Context 'For organizations' {
+        Context 'When getting a repository for a specified organization' {
             BeforeAll -Scriptblock {
-                $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+                $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid)
             }
 
             It "Should have results for the organization" {
-                $repos = @(Get-GitHubRepository -OrganizationName $script:organizationName -Type All)
+                $repos = Get-GitHubRepository -OrganizationName $script:organizationName -Type All
                 $repo.name | Should -BeIn $repos.name
             }
 
@@ -423,44 +516,110 @@ try
             }
         }
 
-        Context 'For public repos' {
-            # Skipping these tests for now, as it would run for a _very_ long time.
-            # No obviously good way to verify this.
-        }
+        Context 'When getting all public repositories' {
+            BeforeAll -Scriptblock {
+                $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+                $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
 
-        Context 'For a specific repo' {
-            BeforeAll -ScriptBlock {
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+                $repos = Get-GitHubRepository -GetAllPublicRepositories -Since $repo1.id
             }
 
-            It "Should be a single result using Uri ParameterSet" {
-                $result = Get-GitHubRepository -Uri $repo.svn_url
-                $result | Should -BeOfType PSCustomObject
+            It 'Should return an object of the correct type' {
+                $repos | Should -BeOfType PSCustomObject
             }
 
-            It "Should be a single result using Elements ParameterSet" {
-                $result = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
-                $result | Should -BeOfType PSCustomObject
+            It 'Should return at least one result' {
+                $repos.count | Should -BeGreaterOrEqual 1
             }
 
-            It 'Should not permit additional parameters' {
-                { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Type All } | Should -Throw
-            }
-
-            It 'Should require both OwnerName and RepositoryName' {
-                { Get-GitHubRepository -RepositoryName $repo.name } | Should -Throw
-                { Get-GitHubRepository -Uri "https://github.com/$script:ownerName" } | Should -Throw
+            It "Should return the correct membership" {
+                $repo2.name | Should -BeIn $repos.name
             }
 
             AfterAll -ScriptBlock {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                Remove-GitHubRepository -Uri $repo1.svn_url -Force
+                Remove-GitHubRepository -Uri $repo2.svn_url -Force
+            }
+        }
+
+        Context 'When getting a specific repository' {
+            BeforeAll -ScriptBlock {
+                $repoName = [Guid]::NewGuid().Guid
+                $newGitHubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    Description = $defaultRepoDesc
+                    HomePage = $defaultRepoHomePage
+                }
+                $repo = New-GitHubRepository @newGitHubRepositoryParms
+            }
+
+            Context 'When specifiying the Uri parameter' {
+                BeforeAll {
+                    $uriRepo = Get-GitHubRepository -Uri $repo.svn_url
+                }
+
+                It 'Should return an object of the correct type' {
+                    $uriRepo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return a single result' {
+                    $uriRepo | Should -HaveCount 1
+                }
+
+                It 'Should return the correct properties' {
+                    $uriRepo.name | Should -Be $repoName
+                    $uriRepo.description | Should -Be $defaultRepoDesc
+                    $uriRepo.homepage | Should -Be $defaultRepoHomePage
+                }
+            }
+
+            Context 'When specifying the Owner and RepositoryName parameters' {
+                BeforeAll {
+                    $elementsRepo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
+                }
+
+                It 'Should return an object of the correct type' {
+                    $uriRepo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return a single result' {
+                    $uriRepo | Should -HaveCount 1
+                }
+
+                It 'Should return the correct properties' {
+                    $uriRepo.name | Should -Be $repoName
+                    $uriRepo.description | Should -Be $defaultRepoDesc
+                    $uriRepo.homepage | Should -Be $defaultRepoHomePage
+                }
+
+                Context 'When specifying additional invalid parameters' {
+                    It 'Should throw the correct exception' {
+                        $errorMessage = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                        { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Type All } |
+                            Should -Throw $errorMessage
+                    }
+                }
+            }
+
+            Context 'When specifying only the Repository parameter' {
+                It 'Should throw the correct exception' {
+                    $errorMessage = 'OwnerName could not be determined.'
+                    { Get-GitHubRepository -RepositoryName $repo.name } | Should -Throw $errorMessage
+                }
+            }
+
+            AfterAll {
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
             }
         }
     }
 
-    Describe 'Deleting repositories' {
+    Describe 'GitHubRepositories\Delete-GitHubRepository' {
 
-        Context -Name 'For deleting a repository' -Fixture {
+        Context -Name 'When deleting a repository' -Fixture {
             BeforeEach -ScriptBlock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Description $defaultRepoDesc -AutoInit
             }
@@ -477,9 +636,9 @@ try
         }
     }
 
-    Describe 'Renaming repositories' {
+    Describe 'GitHubRepositories\Rename-GitHubRepository' {
 
-        Context -Name 'For renaming a repository' -Fixture {
+        Context -Name 'When renaming a repository' -Fixture {
             BeforeEach -Scriptblock {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
@@ -607,7 +766,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                if ($repo)
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
                 {
                     Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
                 }
@@ -713,11 +872,13 @@ try
         }
     }
 
-    Describe 'Get/set repository topic' {
+    Describe 'GitHubRepositories\Get-GitHubRepositoryTopic' {
 
-        Context -Name 'For creating and getting a repository topic' -Fixture {
-            BeforeAll -ScriptBlock {
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        Context -Name 'When getting a repository topic' {
+            BeforeAll {
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic | Out-Null
+                $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
             }
 
             It 'Should have the expected topic' {
@@ -766,16 +927,167 @@ try
                 }
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
 
-    Describe 'Get repository languages' {
+    Describe 'GitHubRepositories\Set-GitHubRepositoryTopic' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
+        }
 
-        Context -Name 'For getting repository languages' -Fixture {
-            BeforeAll -ScriptBlock {
+        Context -Name 'When setting a repository topic' {
+            It 'Should return an object of the correct type' {
+                $topic | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $defaultRepoTopic | Should -BeIn $topic.names
+            }
+        }
+
+        Context -Name 'When clearing all repository topics' {
+            BeforeAll {
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
+            }
+
+            It 'Should return an object of the correct type' {
+                $topic | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $topic.names | Should -BeNullOrEmpty
+            }
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+    }
+
+    Describe 'GitHubRepositories\Get-GitHubRepositoryContributor' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+        }
+
+        Context 'When getting GitHub Repository Contributors' {
+            BeforeAll {
+                $getGitHubRepositoryContributorParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                }
+                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+            }
+
+            It 'Should return objects of the correct type' {
+                $contributors | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return at least one result' {
+                $contributors.count | Should -BeGreaterOrEqual 1
+            }
+
+            It "Should return the correct membership" {
+                $repo.owner.login | Should -BeIn $contributors.login
+            }
+        }
+
+        Context 'When getting Github Repository Contributors with Statistics' {
+            BeforeAll {
+                $getGitHubRepositoryContributorParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    IncludeStatistics = $true
+                }
+                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+            }
+
+            It 'Should return objects of the correct type' {
+                $contributors | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return at least one result' {
+                $contributors.count | Should -BeGreaterOrEqual 1
+            }
+
+            It 'Should return the correct membership' {
+                $repo.owner.login | Should -BeIn $contributors.author.login
+            }
+
+            It 'Should return the correct properties' {
+                $contributors.weeks | Should -Not -BeNullOrEmpty
+            }
+        }
+
+        Context 'When getting Github Repository Contributors including Anonymous' {
+            BeforeAll {
+                $getGitHubRepositoryContributorParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    IncludeAnonymousContributors = $true
+                }
+                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+            }
+
+            It 'Should return objects of the correct type' {
+                $contributors | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return at least one result' {
+                $contributors.count | Should -BeGreaterOrEqual 1
+            }
+
+            It 'Should return the correct membership' {
+                $repo.owner.login | Should -BeIn $contributors.login
+            }
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+    }
+
+    Describe 'GitHubRepositories\Get-GitHubRepositoryCollaborator' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+        }
+
+        Context 'When getting GitHub Repository Collaborators' {
+            BeforeAll {
+                $getGitHubRepositoryCollaboratorParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                }
+                $collaborators = Get-GitHubRepositoryCollaborator @getGitHubRepositoryCollaboratorParms
+            }
+
+            It 'Should return objects of the correct type' {
+                $collaborators | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return at least one result' {
+                $collaborators.count | Should -BeGreaterOrEqual 1
+            }
+
+            It "Should return the correct membership" {
+                $repo.owner.login | Should -BeIn $collaborators.login
+            }
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+    }
+
+    Describe 'GitHubRepositories\Get-GitHubRepositoryLanguage' {
+
+        Context -Name 'When getting repository languages' {
+            BeforeAll {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
 
@@ -797,16 +1109,16 @@ try
                 $languages.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryLanguage'
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $repo.svn_url -Force
             }
         }
     }
 
-    Describe 'Get repository tags' {
+    Describe 'GitHubRepositories\Get-GitHubRepositoryTag' {
 
-        Context -Name 'For getting repository tags' -Fixture {
-            BeforeAll -ScriptBlock {
+        Context -Name 'When getting repository tags' {
+            BeforeAll {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             }
 
@@ -820,7 +1132,7 @@ try
                 $tags | Should -BeNullOrEmpty
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
