@@ -422,7 +422,7 @@ try
 
             Context 'When specifying the Affiliation parameter' {
                 BeforeAll -ScriptBlock {
-                    $ownerRepos = Get-GitHubRepository -Affiliation Owner
+                    $ownerRepos = Get-GitHubRepository -Affiliation Owner, Collaborator
                 }
 
                 It 'Should return objects of the correct type' {
