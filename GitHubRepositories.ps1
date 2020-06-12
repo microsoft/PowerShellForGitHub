@@ -687,6 +687,7 @@ filter Get-GitHubRepository
         [string] $Visibility,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
+        [ValidateSet('Owner', 'Collaborator', 'Organization_Member')]
         [string[]] $Affiliation,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
@@ -736,7 +737,7 @@ filter Get-GitHubRepository
     $description = [String]::Empty
     switch ($PSCmdlet.ParameterSetName)
     {
-        { ('ElementsOrUser', 'Uri') -contains $_ } {
+        'ElementsOrUser' {
             # This is a little tricky.  Ideally we'd have two separate ParameterSets (Elements, User),
             # however PowerShell would be unable to disambiguate between the two, so unfortunately
             # we need to do some additional work here.  And because fallthru doesn't appear to be
@@ -750,37 +751,24 @@ filter Get-GitHubRepository
             }
             elseif ([String]::IsNullOrWhiteSpace($RepositoryName))
             {
-                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
-                {
-                    $telemetryProperties['UsageType'] = 'User'
-                    $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+                $telemetryProperties['UsageType'] = 'User'
+                $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
 
-                    $uriFragment = "users/$OwnerName/repos"
-                    $description = "Getting repos for $OwnerName"
-                }
-                else
-                {
-                    $message = 'RepositoryName could not be determined.'
-                    Write-Log -Message $message -Level Error
-                    throw $message
-                }
+                $uriFragment = "users/$OwnerName/repos"
+                $description = "Getting repos for $OwnerName"
             }
             else
             {
-                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
+                if ($PSBoundParameters.ContainsKey('Type') -or
+                    $PSBoundParameters.ContainsKey('Sort') -or
+                    $PSBoundParameters.ContainsKey('Direction'))
                 {
-                    $telemetryProperties['UsageType'] = 'Elements'
-
-                    if ($PSBoundParameters.ContainsKey('Type') -or
-                        $PSBoundParameters.ContainsKey('Sort') -or
-                        $PSBoundParameters.ContainsKey('Direction'))
-                    {
-                        $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
-                        Write-Log -Message $message -Level Error
-                        throw $message
-                    }
+                    $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                    Write-Log -Message $message -Level Error
+                    throw $message
                 }
 
+                $telemetryProperties['UsageType'] = 'Elements'
                 $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
                 $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
 
@@ -791,20 +779,21 @@ filter Get-GitHubRepository
             break
         }
 
+        'Uri' {
+            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+            $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+
+            $uriFragment = "repos/$OwnerName/$RepositoryName"
+            $description = "Getting $OwnerName/$RepositoryName"
+
+            break
+        }
+
         'Organization' {
             $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
             $uriFragment = "orgs/$OrganizationName/repos"
             $description = "Getting repos for $OrganizationName"
-
-            break
-        }
-
-        'User' {
-            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
-
-            $uriFragment = "users/$OwnerName/repos"
-            $description = "Getting repos for $OwnerName"
 
             break
         }
@@ -857,7 +846,7 @@ filter Get-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Direction')) { $getParams += "direction=$($directionConverter[$Direction])" }
     if ($PSBoundParameters.ContainsKey('Affiliation') -and $Affiliation.Count -gt 0)
     {
-        $getParams += "affiliation=$($Affiliation -join ',')"
+        $getParams += "affiliation=$($Affiliation.ToLower() -join ',')"
     }
     if ($PSBoundParameters.ContainsKey('Since')) { $getParams += "since=$Since" }
 
@@ -1602,8 +1591,11 @@ filter Get-GitHubRepositoryContributor
     .EXAMPLE
         Get-GitHubRepositoryContributor -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
+        Gets a list of contributors for the PowerShellForGithub repository.
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
+
+        Gets a list of contributors for the PowerShellForGithub repository including statistics.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -1691,10 +1683,10 @@ filter Get-GitHubRepositoryCollaborator
 {
 <#
     .SYNOPSIS
-        Retrieve list of contributors for a given repository.
+        Retrieve list of collaborators for a given repository.
 
     .DESCRIPTION
-        Retrieve list of contributors for a given repository.
+        Retrieve list of collaborators for a given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -1749,8 +1741,11 @@ filter Get-GitHubRepositoryCollaborator
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
+        Gets a list of collaborators for the PowerShellForGithub repository.
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+
+        Gets a list of collaborators for the PowerShellForGithub repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -2027,10 +2022,10 @@ filter Move-GitHubRepositoryOwnership
 {
 <#
     .SYNOPSIS
-        Creates a new repository on GitHub.
+        Changes the ownership of a repository on GitHub.
 
     .DESCRIPTION
-        Creates a new repository on GitHub.
+        Changes the ownership of a repository on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
