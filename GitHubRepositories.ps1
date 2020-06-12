@@ -689,7 +689,7 @@ filter Get-GitHubRepository
         [string] $Visibility,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
-        [ValidateSet('Owner', 'Collaborator', 'Organization_Member')]
+        [ValidateSet('Owner', 'Collaborator', 'OrganizationMember')]
         [string[]] $Affiliation,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
@@ -848,7 +848,18 @@ filter Get-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Direction')) { $getParams += "direction=$($directionConverter[$Direction])" }
     if ($PSBoundParameters.ContainsKey('Affiliation') -and $Affiliation.Count -gt 0)
     {
-        $getParams += "affiliation=$($Affiliation.ToLower() -join ',')"
+        $affiliationMap = @{
+            Owner = 'owner'
+            Collaborator = 'collaborator'
+            OrganizationMember = 'organization_member'
+        }
+        $affiliationParam = @()
+
+        foreach ($member in $Affiliation)
+        {
+            $affiliationParam += $affiliationMap[$member]
+        }
+        $getParams += "affiliation=$($affiliationParam -join ',')"
     }
     if ($PSBoundParameters.ContainsKey('Since')) { $getParams += "since=$Since" }
 
