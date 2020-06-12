@@ -1009,10 +1009,13 @@ filter Add-GitHubIssueAdditionalProperties
             Add-Member -InputObject $item -Name 'IssueId' -Value $item.id -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.number -MemberType NoteProperty -Force
 
-            if ($null -ne $item.user)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
-            }
+            @('assignee', 'assignees', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
 
             if ($null -ne $item.labels)
             {
@@ -1022,16 +1025,6 @@ filter Add-GitHubIssueAdditionalProperties
             if ($null -ne $item.milestone)
             {
                 $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
-            }
-
-            if ($null -ne $item.assignee)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignee
-            }
-
-            if ($null -ne $item.assignees)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignees
             }
 
             if ($null -ne $item.closed_by)

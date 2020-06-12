@@ -493,6 +493,7 @@ filter Add-GitHubProjectColumnAdditionalProperties
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             Add-Member -InputObject $item -Name 'ColumnId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'ColumnName' -Value $item.name -MemberType NoteProperty -Force
         }
 
         Write-Output $item

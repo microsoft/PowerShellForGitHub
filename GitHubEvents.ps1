@@ -171,14 +171,85 @@ filter Add-GitHubEventAdditionalProperties
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'EventId' -Value $item.id -MemberType NoteProperty -Force
 
-            if ($null -ne $item.actor)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.actor
-            }
+            @('actor', 'assignee', 'assigner', 'assignees', 'committer', 'requested_reviewer', 'review_requester', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
 
             if ($null -ne $item.issue)
             {
                 $null = Add-GitHubIssueAdditionalProperties -InputObject $item.issue
+                Add-Member -InputObject $item -Name 'IssueId' -Value $item.issue.id -MemberType NoteProperty -Force
+                Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.issue.number -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.label)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
+            }
+
+            if ($null -ne $item.labels)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
+            }
+
+            if ($null -ne $item.milestone)
+            {
+                $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
+            }
+
+            if ($null -ne $item.project_id)
+            {
+                Add-Member -InputObject $item -Name 'ProjectId' -Value $item.project_id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.project_card)
+            {
+                $null = Add-GitHubProjectCardAdditionalProperties -InputObject $item.project_card
+                Add-Member -InputObject $item -Name 'CardId' -Value $item.project_card.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.column_name)
+            {
+                Add-Member -InputObject $item -Name 'ColumnName' -Value $item.column_name -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.source)
+            {
+                $null = Add-GitHubIssueAdditionalProperties -InputObject $item.source
+                if ($item.source.PSObject.TypeNames[0] -eq 'GitHub.PullRequest')
+                {
+                    Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.source.id -MemberType NoteProperty -Force
+                    Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $item.source.number -MemberType NoteProperty -Force
+                }
+                else
+                {
+                    Add-Member -InputObject $item -Name 'IssueId' -Value $item.source.id -MemberType NoteProperty -Force
+                    Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.source.number -MemberType NoteProperty -Force
+                }
+            }
+
+            if ($item.issue_url -match '^.*/issues/(\d+)$')
+            {
+                $issueNumber = $Matches[1]
+                Add-Member -InputObject $item -Name 'IssueNumber' -Value $issueNumber -MemberType NoteProperty -Force
+            }
+
+            if ($item.pull_request_url -match '^.*/pull/(\d+)$')
+            {
+                $pullRequestNumber = $Matches[1]
+                Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $pullRequestNumber -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.dismissed_review)
+            {
+                # TODO: Add dismissed_review (object) and dismissed_review[review_id] once Reviews are supported
+
+                # $null = Add-GitHubPullRequestReviewAdditionalProperties -InputObject $item.dismissed_review
+                # Add-Member -InputObject $item -Name 'ReviewId' -Value $item.dismissed_review.review_id -MemberType NoteProperty -Force
             }
         }
 

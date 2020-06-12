@@ -1080,7 +1080,11 @@ filter Add-GitHubLabelAdditionalProperties
                 Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
             }
 
-            Add-Member -InputObject $item -Name 'LabelId' -Value $item.id -MemberType NoteProperty -Force
+            if ($null -ne $item.id)
+            {
+                Add-Member -InputObject $item -Name 'LabelId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
             Add-Member -InputObject $item -Name 'LabelName' -Value $item.name -MemberType NoteProperty -Force
         }
 

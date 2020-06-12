@@ -1301,6 +1301,7 @@ filter Get-GitHubRepositoryContributor
 
     .OUTPUTS
         GitHub.User
+        GitHub.RepositoryContributorStatistics
 
     .EXAMPLE
         Get-GitHubRepositoryContributor -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -1312,6 +1313,7 @@ filter Get-GitHubRepositoryContributor
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]

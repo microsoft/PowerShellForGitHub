@@ -448,10 +448,13 @@ filter Add-GitHubPullRequestAdditionalProperties
             Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $item.number -MemberType NoteProperty -Force
 
-            if ($null -ne $item.user)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
-            }
+            @('assignee', 'assignees', 'requested_reviewers', 'merged_by', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
 
             if ($null -ne $item.labels)
             {
@@ -463,29 +466,9 @@ filter Add-GitHubPullRequestAdditionalProperties
                 $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
             }
 
-            if ($null -ne $item.assignee)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignee
-            }
-
-            if ($null -ne $item.assignees)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.assignees
-            }
-
-            if ($null -ne $item.requested_reviewers)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.requested_reviewers
-            }
-
             if ($null -ne $item.requested_teams)
             {
                 $null = Add-GitHubTeamAdditionalProperties -InputObject $item.requested_teams
-            }
-
-            if ($null -ne $item.merged_by)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.merged_by
             }
 
             # TODO: What type are item.head and item.base?
