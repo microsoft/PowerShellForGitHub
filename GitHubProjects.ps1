@@ -99,6 +99,10 @@ filter Get-GitHubProject
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ProjectObject')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -108,7 +112,15 @@ filter Get-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'User')]
         [string] $UserName,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'Project')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Project')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ProjectObject')]
         [Alias('ProjectId')]
         [int64] $Project,
 
@@ -126,7 +138,7 @@ filter Get-GitHubProject
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
-    if ($PSCmdlet.ParameterSetName -eq 'Project')
+    if ($PSCmdlet.ParameterSetName -in @('Project', 'ProjectObject'))
     {
         $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
@@ -275,7 +287,9 @@ filter New-GitHubProject
         [Parameter(Mandatory, ParameterSetName = 'User')]
         [switch] $UserProject,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [string] $Name,
 
         [string] $Description,
@@ -399,7 +413,10 @@ filter Set-GitHubProject
     [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [Alias('ProjectId')]
         [int64] $Project,
 
@@ -593,7 +610,14 @@ filter Add-GitHubProjectAdditionalProperties
         {
             $elements = Split-GitHubUri -Uri $item.html_url
             $repositoryUrl = Join-GitHubUri @elements
-            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            # A "user" project has no associated repository, and adding this in that scenario
+            # would cause API-level errors with piping further on,
+            if ($elements.OwnerName -ne 'users')
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
             Add-Member -InputObject $item -Name 'ProjectId' -Value $item.id -MemberType NoteProperty -Force
 
             if ($null -ne $item.creator)

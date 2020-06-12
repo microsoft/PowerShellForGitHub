@@ -65,6 +65,12 @@ try
             It 'Description is correct' {
                 $results[0].body | Should -Be $defaultUserProjectDesc
             }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $results[0].RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $results[0].ProjectId | Should -Be $results[0].id
+            }
         }
 
         Context 'Get Organization projects' {
@@ -91,6 +97,15 @@ try
 
             It 'Description is correct' {
                 $results[0].body | Should -Be $defaultOrgProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $results[0].html_url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $results[0].RepositoryUrl | Should -Be $repositoryUrl
+                $results[0].ProjectId | Should -Be $results[0].id
             }
         }
 
@@ -119,11 +134,18 @@ try
             It 'Description is correct' {
                 $results[0].body | Should -Be $defaultRepoProjectDesc
             }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $results[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $results[0].ProjectId | Should -Be $results[0].id
+                $results[0].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
-        Context 'Get a closed Repo project' {
+        Context 'Get a closed Repo project (via pipeline)' {
             BeforeAll {
-                $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultProjectClosed -Description $defaultProjectClosedDesc
+                $project = $repo | New-GitHubProject -Name $defaultProjectClosed -Description $defaultProjectClosedDesc
                 $null = Set-GitHubProject -Project $project.id -State Closed
             }
 
@@ -131,7 +153,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $results = @(Get-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -State 'Closed' | Where-Object Name -eq $defaultProjectClosed)
+            $results = @($repo | Get-GitHubProject -State 'Closed')
             It 'Should get project' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -150,6 +172,87 @@ try
 
             It 'State is correct' {
                 $results[0].state | Should -Be "Closed"
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $results[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $results[0].ProjectId | Should -Be $results[0].id
+                $results[0].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Get a specific project (by parameter)' {
+            BeforeAll {
+                $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+            }
+
+            $result = Get-GitHubProject -Project $project.id
+            It 'Should get project' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultRepoProject
+            }
+
+            It 'Description is correct' {
+                $result.body | Should -Be $defaultRepoProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $project.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Get a specific project (by pipeline object)' {
+            BeforeAll {
+                $project = $repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+            }
+
+            AfterAll {
+                $project | Remove-GitHubProject -Force
+            }
+
+            $result = $project | Get-GitHubProject
+            It 'Should get the right project' {
+                $result.id | Should -Be $project.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $project.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Get a specific project (with ID via pipeline)' {
+            BeforeAll {
+                $project = $repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+            }
+
+            AfterAll {
+                $project | Remove-GitHubProject -Force
+            }
+
+            $result = $project.id | Get-GitHubProject
+            It 'Should get the right project' {
+                $result.id | Should -Be $project.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $project.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
     }
@@ -176,6 +279,75 @@ try
 
             It 'Description should be updated' {
                 $result.body | Should -Be $modifiedUserProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Modify User projects (via ID in pipeline)' {
+            BeforeAll {
+                $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+            }
+
+            $null = $project.id | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $result = Get-GitHubProject -Project $project.id
+            It 'Should get project' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultUserProject
+            }
+
+            It 'Description should be updated' {
+                $result.body | Should -Be $modifiedUserProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Modify User projects (via object in pipeline)' {
+            BeforeAll {
+                $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+            }
+
+            $null = $project | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $result = Get-GitHubProject -Project $project.id
+            It 'Should get project' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultUserProject
+            }
+
+            It 'Description should be updated' {
+                $result.body | Should -Be $modifiedUserProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
@@ -210,6 +382,15 @@ try
                 $result.organization_permission | Should -Be 'admin'
             }
 
+            It 'Should have the expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $result.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repositoryUrl
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Modify Repo projects' {
@@ -233,6 +414,13 @@ try
 
             It 'Description should be updated' {
                 $result.body | Should -Be $modifiedRepoProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
     }
@@ -261,6 +449,45 @@ try
             It 'Description should be updated' {
                 $result.body | Should -Be $defaultUserProjectDesc
             }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Create User project (title on pipeline)' {
+            BeforeAll {
+                $project = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+                Remove-Variable project
+            }
+
+            $project.id = ($defaultUserProject | New-GitHubProject -UserProject -Description $defaultUserProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
+            It 'Project exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultUserProject
+            }
+
+            It 'Description should be updated' {
+                $result.body | Should -Be $defaultUserProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -BeNullOrEmpty # no RepositoryUrl for user projects
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Create Organization projects' {
@@ -286,6 +513,16 @@ try
             It 'Description should be updated' {
                 $result.body | Should -Be $defaultOrgProjectDesc
             }
+
+            It 'Should have the expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $result.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repositoryUrl
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Create Repo projects' {
@@ -310,6 +547,45 @@ try
 
             It 'Description should be updated' {
                 $result.body | Should -Be $defaultRepoProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Create Repo project (via pipeline)' {
+            BeforeAll {
+                $project = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+                Remove-Variable project
+            }
+
+            $project.id = ($repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
+            It 'Project Exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultRepoProject
+            }
+
+            It 'Description should be updated' {
+                $result.body | Should -Be $defaultRepoProjectDesc
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.ProjectId | Should -Be $result.id
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
     }
@@ -345,6 +621,17 @@ try
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
+            }
+        }
+
+        Context 'Remove Repo project via pipeline' {
+            BeforeAll {
+                $project = $repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc
+            }
+
+            $project | Remove-GitHubProject -Force
+            It 'Project should be removed' {
+                {$project | Get-GitHubProject} | Should -Throw
             }
         }
     }

@@ -82,8 +82,8 @@ try
         }
 
         Context 'For getting events from an issue' {
-            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Closed
-            Update-GitHubIssue -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number -State Open
+            $issue = $issue | Update-GitHubIssue -State Closed
+            $issue = $issue | Update-GitHubIssue -State Open
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have two events from closing and opening the issue' {
@@ -100,7 +100,7 @@ try
             $issue = $repo | New-GitHubIssue -Title 'New Issue'
             $issue = $issue | Update-GitHubIssue -State Closed
             $issue = $issue | Update-GitHubIssue -State Open
-            $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+            $events = @($repo | Get-GitHubEvent)
         }
 
         AfterAll {
