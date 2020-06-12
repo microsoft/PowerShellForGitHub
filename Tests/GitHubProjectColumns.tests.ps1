@@ -51,6 +51,61 @@ try
             It 'Name is correct' {
                 $results[0].name | Should -Be $defaultColumn
             }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $results[0].ColumnId | Should -Be $results[0].id
+                $results[0].ColumnName | Should -Be $results[0].name
+            }
+        }
+
+        Context 'Get columns for a project (via pipeline)' {
+            $results = @($project | Get-GitHubProjectColumn)
+            It 'Should get column' {
+                $results | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Should only have one column' {
+                $results.Count | Should -Be 1
+            }
+
+            It 'Name is correct' {
+                $results[0].name | Should -Be $defaultColumn
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $results[0].ColumnId | Should -Be $results[0].id
+                $results[0].ColumnName | Should -Be $results[0].name
+            }
+        }
+
+        Context 'Get specific column' {
+            $result = Get-GitHubProjectColumn -Column $column.id
+
+            It 'Should be the right column' {
+                $result.id | Should -Be $column.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
+        }
+
+        Context 'Get specific column (via pipeline)' {
+            $result = $column | Get-GitHubProjectColumn
+
+            It 'Should be the right column' {
+                $result.id | Should -Be $column.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
         }
     }
 
@@ -76,6 +131,12 @@ try
             It 'Name has been updated' {
                 $result.name | Should -Be $defaultColumnUpdate
             }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
         }
 
         Context 'Move column to first position' {
@@ -89,6 +150,12 @@ try
             It 'Column is now in the first position' {
                 $results[0].name | Should -Be $defaultColumnTwo
             }
+
+            It 'Should have the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $results[0].ColumnId | Should -Be $results[0].id
+                $results[0].ColumnName | Should -Be $results[0].name
+            }
         }
 
         Context 'Move column using after parameter' {
@@ -97,6 +164,12 @@ try
 
             It 'Column is now not in the first position' {
                 $results[1].name | Should -Be $defaultColumnTwo
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $results[1].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $results[1].ColumnId | Should -Be $columntwo.ColumnId
+                $results[1].ColumnName | Should -Be $columntwo.ColumnName
             }
         }
 
@@ -128,6 +201,68 @@ try
             It 'Name is correct' {
                 $result.name | Should -Be $defaultColumn
             }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
+        }
+
+        Context 'Create project column (object via pipeline)' {
+            BeforeAll {
+                $column = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProjectColumn -Column $column.id -Force
+                Remove-Variable -Name column
+            }
+
+            $column.id = ($project | New-GitHubProjectColumn -Name $defaultColumn).id
+            $result = Get-GitHubProjectColumn -Column $column.id
+
+            It 'Column exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultColumn
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
+        }
+
+        Context 'Create project column (name via pipeline)' {
+            BeforeAll {
+                $column = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProjectColumn -Column $column.id -Force
+                Remove-Variable -Name column
+            }
+
+            $column.id = ($defaultColumn | New-GitHubProjectColumn -Project $project.id).id
+            $result = Get-GitHubProjectColumn -Column $column.id
+
+            It 'Column exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Name is correct' {
+                $result.name | Should -Be $defaultColumn
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
+                $result.ColumnId | Should -Be $result.id
+                $result.ColumnName | Should -Be $result.name
+            }
         }
     }
 
@@ -140,6 +275,17 @@ try
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
             It 'Project column should be removed' {
                 {Get-GitHubProjectColumn -Column $column.id} | Should -Throw
+            }
+        }
+
+        Context 'Remove project column (via pipeline)' {
+            BeforeAll {
+                $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+            }
+
+            $column | Remove-GitHubProjectColumn -Force
+            It 'Project column should be removed' {
+                {$column | Get-GitHubProjectColumn} | Should -Throw
             }
         }
     }

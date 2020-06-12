@@ -60,6 +60,7 @@ filter Get-GitHubProjectColumn
 
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             ValueFromPipelineByPropertyName,
             ParameterSetName = 'Column')]
         [Alias('ColumnId')]
@@ -149,7 +150,9 @@ filter New-GitHubProjectColumn
         [Alias('ProjectId')]
         [int64] $Project,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [string] $Name,
 
         [string] $AccessToken,
