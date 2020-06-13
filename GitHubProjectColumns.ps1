@@ -46,7 +46,7 @@ filter Get-GitHubProjectColumn
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName = 'Project')]
+        DefaultParameterSetName = 'Column')]
     [OutputType({$script:GitHubProjectColumnTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -497,6 +497,12 @@ filter Add-GitHubProjectColumnAdditionalProperties
         {
             Add-Member -InputObject $item -Name 'ColumnId' -Value $item.id -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'ColumnName' -Value $item.name -MemberType NoteProperty -Force
+
+            if ($item.project_url -match '^.*/projects/(\d+)$')
+            {
+                $projectId = $Matches[1]
+                Add-Member -InputObject $item -Name 'ProjectId' -Value $projectId -MemberType NoteProperty -Force
+            }
         }
 
         Write-Output $item

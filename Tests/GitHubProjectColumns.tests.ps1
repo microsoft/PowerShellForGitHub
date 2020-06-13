@@ -56,6 +56,7 @@ try
                 $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $results[0].ColumnId | Should -Be $results[0].id
                 $results[0].ColumnName | Should -Be $results[0].name
+                $results[0].ProjectId | Should -Be $project.id
             }
         }
 
@@ -77,6 +78,7 @@ try
                 $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $results[0].ColumnId | Should -Be $results[0].id
                 $results[0].ColumnName | Should -Be $results[0].name
+                $results[0].ProjectId | Should -Be $project.id
             }
         }
 
@@ -91,6 +93,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
 
@@ -105,6 +108,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
     }
@@ -136,6 +140,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
 
@@ -155,6 +160,7 @@ try
                 $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $results[0].ColumnId | Should -Be $results[0].id
                 $results[0].ColumnName | Should -Be $results[0].name
+                $results[0].ProjectId | Should -Be $project.id
             }
         }
 
@@ -170,6 +176,7 @@ try
                 $results[1].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $results[1].ColumnId | Should -Be $columntwo.ColumnId
                 $results[1].ColumnName | Should -Be $columntwo.ColumnName
+                $results[1].ProjectId | Should -Be $project.id
             }
         }
 
@@ -206,6 +213,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
 
@@ -234,6 +242,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
 
@@ -262,6 +271,7 @@ try
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectColumn'
                 $result.ColumnId | Should -Be $result.id
                 $result.ColumnName | Should -Be $result.name
+                $result.ProjectId | Should -Be $project.id
             }
         }
     }

@@ -34,7 +34,7 @@ try
     }
 
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-    $project = New-GitHubProject -Owner $script:ownerName -Repository $repo.name -Name $defaultProject
+    $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultProject
 
     $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
     $columntwo = New-GitHubProjectColumn -Project $project.id -Name $defaultColumnTwo
@@ -54,24 +54,55 @@ try
 
         Context 'Get cards for a column' {
             $results = @(Get-GitHubProjectCard -Column $column.id)
+
             It 'Should get cards' {
                 $results | Should -Not -BeNullOrEmpty
             }
 
+            It 'Should only have one card (since it defaults to not archived)' {
+                $results.Count | Should -Be 1
+            }
+
             It 'Note is correct' {
-                $results.note | Should -Be $defaultCard
+                $results[0].note | Should -Be $defaultCard
+            }
+
+            It 'Has the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $results[0].CardId | Should -Be $results[0].id
+                $results[0].ProjectId | Should -Be $project.id
+                $results[0].ColumnId | Should -Be $column.id
+                $results[0].IssueNumber | Should -BeNullOrEmpty
+                $results[0].RepositoryUrl | Should -BeNullOrEmpty
+                $results[0].PullRequestNumber | Should -BeNullOrEmpty
+                $results[0].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
         Context 'Get all cards for a column' {
-            $results = @(Get-GitHubProjectCard -Column $column.id -ArchivedState All)
+            $results = @(Get-GitHubProjectCard -Column $column.id -State All)
+
             It 'Should get all cards' {
                 $results.Count | Should -Be 2
+            }
+
+            It 'Has the expected type and additional properties' {
+                foreach ($item in $results)
+                {
+                    $item.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                    $item.CardId | Should -Be $item.id
+                    $item.ProjectId | Should -Be $project.id
+                    $item.ColumnId | Should -Be $column.id
+                    $item.IssueNumber | Should -BeNullOrEmpty
+                    $item.RepositoryUrl | Should -BeNullOrEmpty
+                    $item.PullRequestNumber | Should -BeNullOrEmpty
+                    $item.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
             }
         }
 
         Context 'Get archived cards for a column' {
-            $result = Get-GitHubProjectCard -Column $column.id -ArchivedState Archived
+            $result = Get-GitHubProjectCard -Column $column.id -State Archived
             It 'Should get archived card' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -82,6 +113,44 @@ try
 
             It 'Should be archived' {
                 $result.Archived | Should -Be $true
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Get non-archived cards for a column (with column on pipeline)' {
+            $result = $column | Get-GitHubProjectCard -State NotArchived
+
+            It 'Should get non-archived card' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Should have the right ID' {
+                $result.id | Should -Be $card.id
+            }
+
+            It 'Should not be archived' {
+                $result.Archived | Should -Be $false
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
     }
@@ -108,6 +177,43 @@ try
             It 'Note has been updated' {
                 $result.note | Should -Be $defaultCardUpdated
             }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Modify card note (via card on pipeline)' {
+            $result = $card | Get-GitHubProjectCard
+
+            It 'Should have the expected Note value' {
+                $result.note | Should -Be $defaultCardUpdated
+            }
+
+            $null = $card | Set-GitHubProjectCard -Note $defaultCard
+            $result = $card | Get-GitHubProjectCard
+
+            It 'Should have the updated Note' {
+                $result.note | Should -Be $defaultCard
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Archive a card' {
@@ -124,7 +230,7 @@ try
         }
 
         Context 'Restore a card' {
-            $null = Set-GitHubProjectCard -Card $cardArchived.id -Restore
+            $null = $cardArchived | Set-GitHubProjectCard -Restore
             $result = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {
@@ -143,6 +249,17 @@ try
             It 'Card is now top' {
                 $results[0].note | Should -Be $defaultCardTwo
             }
+
+            It 'Has the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $results[0].CardId | Should -Be $results[0].id
+                $results[0].ProjectId | Should -Be $project.id
+                $results[0].ColumnId | Should -Be $column.id
+                $results[0].IssueNumber | Should -BeNullOrEmpty
+                $results[0].RepositoryUrl | Should -BeNullOrEmpty
+                $results[0].PullRequestNumber | Should -BeNullOrEmpty
+                $results[0].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Move card using after parameter' {
@@ -151,6 +268,37 @@ try
 
             It 'Card now exists in new column' {
                 $results[1].note | Should -Be $defaultCardTwo
+            }
+
+            It 'Has the expected type and additional properties' {
+                $results[1].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $results[1].CardId | Should -Be $results[1].id
+                $results[1].ProjectId | Should -Be $project.id
+                $results[1].ColumnId | Should -Be $column.id
+                $results[1].IssueNumber | Should -BeNullOrEmpty
+                $results[1].RepositoryUrl | Should -BeNullOrEmpty
+                $results[1].PullRequestNumber | Should -BeNullOrEmpty
+                $results[1].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Move card using before parameter (card on pipeline)' {
+            $null = $cardTwo | Move-GitHubProjectCard -After $card.id
+            $results = @($column | Get-GitHubProjectCard)
+
+            It 'Card now exists in new column' {
+                $results[1].note | Should -Be $defaultCardTwo
+            }
+
+            It 'Has the expected type and additional properties' {
+                $results[1].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $results[1].CardId | Should -Be $results[1].id
+                $results[1].ProjectId | Should -Be $project.id
+                $results[1].ColumnId | Should -Be $column.id
+                $results[1].IssueNumber | Should -BeNullOrEmpty
+                $results[1].RepositoryUrl | Should -BeNullOrEmpty
+                $results[1].PullRequestNumber | Should -BeNullOrEmpty
+                $results[1].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
@@ -161,6 +309,37 @@ try
             It 'Card now exists in new column' {
                 $results[0].note | Should -Be $defaultCardTwo
             }
+
+            It 'Has the expected type and additional properties' {
+                $results[0].PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $results[0].CardId | Should -Be $results[0].id
+                $results[0].ProjectId | Should -Be $project.id
+                $results[0].ColumnId | Should -Be $columnTwo.id
+                $results[0].IssueNumber | Should -BeNullOrEmpty
+                $results[0].RepositoryUrl | Should -BeNullOrEmpty
+                $results[0].PullRequestNumber | Should -BeNullOrEmpty
+                $results[0].creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Move card to another column (with column on pipeline)' {
+            $null = ($column | Move-GitHubProjectCard -Card $cardTwo.id -Top)
+            $result = $cardTwo | Get-GitHubProjectCard
+
+            It 'Card now exists in new column' {
+                $result.ColumnId | Should -Be $column.ColumnId
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Move command throws appropriate error' {
@@ -170,7 +349,7 @@ try
         }
     }
 
-    Describe 'Create Project Cards' -tag new {
+    Describe 'Create Project Cards' {
         Context 'Create project card with note' {
             BeforeAll {
                 $card = @{id = 0}
@@ -191,6 +370,51 @@ try
             It 'Note is correct' {
                 $result.note | Should -Be $defaultCard
             }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Create project card with note (with column object via pipeline)' {
+            BeforeAll {
+                $card = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
+                Remove-Variable -Name card
+            }
+
+            $newCard = $column | New-GitHubProjectCard -Note $defaultCard
+            $card.id = $newCard.id
+            $result = $newCard | Get-GitHubProjectCard
+
+            It 'Card exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Note is correct' {
+                $result.note | Should -Be $defaultCard
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -BeNullOrEmpty
+                $result.RepositoryUrl | Should -BeNullOrEmpty
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
 
         Context 'Create project card from issue' {
@@ -203,7 +427,7 @@ try
                 Remove-Variable -Name card
             }
 
-            $card.id = (New-GitHubProjectCard -Column $column.id -ContentId $issue.id -ContentType 'Issue').id
+            $card.id = (New-GitHubProjectCard -Column $column.id -IssueId $issue.id).id
             $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Card exists' {
@@ -213,7 +437,54 @@ try
             It 'Content url is for an issue' {
                 $result.content_url | Should -Match 'issues'
             }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -Be $issue.number
+                $result.RepositoryUrl | Should -Be $issue.RepositoryUrl
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
+
+        Context 'Create project card from issue (with issue object on pipeline)' {
+            BeforeAll {
+                $card = @{id = 0}
+            }
+
+            AfterAll {
+                $null = Remove-GitHubProjectCard -Card $card.id -Force
+                Remove-Variable -Name card
+            }
+
+            $newCard = $issue | New-GitHubProjectCard -Column $column.id
+            $card.id = $newCard.id
+            $result = $newCard | Get-GitHubProjectCard
+
+            It 'Card exists' {
+                $result | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Content url is for an issue' {
+                $result.content_url | Should -Match 'issues'
+            }
+
+            It 'Has the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
+                $result.CardId | Should -Be $result.id
+                $result.ProjectId | Should -Be $project.id
+                $result.ColumnId | Should -Be $column.id
+                $result.IssueNumber | Should -Be $issue.number
+                $result.RepositoryUrl | Should -Be $issue.RepositoryUrl
+                $result.PullRequestNumber | Should -BeNullOrEmpty
+                $result.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        # TODO: Create a test that verifies cards created based on a pull request
     }
 
     Describe 'Remove card' {
@@ -225,6 +496,17 @@ try
             $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
             It 'Project card should be removed' {
                 {Get-GitHubProjectCard -Card $card.id} | Should -Throw
+            }
+        }
+
+        Context 'Remove card (via pipeline)' {
+            BeforeAll {
+                $card = $column | New-GitHubProjectCard -Note $defaultCard
+            }
+
+            $null = $card | Remove-GitHubProjectCard -Force
+            It 'Project card should be removed' {
+                {$card | Get-GitHubProjectCard} | Should -Throw
             }
         }
     }
