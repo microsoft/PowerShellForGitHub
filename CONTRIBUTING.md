@@ -486,6 +486,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Shannon Deminick (@Shazwazza)](http://github.com/Shazwazza)**
 - **[Jess Pomfret (@jpomfret)](https://github.com/jpomfret)**
 - **[Giuseppe Campanelli (@themilanfan)](https://github.com/themilanfan)**
+- **[Christoph Bergmeister (@bergmeister)](https://github.com/bergmeister)**
 
 ----------
 
