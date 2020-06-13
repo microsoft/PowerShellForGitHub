@@ -4,12 +4,12 @@
 #
 
 steps:
-  - powershell: |
-      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+  - pwsh: |
+      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Verbose
     displayName: 'Install PSScriptAnalyzer'
 
-  - powershell: |
-       $results = Invoke-ScriptAnalyzer -Path ./ –Recurse
+  - pwsh: |
+       $results = try { Invoke-ScriptAnalyzer -Path ./ –Recurse -ErrorAction Stop } catch { Get-Error }
        $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
 
        $null = New-Item -Path ..\ -Name ScriptAnalyzer -ItemType Directory -Force
