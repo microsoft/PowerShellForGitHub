@@ -5,7 +5,7 @@
 
 steps:
   - powershell: |
-      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -Force -Verbose
+      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Force -Verbose
     displayName: 'Install PSScriptAnalyzer'
 
   - powershell: |
