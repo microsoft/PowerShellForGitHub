@@ -31,7 +31,7 @@ filter Get-GitHubLabel
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Name of the specific label to be retrieved.  If not supplied, all labels will be retrieved.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
@@ -187,7 +187,7 @@ filter New-GitHubLabel
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Name of the label to be created.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
@@ -317,7 +317,7 @@ filter Remove-GitHubLabel
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Name of the label to be deleted.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
@@ -441,7 +441,7 @@ filter Update-GitHubLabel
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Current name of the label to be updated.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
@@ -706,7 +706,7 @@ filter Add-GitHubIssueLabel
     .PARAMETER Issue
         Issue number to add the label to.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Array of label names to add to the issue
 
     .PARAMETER AccessToken
@@ -932,7 +932,7 @@ function Set-GitHubIssueLabel
         $telemetryProperties = @{
             'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
             'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-            'LabelCount' = $Name.Count
+            'LabelCount' = $Label.Count
         }
 
         $hashBody = @{
@@ -944,7 +944,7 @@ function Set-GitHubIssueLabel
             $ConfirmPreference = 'None'
         }
 
-        if (($null -eq $Name) -and (-not $PSCmdlet.ShouldProcess($Issue, "Remove all labels from issue")))
+        if (($null -eq $Label) -and (-not $PSCmdlet.ShouldProcess($Issue, "Remove all labels from issue")))
         {
             return
         }
@@ -990,7 +990,7 @@ filter Remove-GitHubIssueLabel
     .PARAMETER Issue
         Issue number to remove the label from.
 
-    .PARAMETER Name
+    .PARAMETER Label
         Name of the label to be deleted. If not provided, will delete all labels on the issue.
         Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
@@ -1056,7 +1056,7 @@ filter Remove-GitHubIssueLabel
             ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
-        [string] $Name,
+        [string] $Label,
 
         [switch] $Force,
 
@@ -1077,9 +1077,9 @@ filter Remove-GitHubIssueLabel
     }
 
     $description = [String]::Empty
-    if ($PSBoundParameters.ContainsKey('Name'))
+    if ($PSBoundParameters.ContainsKey('Label'))
     {
-        $description = "Deleting label $Name from issue $Issue in $RepositoryName"
+        $description = "Deleting label $Label from issue $Issue in $RepositoryName"
     }
     else
     {
@@ -1091,10 +1091,10 @@ filter Remove-GitHubIssueLabel
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($Name, "Remove label"))
+    if ($PSCmdlet.ShouldProcess($Label, "Remove label"))
     {
         $params = @{
-            'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Name"
+            'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Label"
             'Method' = 'Delete'
             'Description' =  $description
             'AcceptHeader' = $script:symmetraAcceptHeader
