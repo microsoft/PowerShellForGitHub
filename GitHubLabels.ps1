@@ -38,8 +38,8 @@ filter Get-GitHubLabel
     .PARAMETER Issue
         If provided, will return all of the labels for this particular issue.
 
-    .PARAMETER Milestone
-        If provided, will return all of the labels for this particular milestone.
+    .PARAMETER MilestoneNumber
+        If provided, will return all of the labels assigned to issues for this particular milestone.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -72,39 +72,26 @@ filter Get-GitHubLabel
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [Parameter(Mandatory, ParameterSetName='NameElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $OwnerName,
 
         [Parameter(Mandatory, ParameterSetName='Elements')]
-        [Parameter(Mandatory, ParameterSetName='NameElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
         [string] $RepositoryName,
 
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='NameUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='NameUri')]
-        [Parameter(Mandatory, ParameterSetName='NameElements')]
+        [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
         [string] $Label,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('IssueNumber')]
         [int64] $Issue,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='MilestoneUri')]
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [Alias('MilestoneNumber')]
-        [int64] $Milestone,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [int64] $MilestoneNumber,
 
         [string] $AccessToken,
 
@@ -122,6 +109,23 @@ filter Get-GitHubLabel
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    # There were a lot of complications trying to get pipelining working right when using all of
+    # the necessary ParameterSets, so we'll do internal parameter validation instead until someone
+    # can figure out the right way to do the parameter sets here _with_ pipeline support.
+    if ($PSBoundParameters.ContainsKey('Label') -or
+        $PSBoundParameters.ContainsKey('Issue') -or
+        $PSBoundParameters.ContainsKey('MilestoneNumber'))
+    {
+        if (-not ($PSBoundParameters.ContainsKey('Label') -xor
+            $PSBoundParameters.ContainsKey('Issue') -xor
+            $PSBoundParameters.ContainsKey('MilestoneNumber')))
+        {
+            $message = 'Label, Issue and Milestone are mutually exclusive.  Only one can be specified in a single command.'
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+    }
+
     $uriFragment = [String]::Empty
     $description = [String]::Empty
 
@@ -130,10 +134,10 @@ filter Get-GitHubLabel
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
         $description = "Getting labels for Issue $Issue in $RepositoryName"
     }
-    elseif ($PSBoundParameters.ContainsKey('Milestone'))
+    elseif ($PSBoundParameters.ContainsKey('MilestoneNumber'))
     {
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/milestones/$Milestone/labels"
-        $description = "Getting labels for issues in Milestone $Milestone in $RepositoryName"
+        $uriFragment = "/repos/$OwnerName/$RepositoryName/milestones/$MilestoneNumber/labels"
+        $description = "Getting labels for issues in Milestone $MilestoneNumber in $RepositoryName"
     }
     else
     {
