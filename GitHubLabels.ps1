@@ -60,7 +60,7 @@ filter Get-GitHubLabel
         Gets the information for every label from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Get-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -LabelName TestLabel
+        Get-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel
 
         Gets the information for the label named "TestLabel" from the Microsoft\PowerShellForGitHub
         project.
@@ -469,7 +469,7 @@ filter Update-GitHubLabel
         GitHub.Label
 
     .EXAMPLE
-        Update-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -NewName NewTestLabel -LabelColor BBBB00
+        Update-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -NewName NewTestLabel -Color BBBB00
 
         Updates the existing label called TestLabel in the PowerShellForGitHub project to be called
         'NewTestLabel' and be colored yellow.
@@ -842,7 +842,7 @@ function Set-GitHubIssueLabel
         GitHub.Label
 
     .EXAMPLE
-        Set-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -LabelName $labels
+        Set-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Label $labels
 
         Replaces labels on an issue in the PowerShellForGitHub project.
 
