@@ -2088,6 +2088,12 @@ Function Get-GitHubRepositoryVulnerabilityAlerts {
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        None
+
+    .OUTPUTS
+        PSCustomObject
+
     .EXAMPLE
         Get-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -2210,6 +2216,12 @@ Function Enable-GitHubRepositoryVulnerabilityAlerts {
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        None
+
+    .OUTPUTS
+        None
+
     .EXAMPLE
         Enable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -2303,6 +2315,12 @@ Function Disable-GitHubRepositoryVulnerabilityAlerts {
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        None
+
+    .OUTPUTS
+        None
 
     .EXAMPLE
         Disable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -2398,6 +2416,12 @@ Function Enable-GitHubRepositorySecurityFixes {
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        None
+
+    .OUTPUTS
+        None
+
     .EXAMPLE
         Enable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
@@ -2491,6 +2515,12 @@ Function Disable-GitHubRepositorySecurityFixes {
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        None
+
+    .OUTPUTS
+        None
 
     .EXAMPLE
         Disable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
