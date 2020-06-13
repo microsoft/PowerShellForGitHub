@@ -36,7 +36,7 @@ filter Get-GitHubAssignee
         GitHub.User
 
     .EXAMPLE
-        Get-GitHubAssigneeList -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubAssigneeList -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
@@ -127,7 +127,7 @@ filter Test-GitHubAssignee
         If the assignee can be assigned to issues in the repository.
 
     .EXAMPLE
-        Test-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+        Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
         Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
 #>
@@ -235,7 +235,7 @@ filter New-GitHubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        New-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
+        New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
@@ -354,17 +354,17 @@ filter Remove-GitHubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        Remove-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
+        Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
 
         Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
+        Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
 
         Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Force
+        Remove-GithubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Force
 
         Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
 #>

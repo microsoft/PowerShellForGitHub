@@ -65,7 +65,7 @@ filter Get-GitHubComment
         GitHub.Comment
 
     .EXAMPLE
-        Get-GitHubComment-OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubComment-OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the comments for the Microsoft\PowerShellForGitHub project.
 #>
@@ -252,7 +252,7 @@ filter New-GitHubComment
         GitHub.Comment
 
     .EXAMPLE
-        New-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+        New-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
         Creates a new GitHub comment in an issue for the Microsoft\PowerShellForGitHub project.
 #>
@@ -373,7 +373,7 @@ filter Set-GitHubComment
         GitHub.Comment
 
     .EXAMPLE
-        Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
+        Set-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
 
         Update an existing comment in an issue for the Microsoft\PowerShellForGitHub project.
 #>
@@ -483,17 +483,17 @@ filter Remove-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1
+        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1
 
         Deletes a GitHub comment from the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
+        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
 
         Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
+        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
 
         Deletes a GitHub comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
 #>

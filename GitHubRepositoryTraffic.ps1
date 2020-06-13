@@ -48,7 +48,7 @@ filter Get-GitHubReferrerTraffic
         GitHub.ReferrerTraffic
 
     .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubReferrerTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the top 10 referrers over the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
@@ -141,7 +141,7 @@ filter Get-GitHubPathTraffic
         GitHub.PathTraffic
 
     .EXAMPLE
-        Get-GitHubPathTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubPathTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the top 10 popular contents over the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
@@ -238,7 +238,7 @@ filter Get-GitHubViewTraffic
         GitHub.ViewTraffic
 
     .EXAMPLE
-        Get-GitHubViewTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubViewTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the total number of views and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>
@@ -339,7 +339,7 @@ filter Get-GitHubCloneTraffic
         GitHub.CloneTraffic
 
     .EXAMPLE
-        Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubCloneTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the total number of clones and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
 #>

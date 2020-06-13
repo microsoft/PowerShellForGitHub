@@ -243,7 +243,7 @@ filter Get-GitHubLicense
         Gets the content of the mit license file
 
     .EXAMPLE
-        Get-GitHubLicense -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubLicense -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets the content of the license file for the Microsoft\PowerShellForGitHub repository.
         It may be necessary to convert the content of the file.  Check the 'encoding' property of
@@ -433,7 +433,7 @@ filter Get-GitHubCodeOfConduct
         Gets the content of the 'Citizen Code of Conduct'
 
     .EXAMPLE
-        Get-GitHubCodeOfConduct -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubCodeOfConduct -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets the content of the Code of Conduct file for the Microsoft\PowerShellForGitHub repository
         if one is detected.

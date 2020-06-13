@@ -54,7 +54,7 @@ filter Get-GitHubProject
         GitHub.Project
 
     .EXAMPLE
-        Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the projects for the Microsoft\PowerShellForGitHub repository.
 
@@ -74,7 +74,7 @@ filter Get-GitHubProject
         Get the projects for the user GitHubUser.
 
     .EXAMPLE
-        Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Closed
+        Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Closed
 
         Get closed projects from the Microsoft\PowerShellForGitHub repo.
 
@@ -243,7 +243,7 @@ filter New-GitHubProject
         GitHub.Project
 
     .EXAMPLE
-        New-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestProject
+        New-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name TestProject
 
         Creates a project called 'TestProject' for the Microsoft\PowerShellForGitHub repository.
 
@@ -403,7 +403,7 @@ filter Set-GitHubProject
         Set the project with ID '999999' to closed.
 
     .EXAMPLE
-        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Set-GitHubProject -Project $project.id -State Closed
 
         Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
@@ -523,7 +523,7 @@ filter Remove-GitHubProject
         Remove project with ID '4387531' without prompting for confirmation.
 
     .EXAMPLE
-        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Remove-GitHubProject -Project $project.id
 
         Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub

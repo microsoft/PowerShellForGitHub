@@ -42,7 +42,7 @@ filter Get-GitHubRepositoryFork
         GitHub.Repository
 
     .EXAMPLE
-        Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets all of the forks for the Microsoft\PowerShellForGitHub repository.
 #>
@@ -145,12 +145,12 @@ filter New-GitHubRepositoryFork
         GitHub.Repository
 
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Creates a fork of this repository under the current authenticated user's account.
 
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
+        New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
 
         Creates a fork of this repository under the OctoLabs organization.
 #>

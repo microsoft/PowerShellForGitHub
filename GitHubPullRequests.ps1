@@ -71,7 +71,7 @@ filter Get-GitHubPullRequest
         $pullRequests = Get-GitHubPullRequest -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
 
     .EXAMPLE
-        $pullRequests = Get-GitHubPullRequest -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Closed
+        $pullRequests = Get-GitHubPullRequest -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,

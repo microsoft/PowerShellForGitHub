@@ -48,7 +48,7 @@ filter Get-GitHubEvent
         GitHub.Event
 
     .EXAMPLE
-        Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get the events for the Microsoft\PowerShellForGitHub project.
 #>

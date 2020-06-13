@@ -863,7 +863,7 @@ filter Update-GitHubRepository
         GitHub.Repository
 
     .EXAMPLE
-        Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
+        Update-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
         Changes the description of the specified repository.
 
@@ -1032,7 +1032,7 @@ filter Get-GitHubRepositoryTopic
         GitHub.RepositoryTopic
 
     .EXAMPLE
-        Get-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTopic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1131,7 +1131,7 @@ function Set-GitHubRepositoryTopic
         GitHub.RepositoryTopic
 
     .EXAMPLE
-        Set-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Clear
+        Set-GitHubRepositoryTopic -OwnerName microsoft -RepositoryName PowerShellForGitHub -Clear
 
     .EXAMPLE
         Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Topic ('octocat', 'powershell', 'github')
@@ -1304,7 +1304,7 @@ filter Get-GitHubRepositoryContributor
         GitHub.RepositoryContributorStatistics
 
     .EXAMPLE
-        Get-GitHubRepositoryContributor -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryContributor -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
@@ -1435,7 +1435,7 @@ filter Get-GitHubRepositoryCollaborator
         GitHub.User
 
     .EXAMPLE
-        Get-GitHubRepositoryCollaborator -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryCollaborator -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
@@ -1533,7 +1533,7 @@ filter Get-GitHubRepositoryLanguage
         of bytes of code written in that language.
 
     .EXAMPLE
-        Get-GitHubRepositoryLanguage -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryLanguage -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryLanguage -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1624,7 +1624,7 @@ filter Get-GitHubRepositoryTag
         GitHub.RepositoryTag
 
     .EXAMPLE
-        Get-GitHubRepositoryTag -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTag -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTag -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1722,7 +1722,7 @@ filter Move-GitHubRepositoryOwnership
         GitHub.Repository
 
     .EXAMPLE
-        Move-GitHubRepositoryOwnership -OwnerName Microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
+        Move-GitHubRepositoryOwnership -OwnerName microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
 #>
     [CmdletBinding(
         SupportsShouldProcess,

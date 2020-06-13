@@ -49,7 +49,7 @@ filter Get-GitHubRepositoryBranch
         List of branches within the given repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryBranch -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets all branches for the specified repository.
 
