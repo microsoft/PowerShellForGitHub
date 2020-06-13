@@ -812,6 +812,125 @@ try
                 $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
+    Describe 'GitHubRepositories\Get-GitHubRepositoryVulnerabilityAlerts' {
+        BeforeAll -ScriptBlock {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Enabled' {
+            BeforeAll -ScriptBlock {
+                Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
+                $result = Get-GitHubRepositoryVulnerabilityAlerts -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $result | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $result | Should -Be $true
+            }
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Disabled' {
+            BeforeAll -ScriptBlock {
+                Disable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
+                $status = Get-GitHubRepositoryVulnerabilityAlerts -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $status | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $status | Should -BeFalse
+            }
+        }
+
+        Context 'When Invoke-GHRestMethod returns an unexpected error' {
+            It 'Should throw' {
+                $getGitHubRepositoryVulnerabilityAlertsParms = @{
+                    OwnerName = 'octocat'
+                    RepositoryName = 'IncorrectRepostioryName'
+                }
+                { Get-GitHubRepositoryVulnerabilityAlerts @getGitHubRepositoryVulnerabilityAlertsParms } |
+                    Should -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlerts' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlerts' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFixes' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Security Fixes' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFixes' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
     }
 }
 finally
