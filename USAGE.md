@@ -425,31 +425,31 @@ Get-GitHubUser
 #### Get repository vulnerability alert status
 
 ```powershell
-Get-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Enable repository vulnerability alerts
 
 ```powershell
-Enable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Enable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
-#### Disable repository vulnerability alerts
+#### Disable repository vulnerability alert
 
 ```powershell
-Disable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Disable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Enable repository automatic security fixes
 
 ```powershell
-Enable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Enable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Disable repository automatic security fixes
 
 ```powershell
-Enable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Enable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------

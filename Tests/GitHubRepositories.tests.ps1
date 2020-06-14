@@ -812,15 +812,15 @@ try
                 $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
-    Describe 'GitHubRepositories\Get-GitHubRepositoryVulnerabilityAlerts' {
+    Describe 'GitHubRepositories\Get-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll -ScriptBlock {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
         }
 
         Context 'When the Git Hub Repository Vulnerability Alert Status is Enabled' {
             BeforeAll -ScriptBlock {
-                Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
-                $result = Get-GitHubRepositoryVulnerabilityAlerts -Uri $repo.svn_url
+                Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $result = Get-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             }
 
             It 'Should return an object of the correct type' {
@@ -834,8 +834,8 @@ try
 
         Context 'When the Git Hub Repository Vulnerability Alert Status is Disabled' {
             BeforeAll -ScriptBlock {
-                Disable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
-                $status = Get-GitHubRepositoryVulnerabilityAlerts -Uri $repo.svn_url
+                Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $status = Get-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             }
 
             It 'Should return an object of the correct type' {
@@ -849,11 +849,11 @@ try
 
         Context 'When Invoke-GHRestMethod returns an unexpected error' {
             It 'Should throw' {
-                $getGitHubRepositoryVulnerabilityAlertsParms = @{
+                $getGitHubRepositoryVulnerabilityAlertParms = @{
                     OwnerName = 'octocat'
                     RepositoryName = 'IncorrectRepostioryName'
                 }
-                { Get-GitHubRepositoryVulnerabilityAlerts @getGitHubRepositoryVulnerabilityAlertsParms } |
+                { Get-GitHubRepositoryVulnerabilityAlert @getGitHubRepositoryVulnerabilityAlertParms } |
                     Should -Throw
             }
         }
@@ -863,14 +863,14 @@ try
         }
     }
 
-    Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlerts' {
+    Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
         }
 
         Context 'When Enabling GitHub Repository Vulnerability Alerts' {
             It 'Should not throw' {
-                { Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url } |
+                { Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
                     Should -Not -Throw
             }
         }
@@ -880,15 +880,15 @@ try
         }
     }
 
-    Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlerts' {
+    Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-            Enable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
         }
 
         Context 'When Disabling GitHub Repository Vulnerability Alerts' {
             It 'Should not throw' {
-                { Disable-GitHubRepositoryVulnerabilityAlerts -Uri  $repo.svn_url } |
+                { Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
                     Should -Not -Throw
             }
         }
@@ -898,14 +898,14 @@ try
         }
     }
 
-    Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFixes' {
+    Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
         }
 
         Context 'When Enabling GitHub Repository Security Fixes' {
             It 'Should not throw' {
-                { Enable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url } |
+                { Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
                     Should -Not -Throw
             }
         }
@@ -915,15 +915,15 @@ try
         }
     }
 
-    Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFixes' {
+    Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-            Enable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url
+            Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url
         }
 
-        Context 'When Disabling GitHub Repository Vulnerability Alerts' {
+        Context 'When Disabling GitHub Repository Security Fixes' {
             It 'Should not throw' {
-                { Disable-GitHubRepositorySecurityFixes -Uri  $repo.svn_url } |
+                { Disable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
                     Should -Not -Throw
             }
         }

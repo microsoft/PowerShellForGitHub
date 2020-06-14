@@ -2055,7 +2055,7 @@ filter Add-GitHubRepositoryAdditionalProperties
     }
 }
 
-Function Get-GitHubRepositoryVulnerabilityAlerts {
+Function Get-GitHubRepositoryVulnerabilityAlert {
  <#
     .SYNOPSIS
         Retrieves the status of vulnerability alerts for a repository on GitHub.
@@ -2095,11 +2095,11 @@ Function Get-GitHubRepositoryVulnerabilityAlerts {
         PSCustomObject
 
     .EXAMPLE
-        Get-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
     .EXAMPLE
-        Get-GitHubRepositoryVulnerabilityAlerts -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Get-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
 #>
@@ -2183,7 +2183,7 @@ Function Get-GitHubRepositoryVulnerabilityAlerts {
     return $result
 }
 
-Function Enable-GitHubRepositoryVulnerabilityAlerts {
+Function Enable-GitHubRepositoryVulnerabilityAlert {
  <#
     .SYNOPSIS
         Enables vulnerability alerts for a repository on GitHub.
@@ -2223,11 +2223,11 @@ Function Enable-GitHubRepositoryVulnerabilityAlerts {
         None
 
     .EXAMPLE
-        Enable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Enable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Enables vulnerability alerts for the PowerShellForGithub repository.
     .EXAMPLE
-        Enable-GitHubRepositoryVulnerabilityAlerts -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Enable-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Enables vulnerability alerts for the PowerShellForGithub repository.
 #>
@@ -2283,7 +2283,7 @@ Function Enable-GitHubRepositoryVulnerabilityAlerts {
     }
 }
 
-Function Disable-GitHubRepositoryVulnerabilityAlerts {
+Function Disable-GitHubRepositoryVulnerabilityAlert {
  <#
     .SYNOPSIS
         Disables vulnerability alerts for a repository on GitHub.
@@ -2323,12 +2323,12 @@ Function Disable-GitHubRepositoryVulnerabilityAlerts {
         None
 
     .EXAMPLE
-        Disable-GitHubRepositoryVulnerabilityAlerts -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Disable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Disables vulnerability alerts for the PowerShellForGithub repository.
 
     .EXAMPLE
-        Disable-GitHubRepositoryVulnerabilityAlerts -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Disable-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Disables vulnerability alerts for the PowerShellForGithub repository.
 #>
@@ -2383,7 +2383,7 @@ Function Disable-GitHubRepositoryVulnerabilityAlerts {
     }
 }
 
-Function Enable-GitHubRepositorySecurityFixes {
+Function Enable-GitHubRepositorySecurityFix {
  <#
     .SYNOPSIS
         Enables automated security fixes for a repository on GitHub.
@@ -2423,11 +2423,11 @@ Function Enable-GitHubRepositorySecurityFixes {
         None
 
     .EXAMPLE
-        Enable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Enable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Enables automated security fixes for the PowerShellForGitHub repository.
     .EXAMPLE
-        Enable-GitHubRepositorySecurityFixes -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Enable-GitHubRepositorySecurityFix -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Enables automated security fixes for the PowerShellForGitHub repository.
 #>
@@ -2483,7 +2483,7 @@ Function Enable-GitHubRepositorySecurityFixes {
     }
 }
 
-Function Disable-GitHubRepositorySecurityFixes {
+Function Disable-GitHubRepositorySecurityFix {
  <#
     .SYNOPSIS
         Disables automated security fixes for a repository on GitHub.
@@ -2523,11 +2523,11 @@ Function Disable-GitHubRepositorySecurityFixes {
         None
 
     .EXAMPLE
-        Disable-GitHubRepositorySecurityFixes -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Disable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Disables automated security fixes for the PowerShellForGithub repository.
     .EXAMPLE
-        Disable-GitHubRepositorySecurityFixes -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Disable-GitHubRepositorySecurityFix -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Disables automated security fixes for the PowerShellForGithub repository.
 #>
