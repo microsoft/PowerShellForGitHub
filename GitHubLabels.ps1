@@ -163,8 +163,7 @@ filter Get-GitHubLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubLabelAdditionalProperties)
 }
 
 filter New-GitHubLabel
@@ -293,8 +292,7 @@ filter New-GitHubLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+    return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
 }
 
 filter Remove-GitHubLabel
@@ -552,8 +550,7 @@ filter Update-GitHubLabel
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+    return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
 }
 
 filter Set-GitHubLabel
@@ -633,6 +630,7 @@ filter Set-GitHubLabel
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [object[]] $Label,
 
         [string] $AccessToken,
@@ -686,7 +684,7 @@ filter Set-GitHubLabel
     }
 }
 
-filter Add-GitHubIssueLabel
+function Add-GitHubIssueLabel
 {
 <#
     .DESCRIPTION
@@ -730,6 +728,13 @@ filter Add-GitHubIssueLabel
         Add-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Label $labels
 
         Adds labels to an issue in the PowerShellForGitHub project.
+
+    .NOTES
+        This is implemented as a function rather than a filter because the ValueFromPipeline
+        parameter (Name) is itself an array which we want to ensure is processed only a single time.
+        This API endpoint doesn't add labels to a repository, it replaces the existing labels with
+        the new set provided, so we need to make sure that we have all the requested labels available
+        to us at the time that the API endpoint is called.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -770,36 +775,51 @@ filter Add-GitHubIssueLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'LabelCount' = $Label.Count
+    begin
+    {
+        $labelNames = @()
     }
 
-    $hashBody = @{
-        'labels' = $Label
+    process
+    {
+        foreach ($name in $Label)
+        {
+            $labelNames += $name
+        }
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Post'
-        'Description' =  "Adding labels to issue $Issue in $RepositoryName"
-        'AcceptHeader' = $script:symmetraAcceptHeader
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    end
+    {
+        Write-InvocationLog
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            'LabelCount' = $Label.Count
+        }
+
+        $hashBody = @{
+            'labels' = $labelNames
+        }
+
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Post'
+            'Description' =  "Adding labels to issue $Issue in $RepositoryName"
+            'AcceptHeader' = $script:symmetraAcceptHeader
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
+    }
 }
 
 function Set-GitHubIssueLabel
@@ -826,7 +846,7 @@ function Set-GitHubIssueLabel
     .PARAMETER Issue
         Issue number to replace the labels.
 
-    .PARAMETER LabelName
+    .PARAMETER Label
         Array of label names that will be set on the issue.
 
     .PARAMETER Force
@@ -901,7 +921,7 @@ function Set-GitHubIssueLabel
         [Alias('IssueNumber')]
         [int64] $Issue,
 
-        [Parameter(ValueFromPipeline)]
+        [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('LabelName')]
         [string[]] $Label,
 
@@ -948,7 +968,7 @@ function Set-GitHubIssueLabel
             $ConfirmPreference = 'None'
         }
 
-        if (($null -eq $Label) -and (-not $PSCmdlet.ShouldProcess($Issue, "Remove all labels from issue")))
+        if (($labelNames.Count -eq 0) -and (-not $PSCmdlet.ShouldProcess($Issue, "Remove all labels from issue")))
         {
             return
         }
@@ -965,8 +985,7 @@ function Set-GitHubIssueLabel
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        return (Invoke-GHRestMethod @params |
-            Add-GitHubLabelAdditionalProperties -TypeName $script:GitHubLabelTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
     }
 }
 
@@ -1055,9 +1074,7 @@ filter Remove-GitHubIssueLabel
         [Alias('IssueNumber')]
         [int64] $Issue,
 
-        [Parameter(
-            ValueFromPipeline,
-            ValueFromPipelineByPropertyName)]
+        [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [Alias('LabelName')]
         [string] $Label,
@@ -1123,14 +1140,6 @@ filter Add-GitHubLabelAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
-
-    .PARAMETER OwnerName
-        Owner of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .PARAMETER RepositoryName
-        Name of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
@@ -1143,11 +1152,7 @@ filter Add-GitHubLabelAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubLabelTypeName,
-
-        [string] $OwnerName,
-
-        [string] $RepositoryName
+        [string] $TypeName = $script:GitHubLabelTypeName
     )
 
     foreach ($item in $InputObject)
@@ -1156,12 +1161,9 @@ filter Add-GitHubLabelAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ($PSBoundParameters.ContainsKey('OwnerName') -and
-                $PSBoundParameters.ContainsKey('RepositoryName'))
-            {
-                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
-            }
+            $elements = Split-GitHubUri -Uri $item.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
             if ($null -ne $item.id)
             {

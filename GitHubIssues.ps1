@@ -541,6 +541,8 @@ filter New-GitHubIssue
 
         [string[]] $Assignee,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
         [string[]] $Label,
