@@ -42,6 +42,9 @@
     *   [Branches](#branches)
         *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
         *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
+        *   [Getting a repository branch protection rule](#getting-a-repository-branch-protection-rule)
+        *   [Creating a repository branch protection rule](#creating-a-repository-branch-protection-rule)
+        *   [Removing a repository branch protection rule](#removing-a-repository-branch-protection-rule)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -530,6 +533,28 @@ Enable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShe
 
 ```powershell
 Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+----------
+
+### Branches
+
+#### Getting a repository branch protection rule
+
+```powershell
+Get-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Creating a repository branch protection rule
+
+```powershell
+New-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub -RequiredApprovingReviewCount 1
+```
+
+#### Removing a repository branch protection rule
+
+```powershell
+Remove-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------
