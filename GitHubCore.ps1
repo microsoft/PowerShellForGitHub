@@ -226,8 +226,10 @@ function Invoke-GHRestMethod
             # Disable Progress Bar in function scope during Invoke-WebRequest
             $ProgressPreference = 'SilentlyContinue'
 
+            $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
             [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $result = Invoke-WebRequest @params
+            [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
 
             if ($Method -eq 'Delete')
             {
@@ -272,8 +274,10 @@ function Invoke-GHRestMethod
                     # Disable Progress Bar in function scope during Invoke-WebRequest
                     $ProgressPreference = 'SilentlyContinue'
 
+                    $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
                     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                     Invoke-WebRequest @params
+                    [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
                 }
                 catch [System.Net.WebException]
                 {
