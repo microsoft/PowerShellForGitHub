@@ -29,6 +29,10 @@
         *   [Updating the current authenticated user](#updating-the-current-authenticated-user)
         *   [Getting any user](#getting-any-user)
         *   [Getting all users](#getting-all-users)
+    *   [Branches](#branches)
+        *   [Getting a repository branch protection rule](#getting-a-repository-branch-protection-rule)
+        *   [Setting a repository branch protection rule](#setting-a-repository-branch-protection-rule)
+        *   [Removing a repository branch protection rule](#removing-a-repository-branch-protection-rule)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -411,6 +415,28 @@ Get-GitHubUser -UserName octocat
 Get-GitHubUser
 ```
 > Warning: This will take a while.  It's getting _every_ GitHub user.
+
+----------
+
+### Branches
+
+#### Getting a repository branch protection rule
+
+```powershell
+Get-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Setting a repository branch protection rule
+
+```powershell
+Set-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub -RequiredApprovingReviewCount 1
+```
+
+#### Removing a repository branch protection rule
+
+```powershell
+Remove-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+```
 
 ----------
 

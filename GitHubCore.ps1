@@ -19,6 +19,8 @@
     squirrelGirlAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
     starfoxAcceptHeader = 'application/vnd.github.starfox-preview+json'
     symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
+    lukeCageAcceptHeader = 'application/vnd.github.luke-cage-preview+json'
+
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
