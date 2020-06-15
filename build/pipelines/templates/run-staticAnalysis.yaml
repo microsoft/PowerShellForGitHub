@@ -9,7 +9,7 @@ steps:
     displayName: 'Install PSScriptAnalyzer'
 
   - powershell: |
-       $results = try { Invoke-ScriptAnalyzer -Path ./ –Recurse -ErrorAction Stop } catch { $StackTrace; throw }
+       $results = try { Invoke-ScriptAnalyzer -Path ./ –Recurse -ErrorAction Stop } catch { $_.Exception.StackTrace; throw }
        $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
 
        $null = New-Item -Path ..\ -Name ScriptAnalyzer -ItemType Directory -Force
