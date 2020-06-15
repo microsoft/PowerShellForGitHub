@@ -65,9 +65,36 @@ filter Get-GitHubComment
         GitHub.Comment
 
     .EXAMPLE
-        Get-GitHubComment-OwnerName microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the comments for the microsoft\PowerShellForGitHub project.
+        Get all of the Issue comments for the microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubComment -Since ([DateTime]::Now).AddDays(-1)
+
+        Get all of the Issue comments for the microsoft\PowerShellForGitHub project since yesterday.
+
+    .EXAMPLE
+        $issue = $repo | Get-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
+
+        Get the comments Issue #1 in the microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $issue = $repo | Get-GitHubIssue -Issue 1
+        $issue | Get-GitHubComment
+
+        Get the comments Issue #1 in the microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $issue = $repo | Get-GitHubIssue -Issue 1
+        $comments = $issue | Get-GitHubComment
+        $comment[0] | Get-GitHubComment
+
+        Get the most recent comment on Issue #1 in the microsoft\PowerShellForGitHub project by
+        passing it in via the pipeline.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -91,29 +118,29 @@ filter Get-GitHubComment
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
         [Alias('CommentId')]
         [string] $Comment,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
         [Alias('IssueNumber')]
         [int64] $Issue,
 
-        [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
+        [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='IssueElements')]
         [Parameter(ParameterSetName='IssueUri')]
         [DateTime] $Since,
 
-        [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
+        [Parameter(ParameterSetName='RepositoryUri')]
         [ValidateSet('Created', 'Updated')]
         [string] $Sort,
 
-        [Parameter(ParameterSetName='RepositoryUri')]
         [Parameter(ParameterSetName='RepositoryElements')]
+        [Parameter(ParameterSetName='RepositoryUri')]
         [ValidateSet('Ascending', 'Descending')]
         [string] $Direction,
 
@@ -194,7 +221,7 @@ filter Get-GitHubComment
         'UriFragment' = $uriFragment
         'Description' = $description
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelAcceptHeader)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelGirlAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -315,7 +342,7 @@ filter New-GitHubComment
         'Method' = 'Post'
         'Description' =  "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelAcceptHeader)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelGirlAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -436,7 +463,7 @@ filter Set-GitHubComment
         'Method' = 'Patch'
         'Description' =  "Update comment $Comment for $RepositoryName"
         'AccessToken' = $AccessToken
-        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelAcceptHeader)
+        'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelGirlAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)

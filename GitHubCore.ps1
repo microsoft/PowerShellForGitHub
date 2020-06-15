@@ -13,7 +13,7 @@
     nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
     sailerVAcceptHeader = 'application/vnd.github.sailer-v-preview+json'
     scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
-    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
+    squirrelGirlAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
     starfoxAcceptHeader = 'application/vnd.github.starfox-preview+json'
     symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
  }.GetEnumerator() | ForEach-Object {
