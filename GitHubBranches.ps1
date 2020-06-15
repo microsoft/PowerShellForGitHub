@@ -54,9 +54,29 @@ filter Get-GitHubRepositoryBranch
         Gets all branches for the specified repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryBranch -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Name master
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubRepositoryBranch
+
+        Gets all branches for the specified repository.
+
+    .EXAMPLE
+        Get-GitHubRepositoryBranch -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -BranchName master
 
         Gets information only on the master branch for the specified repository.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubRepositoryBranch -BranchName master
+
+        Gets information only on the master branch for the specified repository.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $branch = $repo | Get-GitHubRepositoryBranch -BranchName master
+        $branch | Get-GitHubRepositoryBranch
+
+        Gets information only on the master branch for the specified repository, and then does it
+        again.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -80,8 +100,7 @@ filter Get-GitHubRepositoryBranch
         [string] $Uri,
 
         [Parameter(ValueFromPipelineByPropertyName)]
-        [Alias('BranchName')]
-        [string] $Name,
+        [string] $BranchName,
 
         [switch] $ProtectedOnly,
 
@@ -102,7 +121,7 @@ filter Get-GitHubRepositoryBranch
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/branches"
-    if (-not [String]::IsNullOrEmpty($Name)) { $uriFragment = $uriFragment + "/$Name" }
+    if (-not [String]::IsNullOrEmpty($BranchName)) { $uriFragment = $uriFragment + "/$BranchName" }
 
     $getParams = @()
     if ($ProtectedOnly) { $getParams += 'protected=true' }
