@@ -57,12 +57,12 @@ filter Get-GitHubLabel
     .EXAMPLE
         Get-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the information for every label from the Microsoft\PowerShellForGitHub project.
+        Gets the information for every label from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Get-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel
 
-        Gets the information for the label named "TestLabel" from the Microsoft\PowerShellForGitHub
+        Gets the information for the label named "TestLabel" from the microsoft\PowerShellForGitHub
         project.
 
     .NOTES

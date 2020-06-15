@@ -50,7 +50,7 @@ filter Get-GitHubEvent
     .EXAMPLE
         Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the events for the Microsoft\PowerShellForGitHub project.
+        Get the events for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

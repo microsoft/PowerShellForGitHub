@@ -60,11 +60,11 @@ filter Get-GitHubMilestone
 
     .EXAMPLE
         Get-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub
-        Get the milestones for the Microsoft\PowerShellForGitHub project.
+        Get the milestones for the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Get-GitHubMilestone -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Milestone 1
-        Get milestone number 1 for the Microsoft\PowerShellForGitHub project.
+        Get milestone number 1 for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -240,7 +240,7 @@ filter New-GitHubMilestone
     .EXAMPLE
         New-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
 
-        Creates a new GitHub milestone for the Microsoft\PowerShellForGitHub project.
+        Creates a new GitHub milestone for the microsoft\PowerShellForGitHub project.
 
     .NOTES
         For more information on how GitHub handles the dates specified in DueOn, please refer to
@@ -402,7 +402,7 @@ filter Set-GitHubMilestone
     .EXAMPLE
         Set-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API"
 
-        Update an existing milestone for the Microsoft\PowerShellForGitHub project.
+        Update an existing milestone for the microsoft\PowerShellForGitHub project.
 
     .NOTES
         For more information on how GitHub handles the dates specified in DueOn, please refer to
@@ -556,18 +556,18 @@ filter Remove-GitHubMilestone
     .EXAMPLE
         Remove-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 
-        Deletes a GitHub milestone from the Microsoft\PowerShellForGitHub project.
+        Deletes a GitHub milestone from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Remove-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Confirm:$false
 
-        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project. Will not prompt
+        Deletes a Github milestone from the microsoft\PowerShellForGitHub project. Will not prompt
         for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Remove-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Force
 
-        Deletes a Github milestone from the Microsoft\PowerShellForGitHub project. Will not prompt
+        Deletes a Github milestone from the microsoft\PowerShellForGitHub project. Will not prompt
         for confirmation, as -Force was specified.
 #>
     [CmdletBinding(

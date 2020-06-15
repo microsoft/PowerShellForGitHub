@@ -44,7 +44,7 @@ filter Get-GitHubRepositoryFork
     .EXAMPLE
         Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets all of the forks for the Microsoft\PowerShellForGitHub repository.
+        Gets all of the forks for the microsoft\PowerShellForGitHub repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

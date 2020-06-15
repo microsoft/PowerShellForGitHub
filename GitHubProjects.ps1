@@ -56,7 +56,7 @@ filter Get-GitHubProject
     .EXAMPLE
         Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the projects for the Microsoft\PowerShellForGitHub repository.
+        Get the projects for the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
         Get-GitHubProject -OrganizationName Microsoft
@@ -66,7 +66,7 @@ filter Get-GitHubProject
     .EXAMPLE
         Get-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub
 
-        Get the projects for the Microsoft\PowerShellForGitHub repository using the Uri.
+        Get the projects for the microsoft\PowerShellForGitHub repository using the Uri.
 
     .EXAMPLE
         Get-GitHubProject -UserName GitHubUser
@@ -76,7 +76,7 @@ filter Get-GitHubProject
     .EXAMPLE
         Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Closed
 
-        Get closed projects from the Microsoft\PowerShellForGitHub repo.
+        Get closed projects from the microsoft\PowerShellForGitHub repo.
 
     .EXAMPLE
         Get-GitHubProject -Project 4378613
@@ -245,7 +245,7 @@ filter New-GitHubProject
     .EXAMPLE
         New-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name TestProject
 
-        Creates a project called 'TestProject' for the Microsoft\PowerShellForGitHub repository.
+        Creates a project called 'TestProject' for the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
         New-GitHubProject -OrganizationName Microsoft -Name TestProject -Description 'This is just a test project'
@@ -255,7 +255,7 @@ filter New-GitHubProject
     .EXAMPLE
         New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -Name TestProject
 
-        Create a project for the Microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
+        Create a project for the microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
 
     .EXAMPLE
         New-GitHubProject -UserProject -Name 'TestProject'
@@ -406,7 +406,7 @@ filter Set-GitHubProject
         $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Set-GitHubProject -Project $project.id -State Closed
 
-        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the microsoft\PowerShellForGitHub
         repository and set state to closed.
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -526,7 +526,7 @@ filter Remove-GitHubProject
         $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Remove-GitHubProject -Project $project.id
 
-        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the microsoft\PowerShellForGitHub
         repository and then remove the project.
 #>
     [CmdletBinding(

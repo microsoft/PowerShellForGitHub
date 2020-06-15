@@ -67,7 +67,7 @@ filter Get-GitHubComment
     .EXAMPLE
         Get-GitHubComment-OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the comments for the Microsoft\PowerShellForGitHub project.
+        Get the comments for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -254,7 +254,7 @@ filter New-GitHubComment
     .EXAMPLE
         New-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
-        Creates a new GitHub comment in an issue for the Microsoft\PowerShellForGitHub project.
+        Creates a new GitHub comment in an issue for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -375,7 +375,7 @@ filter Set-GitHubComment
     .EXAMPLE
         Set-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
 
-        Update an existing comment in an issue for the Microsoft\PowerShellForGitHub project.
+        Update an existing comment in an issue for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -485,17 +485,17 @@ filter Remove-GitHubComment
     .EXAMPLE
         Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1
 
-        Deletes a GitHub comment from the Microsoft\PowerShellForGitHub project.
+        Deletes a GitHub comment from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
 
-        Deletes a Github comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a Github comment from the microsoft\PowerShellForGitHub project without prompting confirmation.
 
     .EXAMPLE
         Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
 
-        Deletes a GitHub comment from the Microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a GitHub comment from the microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

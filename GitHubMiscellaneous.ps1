@@ -245,7 +245,7 @@ filter Get-GitHubLicense
     .EXAMPLE
         Get-GitHubLicense -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the license file for the Microsoft\PowerShellForGitHub repository.
+        Gets the content of the license file for the microsoft\PowerShellForGitHub repository.
         It may be necessary to convert the content of the file.  Check the 'encoding' property of
         the result to know how 'content' is encoded.  As an example, to convert from Base64, do
         the following:
@@ -435,7 +435,7 @@ filter Get-GitHubCodeOfConduct
     .EXAMPLE
         Get-GitHubCodeOfConduct -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the Code of Conduct file for the Microsoft\PowerShellForGitHub repository
+        Gets the content of the Code of Conduct file for the microsoft\PowerShellForGitHub repository
         if one is detected.
 
         It may be necessary to convert the content of the file.  Check the 'encoding' property of

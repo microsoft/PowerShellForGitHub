@@ -38,13 +38,13 @@ filter Get-GitHubAssignee
     .EXAMPLE
         Get-GitHubAssigneeList -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
+        Lists the available assignees for issues from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $repo | Get-GitHubAssigneeList
 
-        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
+        Lists the available assignees for issues from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -135,19 +135,19 @@ filter Test-GitHubAssignee
     .EXAMPLE
         Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
-        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
+        Checks if a user has permission to be assigned to an issue from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $repo | Test-GitHubAssignee -Assignee 'octocat'
 
-        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
+        Checks if a user has permission to be assigned to an issue from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $octocat = Get-GitHubUser -UserName 'octocat'
         $repo = $octocat | Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
+        Checks if a user has permission to be assigned to an issue from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -257,14 +257,14 @@ function New-GitHubAssignee
         $assignees = @('octocat')
         New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
 
-        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+        Additionally assigns the usernames in $assignee to Issue #1 from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $assignees = @('octocat')
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $repo | New-GitHubAssignee -Issue 1 -Assignee $assignee
 
-        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+        Additionally assigns the usernames in $assignee to Issue #1 from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $assignees = @('octocat')
@@ -272,13 +272,13 @@ function New-GitHubAssignee
             Get-GitHubIssue -Issue 1 |
             New-GitHubAssignee -Assignee $assignee
 
-        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+        Additionally assigns the usernames in $assignee to Issue #1 from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $octocat = Get-GitHubUser -UserName 'octocat'
         $octocat | New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 
-        Additionally assigns the user 'octocat' to Issue #1 from the Microsoft\PowerShellForGitHub project.
+        Additionally assigns the user 'octocat' to Issue #1 from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -413,14 +413,14 @@ function Remove-GitHubAssignee
         $assignees = @('octocat')
         Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
 
-        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Removes the specified usernames from the assignee list for Issue #1 in the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $assignees = @('octocat')
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $repo | Remove-GitHubAssignee -Issue 1 -Assignee $assignee
 
-        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Removes the specified usernames from the assignee list for Issue #1 in the microsoft\PowerShellForGitHub project.
         Will not prompt for confirmation because -Confirm:$false was specified
 
     .EXAMPLE
@@ -429,14 +429,14 @@ function Remove-GitHubAssignee
             Get-GitHubIssue -Issue 1 |
             Remove-GitHubAssignee -Assignee $assignee
 
-        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Removes the specified usernames from the assignee list for Issue #1 in the microsoft\PowerShellForGitHub project.
         Will not prompt for confirmation because -Force was specified
 
     .EXAMPLE
         $octocat = Get-GitHubUser -UserName 'octocat'
         $octocat | Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 
-        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Removes the specified usernames from the assignee list for Issue #1 in the microsoft\PowerShellForGitHub project.
 
     .NOTES
         Only users with push access can remove assignees from an issue.

@@ -204,7 +204,7 @@ $issueCounts | Sort-Object -Property Count -Descending
 #### Querying Pull Requests
 
 ```powershell
-# Getting all of the pull requests from the Microsoft\PowerShellForGitHub repository
+# Getting all of the pull requests from the microsoft\PowerShellForGitHub repository
 $issues = Get-GitHubIssue -OwnerName microsoft -RepositoryName 'PowerShellForGitHub'
 ```
 

@@ -50,7 +50,7 @@ filter Get-GitHubReferrerTraffic
     .EXAMPLE
         Get-GitHubReferrerTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the top 10 referrers over the last 14 days from the Microsoft\PowerShellForGitHub project.
+        Get the top 10 referrers over the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -143,7 +143,7 @@ filter Get-GitHubPathTraffic
     .EXAMPLE
         Get-GitHubPathTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the top 10 popular contents over the last 14 days from the Microsoft\PowerShellForGitHub project.
+        Get the top 10 popular contents over the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -240,7 +240,7 @@ filter Get-GitHubViewTraffic
     .EXAMPLE
         Get-GitHubViewTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of views and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
+        Get the total number of views and breakdown per day or week for the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -341,7 +341,7 @@ filter Get-GitHubCloneTraffic
     .EXAMPLE
         Get-GitHubCloneTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of clones and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
+        Get the total number of clones and breakdown per day or week for the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

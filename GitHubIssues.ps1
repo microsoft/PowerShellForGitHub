@@ -117,12 +117,12 @@ filter Get-GitHubIssue
     .EXAMPLE
         Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Open
 
-        Gets all the currently open issues in the Microsoft\PowerShellForGitHub repository.
+        Gets all the currently open issues in the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
         Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
 
-        Gets every issue in the Microsoft\PowerShellForGitHub repository that is assigned to Octocat.
+        Gets every issue in the microsoft\PowerShellForGitHub repository that is assigned to Octocat.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
