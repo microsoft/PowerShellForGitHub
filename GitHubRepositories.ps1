@@ -209,8 +209,7 @@ filter New-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter Remove-GitHubRepository
@@ -651,8 +650,7 @@ filter Get-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter Rename-GitHubRepository
@@ -990,8 +988,7 @@ filter Update-GitHubRepository
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter Get-GitHubRepositoryTopic
@@ -1783,8 +1780,7 @@ filter Move-GitHubRepositoryOwnership
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter Add-GitHubRepositoryAdditionalProperties

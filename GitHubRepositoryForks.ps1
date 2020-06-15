@@ -99,8 +99,7 @@ filter Get-GitHubRepositoryFork
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params  |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    return (Invoke-GHRestMethodMultipleResult @params  | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter New-GitHubRepositoryFork
@@ -209,8 +208,7 @@ filter New-GitHubRepositoryFork
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = (Invoke-GHRestMethod @params |
-        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTypeName)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 
     Write-Log -Message 'Forking a repository happens asynchronously.  You may have to wait a short period of time (up to 5 minutes) before you can access the git objects.' -Level Warning
     return $result

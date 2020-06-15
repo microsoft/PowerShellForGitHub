@@ -214,8 +214,7 @@ filter Get-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubReleaseAdditionalProperties -TypeName $script:GitHubReleaseTypeName)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubReleaseAdditionalProperties)
 }
 
 

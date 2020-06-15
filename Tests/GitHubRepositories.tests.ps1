@@ -762,7 +762,7 @@ try
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
-                $contributors[0].PSObject.TypeName = 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
 

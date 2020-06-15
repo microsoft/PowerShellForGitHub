@@ -173,8 +173,7 @@ filter Get-GitHubPullRequest
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubPullRequestAdditionalProperties -TypeName $script:GitHubPullRequestTypeName)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubPullRequestAdditionalProperties)
 }
 
 filter New-GitHubPullRequest
@@ -406,8 +405,7 @@ filter New-GitHubPullRequest
         $restParams['AcceptHeader'] = $acceptHeader
     }
 
-    return (Invoke-GHRestMethod @restParams |
-        Add-GitHubPullRequestAdditionalProperties -TypeName $script:GitHubPullRequestTypeName)
+    return (Invoke-GHRestMethod @restParams | Add-GitHubPullRequestAdditionalProperties)
 }
 
 filter Add-GitHubPullRequestAdditionalProperties
