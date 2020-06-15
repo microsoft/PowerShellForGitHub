@@ -64,6 +64,11 @@ filter Get-GitHubLabel
 
         Gets the information for the label named "TestLabel" from the Microsoft\PowerShellForGitHub
         project.
+
+    .NOTES
+        There were a lot of complications with the ParameterSets with this function due to pipeline
+        input.  For the time being, the ParameterSets have been simplified and the validation of
+        parameter combinations is happening within the function itself.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -340,6 +345,13 @@ filter Remove-GitHubLabel
         Remove-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel
 
         Removes the label called "TestLabel" from the PowerShellForGitHub project.
+
+    .EXAMPLE
+        $label = $repo | Get-GitHubLabel -Label 'Test Label' -Color '#AAAAAA'
+        $label | Remove-GitHubLabel
+
+        Removes the label we just created using the pipeline, but will prompt for confirmation
+        because neither -Confirm:$false nor -Force was specified.
 
     .EXAMPLE
         Remove-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -Confirm:$false
