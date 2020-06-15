@@ -600,7 +600,7 @@ filter Add-GitHubIssueCommentAdditionalProperties
 {
 <#
     .SYNOPSIS
-        Adds type name and additional properties to ease pipelining to GitHub Comment objects.
+        Adds type name and additional properties to ease pipelining to GitHub Issue Comment objects.
 
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
