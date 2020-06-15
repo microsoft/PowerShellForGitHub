@@ -232,18 +232,32 @@ try
                 $openMilestone | Remove-GitHubMilestone -Force
             }
 
+            $milestone = $closedMilestone
+            $returned = Get-GitHubMilestone -Uri $repo.RepositoryUrl -Milestone $milestone.MilestoneNumber
             It 'Should get the right milestone as a parameter' {
-                $milestone = $closedMilestone
-                $returned = Get-GitHubMilestone -Uri $repo.RepositoryUrl -Milestone $milestone.MilestoneNumber
-
                 $returned.MilestoneId | Should -Be $milestone.MilestoneId
             }
 
-            It 'Should get the right milestone via the pipeline' {
-                $milestone = $openMilestone
-                $returned = $openMilestone | Get-GitHubMilestone
+            It 'Should have the expected type and additional properties' {
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $returned.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $returned.MilestoneId | Should -Be $returned.id
+                $returned.MilestoneNumber | Should -Be $returned.number
+                $returned.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
 
+            $milestone = $openMilestone
+            $returned = $openMilestone | Get-GitHubMilestone
+            It 'Should get the right milestone via the pipeline' {
                 $returned.MilestoneId | Should -Be $milestone.MilestoneId
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $returned.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $returned.MilestoneId | Should -Be $returned.id
+                $returned.MilestoneNumber | Should -Be $returned.number
+                $returned.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
