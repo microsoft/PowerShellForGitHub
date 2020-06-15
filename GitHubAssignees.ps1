@@ -39,6 +39,12 @@ filter Get-GitHubAssignee
         Get-GitHubAssigneeList -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubAssigneeList
+
+        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -130,6 +136,18 @@ filter Test-GitHubAssignee
         Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 
         Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Test-GitHubAssignee -Assignee 'octocat'
+
+        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $octocat = Get-GitHubUser -UserName 'octocat'
+        $repo = $octocat | Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Checks if a user has permission to be assigned to an issue from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -151,6 +169,7 @@ filter Test-GitHubAssignee
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('UserName')]
         [string] $Assignee,
 
@@ -193,7 +212,7 @@ filter Test-GitHubAssignee
     }
 }
 
-filter New-GitHubAssignee
+function New-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -235,9 +254,31 @@ filter New-GitHubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignee
+        $assignees = @('octocat')
+        New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
 
-        Lists the available assignees for issues from the Microsoft\PowerShellForGitHub project.
+        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $assignees = @('octocat')
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | New-GitHubAssignee -Issue 1 -Assignee $assignee
+
+        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $assignees = @('octocat')
+        Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub |
+            Get-GitHubIssue -Issue 1 |
+            New-GitHubAssignee -Assignee $assignee
+
+        Additionally assigns the usernames in $assignee to Issue #1 from the Microsoft\PowerShellForGitHub project.
+
+    .EXAMPLE
+        $octocat = Get-GitHubUser -UserName 'octocat'
+        $octocat | New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
+
+        Additionally assigns the user 'octocat' to Issue #1 from the Microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -262,12 +303,11 @@ filter New-GitHubAssignee
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName)]
-        [Alias('IssueId')]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [Parameter(
             Mandatory,
-            ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [ValidateCount(1, 10)]
         [Alias('UserName')]
@@ -278,39 +318,55 @@ filter New-GitHubAssignee
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'AssigneeCount' = $Assignee.Count
-        'Issue' =  (Get-PiiSafeString -PlainText $Issue)
+    begin
+    {
+        $userNames = @()
     }
 
-    $hashBody = @{
-        'assignees' = $Assignee
+    process
+    {
+        foreach ($name in $Assignee)
+        {
+            $userNames += $name
+        }
     }
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Post'
-        'Description' =  "Add assignees to issue $Issue for $RepositoryName"
-        'AccessToken' = $AccessToken
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+    end
+    {
+        Write-InvocationLog
 
-    return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            'AssigneeCount' = $userNames.Count
+            'Issue' =  (Get-PiiSafeString -PlainText $Issue)
+        }
+
+        $hashBody = @{
+            'assignees' = $userNames
+        }
+
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Post'
+            'Description' =  "Add assignees to issue $Issue for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+    }
 }
 
-filter Remove-GitHubAssignee
+function Remove-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -335,7 +391,7 @@ filter Remove-GitHubAssignee
         Issue number to remove the assignees from.
 
     .PARAMETER Assignee
-        Usernames of assignees to remove from an issue. NOTE: Only users with push access can remove assignees from an issue. Assignees are silently ignored otherwise.
+        Usernames of assignees to remove from an issue.
 
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
@@ -354,19 +410,37 @@ filter Remove-GitHubAssignee
         GitHub.Issue
 
     .EXAMPLE
-        Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees
+        $assignees = @('octocat')
+        Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
 
-        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project.
-
-    .EXAMPLE
-        Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Confirm:$false
-
-        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GithubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee $assignees -Force
+        $assignees = @('octocat')
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Remove-GitHubAssignee -Issue 1 -Assignee $assignee
 
-        Removes the available assignees for issues from the Microsoft\PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
+        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Will not prompt for confirmation because -Confirm:$false was specified
+
+    .EXAMPLE
+        $assignees = @('octocat')
+        Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub |
+            Get-GitHubIssue -Issue 1 |
+            Remove-GitHubAssignee -Assignee $assignee
+
+        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+        Will not prompt for confirmation because -Force was specified
+
+    .EXAMPLE
+        $octocat = Get-GitHubUser -UserName 'octocat'
+        $octocat | Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
+
+        Removes the specified usernames from the assignee list for Issue #1 in the Microsoft\PowerShellForGitHub project.
+
+    .NOTES
+        Only users with push access can remove assignees from an issue.
+        Assignees are silently ignored otherwise.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -391,13 +465,13 @@ filter Remove-GitHubAssignee
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName)]
-        [Alias('IssueId')]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [Parameter(
             Mandatory,
-            ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
         [Alias('UserName')]
         [string[]] $Assignee,
 
@@ -408,42 +482,58 @@ filter Remove-GitHubAssignee
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'AssigneeCount' = $Assignee.Count
-        'Issue' =  (Get-PiiSafeString -PlainText $Issue)
-    }
-
-    $hashBody = @{
-        'assignees' = $Assignee
-    }
-
-    if ($Force -and (-not $Confirm))
+    begin
     {
-        $ConfirmPreference = 'None'
+        $userNames = @()
     }
 
-    if ($PSCmdlet.ShouldProcess($Assignee -join ', ', "Remove assignee(s)"))
+    process
     {
-        $params = @{
-            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
-            'Body' = (ConvertTo-Json -InputObject $hashBody)
-            'Method' = 'Delete'
-            'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
-            'AccessToken' = $AccessToken
-            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        foreach ($name in $Assignee)
+        {
+            $userNames += $name
+        }
+    }
+
+    end
+    {
+        Write-InvocationLog
+
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            'AssigneeCount' = $Assignee.Count
+            'Issue' =  (Get-PiiSafeString -PlainText $Issue)
         }
 
-        return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+        $hashBody = @{
+            'assignees' = $userNames
+        }
+
+        if ($Force -and (-not $Confirm))
+        {
+            $ConfirmPreference = 'None'
+        }
+
+        if ($PSCmdlet.ShouldProcess($userNames -join ', ', "Remove assignee(s)"))
+        {
+            $params = @{
+                'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+                'Body' = (ConvertTo-Json -InputObject $hashBody)
+                'Method' = 'Delete'
+                'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
+                'AccessToken' = $AccessToken
+                'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+                'TelemetryEventName' = $MyInvocation.MyCommand.Name
+                'TelemetryProperties' = $telemetryProperties
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            }
+
+            return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+        }
     }
 }
