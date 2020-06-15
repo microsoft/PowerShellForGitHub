@@ -59,6 +59,16 @@ filter Get-GitHubContent
         Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path Tests
 
         List the files within the "Tests" path of the repository
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubContent -Path Tests
+
+        List the files within the "Tests" path of the repository
+
+    .NOTES
+        Unable to specify Path as ValueFromPipeline because a Repository object may be incorrectly
+        coerced into a string used for Path, thus confusing things.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -78,7 +88,6 @@ filter Get-GitHubContent
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(ValueFromPipeline)]
         [string] $Path,
 
         [ValidateSet('Raw', 'Html', 'Object')]

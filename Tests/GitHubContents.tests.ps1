@@ -34,18 +34,48 @@ try
     }
 
     Describe 'Getting file and folder content' {
-        # AutoInit will create a readme with the GUID of the repo name
-        $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
+        BeforeAll {
+            # AutoInit will create a readme with the GUID of the repo name
+            $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
+        }
 
-        Context 'For getting folder contents' {
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
 
+        Context 'For getting folder contents with parameters' {
             $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
 
             It "Should have the expected name" {
-                $folderOutput.name | Should -Be ""
+                $folderOutput.name | Should -BeNullOrEmpty
+            }
+
+            It "Should have the expected path" {
+                $folderOutput.path | Should -BeNullOrEmpty
+            }
+
+            It "Should have the expected type" {
+                $folderOutput.type | Should -Be "dir"
+            }
+
+            It "Should have the expected entries" {
+                $folderOutput.entries.length | Should -Be 1
+            }
+
+            It "Should have the expected entry data" {
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
+            }
+        }
+
+        Context 'For getting folder contents via URL' {
+            $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
+
+            It "Should have the expected name" {
+                $folderOutput.name | Should -BeNullOrEmpty
             }
             It "Should have the expected path" {
-                $folderOutput.path | Should -Be ""
+                $folderOutput.path | Should -BeNullOrEmpty
             }
             It "Should have the expected type" {
                 $folderOutput.type | Should -Be "dir"
@@ -59,22 +89,25 @@ try
             }
         }
 
-        Context 'For getting folder contents via URL' {
-
-            $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
+        Context 'For getting folder contents with the repo on the pipeline' {
+            $folderOutput = $repo | Get-GitHubContent
 
             It "Should have the expected name" {
-                $folderOutput.name | Should -Be ""
+                $folderOutput.name | Should -BeNullOrEmpty
             }
+
             It "Should have the expected path" {
-                $folderOutput.path | Should -Be ""
+                $folderOutput.path | Should -BeNullOrEmpty
             }
+
             It "Should have the expected type" {
                 $folderOutput.type | Should -Be "dir"
             }
+
             It "Should have the expected entries" {
                 $folderOutput.entries.length | Should -Be 1
             }
+
             It "Should have the expected entry data" {
                 $folderOutput.entries[0].name | Should -Be $readmeFileName
                 $folderOutput.entries[0].path | Should -Be $readmeFileName
@@ -174,8 +207,6 @@ try
                 $readmeFileObject.contentAsString | Should -Be $rawOutput
             }
         }
-
-        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally
