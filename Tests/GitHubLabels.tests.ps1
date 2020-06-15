@@ -79,9 +79,9 @@ try
     Describe 'Getting labels from a repository' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
 
-            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $defaultLabels
+            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $defaultLabels
         }
 
         AfterAll {
@@ -151,7 +151,7 @@ try
 
         Context 'When querying for a specific label' {
             $labelName = 'bug'
-            $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelName
+            $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelName
 
             It 'Should return expected label' {
                 $label.name | Should -Be $labelName
@@ -186,7 +186,7 @@ try
         #
         # Context 'When querying for a specific label (via Label on pipeline)' {
         #     $labelName = 'bug'
-        #     $label = $labelName | Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName
+        #     $label = $labelName | Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName
 
         #     It 'Should return expected label' {
         #         $label.name | Should -Be $labelName
@@ -204,7 +204,7 @@ try
     Describe 'Creating a new label' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
         }
 
         AfterAll {
@@ -214,7 +214,7 @@ try
         Context 'On a repo with parameters' {
             $labelName = [Guid]::NewGuid().Guid
             $color = 'AAAAAA'
-            $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelName -Color $color
+            $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelName -Color $color
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -232,7 +232,7 @@ try
         Context 'On a repo with and color starts with a #' {
             $labelName = [Guid]::NewGuid().Guid
             $color = '#AAAAAA'
-            $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelName -Color $color
+            $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelName -Color $color
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -271,7 +271,7 @@ try
         Context 'On a repo with the name on the pipeline' {
             $labelName = [Guid]::NewGuid().Guid
             $color = 'CCCCCC'
-            $label = $labelName | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Color $color
+            $label = $labelName | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Color $color
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -289,7 +289,7 @@ try
         Context 'On a repo with three names on the pipeline' {
             $labelNames = @(([Guid]::NewGuid().Guid), ([Guid]::NewGuid().Guid), ([Guid]::NewGuid().Guid))
             $color = 'CCCCCC'
-            $labels = @($labelNames | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Color $color)
+            $labels = @($labelNames | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Color $color)
 
             It 'Has the right count of labels' {
                 $labels.Count | Should -Be $labelNames.Count
@@ -318,7 +318,7 @@ try
     Describe 'Removing a label' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
         }
 
         AfterAll {
@@ -327,7 +327,7 @@ try
 
         Context 'Removing a label with parameters' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -Force
+            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -Force
 
             It 'Should be gone after being removed by parameter' {
                 { $label | Get-GitHubLabel } | Should -Throw
@@ -345,7 +345,7 @@ try
 
         Context 'Removing a label with the name on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            $label.name | Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Force
+            $label.name | Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Force
 
             It 'Should be gone after being removed by parameter' {
                 { $label | Get-GitHubLabel } | Should -Throw
@@ -365,7 +365,7 @@ try
     Describe 'Updating a label' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
         }
 
         AfterAll {
@@ -376,7 +376,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -Color $newColor
+            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -Color $newColor
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -396,7 +396,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = '#AAAAAA'
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -Color $newColor
+            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -Color $newColor
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -416,7 +416,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -NewName $newName
+            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -NewName $newName
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -436,7 +436,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -Description $newDescription
+            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -Description $newDescription
 
             It 'Label should have different name' {
                 $result.name | Should -Be $label.name
@@ -458,7 +458,7 @@ try
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription
+            $result = Update-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -542,7 +542,7 @@ try
     Describe 'Initializing the labels on a repository' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
         }
 
         AfterAll {
@@ -550,7 +550,7 @@ try
         }
 
         Context 'Applying a default set of labels' {
-            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $defaultLabels
+            Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $defaultLabels
 
             $labels = @($repo | Get-GitHubLabel)
 
@@ -624,7 +624,7 @@ try
     Describe 'Adding labels to an issue' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
             $repo | Set-GitHubLabel -Label $defaultLabels
         }
 
@@ -635,7 +635,7 @@ try
         Context 'Adding labels to an issue' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number -LabelName $expectedLabels)
+            $result = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number -LabelName $expectedLabels)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -764,7 +764,7 @@ try
         Context 'Adding labels to an issue with the label names on the pipeline' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @($expectedLabels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number)
+            $result = @($expectedLabels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -807,8 +807,8 @@ try
         Context 'Adding labels to an issue with the label object on the pipeline' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $labels = @($expectedLabels | ForEach-Object { Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $_ } )
-            $result = @($labels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number)
+            $labels = @($expectedLabels | ForEach-Object { Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $_ } )
+            $result = @($labels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -852,7 +852,7 @@ try
     Describe 'Creating a new Issue with labels' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
             $repo | Set-GitHubLabel -Label $defaultLabels
         }
 
@@ -863,7 +863,7 @@ try
         Context 'When creating a new issue using parameters' {
             $issueName = [Guid]::NewGuid().Guid
             $issueLabels = @($defaultLabels[0].name, $defaultLabels[1].name)
-            $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Title $issueName -Label $issueLabels
+            $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName repositoryName -Title $issueName -Label $issueLabels
 
             It 'Should return the number of labels that were just added' {
                 $issue.labels.Count | Should -Be $issueLabels.Count
@@ -918,7 +918,7 @@ try
     Describe 'Removing labels on an issue' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
             $repo | Set-GitHubLabel -Label $defaultLabels
         }
 
@@ -939,9 +939,9 @@ try
             }
 
             # Doing this manually instead of in a loop to try out different combinations of -Confirm:$false and -Force
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelsToAdd[0] -Issue $issue.number -Confirm:$false
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelsToAdd[1] -Issue $issue.number -Force
-            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Label $labelsToAdd[2] -Issue $issue.number -Confirm:$false -Force
+            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelsToAdd[0] -Issue $issue.number -Confirm:$false
+            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelsToAdd[1] -Issue $issue.number -Force
+            Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Label $labelsToAdd[2] -Issue $issue.number -Confirm:$false -Force
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have removed all labels from the issue' {
@@ -1009,7 +1009,7 @@ try
         #     }
 
         #     $labelToRemove = $labelsToAdd[2]
-        #     $labelToRemove | Remove-GitHubIssueLabel  -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number -Confirm:$false
+        #     $labelToRemove | Remove-GitHubIssueLabel  -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number -Confirm:$false
 
         #     $issueLabels = @($issue | Get-GitHubLabel)
         #     It 'Should have removed the expected label from the issue' {
@@ -1085,7 +1085,7 @@ try
     Describe 'Replacing labels on an issue' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
             $repo | Set-GitHubLabel -Label $defaultLabels
         }
 
@@ -1106,7 +1106,7 @@ try
             }
 
             $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number -Label $newIssueLabels)
+            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number -Label $newIssueLabels)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1209,7 +1209,7 @@ try
 
             $newIssueLabelNames = @($defaultLabels[0].name, $defaultLabels[5].name)
             $issueLabels = @($newIssueLabelNames | ForEach-Object { $repo | Get-GitHubLabel -Label $_ })
-            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Issue $issue.number)
+            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Issue $issue.number)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabelNames.Count
@@ -1234,7 +1234,7 @@ try
     Describe 'Labels and Milestones' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
-            $repo = New-GitHubRepository -RepositoryName $script:repositoryName
+            $repo = New-GitHubRepository -RepositoryName repositoryName
             $repo | Set-GitHubLabel -Label $defaultLabels
 
             $milestone = $repo | New-GitHubMilestone -Title 'test milestone'
@@ -1256,7 +1256,7 @@ try
                 $issue2.labels.Count | Should -Be $issueLabels2.Count
             }
 
-            $milestoneLabels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $script:repositoryName -Milestone $milestone.number
+            $milestoneLabels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName repositoryName -Milestone $milestone.number
 
             It 'Should return the same number of labels in the issue that were assigned to the milestone' {
                 $milestoneLabels.Count | Should -Be ($issue.labels.Count + $issue2.labels.Count)
