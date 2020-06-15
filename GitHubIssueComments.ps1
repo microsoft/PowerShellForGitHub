@@ -3,15 +3,16 @@
 
 @{
     GitHubCommentTypeName = 'GitHub.Comment'
+    GitHubIssueCommentTypeName = 'GitHub.IssueComment'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
-filter Get-GitHubComment
+filter Get-GitHubIssueComment
 {
 <#
     .DESCRIPTION
-        Get the comments for a given GitHub repository.
+        Get the Issue comments for a given GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -62,36 +63,36 @@ filter Get-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        GitHub.Comment
+        GitHub.IssueComment
 
     .EXAMPLE
-        Get-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Get all of the Issue comments for the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
-        $repo | Get-GitHubComment -Since ([DateTime]::Now).AddDays(-1)
+        $repo | Get-GitHubIssueComment -Since ([DateTime]::Now).AddDays(-1)
 
         Get all of the Issue comments for the microsoft\PowerShellForGitHub project since yesterday.
 
     .EXAMPLE
-        $issue = $repo | Get-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
+        $issue = $repo | Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 
         Get the comments Issue #1 in the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $issue = $repo | Get-GitHubIssue -Issue 1
-        $issue | Get-GitHubComment
+        $issue | Get-GitHubIssueComment
 
         Get the comments Issue #1 in the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
         $issue = $repo | Get-GitHubIssue -Issue 1
-        $comments = $issue | Get-GitHubComment
-        $comment[0] | Get-GitHubComment
+        $comments = $issue | Get-GitHubIssueComment
+        $comment[0] | Get-GitHubIssueComment
 
         Get the most recent comment on Issue #1 in the microsoft\PowerShellForGitHub project by
         passing it in via the pipeline.
@@ -99,7 +100,8 @@ filter Get-GitHubComment
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='RepositoryElements')]
-    [OutputType({$script:GitHubCommentTypeName})]
+    [Alias('Get-GitHubComment')] # Aliased to avoid a breaking change after v0.14.0
+    [OutputType({$script:GitHubIssueCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
@@ -227,14 +229,14 @@ filter Get-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubCommentAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubIssueCommentAdditionalProperties)
 }
 
-filter New-GitHubComment
+filter New-GitHubIssueComment
 {
 <#
     .DESCRIPTION
-        Creates a new GitHub comment in an issue for the given repository
+        Creates a new GitHub comment for an issue for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -276,17 +278,18 @@ filter New-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        GitHub.Comment
+        GitHub.IssueComment
 
     .EXAMPLE
-        New-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+        New-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 
-        Creates a new GitHub comment in an issue for the microsoft\PowerShellForGitHub project.
+        Creates a new GitHub comment for an issue for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubCommentTypeName})]
+    [Alias('New-GitHubComment')] # Aliased to avoid a breaking change after v0.14.0
+    [OutputType({$script:GitHubIssueCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -348,14 +351,14 @@ filter New-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubCommentAdditionalProperties)
+    return (Invoke-GHRestMethod @params | Add-GitHubIssueCommentAdditionalProperties)
 }
 
-filter Set-GitHubComment
+filter Set-GitHubIssueComment
 {
 <#
     .DESCRIPTION
-        Set an existing comment in an issue for the given repository
+        Modifies an existing comment in an issue for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -397,17 +400,18 @@ filter Set-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        GitHub.Comment
+        GitHub.IssueComment
 
     .EXAMPLE
-        Set-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
+        Set-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Body "Testing this API"
 
-        Update an existing comment in an issue for the microsoft\PowerShellForGitHub project.
+        Updates an existing comment in an issue for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubCommentTypeName})]
+    [Alias('Set-GitHubComment')] # Aliased to avoid a breaking change after v0.14.0
+    [OutputType({$script:GitHubIssueCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -469,14 +473,14 @@ filter Set-GitHubComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubCommentAdditionalProperties)
+    return (Invoke-GHRestMethod @params | Add-GitHubIssueCommentAdditionalProperties)
 }
 
-filter Remove-GitHubComment
+filter Remove-GitHubIssueComment
 {
 <#
     .DESCRIPTION
-        Deletes a GitHub comment for the given repository
+        Deletes a GitHub comment from an Issue in the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -510,25 +514,27 @@ filter Remove-GitHubComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1
+        Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1
 
-        Deletes a GitHub comment from the microsoft\PowerShellForGitHub project.
-
-    .EXAMPLE
-        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
-
-        Deletes a Github comment from the microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a GitHub comment from an Issue in the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
-        Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
+        Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
 
-        Deletes a GitHub comment from the microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a Github comment from an Issue in the microsoft\PowerShellForGitHub project without prompting confirmation.
+
+    .EXAMPLE
+        Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
+
+        Deletes a GitHub comment from an Issue in the microsoft\PowerShellForGitHub project without prompting confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
     [Alias('Delete-GitHubComment')]
+    [Alias('Delete-GitHubIssueComment')]
+    [Alias('Remove-GitHubComment')] # Aliased to avoid a breaking change after v0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -590,7 +596,7 @@ filter Remove-GitHubComment
     }
 }
 
-filter Add-GitHubCommentAdditionalProperties
+filter Add-GitHubIssueCommentAdditionalProperties
 {
 <#
     .SYNOPSIS
@@ -613,18 +619,21 @@ filter Add-GitHubCommentAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubCommentTypeName
+        [string] $TypeName = $script:GitHubIssueCommentTypeName
     )
 
     foreach ($item in $InputObject)
     {
-        $item.PSObject.TypeNames.Insert(0, $TypeName)
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubCommentTypeName) # Provide a generic comment type too
+        $item.PSObject.TypeNames.Insert(0, $TypeName) # We want the specific type on top
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             $elements = Split-GitHubUri -Uri $item.html_url
             $repositoryUrl = Join-GitHubUri @elements
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            Add-Member -InputObject $item -Name 'CommentId' -Value $item.id -MemberType NoteProperty -Force
 
             if ($null -ne $item.user)
             {

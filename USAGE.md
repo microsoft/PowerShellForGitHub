@@ -40,12 +40,12 @@
         *   [Add assignee to an issue](#add-assignee-to-an-issue)
         *   [Remove assignee from an issue](#remove-assignee-from-an-issue)
     *   [Comments](#comments)
-        *   [Get comments from an issue](#get-comments-from-an-issue)
-        *   [Get comments from a repository](#get-comments-from-a-repository)
-        *   [Get a single comment](#get-a-single-comment)
-        *   [Adding a new comment to an issue](#adding-a-new-comment-to-an-issue)
-        *   [Editing an existing comment](#editing-an-existing-comment)
-        *   [Removing a comment](#removing-a-comment)
+        *   [Get comments from an Issue](#get-comments-from-an-issue)
+        *   [Get Issue comments from a repository](#get-issue-comments-from-a-repository)
+        *   [Get a single Issue comment](#get-a-single-issue-comment)
+        *   [Adding a new comment to an Issue](#adding-a-new-comment-to-an-issue)
+        *   [Editing an existing Issue comment](#editing-an-existing-issue-comment)
+        *   [Removing an Issue comment](#removing-an-issue-comment)
     *   [Milestones](#milestones)
         *   [Get milestones from a repository](#get-milestones-from-a-repository)
         *   [Get a single milestone](#get-a-single-milestone)
@@ -429,34 +429,34 @@ Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -
 
 ### Comments
 
-#### Get comments from an issue
+#### Get comments from an Issue
 ```powershell
 Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
-#### Get comments from a repository
+#### Get Issue comments from a repository
 ```powershell
 Get-GitHubRepositoryComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
 ```
 
-#### Get a single comment
+#### Get a single Issue comment
 ```powershell
-Get-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
-#### Adding a new comment to an issue
+#### Adding a new comment to an Issue
 ```powershell
-New-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+New-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 ```
 
-#### Editing an existing comment
+#### Editing an existing Issue comment
 ```powershell
-Set-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+Set-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 ```
 
-#### Removing a comment
+#### Removing an Issue comment
 ```powershell
-Remove-GitHubComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
 ----------
@@ -560,12 +560,15 @@ Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
 @LazyWinAdmin used this module to migrate his blog comments from Disqus to GitHub Issues. [See blog post](https://lazywinadmin.com/2019/04/moving_blog_comments.html) for full details.
 
 ```powershell
+# Get your repo
+$repo = Get-GitHubRepository -OwnerName <yourName> -RepositoryName RepoName
+
 # Create an issue
-$IssueObject = New-GitHubIssue @githubsplat -Title $IssueTitle -Body $body -Label 'blog comments'
+$issue = $repo | New-GitHubIssue -Title $IssueTitle -Body $body -Label 'blog comments'
 
 # Create Comment
-New-GitHubComment @githubsplat -Issue $IssueObject.number -Body $CommentBody
+$issue | New-GitHubIssueComment -Body $CommentBody
 
 # Close issue
-Update-GitHubIssue @githubsplat -Issue $IssueObject.number -State Closed
+$issue | Update-GitHubIssue -State Closed
 ```

@@ -27,71 +27,217 @@ try
     }
 
     Describe 'Creating, modifying and deleting comments' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $issue = $repo | New-GitHubIssue -Title $defaultIssueTitle
+        }
 
-        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+        AfterAll {
+            $repo | Remove-GitHubRepository -Confirm:$false
+        }
 
-        Context 'For creating a new comment' {
-            $newComment = New-GitHubComment -Uri $repo.svn_url -Issue $issue.number -Body $defaultCommentBody
-            $existingComment = Get-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id
+        Context 'With parameters' {
+            $comment = New-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Body $defaultCommentBody
+            It 'Should have the expected body text' {
+                $comment.body | Should -Be $defaultCommentBody
+            }
 
-            It "Should have the expected body text" {
-                $existingComment.body | Should -Be $defaultCommentBody
+            It 'Should have the expected type and additional properties' {
+                $comment.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $comment.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $comment.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $comment.CommentId | Should -Be $comment.id
+                $comment.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $result = Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $comment.id
+            It 'Should be the expected comment' {
+                $result.id | Should -Be $comment.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $result.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.CommentId | Should -Be $result.id
+                $result.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $commentId = $result.id
+            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody
+            It 'Should have modified the expected comment' {
+                $updated.id | Should -Be $commentId
+            }
+
+            It 'Should have the expected body text' {
+                $updated.body | Should -Be $defaultEditedCommentBody
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $updated.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $updated.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $updated.CommentId | Should -Be $updated.id
+                $updated.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            Remove-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Force
+            It 'Should have been removed' {
+                { Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId } | Should -Throw
             }
         }
 
-        Context 'For getting comments from an issue' {
-            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number)
-
-            It 'Should have the expected number of comments' {
-                $existingComments.Count | Should -Be 1
+        Context 'With the repo on the pipeline' {
+            $comment = $repo | New-GitHubIssueComment -Issue $issue.number -Body $defaultCommentBody
+            It 'Should have the expected body text' {
+                $comment.body | Should -Be $defaultCommentBody
             }
 
-            It 'Should have the expected body text on the first comment' {
-                $existingComments[0].body | Should -Be $defaultCommentBody
+            It 'Should have the expected type and additional properties' {
+                $comment.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $comment.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $comment.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $comment.CommentId | Should -Be $comment.id
+                $comment.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $result = $repo | Get-GitHubIssueComment -Comment $comment.id
+            It 'Should be the expected comment' {
+                $result.id | Should -Be $comment.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $result.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.CommentId | Should -Be $result.id
+                $result.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $commentId = $result.id
+            $updated = $repo | Set-GitHubIssueComment -Comment $commentId -Body $defaultEditedCommentBody
+            It 'Should have modified the expected comment' {
+                $updated.id | Should -Be $commentId
+            }
+
+            It 'Should have the expected body text' {
+                $updated.body | Should -Be $defaultEditedCommentBody
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $updated.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $updated.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $updated.CommentId | Should -Be $updated.id
+                $updated.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $repo | Remove-GitHubIssueComment -Comment $commentId -Force
+            It 'Should have been removed' {
+                { $repo | Get-GitHubIssueComment -Comment $commentId } | Should -Throw
             }
         }
 
-        Context 'For getting comments from an issue with a specific MediaType' {
-            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url -Issue $issue.number -MediaType 'Html')
+        Context 'With the issue on the pipeline' {
+            $comment = $issue | New-GitHubIssueComment -Body $defaultCommentBody
+            It 'Should have the expected body text' {
+                $comment.body | Should -Be $defaultCommentBody
+            }
 
-            It 'Should have the expected body_html on the first comment' {
-                $existingComments[0].body_html | Should -Not -Be $null
+            It 'Should have the expected type and additional properties' {
+                $comment.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $comment.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $comment.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $comment.CommentId | Should -Be $comment.id
+                $comment.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $result = Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $comment.id
+            It 'Should be the expected comment' {
+                $result.id | Should -Be $comment.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $result.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.CommentId | Should -Be $result.id
+                $result.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $commentId = $result.id
+            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody
+            It 'Should have modified the expected comment' {
+                $updated.id | Should -Be $commentId
+            }
+
+            It 'Should have the expected body text' {
+                $updated.body | Should -Be $defaultEditedCommentBody
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $updated.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $updated.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $updated.CommentId | Should -Be $updated.id
+                $updated.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            Remove-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Force
+            It 'Should have been removed' {
+                { Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId } | Should -Throw
             }
         }
 
-        Context 'For editing a comment' {
-            $newComment = New-GitHubComment -Uri $repo.svn_url -Issue $issue.number -Body $defaultCommentBody
-            $editedComment = Set-GitHubComment -Uri $repo.svn_url -CommentID $newComment.id -Body $defaultEditedCommentBody
-
-            It 'Should have a body that is not equal to the original body' {
-                $editedComment.body | Should -Not -Be $newComment.Body
+        Context 'With the comment object on the pipeline' {
+            $comment = New-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Body $defaultCommentBody
+            It 'Should have the expected body text' {
+                $comment.body | Should -Be $defaultCommentBody
             }
 
-            It 'Should have the edited content' {
-                $editedComment.body | Should -Be $defaultEditedCommentBody
+            It 'Should have the expected type and additional properties' {
+                $comment.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $comment.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $comment.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $comment.CommentId | Should -Be $comment.id
+                $comment.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $result = $comment | Get-GitHubIssueComment
+            It 'Should be the expected comment' {
+                $result.id | Should -Be $comment.id
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $result.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $result.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $result.CommentId | Should -Be $result.id
+                $result.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $updated = $comment | Set-GitHubIssueComment -Body $defaultEditedCommentBody
+            It 'Should have modified the expected comment' {
+                $updated.id | Should -Be $comment.id
+            }
+
+            It 'Should have the expected body text' {
+                $updated.body | Should -Be $defaultEditedCommentBody
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.IssueComment'
+                $updated.PSObject.TypeNames[1] | Should -Be 'GitHub.Comment'
+                $updated.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $updated.CommentId | Should -Be $updated.id
+                $updated.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $comment | Remove-GitHubIssueComment -Force
+            It 'Should have been removed' {
+                { $comment | Get-GitHubIssueComment } | Should -Throw
             }
         }
-
-        Context 'For getting comments from a repository and deleting them' {
-            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
-
-            It 'Should have the expected number of comments' {
-                $existingComments.Count | Should -Be 2
-            }
-
-            foreach($comment in $existingComments) {
-                Remove-GitHubComment -Uri $repo.svn_url -CommentID $comment.id -Confirm:$false
-            }
-
-            $existingComments = @(Get-GitHubComment -Uri $repo.svn_url)
-
-            It 'Should have no comments' {
-                $existingComments.Count | Should -Be 0
-            }
-        }
-
-        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally
