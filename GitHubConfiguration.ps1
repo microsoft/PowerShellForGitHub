@@ -169,7 +169,9 @@ function Set-GitHubConfiguration
         Sets all requests to connect to a GitHub Enterprise server running at
         github.contoso.com.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [ValidatePattern('^(?!https?:)(?!api\.)(?!www\.).*')]
