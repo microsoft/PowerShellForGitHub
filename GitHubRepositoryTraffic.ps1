@@ -99,7 +99,12 @@ filter Get-GitHubReferrerTraffic
     }
 
     $result = Invoke-GHRestMethod @params
-    $result.PSObject.TypeNames.Insert(0, $script:GitHubReferrerTrafficTypeName)
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubReferrerTrafficTypeName)
+    }
+
     return $result
 }
 
@@ -192,7 +197,12 @@ filter Get-GitHubPathTraffic
     }
 
     $result = Invoke-GHRestMethod @params
-    $result.PSObject.TypeNames.Insert(0, $script:GitHubPathTrafficTypeName)
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubPathTrafficTypeName)
+    }
+
     return $result
 }
 
@@ -293,7 +303,12 @@ filter Get-GitHubViewTraffic
     }
 
     $result = Invoke-GHRestMethod @params
-    $result.PSObject.TypeNames.Insert(0, $script:GitHubViewTrafficTypeName)
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubViewTrafficTypeName)
+    }
+
     return $result
 }
 
@@ -394,6 +409,11 @@ filter Get-GitHubCloneTraffic
     }
 
     $result = Invoke-GHRestMethod @params
-    $result.PSObject.TypeNames.Insert(0, $script:GitHubCloneTrafficTypeName)
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubCloneTrafficTypeName)
+    }
+
     return $result
 }

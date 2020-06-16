@@ -252,8 +252,11 @@ filter Get-GitHubLicense
 
         [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='All')]
     [OutputType({$script:GitHubLicenseTypeName})]
+    [OutputType({$script:GitHubContentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -318,10 +321,27 @@ filter Get-GitHubLicense
     $result = Invoke-GHRestMethod @params
     foreach ($item in $result)
     {
-        $item.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
-        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
         {
-            Add-Member -InputObject $item -Name 'LicenseKey' -Value $item.key -MemberType NoteProperty -Force
+            # Convert from base64
+            $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($item.content))
+            Add-Member -InputObject $item -NotePropertyName "contentAsString" -NotePropertyValue $decoded
+
+            $item.PSObject.TypeNames.Insert(0, $script:GitHubContentTypeName)
+            $item.license.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
+
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                Add-Member -InputObject $item -Name 'LicenseKey' -Value $item.license.key -MemberType NoteProperty -Force
+            }
+        }
+        else
+        {
+            $item.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                Add-Member -InputObject $item -Name 'LicenseKey' -Value $item.key -MemberType NoteProperty -Force
+            }
         }
     }
 

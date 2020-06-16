@@ -161,6 +161,7 @@ try
             for ($i = 0; $i -lt 4; $i++)
             {
                 $newIssues += New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
+                Start-Sleep -Seconds 1 # Needed to ensure that there is a unique creation timestamp between issues
             }
 
             $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed

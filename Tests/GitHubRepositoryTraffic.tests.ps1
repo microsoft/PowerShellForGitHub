@@ -29,12 +29,12 @@ try
         Context 'When initially created, there are no referrers' {
             It 'Should return expected number of referrers' {
                 $traffic = Get-GitHubReferrerTraffic -Uri $repo.svn_url
-                $traffic.Count | Should -Be 0
+                $traffic | Should -BeNullOrEmpty
             }
 
             It 'Should have the expected type (via pipeline)' {
                 $traffic = $repo | Get-GitHubReferrerTraffic
-                $traffic.PSObject.TypeNames[0] | Should -Be 'GitHub.ReferrerTraffic'
+                $traffic | Should -BeNullOrEmpty
             }
         }
     }
@@ -51,12 +51,12 @@ try
         Context 'Getting the popular content over the last 14 days' {
             It 'Should have no traffic since it was just created' {
                 $traffic = Get-GitHubPathTraffic -Uri $repo.svn_url
-                $traffic.Count | Should -Be 0
+                $traffic | Should -BeNullOrEmpty
             }
 
             It 'Should have the expected type (via pipeline)' {
                 $traffic = $repo | Get-GitHubPathTraffic
-                $traffic.PSObject.TypeNames[0] | Should -Be 'GitHub.PathTraffic'
+                $traffic | Should -BeNullOrEmpty
             }
         }
     }
@@ -83,7 +83,7 @@ try
         }
     }
 
-    Describe 'Testing the view traffic on a repository' {
+    Describe 'Testing the clone traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
         }
@@ -98,7 +98,7 @@ try
                 $traffic.Count | Should -Be 0
             }
 
-            It 'Should have the expected type (via pipeline)' {
+            It 'Should have no clones since it was just created (via pipeline)' {
                 $traffic = $repo | Get-GitHubCloneTraffic
                 $traffic.PSObject.TypeNames[0] | Should -Be 'GitHub.CloneTraffic'
             }

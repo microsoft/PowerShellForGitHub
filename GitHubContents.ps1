@@ -1,4 +1,10 @@
-filter Get-GitHubContent
+@{
+    GitHubContentTypeName = 'GitHub.Content'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+ filter Get-GitHubContent
 {
     <#
     .SYNOPSIS
@@ -73,6 +79,8 @@ filter Get-GitHubContent
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType([String])]
+    [OutputType({$script:GitHubContentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(Mandatory, ParameterSetName = 'Elements')]
@@ -151,6 +159,11 @@ filter Get-GitHubContent
             $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
             Add-Member -InputObject $result -NotePropertyName "contentAsString" -NotePropertyValue $decoded
         }
+    }
+
+    if ($MediaType -eq 'Object')
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubContentTypeName)
     }
 
     return $result
