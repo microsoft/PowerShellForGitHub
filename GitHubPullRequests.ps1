@@ -166,7 +166,7 @@ filter Get-GitHubPullRequest
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

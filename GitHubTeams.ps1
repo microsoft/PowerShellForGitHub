@@ -128,7 +128,7 @@ filter Get-GitHubTeam
 
     $params = @{
         'UriFragment' = $uriFragment
-        'AcceptHeader' = 'application/vnd.github.hellcat-preview+json'
+        'AcceptHeader' = $script:hellcatAcceptHeader
         'Description' =  $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name

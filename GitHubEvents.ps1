@@ -117,7 +117,7 @@ filter Get-GitHubEvent
 
     $acceptHeaders = @(
         $script:starfoxAcceptHeader,
-        $script:sailerVAcceptHeader,
+        $script:sailorVAcceptHeader,
         $script:symmetraAcceptHeader,
         $script:machineManAcceptHeader)
 

@@ -189,7 +189,7 @@ filter Get-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectAdditionalProperties)
@@ -351,7 +351,7 @@ filter New-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
@@ -477,7 +477,7 @@ filter Set-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
@@ -568,7 +568,7 @@ filter Remove-GitHubProject
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+            'AcceptHeader' = $script:inertiaAcceptHeader
         }
 
         return Invoke-GHRestMethod @params

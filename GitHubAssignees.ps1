@@ -356,7 +356,7 @@ function New-GitHubAssignee
             'Method' = 'Post'
             'Description' =  "Add assignees to issue $Issue for $RepositoryName"
             'AccessToken' = $AccessToken
-            'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+            'AcceptHeader' = $script:symmetraAcceptHeader
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -527,7 +527,7 @@ function Remove-GitHubAssignee
                 'Method' = 'Delete'
                 'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
                 'AccessToken' = $AccessToken
-                'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+                'AcceptHeader' = $script:symmetraAcceptHeader
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name
                 'TelemetryProperties' = $telemetryProperties
                 'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)

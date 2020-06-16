@@ -858,7 +858,7 @@ filter Lock-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  "Locking Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.sailor-v-preview+json'
+        'AcceptHeader' = $script:sailorVAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -953,7 +953,7 @@ filter Unlock-GitHubIssue
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
         'Method' = 'Delete'
         'Description' =  "Unlocking Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.sailor-v-preview+json'
+        'AcceptHeader' = $script:sailorVAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

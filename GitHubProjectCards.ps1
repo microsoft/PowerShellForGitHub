@@ -123,7 +123,7 @@ filter Get-GitHubProjectCard
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectCardAdditionalProperties)
@@ -258,7 +258,7 @@ filter New-GitHubProjectCard
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
@@ -375,7 +375,7 @@ filter Set-GitHubProjectCard
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
@@ -461,7 +461,7 @@ filter Remove-GitHubProjectCard
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+            'AcceptHeader' = $script:inertiaAcceptHeader
         }
 
         return Invoke-GHRestMethod @params
@@ -592,7 +592,7 @@ filter Move-GitHubProjectCard
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
     return Invoke-GHRestMethod @params

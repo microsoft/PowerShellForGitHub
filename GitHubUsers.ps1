@@ -265,7 +265,7 @@ filter Get-GitHubUserContextualInformation
         'UriFragment' = "users/$UserName/hovercard`?" + ($getParams -join '&')
         'Method' = 'Get'
         'Description' =  "Getting hovercard information for $UserName"
-        'AcceptHeader' = 'application/vnd.github.hagar-preview+json'
+        'AcceptHeader' = $script:hagarAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
