@@ -268,8 +268,6 @@ function Invoke-GHRestMethod
                     }
                 }
 
-                $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
-
                 try
                 {
                     # Disable Progress Bar in function scope during Invoke-WebRequest
@@ -302,10 +300,6 @@ function Invoke-GHRestMethod
 
                     $jsonConversionDepth = 20 # Seems like it should be more than sufficient
                     throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
-                }
-                finally
-                {
-                    [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
                 }
             }
 
@@ -549,10 +543,7 @@ function Invoke-GHRestMethod
     }
     finally
     {
-        if ($NoStatus)
-        {
-            [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
-        }
+        [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
     }
 }
 
