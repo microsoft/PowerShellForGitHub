@@ -35,7 +35,7 @@ filter Get-GitHubIssue
         The organization whose issues should be retrieved.
 
     .PARAMETER RepositoryType
-        all: Retrieve issues  across owned, member and org repositories
+        all: Retrieve issues across owned, member and org repositories
         ownedAndMember: Retrieve issues across owned and member repositories
 
     .PARAMETER Issue
@@ -91,7 +91,7 @@ filter Get-GitHubIssue
         Only issues created by this specified user will be returned.
 
     .PARAMETER Mentioned
-          Only issues that mention this specified user will be returned.
+        Only issues that mention this specified user will be returned.
 
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
@@ -850,7 +850,7 @@ filter Lock-GitHubIssue
         }
 
         $telemetryProperties['Reason'] = $Reason
-        $hashBody['active_lock_reason'] = $reasonConverter[$Reason]
+        $hashBody['lock_reason'] = $reasonConverter[$Reason]
     }
 
     $params = @{
