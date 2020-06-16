@@ -195,6 +195,7 @@ function Invoke-GHRestMethod
     }
 
     $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
+    $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     try
     {
@@ -226,10 +227,8 @@ function Invoke-GHRestMethod
             # Disable Progress Bar in function scope during Invoke-WebRequest
             $ProgressPreference = 'SilentlyContinue'
 
-            $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
             [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
             $result = Invoke-WebRequest @params
-            [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
 
             if ($Method -eq 'Delete')
             {
@@ -269,15 +268,15 @@ function Invoke-GHRestMethod
                     }
                 }
 
+                $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
+
                 try
                 {
                     # Disable Progress Bar in function scope during Invoke-WebRequest
                     $ProgressPreference = 'SilentlyContinue'
 
-                    $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
                     [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
                     Invoke-WebRequest @params
-                    [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
                 }
                 catch [System.Net.WebException]
                 {
@@ -303,6 +302,10 @@ function Invoke-GHRestMethod
 
                     $jsonConversionDepth = 20 # Seems like it should be more than sufficient
                     throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
+                }
+                finally
+                {
+                    [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
                 }
             }
 
@@ -543,6 +546,13 @@ function Invoke-GHRestMethod
         Write-Log -Message $newLineOutput -Level Error
         Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
         throw $newLineOutput
+    }
+    finally
+    {
+        if ($NoStatus)
+        {
+            [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
+        }
     }
 }
 
