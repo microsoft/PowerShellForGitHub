@@ -331,7 +331,10 @@ new functionality added to the module embraces this design.
    know anything more about them.
 
  * That method will also "type" information to each object.  This is forward-looking work to ease
-   support for providing formatting of various object types in the future.
+   support for providing formatting of various object types in the future.  That type should be
+   defined at the top of the current file at the script level (see other files for an example),
+   and you should be sure to both specify it in the `.OUTPUTS` section of the Comment Based Help (CBH)
+   for the command, as well as with `[OutputType({$script:GitHubUserTypeName})]` (for example).
 
  * To enable debugging issues involving pipeline support, there is an additional configuration
    property that you might use:  `Set-GitHubConfiguration -DisablePipelineSupport`.  That will
