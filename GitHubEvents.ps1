@@ -98,7 +98,7 @@ filter Get-GitHubEvent
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
-        'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventID')
+        'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventId')
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events"
