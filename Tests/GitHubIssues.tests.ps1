@@ -135,6 +135,25 @@ try
             }
         }
 
+        Context 'When issues are retrieved with a specific MediaTypes' {
+            $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([Guid]::NewGuid())
+
+            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
+            It 'Should return an issue with body_html' {
+                $issues[0].body_html | Should -Not -Be $null
+            }
+        }
+    }
+
+    Describe 'Date-specific Issue tests' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
+
         Context 'Date specific scenarios' {
             $existingIssues = @($repo | Get-GitHubIssue -State All)
 
@@ -176,17 +195,7 @@ try
                 $issues.Count | Should -Be 1
             }
         }
-
-        Context 'When issues are retrieved with a specific MediaTypes' {
-            $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([Guid]::NewGuid())
-
-            $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
-            It 'Should return an issue with body_html' {
-                $issues[0].body_html | Should -Not -Be $null
-            }
-        }
     }
-
     Describe 'Creating issues' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit

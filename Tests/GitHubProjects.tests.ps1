@@ -592,10 +592,7 @@ try
 
     Describe 'Remove Project' {
         Context 'Remove User projects' {
-            BeforeAll {
-                $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
-            }
-
+            $project = New-GitHubProject -UserProject -Name $defaultUserProject -Description $defaultUserProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
@@ -603,10 +600,7 @@ try
         }
 
         Context 'Remove Organization projects' {
-            BeforeAll {
-                $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
-            }
-
+            $project = New-GitHubProject -OrganizationName $script:organizationName -Name $defaultOrgProject -Description $defaultOrgProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Force
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
@@ -614,10 +608,7 @@ try
         }
 
         Context 'Remove Repo projects' {
-            BeforeAll {
-                $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
-            }
-
+            $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultRepoProject -Description $defaultRepoProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
@@ -625,10 +616,7 @@ try
         }
 
         Context 'Remove Repo project via pipeline' {
-            BeforeAll {
-                $project = $repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc
-            }
-
+            $project = $repo | New-GitHubProject -Name $defaultRepoProject -Description $defaultRepoProjectDesc
             $project | Remove-GitHubProject -Force
             It 'Project should be removed' {
                 {$project | Get-GitHubProject} | Should -Throw
