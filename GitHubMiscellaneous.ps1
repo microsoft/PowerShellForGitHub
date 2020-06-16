@@ -323,11 +323,12 @@ filter Get-GitHubLicense
     {
         if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
         {
-            # Convert from base64
+            $null = $item | Add-GitHubContentAdditionalProperties
+
+            # Add the decoded Base64 content directly to the object as an additional String property
             $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($item.content))
             Add-Member -InputObject $item -NotePropertyName "contentAsString" -NotePropertyValue $decoded
 
-            $item.PSObject.TypeNames.Insert(0, $script:GitHubContentTypeName)
             $item.license.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
 
             if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
