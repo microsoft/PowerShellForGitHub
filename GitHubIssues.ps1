@@ -75,7 +75,7 @@ filter Get-GitHubIssue
           all: All milestones will be returned.
           none: Only issues without milestones will be returned.
 
-    .PARAMETER Milestone
+    .PARAMETER MilestoneNumber
         Only issues with this milestone will be returned.
 
     .PARAMETER AssigneeType
@@ -143,6 +143,7 @@ filter Get-GitHubIssue
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $OrganizationName,
 
         [ValidateSet('All', 'OwnedAndMember')]
@@ -173,13 +174,16 @@ filter Get-GitHubIssue
         [ValidateSet('Specific', 'All', 'None')]
         [string] $MilestoneType,
 
-        [string] $Milestone,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [int64] $MilestoneNumber,
 
         [ValidateSet('Specific', 'All', 'None')]
         [string] $AssigneeType,
 
         [string] $Assignee,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('UserName')]
         [string] $Creator,
 
         [string] $Mentioned,
@@ -280,17 +284,17 @@ filter Get-GitHubIssue
         {
             $getParams += 'mentioned=none'
         }
-        elseif ([String]::IsNullOrEmpty($Milestone))
+        elseif ($PSBoundParameters.ContainsKey('$MilestoneNumber'))
         {
-            $message = "MilestoneType was set to [$MilestoneType], but no value for Milestone was provided."
+            $message = "MilestoneType was set to [$MilestoneType], but no value for MilestoneNumber was provided."
             Write-Log -Message $message -Level Error
             throw $message
         }
     }
 
-    if ($PSBoundParameters.ContainsKey('Milestone'))
+    if ($PSBoundParameters.ContainsKey('MilestoneNumber'))
     {
-        $getParams += "milestone=$Milestone"
+        $getParams += "milestone=$MilestoneNumber"
     }
 
     if ($PSBoundParameters.ContainsKey('AssigneeType'))
@@ -627,7 +631,7 @@ filter Update-GitHubIssue
         Login(s) for Users to assign to the issue.
         Provide an empty array to clear all existing assignees.
 
-    .PARAMETER Milestone
+    .PARAMETER MilestoneNumber
         The number of the milestone to associate this issue with.
         Set to 0/$null to remove current.
 
@@ -693,7 +697,7 @@ filter Update-GitHubIssue
 
         [string[]] $Assignee,
 
-        [int64] $Milestone,
+        [int64] $MilestoneNumber,
 
         [string[]] $Label,
 
@@ -726,10 +730,10 @@ filter Update-GitHubIssue
     if ($PSBoundParameters.ContainsKey('Assignee')) { $hashBody['assignees'] = @($Assignee) }
     if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['labels'] = @($Label) }
     if ($PSBoundParameters.ContainsKey('State')) { $hashBody['state'] = $State.ToLower() }
-    if ($PSBoundParameters.ContainsKey('Milestone'))
+    if ($PSBoundParameters.ContainsKey('MilestoneNumber'))
     {
-        $hashBody['milestone'] = $Milestone
-        if ($Milestone -in (0, $null))
+        $hashBody['milestone'] = $MilestoneNumber
+        if ($MilestoneNumber -in (0, $null))
         {
             $hashBody['milestone'] = $null
         }
