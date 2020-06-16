@@ -195,7 +195,7 @@ function Invoke-GHRestMethod
     }
 
     $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
-    $securityProtocol = [Net.ServicePointManager]::SecurityProtocol
+    $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     try
     {
@@ -543,7 +543,7 @@ function Invoke-GHRestMethod
     }
     finally
     {
-        [Net.ServicePointManager]::SecurityProtocol = $securityProtocol
+        [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
     }
 }
 
