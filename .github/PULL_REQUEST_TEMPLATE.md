@@ -32,10 +32,10 @@
 -->
 - [ ] You actually ran the code that you just wrote, especially if you did just "one last quick change".
 - [ ] Comment-based help added/updated, including examples.
-- [ ] [Static analysis](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#static-analysis)
-is reporting back clean.
+- [ ] [Static analysis](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#static-analysis) is reporting back clean.
 - [ ] New/changed code adheres to our [coding guidelines](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#coding-guidelines).
+- [ ] New/changed code continues to [support the pipeline](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#pipeline-support).
 - [ ] Changes to the manifest file follow the [manifest guidance](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#module-manifest).
-- [ ] Unit tests were added/updated and are all passing. See [testing guidelines](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#testing).
+- [ ] Unit tests were added/updated and are all passing. See [testing guidelines](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#testing).  This includes making sure that all pipeline input variations have been covered.
 - [ ] Relevant usage examples have been added/updated in [USAGE.md](https://github.com/microsoft/PowerShellForGitHub/blob/master/USAGE.md).
 - [ ] If desired, ensure your name is added to our [Contributors list](https://github.com/microsoft/PowerShellForGitHub/blob/master/CONTRIBUTING.md#contributors)

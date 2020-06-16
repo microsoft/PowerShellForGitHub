@@ -5,6 +5,9 @@
 *   [Logging](#logging)
 *   [Telemetry](#telemetry)
 *   [Examples](#examples)
+    *   [Overview](#overview)
+        *   [Embracing the pipeline](#embracing-the-pipeline)
+        *   [Pipeline Example](#pipeline-example)
     *   [Analytics](#analytics)
         *   [Querying Issues](#querying-issues)
         *   [Querying Pull Requests](#querying-pull-requests)
@@ -104,12 +107,6 @@ In order to track usage, gauge performance and identify areas for improvement, t
 employed during execution of commands within this module (via Application Insights).  For more
 information, refer to the [Privacy Policy](README.md#privacy-policy).
 
-> You may notice some needed assemblies for communicating with Application Insights being
-> downloaded on first run of a command within each PowerShell session.  The
-> [automatic dependency downloads](#automatic-dependency-downloads) section of the setup
-> documentation describes how you can avoid having to always re-download the telemetry assemblies
-> in the future.
-
 We recommend that you always leave the telemetry feature enabled, but a situation may arise where
 it must be disabled for some reason.  In this scenario, you can disable telemetry by calling:
 
@@ -160,6 +157,58 @@ us for analysis.  We expose it here for complete transparency.
 ----------
 
 ## Examples
+
+### Overview
+
+#### Embracing the Pipeline
+
+One of the major benefits of PowerShell is its pipeline -- allowing you to "pipe" a saved value or
+the output of a previous command directly into the next command.  There is absolutely no requirement
+to make use of it in order to use the module, but you will find that the module becomes increasingly
+easier to use and more powerful if you do.
+
+Some of the examples that you find below will show how you might be able to use it to your advantage.
+
+#### Pipeline Example
+
+Most commands require you to pass in either a `Uri` for the repository or its elements (the
+`OwnerName` and `RepositoryName`).  If you keep around the repo that you're interacting with in
+a local var (like `$repo`), then you can pipe that into any command to avoid having to specify that
+information.  Further, piping in a more specific object (like an `Issue`) allows you to avoid even
+specifying the relevant Issue number.
+
+Without the pipeline, an interaction log might look like this:
+
+```powershell
+# Find all of the issues that have the label "repro steps needed" and add a new comment to those
+# issues asking for an update.
+$issues = @(Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label 'repro steps needed')
+foreach ($issue in $issues)
+{
+    $params = @{
+        'OwnerName' = 'microsoft'
+        'RepositoryName' = 'PowerShellForGitHub'
+        'Issue' = $issue.number
+        'Body' = 'Any update on those repro steps?'
+    }
+
+    New-GitHubIssueComment @params
+}
+
+```
+
+With the pipeline, a similar interaction log might look like this:
+
+```powershell
+# Find all of the issues that have the label "repro steps needed" and add a new comment to those
+# issues asking for an update.
+Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub |
+    Get-GitHubIssue -Label 'repro steps needed' |
+    New-GitHubIssueComment -Body 'Any update on those repro steps?'
+```
+
+We encourage you to explore how embracing the pipeline may simplify your code and interaction
+with GitHub using this module!
 
 ### Analytics
 

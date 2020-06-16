@@ -23,6 +23,7 @@ Looking for information on how to use this module?  Head on over to [README.md](
 *   [Adding New Configuration Properties](#adding-new-configuration-properties)
 *   [Code Comments](#code-comments)
 *   [Debugging Tips](#debugging-tips)
+*   [Pipeline Support](#pipeline-support)
 *   [Testing](#testing)
     *   [Installing Pester](#installing-pester)
     *   [Configuring Your Environment](#configuring-your-environment)
@@ -286,8 +287,63 @@ Set-GitHubConfiguration -LogRequestBody
 
 ----------
 
+### Pipeline Support
+
+This module has comprehensive support for the PowerShell pipeline.  It is imperative that all
+new functionality added to the module embraces this design.
+
+ * Most functions are declared as a `filter`.  This is the equivalent of a `function` with a
+   where the body of the function is the `process` block, and the `begin/end` blocks are empty.
+
+ * In limited cases where one of the inputs is an array of something, and you specifically want that
+   to be processed as a single command (like adding a bunch of labels to a single issue at once),
+   you can implement it as a `function` where you use `begin/process` to gather all of the values
+   into a single internal array, and then do the actual command execution in the `end` block.  A
+   good example of that which you can follow can be seen with `Add-GitHubIssueLabel`.
+
+ * Any function that requires the repo's `Uri` to be provided should be additionally aliased with
+   `[Alias('RepositoryUrl')]` and its `[Parameter()]` definition should include `ValueFromPipelineByPropertyName`.
+
+ * Do not use any generic term like `Name` in your parameters.  That will end up causing unintended
+   pipeline issues down the line.  For instance, if it's a label, call it `Label`, even though `Name`
+   would make sense, other objects in the pipeline (like a `GitHub.Respository` object) also have
+   a `name` property that would conflict.
+
+ * You should plan on adding additional properties to all objects being returned from an API call.
+   Any object that is specific to a repository should have a `RepositoryUrl` `NoteProperty` added
+   to it, enabling it to be piped-in to any other command that requires knowing which repository
+   you're talking about.  Additionally, any other property that might be necessary to uniquely
+   identify that object in a different command should get added properties.  For example, with Issues,
+   we add both an `IssueNumber` property and an `IssueId` property to it, as the Issue commands
+   need to interact with the `IssueNumber` while the Event commands interact with the `IssueId`.
+   We prefer to _only_ add additional properties that are believed to be needed as input to other
+   commands (as opposed to creating alias properties for all of the object's properties).
+
+ * For every major file, you will find an `Add-GitHub*AdditionalProperties` filter method at the end.
+   If you're writing a new file, you'll need to create this yourself (and model it after an existing
+   one).  The goal of this is that you can simply pipe the output of your `Invoke-GHRestMethod`
+   directly into this method to update the result with the additional properties, and then return
+   that modified version to the user.  The benefit of this approach is that you can then apply that
+   filter on child objects within the primary object.  For instance, a `GitHub.Issue` has multiple
+   `GitHub.User` objects, `GitHub.Label` objects, a `GitHub.Milestone` object and more.  Within
+   `Add-GitHubIssueAdditionalProperties`, it just needs to know to call the appropriate
+   `Add-GitHub*AdditionalProperties` method on the qualifying child properties, without needing to
+   know anything more about them.
+
+ * That method will also "type" information to each object.  This is forward-looking work to ease
+   support for providing formatting of various object types in the future.
+
+ * To enable debugging issues involving pipeline support, there is an additional configuration
+   property that you might use:  `Set-GitHubConfiguration -DisablePipelineSupport`.  That will
+   prevent the module from adding _any_ additional properties to the objects.
+
+----------
+
 ### Testing
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+
 
 #### Installing Pester
 This module supports testing using the [Pester UT framework](https://github.com/pester/Pester).
@@ -350,6 +406,8 @@ There are many more nuances to code-coverage, see
 
 #### Automated Tests
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 
 These test are configured to automatically execute upon any update to the `master` branch
 of `microsoft/PowerShellForGitHub`.
@@ -362,9 +420,9 @@ as well...it is stored, encrypted, within Azure DevOps.  It is not accessible fo
 the CI pipeline.  To run the tests locally with your own account, see
 [configuring-your-environment](#configuring-your-environment).
 
-> NOTE: We're currently encountering issues with the tests successfully running within the pipeline.
-> They do complete successfully locally, so please test your changes locally before submitting a
-> pull request.
+> Your change must successfully pass all tests before they will be merged.  While we will run a CI
+> build on your behalf for any submitted pull request, it's to your benefit to verify your changes
+> locally first.
 
 #### New Test Guidelines
 Your tests should have NO dependencies on an account being set up in a specific way.  They should
