@@ -30,6 +30,9 @@
     .PARAMETER Path
         The file path for which to retrieve contents
 
+    .PARAMETER BranchName
+        The branch, or defaults to the default branch of not specified.
+
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
@@ -126,6 +129,8 @@
 
         [string] $Path,
 
+        [string] $BranchName,
+
         [ValidateSet('Raw', 'Html', 'Object')]
         [string] $MediaType = 'Object',
 
@@ -162,6 +167,11 @@
         $description = "Getting all content for in $RepositoryName"
     }
 
+    if ($PSBoundParameters.ContainsKey('Branch'))
+    {
+        $uriFragment += "?ref=$Branch"
+    }
+
     $params = @{
         'UriFragment' = $uriFragment
         'Description' = $description
@@ -195,6 +205,269 @@
     }
 
     return $result
+}
+
+function Set-GitHubContent
+{
+    <#
+    .SYNOPSIS
+        Sets the contents of a file or directory in a repository on GitHub.
+
+    .DESCRIPTION
+        Sets the contents of a file or directory in a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER Path
+        The file path for which to set contents.
+
+    .PARAMETER CommitMessage
+        The Git commit message.
+
+    .PARAMETER Content
+        The new file content.
+
+    .PARAMETER BranchName
+        The branch, or defaults to the default branch of not specified.
+
+    .PARAMETER CommitterName
+        The name of the committer of the commit. Defaults to the name of the authenticated user if
+        not specified. If specified, CommiterEmail must also be specified.
+
+    .PARAMETER CommitterEmail
+        The email of the committer of the commit. Defaults to the email of the authenticated user
+        if not specified. If specified, CommitterName must also be specified.
+
+    .PARAMETER AuthorName
+        The name of the author of the commit. Defaults to the name of the authenticated user if
+        not specified. If specified, AuthorEmail must also be specified.
+
+    .PARAMETER AuthorEmail
+        The email of the author of the commit. Defaults to the email of the authenticated user if
+        not specified. If specified, AuthorName must also be specified.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .EXAMPLE
+        Set-GitHubContent  -Path README.md -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
+
+        Sets the contents of the README.md file on the master branch of the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false,
+        DefaultParameterSetName = 'Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
+        Justification='One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+    param(
+        [Parameter(
+            Mandatory,
+            Position = 1)]
+        [string] $Path,
+
+        [Parameter(
+            Mandatory,
+            Position = 2)]
+        [string] $CommitMessage,
+
+        [Parameter(
+            Mandatory,
+            Position = 3)]
+        [string] $Content,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [string] $BranchName,
+
+        [string] $CommitterName,
+
+        [string] $CommitterEmail,
+
+        [string] $AuthorName,
+
+        [string] $AuthorEmail,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements -DisableValidation
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
+
+    $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Content))
+
+    $hashBody = @{
+        message = $CommitMessage
+        content = $encodedContent
+    }
+
+    if ($PSBoundParameters.ContainsKey('BranchName'))
+    {
+        $hashBody['branch'] = $BranchName
+    }
+
+    if ($PSBoundParameters.ContainsKey('CommitterName') -or
+        $PSBoundParameters.ContainsKey('CommitterEmail'))
+    {
+        if (![System.String]::IsNullOrEmpty($CommitterName) -and
+            ![System.String]::IsNullOrEmpty($CommitterEmail))
+        {
+            $hashBody['committer'] = @{
+                name = $CommitterName
+                email = $CommitterEmail
+            }
+        }
+        else
+        {
+            throw 'Both CommiterName and CommitterEmail need to be specified.'
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('AuthorName') -or
+        $PSBoundParameters.ContainsKey('AuthorEmail'))
+    {
+        if (![System.String]::IsNullOrEmpty($CommitterName) -and
+            ![System.String]::IsNullOrEmpty($CommitterEmail))
+        {
+            $hashBody['author'] = @{
+                name = $AuthorName
+                email = $AuthorEmail
+            }
+        }
+        else
+        {
+            throw 'Both AuthorName and AuthorEmail need to be specified.'
+        }
+    }
+
+    if ($PSCmdlet.ShouldProcess("$BranchName branch of $RepositoryName",
+        "Set GitHub Contents on $Path"))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            UriFragment = $uriFragment
+            Description = "Writing content for $Path in the $BranchName branch of $RepositoryName"
+            Body = (ConvertTo-Json -InputObject $hashBody)
+            Method = 'Put'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
+                -ConfigValueName DefaultNoStatus)
+        }
+
+        try
+        {
+            return Invoke-GHRestMethod @params
+        }
+        catch
+        {
+            $overwriteShaRequired = $false
+
+            # Temporary code to handle current differences in exception object between PS5 and PS7
+            if ($PSVersionTable.PSedition -eq 'Core')
+            {
+                $errorMessage = ($_.ErrorDetails.Message | ConvertFrom-Json).message -replace '\n',' ' -replace '\"','"'
+                if (($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException]) -and
+                    ($errorMessage -eq 'Invalid request.  "sha" wasn''t supplied.'))
+                {
+                    $overwriteShaRequired = $true
+                }
+                else
+                {
+                    throw $_
+                }
+            }
+            else
+            {
+                $errorMessage = $_.Exception.Message  -replace '\n',' ' -replace '\"','"'
+                if ($errorMessage -like '*Invalid request.  "sha" wasn''t supplied.*')
+                {
+                    $overwriteShaRequired = $true
+                }
+                else
+                {
+                    throw $_
+                }
+            }
+
+            if ($overwriteShaRequired)
+            {
+                # Get SHA from current file
+                $getGitHubContentParms = @{
+                    Path = $Path
+                    OwnerName = $OwnerName
+                    RepositoryName = $RepositoryName
+                }
+
+                if ($PSBoundParameters.ContainsKey('BranchName'))
+                {
+                    $getGitHubContentParms['BranchName'] = $BranchName
+                }
+
+                if ($PSBoundParameters.ContainsKey('AccessToken'))
+                {
+                    $getGitHubContentParms['AccessToken'] = $AccessToken
+                }
+
+                if ($PSBoundParameters.ContainsKey('NoStatus'))
+                {
+                    $getGitHubContentParms['NoStatus'] = $NoStatus
+                }
+
+                $object = Get-GitHubContent @getGitHubContentParms
+
+                $hashBody['sha'] = $object.sha
+                $params['body'] = ConvertTo-Json -InputObject $hashBody
+
+                return Invoke-GHRestMethod @params
+            }
+        }
+    }
 }
 
 filter Add-GitHubContentAdditionalProperties
