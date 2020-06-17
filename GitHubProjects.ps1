@@ -89,10 +89,14 @@ filter Get-GitHubProject
     [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -106,10 +110,14 @@ filter Get-GitHubProject
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Organization')]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, ParameterSetName = 'User')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'User')]
         [string] $UserName,
 
         [Parameter(
@@ -269,10 +277,14 @@ filter New-GitHubProject
     [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -282,10 +294,14 @@ filter New-GitHubProject
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Organization')]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, ParameterSetName = 'User')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'User')]
         [switch] $UserProject,
 
         [Parameter(
@@ -537,7 +553,9 @@ filter Remove-GitHubProject
     [Alias('Delete-GitHubProject')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [Alias('ProjectId')]
         [int64] $Project,
 

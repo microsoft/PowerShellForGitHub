@@ -76,7 +76,8 @@ filter Get-GitHubRepositoryBranch
         $branch | Get-GitHubRepositoryBranch
 
         Gets information only on the master branch for the specified repository, and then does it
-        again.
+        again.  This tries to show some of the different types of objects you can pipe into this
+        function.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

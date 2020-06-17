@@ -71,12 +71,20 @@ filter Get-GitHubMilestone
         DefaultParameterSetName='RepositoryElements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='MilestoneElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='MilestoneElements')]
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='MilestoneElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -259,10 +267,14 @@ filter New-GitHubMilestone
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -421,10 +433,14 @@ filter Set-GitHubMilestone
         DefaultParameterSetName='Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -445,8 +461,12 @@ filter Set-GitHubMilestone
         [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
-        [Parameter(Mandatory, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $Title,
 
         [ValidateSet('Open', 'Closed')]
@@ -577,10 +597,14 @@ filter Remove-GitHubMilestone
     [Alias('Delete-GitHubMilestone')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -590,8 +614,14 @@ filter Remove-GitHubMilestone
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Uri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Elements')]
         [Alias('MilestoneNumber')]
         [int64] $Milestone,
 

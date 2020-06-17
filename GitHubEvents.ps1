@@ -60,28 +60,61 @@ filter Get-GitHubEvent
     [OutputType({$script:GitHubEventTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='EventElements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='EventElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='RepositoryUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='EventElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventElements')]
         [int64] $EventId,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueElements')]
         [Alias('IssueNumber')]
         [int64] $Issue,
 

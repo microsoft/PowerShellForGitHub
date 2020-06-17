@@ -76,13 +76,20 @@ filter Get-GitHubLabel
     [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -161,7 +168,7 @@ filter Get-GitHubLabel
     $params = @{
         'UriFragment' = $uriFragment
         'Description' =  $description
-        'AcceptHeader' = $scrit:symmetraAcceptHeader
+        'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -760,10 +767,14 @@ function Add-GitHubIssueLabel
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(

@@ -100,7 +100,8 @@ filter Get-GitHubIssueComment
         $comment[0] | Get-GitHubIssueComment
 
         Get the most recent comment on Issue #1 in the microsoft\PowerShellForGitHub project by
-        passing it in via the pipeline.
+        passing it in via the pipeline.  This shows some of the different types of objects you
+        can pipe into this function.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -109,29 +110,62 @@ filter Get-GitHubIssueComment
     [OutputType({$script:GitHubIssueCommentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='CommentElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='CommentElements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='CommentElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='CommentElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='RepositoryUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='CommentUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentElements')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='CommentUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='CommentElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='CommentUri')]
         [Alias('CommentId')]
         [string] $Comment,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
         [Alias('IssueNumber')]
         [int64] $Issue,
 

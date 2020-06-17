@@ -465,8 +465,8 @@ filter Get-GitHubRepository
             ParameterSetName='Organization')]
         [string] $OrganizationName,
 
-        [ValidateSet('All', 'Public', 'Private')]
         [Parameter(ParameterSetName='AuthenticatedUser')]
+        [ValidateSet('All', 'Public', 'Private')]
         [string] $Visibility,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
@@ -1631,7 +1631,7 @@ filter Get-GitHubRepositoryTag
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$scrit:GitHubRepositoryTagTypeName})]
+    [OutputType({$script:GitHubRepositoryTagTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
