@@ -573,12 +573,12 @@ Get-GitHubProject -UserName octocat
 
 #### Create a project
 ```powershell
-New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -Name TestProject
+New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -ProjectName TestProject
 ```
 
 #### Add a column to a project
 ```powershell
-New-GitHubProjectColumn -Project 1 -Name 'To Do'
+New-GitHubProjectColumn -Project 1 -ColumnName 'To Do'
 ```
 
 #### Add a card to a column

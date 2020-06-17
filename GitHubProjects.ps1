@@ -243,22 +243,22 @@ filter New-GitHubProject
         GitHub.Project
 
     .EXAMPLE
-        New-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name TestProject
+        New-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -ProjectName TestProject
 
         Creates a project called 'TestProject' for the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
-        New-GitHubProject -OrganizationName Microsoft -Name TestProject -Description 'This is just a test project'
+        New-GitHubProject -OrganizationName Microsoft -ProjectName TestProject -Description 'This is just a test project'
 
         Create a project for the Microsoft organization called 'TestProject' with a description.
 
     .EXAMPLE
-        New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -Name TestProject
+        New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -ProjectName TestProject
 
         Create a project for the microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
 
     .EXAMPLE
-        New-GitHubProject -UserProject -Name 'TestProject'
+        New-GitHubProject -UserProject -ProjectName 'TestProject'
 
         Creates a project for the signed in user called 'TestProject'.
 #>
@@ -290,7 +290,8 @@ filter New-GitHubProject
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
-        [string] $Name,
+        [Alias('Name')]
+        [string] $ProjectName,
 
         [string] $Description,
 
@@ -302,7 +303,7 @@ filter New-GitHubProject
     Write-InvocationLog
 
     $telemetryProperties = @{}
-    $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Name
+    $telemetryProperties['ProjectName'] = Get-PiiSafeString -PlainText $ProjectName
 
     $uriFragment = [String]::Empty
     $apiDescription = [String]::Empty
@@ -334,7 +335,7 @@ filter New-GitHubProject
     }
 
     $hashBody = @{
-        'name' = $Name
+        'name' = $ProjectName
     }
 
     if ($PSBoundParameters.ContainsKey('Description'))

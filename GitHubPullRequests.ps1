@@ -308,7 +308,7 @@ filter New-GitHubPullRequest
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
-        [Alias('IssueId')]
+        [Alias('IssueNumber')]
         [int] $Issue,
 
         [Parameter(Mandatory)]

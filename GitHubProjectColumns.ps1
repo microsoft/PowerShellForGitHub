@@ -134,7 +134,7 @@ filter New-GitHubProjectColumn
         GitHub.ProjectColumn
 
     .EXAMPLE
-        New-GitHubProjectColumn -Project 999999 -Name 'Done'
+        New-GitHubProjectColumn -Project 999999 -ColumnName 'Done'
 
         Creates a column called 'Done' for the project with ID 999999.
 #>
@@ -153,7 +153,8 @@ filter New-GitHubProjectColumn
         [Parameter(
             Mandatory,
             ValueFromPipeline)]
-        [string] $Name,
+        [Alias('Name')]
+        [string] $ColumnName,
 
         [string] $AccessToken,
 
@@ -166,10 +167,10 @@ filter New-GitHubProjectColumn
     $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
     $uriFragment = "/projects/$Project/columns"
-    $apiDescription = "Creating project column $Name"
+    $apiDescription = "Creating project column $ColumnName"
 
     $hashBody = @{
-        'name' = $Name
+        'name' = $ColumnName
     }
 
     $params = @{
@@ -215,7 +216,7 @@ filter Set-GitHubProjectColumn
         GitHub.ProjectColumn
 
     .EXAMPLE
-        Set-GitHubProjectColumn -Column 999999 -Name NewColumnName
+        Set-GitHubProjectColumn -Column 999999 -ColumnName NewColumnName
 
         Set the project column name to 'NewColumnName' with column with ID 999999.
 #>
@@ -231,7 +232,8 @@ filter Set-GitHubProjectColumn
         [int64] $Column,
 
         [Parameter(Mandatory)]
-        [string] $Name,
+        [Alias('Name')]
+        [string] $ColumnName,
 
         [string] $AccessToken,
 
@@ -246,7 +248,7 @@ filter Set-GitHubProjectColumn
     $apiDescription = "Updating column $Column"
 
     $hashBody = @{
-        'name' = $Name
+        'name' = $ColumnName
     }
 
     $params = @{

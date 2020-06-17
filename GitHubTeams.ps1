@@ -254,14 +254,6 @@ filter Add-GitHubTeamAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
-
-    .PARAMETER Name
-        The name of the team.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .PARAMETER Id
-        The ID of the team.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
@@ -274,11 +266,7 @@ filter Add-GitHubTeamAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubTeamTypeName,
-
-        [string] $Name,
-
-        [int64] $Id
+        [string] $TypeName = $script:GitHubTeamTypeName
     )
 
     foreach ($item in $InputObject)
@@ -287,27 +275,8 @@ filter Add-GitHubTeamAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $teamName = $item.name
-            if ([String]::IsNullOrEmpty($teamName) -and $PSBoundParameters.ContainsKey('Name'))
-            {
-                $teamName = $Name
-            }
-
-            if (-not [String]::IsNullOrEmpty($teamName))
-            {
-                Add-Member -InputObject $item -Name 'TeamName' -Value $teamName -MemberType NoteProperty -Force
-            }
-
-            $teamId = $item.id
-            if (($teamId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
-            {
-                $teamId = $Id
-            }
-
-            if ($teamId -ne 0)
-            {
-                Add-Member -InputObject $item -Name 'TeamId' -Value $teamId -MemberType NoteProperty -Force
-            }
+            Add-Member -InputObject $item -Name 'TeamName' -Value $item.name -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'TeamId' -Value $item.id -MemberType NoteProperty -Force
 
             # Apply these properties to any embedded parent teams as well.
             if ($null -ne $item.parent)

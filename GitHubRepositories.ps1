@@ -761,12 +761,6 @@ filter Rename-GitHubRepository
 
     # This method was created by mistake and is now retained to avoid a breaking change.
     # Update-GitHubRepository is able to handle this scenario just fine.
-    if ($PSBoundParameters.ContainsKey('NewName'))
-    {
-        $null = $PSBoundParameters.Add('Name', $NewName)
-        $null = $PSBoundParameters.Remove('NewName')
-    }
-
     return Update-GitHubRepository @PSBoundParameters
 }
 
@@ -794,7 +788,7 @@ filter Update-GitHubRepository
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER NewName
         Rename the repository to this new name.
 
     .PARAMETER Description
@@ -872,7 +866,7 @@ filter Update-GitHubRepository
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
-            Update-GitHubRepository -Name 'PoShForGitHub' -Force
+            Update-GitHubRepository -NewName 'PoShForGitHub' -Force
 
         Renames the repository without any user confirmation prompting.  This is identical to using
         Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
@@ -898,7 +892,7 @@ filter Update-GitHubRepository
         [string] $Uri,
 
         [ValidateNotNullOrEmpty()]
-        [string] $Name,
+        [string] $NewName,
 
         [string] $Description,
 
@@ -951,15 +945,15 @@ filter Update-GitHubRepository
 
     $hashBody = @{}
 
-    if ($PSBoundParameters.ContainsKey('Name'))
+    if ($PSBoundParameters.ContainsKey('NewName'))
     {
         $existingName = if ($PSCmdlet.ParameterSetName -eq 'Uri') { $Uri } else { $OwnerName, $RepositoryName -join '/' }
-        if (-not $PSCmdlet.ShouldProcess($existingName, "Rename repository to '$Name'"))
+        if (-not $PSCmdlet.ShouldProcess($existingName, "Rename repository to '$NewName'"))
         {
             return
         }
 
-        $hashBody['name'] = $Name
+        $hashBody['name'] = $NewName
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }

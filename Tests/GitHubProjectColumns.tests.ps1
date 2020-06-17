@@ -27,11 +27,11 @@ try
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
 
-    $project = New-GitHubProject -UserProject -Name $defaultProject
+    $project = New-GitHubProject -UserProject -ProjectName $defaultProject
 
     Describe 'Getting Project Columns' {
         BeforeAll {
-            $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+            $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
         }
 
         AfterAll {
@@ -115,8 +115,8 @@ try
 
     Describe 'Modify Project Column' {
         BeforeAll {
-            $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
-            $columntwo = New-GitHubProjectColumn -Project $project.id -Name $defaultColumnTwo
+            $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
+            $columntwo = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumnTwo
         }
 
         AfterAll {
@@ -125,7 +125,7 @@ try
         }
 
         Context 'Modify column name' {
-            $null = Set-GitHubProjectColumn -Column $column.id -Name $defaultColumnUpdate
+            $null = Set-GitHubProjectColumn -Column $column.id -ColumnName $defaultColumnUpdate
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Should get column' {
@@ -198,7 +198,7 @@ try
                 Remove-Variable -Name column
             }
 
-            $column.id = (New-GitHubProjectColumn -Project $project.id -Name $defaultColumn).id
+            $column.id = (New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn).id
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
@@ -227,7 +227,7 @@ try
                 Remove-Variable -Name column
             }
 
-            $column.id = ($project | New-GitHubProjectColumn -Name $defaultColumn).id
+            $column.id = ($project | New-GitHubProjectColumn -ColumnName $defaultColumn).id
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
@@ -279,7 +279,7 @@ try
     Describe 'Remove project column' {
         Context 'Remove project column' {
             BeforeAll {
-                $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+                $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
             }
 
             $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
@@ -290,7 +290,7 @@ try
 
         Context 'Remove project column (via pipeline)' {
             BeforeAll {
-                $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
+                $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
             }
 
             $column | Remove-GitHubProjectColumn -Force

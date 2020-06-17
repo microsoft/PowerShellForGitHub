@@ -34,10 +34,10 @@ try
     }
 
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-    $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -Name $defaultProject
+    $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultProject
 
-    $column = New-GitHubProjectColumn -Project $project.id -Name $defaultColumn
-    $columntwo = New-GitHubProjectColumn -Project $project.id -Name $defaultColumnTwo
+    $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
+    $columntwo = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumnTwo
 
     $issue = New-GitHubIssue -Owner $script:ownerName -RepositoryName $repo.name -Title $defaultIssue
 

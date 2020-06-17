@@ -425,7 +425,7 @@ try
             }
 
             It "Should be possible to rename with Update-GitHubRepository too" {
-                $renamedRepo = $repo | Update-GitHubRepository -Name $newRepoName -Confirm:$false
+                $renamedRepo = $repo | Update-GitHubRepository -NewName $newRepoName -Confirm:$false
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
