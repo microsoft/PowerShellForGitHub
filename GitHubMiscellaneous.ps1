@@ -48,7 +48,8 @@ function Get-GitHubRateLimit
         For these reasons, the Rate Limit API response categorizes your rate limit.
         Under resources, you'll see three objects:
 
-        The core object provides your rate limit status for all non-search-related resources in the REST API.
+        The core object provides your rate limit status for all non-search-related resources
+        in the REST API.
         The search object provides your rate limit status for the Search API.
         The graphql object provides your rate limit status for the GraphQL API.
 
@@ -140,7 +141,9 @@ function ConvertFrom-GitHubMarkdown
             Mandatory,
             ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({if ([System.Text.Encoding]::UTF8.GetBytes($_).Count -lt 400000) { $true } else { throw "Content must be less than 400 KB." }})]
+        [ValidateScript({
+            if ([System.Text.Encoding]::UTF8.GetBytes($_).Count -lt 400000) { $true }
+            else { throw "Content must be less than 400 KB." }})]
         [string] $Content,
 
         [ValidateSet('Markdown', 'GitHubFlavoredMarkdown')]

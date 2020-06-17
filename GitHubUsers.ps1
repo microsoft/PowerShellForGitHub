@@ -21,7 +21,8 @@ filter Get-GitHubUser
 
     .PARAMETER User
         The GitHub user to retrieve information for.
-        If not specified, will retrieve information on all GitHub users (and may take a while to complete).
+        If not specified, will retrieve information on all GitHub users
+        (and may take a while to complete).
 
     .PARAMETER Current
         If specified, gets information on the current user.

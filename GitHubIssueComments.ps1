@@ -47,10 +47,15 @@ filter Get-GitHubIssueComment
     .PARAMETER MediaType
         The format in which the API will return the body of the comment.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -384,10 +389,15 @@ filter Set-GitHubIssueComment
     .PARAMETER MediaType
         The format in which the API will return the body of the comment.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -521,12 +531,14 @@ filter Remove-GitHubIssueComment
     .EXAMPLE
         Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Confirm:$false
 
-        Deletes a Github comment from an Issue in the microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a Github comment from an Issue in the microsoft\PowerShellForGitHub project
+        without prompting confirmation.
 
     .EXAMPLE
         Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Comment 1 -Force
 
-        Deletes a GitHub comment from an Issue in the microsoft\PowerShellForGitHub project without prompting confirmation.
+        Deletes a GitHub comment from an Issue in the microsoft\PowerShellForGitHub project
+        without prompting confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -624,8 +636,11 @@ filter Add-GitHubIssueCommentAdditionalProperties
 
     foreach ($item in $InputObject)
     {
-        $item.PSObject.TypeNames.Insert(0, $script:GitHubCommentTypeName) # Provide a generic comment type too
-        $item.PSObject.TypeNames.Insert(0, $TypeName) # We want the specific type on top
+        # Provide a generic comment type too
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubCommentTypeName)
+
+        # But we want the specific type on top
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {

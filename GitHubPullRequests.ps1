@@ -183,7 +183,8 @@ filter New-GitHubPullRequest
         Create a new pull request in the specified repository.
 
     .DESCRIPTION
-        Opens a new pull request from the given branch into the given branch in the specified repository.
+        Opens a new pull request from the given branch into the given branch
+        in the specified repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -266,7 +267,9 @@ filter New-GitHubPullRequest
     #>
 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements_Title')]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements_Title')]
     param(
         [Parameter(ParameterSetName='Elements_Title')]
         [Parameter(ParameterSetName='Elements_Issue')]

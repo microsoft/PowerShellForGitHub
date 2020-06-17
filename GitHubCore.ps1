@@ -103,8 +103,8 @@ function Invoke-GHRestMethod
         no additional status shown to the user until a response is returned from the REST request.
 
     .NOTES
-        This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access to the headers
-        that are returned in the response, and Invoke-RestMethod drops those headers.
+        This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
+        to the headers that are returned in the response, and Invoke-RestMethod drops those headers.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -245,7 +245,15 @@ function Invoke-GHRestMethod
             $jobName = "Invoke-GHRestMethod-" + (Get-Date).ToFileTime().ToString()
 
             [scriptblock]$scriptBlock = {
-                param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $LogRequestBody, $ScriptRootPath)
+                param(
+                    $Url,
+                    $Method,
+                    $Headers,
+                    $Body,
+                    $ValidBodyContainingRequestMethods,
+                    $TimeoutSec,
+                    $LogRequestBody,
+                    $ScriptRootPath)
 
                 # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
                 # the context of this script block since we're running in a different
@@ -347,7 +355,8 @@ function Invoke-GHRestMethod
         }
         catch [ArgumentException]
         {
-            # The content must not be JSON (which is a legitimate situation).  We'll return the raw content result instead.
+            # The content must not be JSON (which is a legitimate situation).
+            # We'll return the raw content result instead.
             # We do this unnecessary assignment to avoid PSScriptAnalyzer's PSAvoidUsingEmptyCatchBlock.
             $finalResult = $finalResult
         }
@@ -359,7 +368,9 @@ function Invoke-GHRestMethod
             # a lot of time.  Let's optimize here by not bothering to send in something that we
             # know is definitely not convertible ([int32] on PS5, [long] on PS7).
             if (($finalResult -isnot [Object[]]) -or
-                (($finalResult.Count -gt 0) -and ($finalResult[0] -isnot [int]) -and ($finalResult[0] -isnot [long])))
+                (($finalResult.Count -gt 0) -and
+                 ($finalResult[0] -isnot [int]) -and
+                 ($finalResult[0] -isnot [long])))
             {
                 $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
             }
@@ -424,8 +435,9 @@ function Invoke-GHRestMethod
     }
     catch
     {
-        # We only know how to handle WebExceptions, which will either come in "pure" when running with -NoStatus,
-        # or will come in as a RemoteException when running normally (since it's coming from the asynchronous Job).
+        # We only know how to handle WebExceptions, which will either come in "pure"
+        # when running with -NoStatus, or will come in as a RemoteException when running
+        # normally (since it's coming from the asynchronous Job).
         $ex = $null
         $message = $null
         $statusCode = $null
@@ -530,7 +542,9 @@ function Invoke-GHRestMethod
 
         if ($statusCode -eq 404)
         {
-            $output += "This typically happens when the current user isn't properly authenticated.  You may need an Access Token with additional scopes checked."
+            $explanation = @('This typically happens when the current user isn''t properly authenticated.',
+              'You may need an Access Token with additional scopes checked.')
+            $output += ($explanation -join ' ')
         }
 
         if (-not [String]::IsNullOrEmpty($requestId))
@@ -991,7 +1005,8 @@ filter ConvertTo-SmarterObject
                 }
                 catch
                 {
-                    Write-Log -Message "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is." -Level Verbose
+                    $message = "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is."
+                    Write-Log -Message $message -Level Verbose
                 }
             }
 
@@ -1024,10 +1039,15 @@ function Get-MediaAcceptHeader
     .PARAMETER MediaType
         The format in which the API will return the body of the comment or issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
         Object - Return a json object representation a file or folder.
 
     .PARAMETER AsJson

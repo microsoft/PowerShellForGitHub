@@ -292,8 +292,8 @@ Set-GitHubConfiguration -LogRequestBody
 This module has comprehensive support for the PowerShell pipeline.  It is imperative that all
 new functionality added to the module embraces this design.
 
- * Most functions are declared as a `filter`.  This is the equivalent of a `function` with a
-   where the body of the function is the `process` block, and the `begin/end` blocks are empty.
+ * Most functions are declared as a `filter`.  This is the equivalent of a `function` where the
+   body of the function is the `process` block, and the `begin/end` blocks are empty.
 
  * In limited cases where one of the inputs is an array of something, and you specifically want that
    to be processed as a single command (like adding a bunch of labels to a single issue at once),

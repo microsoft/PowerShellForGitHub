@@ -96,10 +96,15 @@ filter Get-GitHubIssue
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -497,10 +502,15 @@ filter New-GitHubIssue
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -645,10 +655,15 @@ filter Update-GitHubIssue
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the

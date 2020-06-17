@@ -148,7 +148,8 @@ filter Get-GitHubPathTraffic
     .EXAMPLE
         Get-GitHubPathTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the top 10 popular contents over the last 14 days from the microsoft\PowerShellForGitHub project.
+        Get the top 10 popular contents over the last 14 days
+        from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -210,11 +211,13 @@ filter Get-GitHubViewTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of views and breakdown per day or week for the last 14 days for the given GitHub Repository.
+        Get the total number of views and breakdown per day or week for the last 14 days for the
+        given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of views and breakdown per day or week for the last 14 days.
-        Timestamps are aligned to UTC midnight of the beginning of the day or week. Week begins on Monday.
+        Timestamps are aligned to UTC midnight of the beginning of the day or week.
+        Week begins on Monday.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -250,7 +253,8 @@ filter Get-GitHubViewTraffic
     .EXAMPLE
         Get-GitHubViewTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of views and breakdown per day or week for the last 14 days from the microsoft\PowerShellForGitHub project.
+        Get the total number of views and breakdown per day or week for the last 14 days from
+        the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -316,11 +320,13 @@ filter Get-GitHubCloneTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of clones and breakdown per day or week for the last 14 days for the given GitHub Repository.
+        Get the total number of clones and breakdown per day or week for the last 14 days for the
+        given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of clones and breakdown per day or week for the last 14 days.
-        Timestamps are aligned to UTC midnight of the beginning of the day or week. Week begins on Monday.
+        Timestamps are aligned to UTC midnight of the beginning of the day or week.
+        Week begins on Monday.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -356,7 +362,8 @@ filter Get-GitHubCloneTraffic
     .EXAMPLE
         Get-GitHubCloneTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Get the total number of clones and breakdown per day or week for the last 14 days from the microsoft\PowerShellForGitHub project.
+        Get the total number of clones and breakdown per day or week for the last 14 days
+        from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

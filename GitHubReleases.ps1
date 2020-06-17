@@ -211,7 +211,7 @@ filter Get-GitHubRelease
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubReleaseAdditionalProperties)

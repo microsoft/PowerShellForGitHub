@@ -255,7 +255,8 @@ filter New-GitHubProject
     .EXAMPLE
         New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -ProjectName TestProject
 
-        Create a project for the microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
+        Create a project for the microsoft\PowerShellForGitHub repository
+        using the Uri called 'TestProject'.
 
     .EXAMPLE
         New-GitHubProject -UserProject -ProjectName 'TestProject'

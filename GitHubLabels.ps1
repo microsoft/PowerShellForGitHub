@@ -197,7 +197,8 @@ filter New-GitHubLabel
 
     .PARAMETER Label
         Name of the label to be created.
-        Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
+        Emoji and codes are supported.
+        For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
     .PARAMETER Color
         Color (in HEX) for the new label.
@@ -356,12 +357,14 @@ filter Remove-GitHubLabel
     .EXAMPLE
         Remove-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -Confirm:$false
 
-        Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Removes the label called "TestLabel" from the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Remove-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -Force
 
-        Removes the label called "TestLabel" from the PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
+        Removes the label called "TestLabel" from the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -457,11 +460,13 @@ filter Update-GitHubLabel
 
     .PARAMETER Label
         Current name of the label to be updated.
-        Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
+        Emoji and codes are supported.
+        For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
     .PARAMETER NewName
         New name for the label being updated.
-        Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
+        Emoji and codes are supported.
+        For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
     .PARAMETER Color
         Color (in HEX) for the new label.
@@ -885,19 +890,26 @@ function Set-GitHubIssueLabel
     .EXAMPLE
         ('help wanted', 'good first issue') | Set-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 
-        Replaces labels on an issue in the PowerShellForGitHub project with 'help wanted' and 'good first issue'.
+        Replaces labels on an issue in the PowerShellForGitHub project
+        with 'help wanted' and 'good first issue'.
 
     .EXAMPLE
         Set-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Confirm:$false
 
-        Removes all labels from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
-        This is the same result as having called Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Confirm:$false
+        Removes all labels from issue 1 in the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Confirm:$false was specified.
+
+        This is the same result as having called
+        Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Confirm:$false
 
     .EXAMPLE
         Set-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Force
 
-        Removes all labels from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
-        This is the same result as having called Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Force
+        Removes all labels from issue 1 in the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Force was specified.
+
+        This is the same result as having called
+        Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Force
 
     .NOTES
         This is implemented as a function rather than a filter because the ValueFromPipeline
@@ -1027,7 +1039,8 @@ filter Remove-GitHubIssueLabel
 
     .PARAMETER Label
         Name of the label to be deleted. If not provided, will delete all labels on the issue.
-        Emoji and codes are supported.  For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
+        Emoji and codes are supported.
+        For more information, see here: https://www.webpagefx.com/tools/emoji-cheat-sheet/
 
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
@@ -1050,12 +1063,14 @@ filter Remove-GitHubIssueLabel
     .EXAMPLE
         Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -Issue 1 -Confirm:$false
 
-        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -Issue 1 -Force
 
-        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project. Will not prompt for confirmation, as -Force was specified.
+        Removes the label called "TestLabel" from issue 1 in the PowerShellForGitHub project.
+        Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,

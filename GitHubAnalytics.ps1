@@ -25,7 +25,8 @@ function Group-GitHubIssue
         if part of.
 
     .OUTPUTS
-        [PSCustomObject[]] Collection of issues and counts, by week, along with the total count of issues.
+        [PSCustomObject[]]
+        Collection of issues and counts, by week, along with the total count of issues.
 
     .EXAMPLE
         $issues = @()
@@ -90,8 +91,12 @@ function Group-GitHubIssue
             foreach ($week in $weekDates)
             {
                 $filteredIssues = @($Issue | Where-Object {
-                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                    (($DateType -eq 'Closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
+                    (($DateType -eq 'Created') -and
+                     ($_.created_at -ge $week) -and
+                     ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Closed') -and
+                     ($_.closed_at -ge $week) -and
+                     ($_.closed_at -le $endOfWeek))
                 })
 
                 $endOfWeek = $week
@@ -211,8 +216,12 @@ function Group-GitHubPullRequest
             foreach ($week in $weekDates)
             {
                 $filteredPullRequests = @($PullRequest | Where-Object {
-                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                    (($DateType -eq 'Merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
+                    (($DateType -eq 'Created') -and
+                     ($_.created_at -ge $week) -and
+                     ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Merged') -and
+                     ($_.merged_at -ge $week) -and
+                     ($_.merged_at -le $endOfWeek))
                 })
 
                 $endOfWeek = $week

@@ -206,7 +206,7 @@ filter New-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -322,7 +322,7 @@ filter Remove-GitHubRepository
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return Invoke-GHRestMethod @params
@@ -430,7 +430,7 @@ filter Get-GitHubRepository
     .EXAMPLE
         $repo | Get-GitHubRepository
 
-        You can pipe in a previous repository to get its information again.
+        You can pipe in a previous repository to get its refreshed information.
 
     .EXAMPLE
         Get-GitHubRepository -OrganizationName PowerShell
@@ -647,7 +647,7 @@ filter Get-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubRepositoryAdditionalProperties)
@@ -674,7 +674,8 @@ filter Rename-GitHubRepository
 
     .PARAMETER Uri
         Uri for the repository to rename. You can supply this directly, or more easily by
-        using Get-GitHubRepository to get the repository as you please, and then piping the result to this cmdlet
+        using Get-GitHubRepository to get the repository as you please,
+        and then piping the result to this cmdlet.
 
     .PARAMETER NewName
         The new name to set for the given GitHub repository
@@ -698,32 +699,39 @@ filter Rename-GitHubRepository
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
 
-        Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+        Get the given 'hello-world' repo from the user 'octocat' and then
+        rename it to be https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
 
-        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Get the repository at https://github.com/octocat/hello-world and then
+        rename it https://github.com/octocat/hello-again-world.
+        Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
 
-        Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
+        Fork the `hello-world` repository from the user 'octocat', and then
+        rename the newly forked repository by appending '_fork'.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Confirm:$false
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world without prompting for confirmation.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Force
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -979,7 +987,7 @@ filter Update-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -1071,7 +1079,7 @@ filter Get-GitHubRepositoryTopic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params |
@@ -1235,7 +1243,7 @@ function Set-GitHubRepositoryTopic
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return (Invoke-GHRestMethod @params |
@@ -1354,7 +1362,7 @@ filter Get-GitHubRepositoryContributor
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $results = Invoke-GHRestMethodMultipleResult @params
@@ -1479,7 +1487,7 @@ filter Get-GitHubRepositoryCollaborator
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
@@ -1570,7 +1578,7 @@ filter Get-GitHubRepositoryLanguage
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
@@ -1661,7 +1669,7 @@ filter Get-GitHubRepositoryTag
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
@@ -1771,7 +1779,7 @@ filter Move-GitHubRepositoryOwnership
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)

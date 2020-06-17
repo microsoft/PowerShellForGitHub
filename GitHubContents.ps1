@@ -32,14 +32,19 @@
 
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
-        Object - Return a json object representation a file or folder. This is the default if you do not pass any specific media type.
-        Raw - Return the raw contents of a file.
-        Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
+
+        Object - Return a json object representation a file or folder.
+                 This is the default if you do not pass any specific media type.
+        Raw    - Return the raw contents of a file.
+        Html   - For markup files such as Markdown or AsciiDoc,
+                 you can retrieve the rendered HTML using the Html media type.
 
     .PARAMETER ResultAsString
-        If this switch is specified and the MediaType is either Raw or Html then the resulting bytes will be decoded the result will be
-        returned as a string instead of bytes. If the MediaType is Object, then an additional property on the object is returned 'contentAsString'
-        which will be the decoded base64 result as a string.
+        If this switch is specified and the MediaType is either Raw or Html then the
+        resulting bytes will be decoded the result will be  returned as a string instead of bytes.
+        If the MediaType is Object, then an additional property on the object named
+        'contentAsString' will be included and its value will be the decoded base64 result
+        as a string.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the

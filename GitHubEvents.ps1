@@ -29,10 +29,12 @@ filter Get-GitHubEvent
         them individually.
 
     .PARAMETER EventId
-        The ID of a specific event to get. If not supplied, will return back all events for this repository.
+        The ID of a specific event to get.
+        If not supplied, will return back all events for this repository.
 
     .PARAMETER Issue
-        Issue number to get events for. If not supplied, will return back all events for this repository.
+        Issue number to get events for.
+        If not supplied, will return back all events for this repository.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
