@@ -336,6 +336,11 @@ new functionality added to the module embraces this design.
    and you should be sure to both specify it in the `.OUTPUTS` section of the Comment Based Help (CBH)
    for the command, as well as with `[OutputType({$script:GitHubUserTypeName})]` (for example).
 
+ * Going along with the `.OUTPUTS` is the `.INPUTS` section.  Please maintain this section as well.
+   If you add any new type that will gain a `RepositoryUrl` property, then you'll need to update
+   virtually _all_ of the `.INPUTS` entries across all of the files where the function has a `Uri`
+   parameter.  Please keep these type names alphabetical.
+
  * To enable debugging issues involving pipeline support, there is an additional configuration
    property that you might use:  `Set-GitHubConfiguration -DisablePipelineSupport`.  That will
    prevent the module from adding _any_ additional properties to the objects.
