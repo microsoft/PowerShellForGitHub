@@ -124,6 +124,9 @@ function ConvertFrom-GitHubMarkdown
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [String] The HTML version of the Markdown content.
 
@@ -231,6 +234,24 @@ filter Get-GitHubLicense
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+
+    .INPUTS
+        [String]
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
 
     .OUTPUTS
         GitHub.License
@@ -443,6 +464,23 @@ filter Get-GitHubCodeOfConduct
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+
     .OUTPUTS
         GitHub.CodeOfConduct
 
@@ -572,6 +610,9 @@ filter Get-GitHubGitIgnore
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        [String]
 
     .OUTPUTS
         GitHub.Gitignore

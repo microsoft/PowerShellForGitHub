@@ -24,6 +24,9 @@ function Group-GitHubIssue
         The date property that should be inspected when determining which week grouping the issue
         if part of.
 
+    .INPUTS
+        GitHub.Issue
+
     .OUTPUTS
         [PSCustomObject[]]
         Collection of issues and counts, by week, along with the total count of issues.
@@ -148,6 +151,9 @@ function Group-GitHubPullRequest
     .PARAMETER DateType
         The date property that should be inspected when determining which week grouping the
         pull request if part of.
+
+    .INPUTS
+        GitHub.PullRequest
 
     .OUTPUTS
         [PSCustomObject[]] Collection of pull requests and counts, by week, along with the
@@ -274,6 +280,7 @@ function Get-WeekDate
         Get-WeekDate -Weeks 10
 #>
     [CmdletBinding()]
+    [OutputType([DateTime[]])]
     param(
         [ValidateRange(0, 10000)]
         [int] $Weeks = 12

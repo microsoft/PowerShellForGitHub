@@ -32,6 +32,10 @@ filter Get-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+
     .OUTPUTS
         GitHub.ProjectCard
 
@@ -160,6 +164,13 @@ filter New-GitHubProjectCard
         with no command line status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.IssueComment
+        GitHub.Issue
+        GitHub.PullRequest
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
 
     .OUTPUTS
         GitHub.ProjectCard
@@ -295,6 +306,9 @@ filter Set-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.ProjectCard
+
     .OUTPUTS
         GitHub.ProjectCard
 
@@ -405,6 +419,9 @@ filter Remove-GitHubProjectCard
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.ProjectCard
+
     .EXAMPLE
         Remove-GitHubProjectCard -Card 999999
 
@@ -500,6 +517,10 @@ filter Move-GitHubProjectCard
         with no command line status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
 
     .EXAMPLE
         Move-GitHubProjectCard -Card 999999 -Top
@@ -610,6 +631,12 @@ filter Add-GitHubProjectCardAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.ProjectCard
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]

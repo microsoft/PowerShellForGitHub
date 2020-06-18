@@ -31,6 +31,9 @@ filter Get-GitHubOrganizationMember
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         GitHub.User
         List of members within the organization.
@@ -101,6 +104,9 @@ filter Test-GitHubOrganizationMember
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [Bool]
 
@@ -169,6 +175,12 @@ filter Add-GitHubOrganizationAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Organization
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]

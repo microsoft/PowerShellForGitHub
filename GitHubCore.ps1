@@ -743,6 +743,9 @@ filter Split-GitHubUri
     .PARAMETER RepositoryName
         Returns the Repository Name from the Uri if it can be identified.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [PSCustomObject] - The OwnerName and RepositoryName elements from the provided URL
 
@@ -960,6 +963,12 @@ filter ConvertTo-SmarterObject
 
     .PARAMETER InputObject
         The object to update
+
+    .INPUTS
+        [object]
+
+    .OUTPUTS
+        [object]
 #>
     [CmdletBinding()]
     param(
@@ -1056,12 +1065,16 @@ function Get-MediaAcceptHeader
     .PARAMETER AcceptHeader
         The accept header that should be included with the MediaType accept header.
 
+    .OUTPUTS
+        [String]
+
     .EXAMPLE
         Get-MediaAcceptHeader -MediaType Raw
 
         Returns a formatted AcceptHeader for v3 of the response object
 #>
     [CmdletBinding()]
+    [OutputType([String])]
     param(
         [ValidateSet('Raw', 'Text', 'Html', 'Full', 'Object')]
         [string] $MediaType = 'Raw',

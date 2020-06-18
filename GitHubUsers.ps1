@@ -46,6 +46,9 @@ filter Get-GitHubUser
         which provides an email entry for this endpoint.  If the user does not set a public
         email address for email, then it will have a value of null.
 
+    .INPUTS
+        GitHub.User
+
     .OUTPUTS
         GitHub.User
 
@@ -158,6 +161,13 @@ filter Get-GitHubUserContextualInformation
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Issue
+        GitHub.Organization
+        GitHub.PullRequest
+        GitHub.Repository
+        GitHub.User
 
     .OUTPUTS
         GitHub.UserContextualInformation
@@ -408,6 +418,12 @@ filter Add-GitHubUserAdditionalProperties
     .PARAMETER Id
         The ID of the user.  This information might be obtainable from InputObject, so this
         is optional based on what InputObject contains.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.User
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]

@@ -31,6 +31,11 @@ filter Get-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+
     .OUTPUTS
         GitHub.ProjectColumn
 
@@ -130,6 +135,12 @@ filter New-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+
     .OUTPUTS
         GitHub.ProjectColumn
 
@@ -212,6 +223,10 @@ filter Set-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+
     .OUTPUTS
         GitHub.ProjectColumn
 
@@ -289,6 +304,10 @@ filter Remove-GitHubProjectColumn
         with no command line status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
 
     .EXAMPLE
         Remove-GitHubProjectColumn -Column 999999
@@ -384,6 +403,10 @@ filter Move-GitHubProjectColumn
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+
     .EXAMPLE
         Move-GitHubProjectColumn -Column 999999 -First
 
@@ -476,6 +499,12 @@ filter Add-GitHubProjectColumnAdditionalProperties
 
     .PARAMETER TypeName
         The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.ProjectColumn
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]

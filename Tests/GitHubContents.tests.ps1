@@ -67,8 +67,9 @@ try
                 $folderOutput.entries[0].path | Should -Be $readmeFileName
             }
 
-            It "Should have the expected type" {
+            It "Should have the expected type and additional properties" {
                 $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
@@ -98,6 +99,7 @@ try
 
             It "Should have the expected type" {
                 $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
@@ -127,6 +129,7 @@ try
 
             It "Should have the expected type" {
                 $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
@@ -140,6 +143,7 @@ try
 
             It "Should have the expected type" {
                 $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
@@ -152,6 +156,7 @@ try
 
             It "Should have the expected type" {
                 $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
@@ -170,6 +175,7 @@ try
 
             It "Should have the expected type" {
                 $readmeNoBreaks.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeNoBreaks.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
@@ -187,6 +193,7 @@ try
 
             It "Should have the expected type" {
                 $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
@@ -217,6 +224,7 @@ try
 
             It "Should have the expected type" {
                 $readmeFileObject.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $readmeFileObject.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
@@ -242,6 +250,7 @@ try
 
             It "Should have the expected type" {
                 $readmeFileObject.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $readmeFileObject.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
     }
