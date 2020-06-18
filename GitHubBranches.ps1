@@ -154,7 +154,7 @@ filter Get-GitHubRepositoryBranch
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubBranchAdditionalProperties)
 }
 
-function New-GitHubRepositoryBranch
+filter New-GitHubRepositoryBranch
 {
     <#
     .SYNOPSIS
@@ -195,26 +195,45 @@ function New-GitHubRepositoryBranch
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
-        PSCustomObject
+        GitHub.Branch
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -Name New-Branch1 -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        New-GitHubRepositoryBranch -BranchName New-Branch1 -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Creates a new branch in the specified repository from the master branch.
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -Name New-Branch2 -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OriginBranchName 'New-Branch1'
+        New-GitHubRepositoryBranch -BranchName New-Branch2 -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OriginBranchName 'New-Branch1'
 
         Creates a new branch in the specified repository from the specified origin branch.
+
+    .EXAMPLE
+        $repo = Get-GithubRepository -Uri https://github.com/You/YourRepo
+        $repo | New-GitHubRepositoryBranch -BranchName 'NewBranch'
+
+        You can also pipe in a repo that was returned from a previous command.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements',
         PositionalBinding = $false
     )]
+    [OutputType({$script:GitHubBranchTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
         Justification = "Methods called within here make use of PSShouldProcess, and the switch is
         passed on to them inherently.")]
@@ -225,13 +244,16 @@ function New-GitHubRepositoryBranch
     param(
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             Position = 1)]
-        [string] $Name,
+        [string] $BranchName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 2,
             ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(ParameterSetName = 'Elements')]
@@ -263,7 +285,7 @@ function New-GitHubRepositoryBranch
         $getGitHubRepositoryBranchParms = @{
             OwnerName = $OwnerName
             RepositoryName = $RepositoryName
-            Name = $OriginBranchName
+            BranchName = $OriginBranchName
             Whatif = $false
             Confirm = $false
         }
@@ -304,7 +326,7 @@ function New-GitHubRepositoryBranch
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
 
     $hashBody = @{
-        ref = "refs/heads/$Name"
+        ref = "refs/heads/$BranchName"
         sha = $originBranch.commit.sha
     }
 
@@ -312,17 +334,17 @@ function New-GitHubRepositoryBranch
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' = "Creating branch $Name for $RepositoryName"
+        'Description' = "Creating branch $BranchName for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubBranchAdditionalProperties)
 }
 
-function Remove-GitHubRepositoryBranch
+filter Remove-GitHubRepositoryBranch
 {
     <#
     .SYNOPSIS
@@ -363,20 +385,38 @@ function Remove-GitHubRepositoryBranch
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepositoryBranch  -BranchName develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Removes the 'develop' branch from the specified repository.
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Force
+        Remove-GitHubRepositoryBranch  -BranchName develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Force
 
         Removes the 'develop' branch from the specified repository without prompting for confirmation.
+
+    .EXAMPLE
+        $branch = Get-GitHubRepositoryBranch -Uri https://github.com/You/YourRepo -BranchName BranchToDelete
+        $branch | Remove-GitHubRepositoryBranch -Force
+
+        You can also pipe in a repo that was returned from a previous command.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -395,13 +435,16 @@ function Remove-GitHubRepositoryBranch
     param(
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 1)]
-        [string] $Name,
+        [string] $BranchName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 2,
             ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(ParameterSetName = 'Elements')]
@@ -426,21 +469,21 @@ function Remove-GitHubRepositoryBranch
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$Name"
+    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$BranchName"
 
     if ($Force -and (-not $Confirm))
     {
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($Name, "Remove Repository Branch"))
+    if ($PSCmdlet.ShouldProcess($BranchName, "Remove Repository Branch"))
     {
         Write-InvocationLog
 
         $params = @{
             'UriFragment' = $uriFragment
             'Method' = 'Delete'
-            'Description' = "Deleting branch $Name from $RepositoryName"
+            'Description' = "Deleting branch $BranchName from $RepositoryName"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
@@ -490,11 +533,28 @@ filter Add-GitHubBranchAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.commit.url
+            if ($null -ne $item.url)
+            {
+                $elements = Split-GitHubUri -Uri $item.url
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.commit.url
+            }
             $repositoryUrl = Join-GitHubUri @elements
+
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
-            Add-Member -InputObject $item -Name 'BranchName' -Value $item.name -MemberType NoteProperty -Force
+            if ($null -ne $item.name)
+            {
+                $branchName = $item.name
+            }
+            else
+            {
+                $branchName = $item.ref -replace ('refs/heads/', '')
+            }
+
+            Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
         }
 
         Write-Output $item
