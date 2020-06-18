@@ -794,16 +794,6 @@ try
             It 'Should return the correct properties' {
                 $updatedRepo.name | Should -Be $repoName
                 $updatedRepo.private | Should -BeFalse
-
-            It 'Should have the new updated description' {
-                $modifiedRepoDesc = $defaultRepoDesc + "_modified"
-                $updatedRepo = Set-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Description $modifiedRepoDesc
-                $updatedRepo.description | Should -Be $modifiedRepoDesc
-            }
-
-            It 'Should have the new updated homepage url' {
-                $updatedRepo = Set-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Homepage $defaultRepoHomePage
-                $updatedRepo.homepage | Should -Be $defaultRepoHomePage
             }
 
             AfterAll -ScriptBlock {
