@@ -281,13 +281,13 @@ function Write-Log
         [System.Management.Automation.ErrorRecord] $Exception
     )
 
-    Begin
+    begin
     {
         # Accumulate the list of Messages, whether by pipeline or parameter.
         $messages = @()
     }
 
-    Process
+    process
     {
         foreach ($m in $Message)
         {
@@ -295,7 +295,7 @@ function Write-Log
         }
     }
 
-    End
+    end
     {
         if ($null -ne $Exception)
         {
@@ -499,6 +499,7 @@ function Write-InvocationLog
 }
 
 function DeepCopy-Object
+{
 <#
     .SYNOPSIS
         Creates a deep copy of a serializable object.
@@ -524,7 +525,6 @@ function DeepCopy-Object
     .RETURNS
         An exact copy of the PSObject that was just deep copied.
 #>
-{
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseApprovedVerbs", "", Justification="Intentional.  This isn't exported, and needed to be explicit relative to Copy-Object.")]
     param(
@@ -682,9 +682,7 @@ function Resolve-UnverifiedPath
 #>
     [CmdletBinding()]
     param(
-        [Parameter(
-            Position=0,
-            ValueFromPipeline)]
+        [Parameter(ValueFromPipeline)]
         [string] $Path
     )
 

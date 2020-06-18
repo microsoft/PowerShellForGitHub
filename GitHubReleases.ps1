@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubRelease
+@{
+    GitHubReleaseTypeName = 'GitHub.Release'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubRelease
 {
 <#
     .SYNOPSIS
@@ -25,8 +31,8 @@ function Get-GitHubRelease
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER ReleaseId
-        Specific releaseId of a release.
+    .PARAMETER Release
+        The ID of a specific release.
         This is an optional parameter which can limit the results to a single release.
 
     .PARAMETER Latest
@@ -47,13 +53,31 @@ function Get-GitHubRelease
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Release
+
     .EXAMPLE
         Get-GitHubRelease
 
         Gets all releases for the default configured owner/repository.
 
     .EXAMPLE
-        Get-GitHubRelease -ReleaseId 12345
+        Get-GitHubRelease -Release 12345
 
         Get a specific release for the default configured owner/repository
 
@@ -84,49 +108,50 @@ function Get-GitHubRelease
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReleaseTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(
-            ParameterSetName='Elements')]
-        [Parameter(
-            ParameterSetName="Elements-ReleaseId")]
-        [Parameter(
-            ParameterSetName="Elements-Latest")]
-        [Parameter(
-            ParameterSetName="Elements-Tag")]
+        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName="Elements-ReleaseId")]
+        [Parameter(ParameterSetName="Elements-Latest")]
+        [Parameter(ParameterSetName="Elements-Tag")]
         [string] $OwnerName,
 
-        [Parameter(
-            ParameterSetName='Elements')]
-        [Parameter(
-            ParameterSetName="Elements-ReleaseId")]
-        [Parameter(
-            ParameterSetName="Elements-Latest")]
-        [Parameter(
-            ParameterSetName="Elements-Tag")]
+        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName="Elements-ReleaseId")]
+        [Parameter(ParameterSetName="Elements-Latest")]
+        [Parameter(ParameterSetName="Elements-Tag")]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-ReleaseId")]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-Latest")]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-Tag")]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName="Elements-ReleaseId")]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName="Uri-ReleaseId")]
-        [string] $ReleaseId,
+        [Alias('ReleaseId')]
+        [int64] $Release,
 
         [Parameter(
             Mandatory,
@@ -163,12 +188,12 @@ function Get-GitHubRelease
     $uriFragment = "repos/$OwnerName/$RepositoryName/releases"
     $description = "Getting releases for $OwnerName/$RepositoryName"
 
-    if(-not [String]::IsNullOrEmpty($ReleaseId))
+    if ($PSBoundParameters.ContainsKey('Release'))
     {
-        $telemetryProperties['ProvidedReleaseId'] = $true
+        $telemetryProperties['ProvidedRelease'] = $true
 
-        $uriFragment += "/$ReleaseId"
-        $description = "Getting release information for $ReleaseId from $OwnerName/$RepositoryName"
+        $uriFragment += "/$Release"
+        $description = "Getting release information for $Release from $OwnerName/$RepositoryName"
     }
 
     if($Latest)
@@ -193,8 +218,66 @@ function Get-GitHubRelease
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubReleaseAdditionalProperties)
+}
+
+
+filter Add-GitHubReleaseAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Release objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Release
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubReleaseTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if (-not [String]::IsNullOrEmpty($item.html_url))
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.author)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
+            }
+        }
+
+        Write-Output $item
+    }
 }

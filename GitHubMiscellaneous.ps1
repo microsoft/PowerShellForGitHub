@@ -1,6 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+@{
+    GitHubRateLimitTypeName = 'GitHub.RateLimit'
+    GitHubLicenseTypeName = 'GitHub.License'
+    GitHubEmojiTypeName = 'GitHub.Emoji'
+    GitHubCodeOfConductTypeName = 'GitHub.CodeOfConduct'
+    GitHubGitignoreTypeName = 'GitHub.Gitignore'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
 function Get-GitHubRateLimit
 {
 <#
@@ -27,7 +37,7 @@ function Get-GitHubRateLimit
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject]
+        GitHub.RateLimit
         Limits returned are _per hour_.
 
         The Search API has a custom rate limit, separate from the rate limit
@@ -38,7 +48,8 @@ function Get-GitHubRateLimit
         For these reasons, the Rate Limit API response categorizes your rate limit.
         Under resources, you'll see three objects:
 
-        The core object provides your rate limit status for all non-search-related resources in the REST API.
+        The core object provides your rate limit status for all non-search-related resources
+        in the REST API.
         The search object provides your rate limit status for the Search API.
         The graphql object provides your rate limit status for the GraphQL API.
 
@@ -52,6 +63,7 @@ function Get-GitHubRateLimit
         Get-GitHubRateLimit
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubRateLimitTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -71,7 +83,9 @@ function Get-GitHubRateLimit
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+    $result.PSObject.TypeNames.Insert(0, $script:GitHubRateLimitTypeName)
+    return $result
 }
 
 function ConvertFrom-GitHubMarkdown
@@ -110,6 +124,9 @@ function ConvertFrom-GitHubMarkdown
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [String] The HTML version of the Markdown content.
 
@@ -119,6 +136,7 @@ function ConvertFrom-GitHubMarkdown
         Returns back '<p><strong>Bolded Text</strong></p>'
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([String])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -126,7 +144,9 @@ function ConvertFrom-GitHubMarkdown
             Mandatory,
             ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({if ([System.Text.Encoding]::UTF8.GetBytes($_).Count -lt 400000) { $true } else { throw "Content must be less than 400 KB." }})]
+        [ValidateScript({
+            if ([System.Text.Encoding]::UTF8.GetBytes($_).Count -lt 400000) { $true }
+            else { throw "Content must be less than 400 KB." }})]
         [string] $Content,
 
         [ValidateSet('Markdown', 'GitHubFlavoredMarkdown')]
@@ -177,7 +197,7 @@ function ConvertFrom-GitHubMarkdown
     }
 }
 
-function Get-GitHubLicense
+filter Get-GitHubLicense
 {
 <#
     .SYNOPSIS
@@ -201,8 +221,8 @@ function Get-GitHubLicense
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
-        The name of the license to retrieve the content for.  If not specified, all licenses
+    .PARAMETER Key
+        The key of the license to retrieve the content for.  If not specified, all licenses
         will be returned.
 
     .PARAMETER AccessToken
@@ -215,27 +235,52 @@ function Get-GitHubLicense
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+
+    .INPUTS
+        [String]
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+
+    .OUTPUTS
+        GitHub.License
+
     .EXAMPLE
         Get-GitHubLicense
 
         Returns metadata about popular open source licenses
 
     .EXAMPLE
-        Get-GitHubLicense -Name mit
+        Get-GitHubLicense -Key mit
 
         Gets the content of the mit license file
 
     .EXAMPLE
-        Get-GitHubLicense -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubLicense -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the license file for the Microsoft\PowerShellForGitHub repository.
+        Gets the content of the license file for the microsoft\PowerShellForGitHub repository.
         It may be necessary to convert the content of the file.  Check the 'encoding' property of
         the result to know how 'content' is encoded.  As an example, to convert from Base64, do
         the following:
 
         [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='All')]
+    [OutputType({$script:GitHubLicenseTypeName})]
+    [OutputType({$script:GitHubContentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -246,13 +291,17 @@ function Get-GitHubLicense
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Individual')]
-        [string] $Name,
+        [Alias('LicenseKey')]
+        [string] $Key,
 
         [string] $AccessToken,
 
@@ -269,11 +318,11 @@ function Get-GitHubLicense
 
     $uriFragment = 'licenses'
     $description = 'Getting all licenses'
-    if ($PSBoundParameters.ContainsKey('Name'))
+    if ($PSBoundParameters.ContainsKey('Key'))
     {
-        $telemetryProperties['Name'] = $Name
-        $uriFragment = "licenses/$Name"
-        $description = "Getting the $Name license"
+        $telemetryProperties['Key'] = $Name
+        $uriFragment = "licenses/$Key"
+        $description = "Getting the $Key license"
     }
     elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
     {
@@ -293,7 +342,35 @@ function Get-GitHubLicense
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+    foreach ($item in $result)
+    {
+        if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
+        {
+            $null = $item | Add-GitHubContentAdditionalProperties
+
+            # Add the decoded Base64 content directly to the object as an additional String property
+            $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($item.content))
+            Add-Member -InputObject $item -NotePropertyName "contentAsString" -NotePropertyValue $decoded
+
+            $item.license.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
+
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                Add-Member -InputObject $item -Name 'LicenseKey' -Value $item.license.key -MemberType NoteProperty -Force
+            }
+        }
+        else
+        {
+            $item.PSObject.TypeNames.Insert(0, $script:GitHubLicenseTypeName)
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                Add-Member -InputObject $item -Name 'LicenseKey' -Value $item.key -MemberType NoteProperty -Force
+            }
+        }
+    }
+
+    return $result
 }
 
 function Get-GitHubEmoji
@@ -318,13 +395,13 @@ function Get-GitHubEmoji
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        [PSCustomObject]
-        The emoji name and a link to its image.
+        GitHub.Emoji
 
     .EXAMPLE
         Get-GitHubEmoji
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubEmojiTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -344,17 +421,19 @@ function Get-GitHubEmoji
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+    $result.PSObject.TypeNames.Insert(0, $script:GitHubEmojiTypeName)
+    return $result
 }
 
-function Get-GitHubCodeOfConduct
+filter Get-GitHubCodeOfConduct
 {
 <#
     .SYNOPSIS
-        Gets license or license content from GitHub.
+        Gets Codes of Conduct or a specific Code of Conduct from GitHub.
 
     .DESCRIPTION
-        Gets license or license content from GitHub.
+        Gets Codes of Conduct or a specific Code of Conduct from GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -371,9 +450,9 @@ function Get-GitHubCodeOfConduct
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
-        The name of the license to retrieve the content for.  If not specified, all licenses
-        will be returned.
+    .PARAMETER Key
+        The unique key of the Code of Conduct to retrieve the content for.  If not specified, all
+        Codes of Conduct will be returned.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -385,20 +464,40 @@ function Get-GitHubCodeOfConduct
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+
+    .OUTPUTS
+        GitHub.CodeOfConduct
+
     .EXAMPLE
         Get-GitHubCodeOfConduct
 
         Returns metadata about popular Codes of Conduct
 
     .EXAMPLE
-        Get-GitHubCodeOfConduct -Name citizen_code_of_conduct
+        Get-GitHubCodeOfConduct -Key citizen_code_of_conduct
 
         Gets the content of the 'Citizen Code of Conduct'
 
     .EXAMPLE
-        Get-GitHubCodeOfConduct -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubCodeOfConduct -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
-        Gets the content of the Code of Conduct file for the Microsoft\PowerShellForGitHub repository
+        Gets the content of the Code of Conduct file for the microsoft\PowerShellForGitHub repository
         if one is detected.
 
         It may be necessary to convert the content of the file.  Check the 'encoding' property of
@@ -408,6 +507,7 @@ function Get-GitHubCodeOfConduct
         [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubCodeOfConductTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -418,13 +518,17 @@ function Get-GitHubCodeOfConduct
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Individual')]
-        [string] $Name,
+        [Alias('CodeOfConductKey')]
+        [string] $Key,
 
         [string] $AccessToken,
 
@@ -441,11 +545,11 @@ function Get-GitHubCodeOfConduct
 
     $uriFragment = 'codes_of_conduct'
     $description = 'Getting all Codes of Conduct'
-    if ($PSBoundParameters.ContainsKey('Name'))
+    if ($PSBoundParameters.ContainsKey('Key'))
     {
-        $telemetryProperties['Name'] = $Name
-        $uriFragment = "codes_of_conduct/$Name"
-        $description = "Getting the $Name Code of Conduct"
+        $telemetryProperties['Key'] = $Name
+        $uriFragment = "codes_of_conduct/$Key"
+        $description = "Getting the $Key Code of Conduct"
     }
     elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
     {
@@ -458,7 +562,7 @@ function Get-GitHubCodeOfConduct
     $params = @{
         'UriFragment' = $uriFragment
         'Method' = 'Get'
-        'AcceptHeader' = 'application/vnd.github.scarlet-witch-preview+json'
+        'AcceptHeader' = $script:scarletWitchAcceptHeader
         'Description' =  $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -466,10 +570,20 @@ function Get-GitHubCodeOfConduct
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+    foreach ($item in $result)
+    {
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubCodeOfConductTypeName)
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'CodeOfConductKey' -Value $item.key -MemberType NoteProperty -Force
+        }
+    }
+
+    return $result
 }
 
-function Get-GitHubGitIgnore
+filter Get-GitHubGitIgnore
 {
 <#
     .SYNOPSIS
@@ -484,6 +598,9 @@ function Get-GitHubGitIgnore
         The name of the .gitignore template whose content should be fetched.
         Not providing this will cause a list of all available templates to be returned.
 
+    .PARAMETER RawContent
+        If specified, the raw content of the specified .gitignore file will be returned.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -493,6 +610,12 @@ function Get-GitHubGitIgnore
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        [String]
+
+    .OUTPUTS
+        GitHub.Gitignore
 
     .EXAMPLE
         Get-GitHubGitIgnore
@@ -505,9 +628,16 @@ function Get-GitHubGitIgnore
         Returns the content of the VisualStudio.gitignore template.
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubGitignoreTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
+        [Parameter(
+            ValueFromPipeline,
+            ParameterSetName='Individual')]
         [string] $Name,
+
+        [Parameter(ParameterSetName='Individual')]
+        [switch] $RawContent,
 
         [string] $AccessToken,
 
@@ -537,5 +667,21 @@ function Get-GitHubGitIgnore
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    if ($RawContent)
+    {
+        $params['AcceptHeader'] = (Get-MediaAcceptHeader -MediaType 'Raw')
+    }
+
+    $result = Invoke-GHRestMethod @params
+    if ($PSBoundParameters.ContainsKey('Name') -and (-not $RawContent))
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubGitignoreTypeName)
+    }
+
+    if ($RawContent)
+    {
+        $result = [System.Text.Encoding]::UTF8.GetString($result)
+    }
+
+    return $result
 }

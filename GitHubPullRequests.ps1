@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubPullRequest
+@{
+    GitHubPullRequestTypeName = 'GitHub.PullRequest'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubPullRequest
 {
 <#
     .SYNOPSIS
@@ -58,14 +64,29 @@ function Get-GitHubPullRequest
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .OUTPUTS
-        [PSCustomObject[]] List of Pull Requests that match the specified criteria.
+        GitHub.PulLRequest
 
     .EXAMPLE
         $pullRequests = Get-GitHubPullRequest -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
 
     .EXAMPLE
-        $pullRequests = Get-GitHubPullRequest -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Closed
+        $pullRequests = Get-GitHubPullRequest -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -80,10 +101,16 @@ function Get-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $PullRequest,
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [Alias('PullRequestNumber')]
+        [int64] $PullRequest,
 
         [ValidateSet('Open', 'Closed', 'All')]
         [string] $State = 'Open',
@@ -117,7 +144,7 @@ function Get-GitHubPullRequest
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/pulls"
     $description = "Getting pull requests for $RepositoryName"
-    if (-not [String]::IsNullOrEmpty($PullRequest))
+    if ($PSBoundParameters.ContainsKey('PullRequest'))
     {
         $uriFragment = $uriFragment + "/$PullRequest"
         $description = "Getting pull request $PullRequest for $RepositoryName"
@@ -154,24 +181,25 @@ function Get-GitHubPullRequest
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
         'Description' =  $description
-        'AcceptHeader' = 'application/vnd.github.symmetra-preview+json'
+        'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubPullRequestAdditionalProperties)
 }
 
-function New-GitHubPullRequest
+filter New-GitHubPullRequest
 {
     <#
     .SYNOPSIS
         Create a new pull request in the specified repository.
 
     .DESCRIPTION
-        Opens a new pull request from the given branch into the given branch in the specified repository.
+        Opens a new pull request from the given branch into the given branch
+        in the specified repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -231,8 +259,23 @@ function New-GitHubPullRequest
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .OUTPUTS
-        [PSCustomObject] An object describing the created pull request.
+        GitHub.PullRequest
 
     .EXAMPLE
         $prParams = @{
@@ -254,7 +297,9 @@ function New-GitHubPullRequest
     #>
 
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName='Elements_Title')]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements_Title')]
     param(
         [Parameter(ParameterSetName='Elements_Title')]
         [Parameter(ParameterSetName='Elements_Issue')]
@@ -266,10 +311,13 @@ function New-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Title')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -287,10 +335,13 @@ function New-GitHubPullRequest
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Elements_Issue')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
+        [Alias('IssueNumber')]
         [int] $Issue,
 
         [Parameter(Mandatory)]
@@ -387,5 +438,73 @@ function New-GitHubPullRequest
         $restParams['AcceptHeader'] = $acceptHeader
     }
 
-    return Invoke-GHRestMethod @restParams
+    return (Invoke-GHRestMethod @restParams | Add-GitHubPullRequestAdditionalProperties)
+}
+
+filter Add-GitHubPullRequestAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubPullRequestTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $item.number -MemberType NoteProperty -Force
+
+            @('assignee', 'assignees', 'requested_reviewers', 'merged_by', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
+
+            if ($null -ne $item.labels)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
+            }
+
+            if ($null -ne $item.milestone)
+            {
+                $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
+            }
+
+            if ($null -ne $item.requested_teams)
+            {
+                $null = Add-GitHubTeamAdditionalProperties -InputObject $item.requested_teams
+            }
+
+            # TODO: What type are item.head and item.base?
+        }
+
+        Write-Output $item
+    }
 }

@@ -1,7 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubReferrerTraffic
+@{
+    GitHubReferrerTrafficTypeName = 'GitHub.ReferrerTraffic'
+    GitHubPathTrafficTypeName = 'GitHub.PathTraffic'
+    GitHubViewTrafficTypeName = 'GitHub.ViewTraffic'
+    GitHubCloneTrafficTypeName = 'GitHub.CloneTraffic'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubReferrerTraffic
 {
 <#
     .SYNOPSIS
@@ -35,14 +44,33 @@ function Get-GitHubReferrerTraffic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubReferrerTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the top 10 referrers over the last 14 days from the Microsoft\PowerShellForGitHub project.
+    .OUTPUTS
+        GitHub.ReferrerTraffic
+
+    .EXAMPLE
+        Get-GitHubReferrerTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the top 10 referrers over the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReferrerTrafficTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -54,7 +82,9 @@ function Get-GitHubReferrerTraffic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -83,14 +113,21 @@ function Get-GitHubReferrerTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubReferrerTrafficTypeName)
+    }
+
+    return $result
 }
 
-function Get-GitHubPathTraffic
+filter Get-GitHubPathTraffic
 {
 <#
     .SYNOPSIS
-        Get the top 10 popular contents over the last 14 days for a given Github repository.
+        Get the top 10 popular contents over the last 14 days for a given GitHub repository.
 
     .DESCRIPTION
         Get the top 10 popular contents over the last 14 days for a given GitHub repository.
@@ -120,14 +157,34 @@ function Get-GitHubPathTraffic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubPathTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the top 10 popular contents over the last 14 days from the Microsoft\PowerShellForGitHub project.
+    .OUTPUTS
+        GitHub.PathTraffic
+
+    .EXAMPLE
+        Get-GitHubPathTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the top 10 popular contents over the last 14 days
+        from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubPathTrafficTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -139,7 +196,9 @@ function Get-GitHubPathTraffic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -168,18 +227,27 @@ function Get-GitHubPathTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubPathTrafficTypeName)
+    }
+
+    return $result
 }
 
-function Get-GitHubViewTraffic
+filter Get-GitHubViewTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of views and breakdown per day or week for the last 14 days for the given Github Repository.
+        Get the total number of views and breakdown per day or week for the last 14 days for the
+        given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of views and breakdown per day or week for the last 14 days.
-        Timestamps are aligned to UTC midnight of the beginning of the day or week. Week begins on Monday.
+        Timestamps are aligned to UTC midnight of the beginning of the day or week.
+        Week begins on Monday.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -209,14 +277,34 @@ function Get-GitHubViewTraffic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubViewTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the total number of views and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
+    .OUTPUTS
+        GitHub.ViewTraffic
+
+    .EXAMPLE
+        Get-GitHubViewTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the total number of views and breakdown per day or week for the last 14 days from
+        the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubViewTrafficTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -228,7 +316,9 @@ function Get-GitHubViewTraffic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [ValidateSet('Day', 'Week')]
@@ -261,18 +351,27 @@ function Get-GitHubViewTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubViewTrafficTypeName)
+    }
+
+    return $result
 }
 
-function Get-GitHubCloneTraffic
+filter Get-GitHubCloneTraffic
 {
 <#
     .SYNOPSIS
-        Get the total number of clones and breakdown per day or week for the last 14 days for the given Github Repository.
+        Get the total number of clones and breakdown per day or week for the last 14 days for the
+        given GitHub Repository.
 
     .DESCRIPTION
         Get the total number of clones and breakdown per day or week for the last 14 days.
-        Timestamps are aligned to UTC midnight of the beginning of the day or week. Week begins on Monday.
+        Timestamps are aligned to UTC midnight of the beginning of the day or week.
+        Week begins on Monday.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -302,14 +401,34 @@ function Get-GitHubCloneTraffic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the total number of clones and breakdown per day or week for the last 14 days from the Microsoft\PowerShellForGitHub project.
+    .OUTPUTS
+        GitHub.CloneTraffic
+
+    .EXAMPLE
+        Get-GitHubCloneTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the total number of clones and breakdown per day or week for the last 14 days
+        from the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubCloneTrafficTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -321,7 +440,9 @@ function Get-GitHubCloneTraffic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [ValidateSet('Day', 'Week')]
@@ -354,5 +475,12 @@ function Get-GitHubCloneTraffic
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+
+    if ($null -ne $result)
+    {
+        $result.PSObject.TypeNames.Insert(0, $script:GitHubCloneTrafficTypeName)
+    }
+
+    return $result
 }

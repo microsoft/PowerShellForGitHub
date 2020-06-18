@@ -1,11 +1,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubProject
+@{
+    GitHubProjectTypeName = 'GitHub.Project'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubProject
 {
 <#
     .DESCRIPTION
-        Get the projects for a given Github user, repository or organization.
+        Get the projects for a given GitHub user, repository or organization.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -44,10 +50,28 @@ function Get-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the projects for the Microsoft\PowerShellForGitHub repository.
+    .OUTPUTS
+        GitHub.Project
+
+    .EXAMPLE
+        Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the projects for the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
         Get-GitHubProject -OrganizationName Microsoft
@@ -57,7 +81,7 @@ function Get-GitHubProject
     .EXAMPLE
         Get-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub
 
-        Get the projects for the Microsoft\PowerShellForGitHub repository using the Uri.
+        Get the projects for the microsoft\PowerShellForGitHub repository using the Uri.
 
     .EXAMPLE
         Get-GitHubProject -UserName GitHubUser
@@ -65,9 +89,9 @@ function Get-GitHubProject
         Get the projects for the user GitHubUser.
 
     .EXAMPLE
-        Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Closed
+        Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Closed
 
-        Get closed projects from the Microsoft\PowerShellForGitHub repo.
+        Get closed projects from the microsoft\PowerShellForGitHub repo.
 
     .EXAMPLE
         Get-GitHubProject -Project 4378613
@@ -77,24 +101,50 @@ function Get-GitHubProject
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ProjectObject')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Organization')]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, ParameterSetName = 'User')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'User')]
         [string] $UserName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Project')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Project')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ProjectObject')]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [ValidateSet('Open', 'Closed', 'All')]
@@ -111,7 +161,7 @@ function Get-GitHubProject
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
-    if ($PSCmdlet.ParameterSetName -eq 'Project')
+    if ($PSCmdlet.ParameterSetName -in @('Project', 'ProjectObject'))
     {
         $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
@@ -162,18 +212,18 @@ function Get-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubProjectAdditionalProperties)
 
 }
 
-function New-GitHubProject
+filter New-GitHubProject
 {
 <#
     .DESCRIPTION
-        Creates a new Github project for the given repository
+        Creates a new GitHub project for the given repository
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -212,48 +262,83 @@ function New-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        New-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Name TestProject
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Creates a project called 'TestProject' for the Microsoft\PowerShellForGitHub repository.
+    .OUTPUTS
+        GitHub.Project
 
     .EXAMPLE
-        New-GitHubProject -OrganizationName Microsoft -Name TestProject -Description 'This is just a test project'
+        New-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub -ProjectName TestProject
+
+        Creates a project called 'TestProject' for the microsoft\PowerShellForGitHub repository.
+
+    .EXAMPLE
+        New-GitHubProject -OrganizationName Microsoft -ProjectName TestProject -Description 'This is just a test project'
 
         Create a project for the Microsoft organization called 'TestProject' with a description.
 
     .EXAMPLE
-        New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -Name TestProject
+        New-GitHubProject -Uri https://github.com/Microsoft/PowerShellForGitHub -ProjectName TestProject
 
-        Create a project for the Microsoft\PowerShellForGitHub repository using the Uri called 'TestProject'.
+        Create a project for the microsoft\PowerShellForGitHub repository
+        using the Uri called 'TestProject'.
 
     .EXAMPLE
-        New-GitHubProject -UserProject -Name 'TestProject'
+        New-GitHubProject -UserProject -ProjectName 'TestProject'
 
         Creates a project for the signed in user called 'TestProject'.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Uri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName = 'Organization')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Organization')]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, ParameterSetName = 'User')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'User')]
         [switch] $UserProject,
 
-        [Parameter(Mandatory)]
-        [string] $Name,
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [Alias('Name')]
+        [string] $ProjectName,
 
         [string] $Description,
 
@@ -265,7 +350,7 @@ function New-GitHubProject
     Write-InvocationLog
 
     $telemetryProperties = @{}
-    $telemetryProperties['Name'] = Get-PiiSafeString -PlainText $Name
+    $telemetryProperties['ProjectName'] = Get-PiiSafeString -PlainText $ProjectName
 
     $uriFragment = [String]::Empty
     $apiDescription = [String]::Empty
@@ -297,7 +382,7 @@ function New-GitHubProject
     }
 
     $hashBody = @{
-        'name' = $Name
+        'name' = $ProjectName
     }
 
     if ($PSBoundParameters.ContainsKey('Description'))
@@ -314,13 +399,13 @@ function New-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
 }
 
-function Set-GitHubProject
+filter Set-GitHubProject
 {
 <#
     .DESCRIPTION
@@ -357,23 +442,45 @@ function Set-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Project
+
     .EXAMPLE
         Set-GitHubProject -Project 999999 -State Closed
 
         Set the project with ID '999999' to closed.
 
     .EXAMPLE
-        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Set-GitHubProject -Project $project.id -State Closed
 
-        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the microsoft\PowerShellForGitHub
         repository and set state to closed.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubPullRequestTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [string] $Description,
@@ -433,17 +540,17 @@ function Set-GitHubProject
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+        'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
 }
 
-function Remove-GitHubProject
+filter Remove-GitHubProject
 {
 <#
     .DESCRIPTION
-        Removes the projects for a given Github repository.
+        Removes the projects for a given GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -463,6 +570,21 @@ function Remove-GitHubProject
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .EXAMPLE
         Remove-GitHubProject -Project 4387531
 
@@ -479,10 +601,10 @@ function Remove-GitHubProject
         Remove project with ID '4387531' without prompting for confirmation.
 
     .EXAMPLE
-        $project = Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
+        $project = Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub | Where-Object Name -eq 'TestProject'
         Remove-GitHubProject -Project $project.id
 
-        Get the ID for the 'TestProject' project for the Microsoft\PowerShellForGitHub
+        Get the ID for the 'TestProject' project for the microsoft\PowerShellForGitHub
         repository and then remove the project.
 #>
     [CmdletBinding(
@@ -491,7 +613,10 @@ function Remove-GitHubProject
     [Alias('Delete-GitHubProject')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('ProjectId')]
         [int64] $Project,
 
         [switch] $Force,
@@ -523,10 +648,70 @@ function Remove-GitHubProject
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            'AcceptHeader' = 'application/vnd.github.inertia-preview+json'
+            'AcceptHeader' = $script:inertiaAcceptHeader
         }
 
         return Invoke-GHRestMethod @params
     }
 
+}
+
+filter Add-GitHubProjectAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Project objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Project
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubProjectTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
+
+            # A "user" project has no associated repository, and adding this in that scenario
+            # would cause API-level errors with piping further on,
+            if ($elements.OwnerName -ne 'users')
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'ProjectId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.creator)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.creator
+            }
+        }
+
+        Write-Output $item
+    }
 }

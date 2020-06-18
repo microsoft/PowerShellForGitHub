@@ -24,8 +24,12 @@ function Group-GitHubIssue
         The date property that should be inspected when determining which week grouping the issue
         if part of.
 
+    .INPUTS
+        GitHub.Issue
+
     .OUTPUTS
-        [PSCustomObject[]] Collection of issues and counts, by week, along with the total count of issues.
+        [PSCustomObject[]]
+        Collection of issues and counts, by week, along with the total count of issues.
 
     .EXAMPLE
         $issues = @()
@@ -90,8 +94,12 @@ function Group-GitHubIssue
             foreach ($week in $weekDates)
             {
                 $filteredIssues = @($Issue | Where-Object {
-                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                    (($DateType -eq 'Closed') -and ($_.closed_at -ge $week) -and ($_.closed_at -le $endOfWeek))
+                    (($DateType -eq 'Created') -and
+                     ($_.created_at -ge $week) -and
+                     ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Closed') -and
+                     ($_.closed_at -ge $week) -and
+                     ($_.closed_at -le $endOfWeek))
                 })
 
                 $endOfWeek = $week
@@ -143,6 +151,9 @@ function Group-GitHubPullRequest
     .PARAMETER DateType
         The date property that should be inspected when determining which week grouping the
         pull request if part of.
+
+    .INPUTS
+        GitHub.PullRequest
 
     .OUTPUTS
         [PSCustomObject[]] Collection of pull requests and counts, by week, along with the
@@ -211,8 +222,12 @@ function Group-GitHubPullRequest
             foreach ($week in $weekDates)
             {
                 $filteredPullRequests = @($PullRequest | Where-Object {
-                    (($DateType -eq 'Created') -and ($_.created_at -ge $week) -and ($_.created_at -le $endOfWeek)) -or
-                    (($DateType -eq 'Merged') -and ($_.merged_at -ge $week) -and ($_.merged_at -le $endOfWeek))
+                    (($DateType -eq 'Created') -and
+                     ($_.created_at -ge $week) -and
+                     ($_.created_at -le $endOfWeek)) -or
+                    (($DateType -eq 'Merged') -and
+                     ($_.merged_at -ge $week) -and
+                     ($_.merged_at -le $endOfWeek))
                 })
 
                 $endOfWeek = $week
@@ -265,6 +280,7 @@ function Get-WeekDate
         Get-WeekDate -Weeks 10
 #>
     [CmdletBinding()]
+    [OutputType([DateTime[]])]
     param(
         [ValidateRange(0, 10000)]
         [int] $Weeks = 12

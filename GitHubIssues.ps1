@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubIssue
+@{
+    GitHubIssueTypeName = 'GitHub.Issue'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubIssue
 {
 <#
     .SYNOPSIS
@@ -29,7 +35,7 @@ function Get-GitHubIssue
         The organization whose issues should be retrieved.
 
     .PARAMETER RepositoryType
-        all: Retrieve issues  across owned, member and org repositories
+        all: Retrieve issues across owned, member and org repositories
         ownedAndMember: Retrieve issues across owned and member repositories
 
     .PARAMETER Issue
@@ -69,7 +75,7 @@ function Get-GitHubIssue
           all: All milestones will be returned.
           none: Only issues without milestones will be returned.
 
-    .PARAMETER Milestone
+    .PARAMETER MilestoneNumber
         Only issues with this milestone will be returned.
 
     .PARAMETER AssigneeType
@@ -85,15 +91,20 @@ function Get-GitHubIssue
         Only issues created by this specified user will be returned.
 
     .PARAMETER Mentioned
-          Only issues that mention this specified user will be returned.
+        Only issues that mention this specified user will be returned.
 
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -105,19 +116,39 @@ function Get-GitHubIssue
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+        GitHub.User
+
+    .OUTPUTS
+        GitHub.Issue
+
     .EXAMPLE
-        Get-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State Open
+        Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -State Open
 
-        Gets all the currently open issues in the Microsoft\PowerShellForGitHub repository.
+        Gets all the currently open issues in the microsoft\PowerShellForGitHub repository.
 
     .EXAMPLE
-        Get-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
+        Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -State All -Assignee Octocat
 
-        Gets every issue in the Microsoft\PowerShellForGitHub repository that is assigned to Octocat.
+        Gets every issue in the microsoft\PowerShellForGitHub repository that is assigned to Octocat.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubIssueTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -128,14 +159,19 @@ function Get-GitHubIssue
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $OrganizationName,
 
         [ValidateSet('All', 'OwnedAndMember')]
         [string] $RepositoryType = 'All',
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [switch] $IgnorePullRequests,
@@ -159,13 +195,16 @@ function Get-GitHubIssue
         [ValidateSet('Specific', 'All', 'None')]
         [string] $MilestoneType,
 
-        [string] $Milestone,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [int64] $MilestoneNumber,
 
         [ValidateSet('Specific', 'All', 'None')]
         [string] $AssigneeType,
 
         [string] $Assignee,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('UserName')]
         [string] $Creator,
 
         [string] $Mentioned,
@@ -266,17 +305,17 @@ function Get-GitHubIssue
         {
             $getParams += 'mentioned=none'
         }
-        elseif ([String]::IsNullOrEmpty($Milestone))
+        elseif ($PSBoundParameters.ContainsKey('$MilestoneNumber'))
         {
-            $message = "MilestoneType was set to [$MilestoneType], but no value for Milestone was provided."
+            $message = "MilestoneType was set to [$MilestoneType], but no value for MilestoneNumber was provided."
             Write-Log -Message $message -Level Error
             throw $message
         }
     }
 
-    if ($PSBoundParameters.ContainsKey('Milestone'))
+    if ($PSBoundParameters.ContainsKey('MilestoneNumber'))
     {
-        $getParams += "milestone=$Milestone"
+        $getParams += "milestone=$MilestoneNumber"
     }
 
     if ($PSBoundParameters.ContainsKey('AssigneeType'))
@@ -324,7 +363,7 @@ function Get-GitHubIssue
 
     try
     {
-        $result = Invoke-GHRestMethodMultipleResult @params
+        $result = (Invoke-GHRestMethodMultipleResult @params | Add-GitHubIssueAdditionalProperties)
 
         if ($IgnorePullRequests)
         {
@@ -339,7 +378,7 @@ function Get-GitHubIssue
     finally {}
 }
 
-function Get-GitHubIssueTimeline
+filter Get-GitHubIssueTimeline
 {
 <#
     .SYNOPSIS
@@ -376,12 +415,31 @@ function Get-GitHubIssueTimeline
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Event
+
     .EXAMPLE
-        Get-GitHubIssueTimeline -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 24
+        Get-GitHubIssueTimeline -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 24
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubEventTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -393,10 +451,15 @@ function Get-GitHubIssueTimeline
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [string] $AccessToken,
@@ -418,17 +481,17 @@ function Get-GitHubIssueTimeline
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/timeline"
         'Description' =  "Getting timeline for Issue #$Issue in $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.mockingbird-preview'
+        'AcceptHeader' = $script:mockingbirdAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubEventAdditionalProperties)
 }
 
-function New-GitHubIssue
+filter New-GitHubIssue
 {
 <#
     .SYNOPSIS
@@ -470,10 +533,15 @@ function New-GitHubIssue
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -485,12 +553,31 @@ function New-GitHubIssue
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Issue
+
     .EXAMPLE
-        New-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title 'Test Issue'
+        New-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Title 'Test Issue'
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubIssueTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -501,7 +588,9 @@ function New-GitHubIssue
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -512,6 +601,8 @@ function New-GitHubIssue
 
         [string[]] $Assignee,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('MilestoneNumber')]
         [int64] $Milestone,
 
         [string[]] $Label,
@@ -556,10 +647,10 @@ function New-GitHubIssue
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
 }
 
-function Update-GitHubIssue
+filter Update-GitHubIssue
 {
 <#
     .SYNOPSIS
@@ -596,7 +687,7 @@ function Update-GitHubIssue
         Login(s) for Users to assign to the issue.
         Provide an empty array to clear all existing assignees.
 
-    .PARAMETER Milestone
+    .PARAMETER MilestoneNumber
         The number of the milestone to associate this issue with.
         Set to 0/$null to remove current.
 
@@ -610,10 +701,15 @@ function Update-GitHubIssue
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -625,12 +721,31 @@ function Update-GitHubIssue
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Issue
+
     .EXAMPLE
-        Update-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
+        Update-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubIssueTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -641,10 +756,15 @@ function Update-GitHubIssue
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [string] $Title,
@@ -653,7 +773,7 @@ function Update-GitHubIssue
 
         [string[]] $Assignee,
 
-        [int64] $Milestone,
+        [int64] $MilestoneNumber,
 
         [string[]] $Label,
 
@@ -686,10 +806,10 @@ function Update-GitHubIssue
     if ($PSBoundParameters.ContainsKey('Assignee')) { $hashBody['assignees'] = @($Assignee) }
     if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['labels'] = @($Label) }
     if ($PSBoundParameters.ContainsKey('State')) { $hashBody['state'] = $State.ToLower() }
-    if ($PSBoundParameters.ContainsKey('Milestone'))
+    if ($PSBoundParameters.ContainsKey('MilestoneNumber'))
     {
-        $hashBody['milestone'] = $Milestone
-        if ($Milestone -in (0, $null))
+        $hashBody['milestone'] = $MilestoneNumber
+        if ($MilestoneNumber -in (0, $null))
         {
             $hashBody['milestone'] = $null
         }
@@ -707,10 +827,10 @@ function Update-GitHubIssue
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
 }
 
-function Lock-GitHubIssue
+filter Lock-GitHubIssue
 {
 <#
     .SYNOPSIS
@@ -750,8 +870,23 @@ function Lock-GitHubIssue
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .EXAMPLE
-        Lock-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason Spam
+        Lock-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -Reason Spam
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -766,10 +901,15 @@ function Lock-GitHubIssue
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [ValidateSet('OffTopic', 'TooHeated', 'Resolved', 'Spam')]
@@ -805,7 +945,7 @@ function Lock-GitHubIssue
         }
 
         $telemetryProperties['Reason'] = $Reason
-        $hashBody['active_lock_reason'] = $reasonConverter[$Reason]
+        $hashBody['lock_reason'] = $reasonConverter[$Reason]
     }
 
     $params = @{
@@ -813,7 +953,7 @@ function Lock-GitHubIssue
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
         'Description' =  "Locking Issue #$Issue on $RepositoryName"
-        'AcceptHeader' = 'application/vnd.github.sailor-v-preview+json'
+        'AcceptHeader' = $script:sailorVAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -823,7 +963,7 @@ function Lock-GitHubIssue
     return Invoke-GHRestMethod @params
 }
 
-function Unlock-GitHubIssue
+filter Unlock-GitHubIssue
 {
 <#
     .SYNOPSIS
@@ -860,55 +1000,162 @@ function Unlock-GitHubIssue
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .EXAMPLE
-        Unlock-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 4
+        Unlock-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 4
 #>
-[CmdletBinding(
-    SupportsShouldProcess,
-    DefaultParameterSetName='Elements')]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
-param(
-    [Parameter(ParameterSetName='Elements')]
-    [string] $OwnerName,
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
 
-    [Parameter(ParameterSetName='Elements')]
-    [string] $RepositoryName,
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
 
-    [Parameter(
-        Mandatory,
-        ParameterSetName='Uri')]
-    [string] $Uri,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
 
-    [Parameter(Mandatory)]
-    [int64] $Issue,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('IssueNumber')]
+        [int64] $Issue,
 
-    [string] $AccessToken,
+        [string] $AccessToken,
 
-    [switch] $NoStatus
-)
+        [switch] $NoStatus
+    )
 
-Write-InvocationLog
+    Write-InvocationLog
 
-$elements = Resolve-RepositoryElements
-$OwnerName = $elements.ownerName
-$RepositoryName = $elements.repositoryName
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
 
-$telemetryProperties = @{
-    'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-    'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
+        'Method' = 'Delete'
+        'Description' =  "Unlocking Issue #$Issue on $RepositoryName"
+        'AcceptHeader' = $script:sailorVAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
-$params = @{
-    'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
-    'Method' = 'Delete'
-    'Description' =  "Unlocking Issue #$Issue on $RepositoryName"
-    'AcceptHeader' = 'application/vnd.github.sailor-v-preview+json'
-    'AccessToken' = $AccessToken
-    'TelemetryEventName' = $MyInvocation.MyCommand.Name
-    'TelemetryProperties' = $telemetryProperties
-    'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-}
+filter Add-GitHubIssueAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Issue objects.
 
-return Invoke-GHRestMethod @params
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Issue
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubIssueTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        # Pull requests are _also_ issues.  A pull request that is retrieved through the
+        # Issue endpoint will also have a 'pull_request' property.  Let's make sure that
+        # we mark it up appropriately.
+        if ($null -ne $item.pull_request)
+        {
+            $null = Add-GitHubPullRequestAdditionalProperties -InputObject $item
+            Write-Output $item
+            continue
+        }
+
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.html_url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'IssueId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.number -MemberType NoteProperty -Force
+
+            @('assignee', 'assignees', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
+
+            if ($null -ne $item.labels)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
+            }
+
+            if ($null -ne $item.milestone)
+            {
+                $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
+            }
+
+            if ($null -ne $item.closed_by)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.closed_by
+            }
+
+            if ($null -ne $item.repository)
+            {
+                $null = Add-GitHubRepositoryAdditionalProperties -InputObject $item.repository
+            }
+        }
+
+        Write-Output $item
+    }
 }

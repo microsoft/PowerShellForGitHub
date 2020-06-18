@@ -6,6 +6,11 @@
    Tests for GitHubMilestones.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -14,116 +19,400 @@ try
 {
     # Define Script-scoped, readonly, hidden variables.
     @{
-        defaultIssueTitle = "This is a test issue."
-        defaultMilestoneTitle1 = "This is a test milestone title #1."
-        defaultMilestoneTitle2 = "This is a test milestone title #2."
-        defaultMilestoneTitle3 = "This is a test milestone title #3."
-        defaultMilestoneTitle4 = "This is a test milestone title #4."
-        defaultEditedMilestoneTitle = "This is an edited milestone title."
-        defaultMilestoneDescription = "This is a test milestone description."
-        defaultEditedMilestoneDescription = "This is an edited milestone description."
         defaultMilestoneDueOn = (Get-Date).AddYears(1).ToUniversalTime()
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
 
-    Describe 'Creating, modifying and deleting milestones' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+    Describe 'Creating a milestone' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
 
-        Context 'For creating a new milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle1 -State "Closed" -DueOn $defaultMilestoneDueOn
-            $existingMilestone = Get-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number
-
-            # We'll be testing to make sure that regardless of the time in the timestamp, we'll get the desired date.
-            $newMilestoneDueOnEarlyMorning = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle2 -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(1)
-            $newMilestoneDueOnLateEvening = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle3 -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(23)
-
-            It "Should have the expected title text" {
-                $existingMilestone.title | Should be $defaultMilestoneTitle1
+            $commonParams = @{
+                'State' = 'Closed'
+                'DueOn' = $script:defaultMilestoneDueOn
+                'Description' = 'Milestone description'
             }
 
-            It "Should have the expected state" {
-                $existingMilestone.state | Should be "closed"
+            $title = 'Milestone title'
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Force
+        }
+
+        Context 'Using the parameter' {
+            BeforeAll {
+                $milestone = New-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name -Title $title @commonParams
             }
 
-            It "Should have the expected due_on date" {
+            AfterAll {
+                $milestone | Remove-GitHubMilestone -Force
+            }
+
+            $returned = Get-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name -Milestone $milestone.MilestoneNumber
+
+            It 'Should exist' {
+                $returned.id | Should -Be $milestone.id
+            }
+
+            It 'Should have the correct creation properties' {
+                $milestone.title | Should -Be $title
+                $milestone.state | Should -Be $commonParams['State']
+                $milestone.description | Should -Be $commonParams['Description']
+
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $existingMilestone.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $milestone.due_on).Date | Should -Be $commonParams['DueOn'].Date
             }
+
+            It 'Should have the expected type and additional properties' {
+                $milestone.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $milestone.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $milestone.MilestoneId | Should -Be $milestone.id
+                $milestone.MilestoneNumber | Should -Be $milestone.number
+                $milestone.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Using the pipeline for the repo' {
+            BeforeAll {
+                $milestone = $repo | New-GitHubMilestone -Title $title @commonParams
+            }
+
+            AfterAll {
+                $milestone | Remove-GitHubMilestone -Force
+            }
+
+            $returned = $milestone | Get-GitHubMilestone
+
+            It 'Should exist' {
+                $returned.id | Should -Be $milestone.id
+            }
+
+            It 'Should have the correct creation properties' {
+                $milestone.title | Should -Be $title
+                $milestone.state | Should -Be $commonParams['State']
+                $milestone.description | Should -Be $commonParams['Description']
+
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $milestone.due_on).Date | Should -Be $commonParams['DueOn'].Date
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $milestone.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $milestone.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $milestone.MilestoneId | Should -Be $milestone.id
+                $milestone.MilestoneNumber | Should -Be $milestone.number
+                $milestone.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Using the pipeline for the title' {
+            BeforeAll {
+                $milestone = $title | New-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name @commonParams
+            }
+
+            AfterAll {
+                $milestone | Remove-GitHubMilestone -Force
+            }
+
+            $returned = $repo | Get-GitHubMilestone -Milestone $milestone.MilestoneNumber
+
+            It 'Should exist' {
+                $returned.id | Should -Be $milestone.id
+            }
+
+            It 'Should have the correct creation properties' {
+                $milestone.title | Should -Be $title
+                $milestone.state | Should -Be $commonParams['State']
+                $milestone.description | Should -Be $commonParams['Description']
+
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $milestone.due_on).Date | Should -Be $commonParams['DueOn'].Date
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $milestone.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $milestone.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $milestone.MilestoneId | Should -Be $milestone.id
+                $milestone.MilestoneNumber | Should -Be $milestone.number
+                $milestone.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'That is due at different times of the day' {
+            # We'll be testing to make sure that regardless of the time in the timestamp, we'll get the desired date.
+            $title = 'Milestone title'
 
             It "Should have the expected due_on date even if early morning" {
+                $milestone = $repo | New-GitHubMilestone -Title 'Due early in the morning' -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(1)
+
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $newMilestoneDueOnEarlyMorning.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $milestone.due_on).Date | Should -Be $defaultMilestoneDueOn.Date
             }
 
             It "Should have the expected due_on date even if late evening" {
+                $milestone = $repo | New-GitHubMilestone -Title 'Due late in the evening' -State "Closed" -DueOn $defaultMilestoneDueOn.date.AddHours(23)
+
                 # GitHub drops the time that is attached to 'due_on', so it's only relevant
                 # to compare the dates against each other.
-                (Get-Date -Date $newMilestoneDueOnLateEvening.due_on).Date | Should be $defaultMilestoneDueOn.Date
+                (Get-Date -Date $milestone.due_on).Date | Should -Be $defaultMilestoneDueOn.Date
+            }
+        }
+    }
+
+    Describe 'Associating milestones with issues' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $milestone = $repo | New-GitHubMilestone -Title 'Milestone Title'
+            $issue = $repo | New-GitHubIssue -Title 'Issue Title'
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Force
+        }
+
+        Context 'Adding milestone to an issue' {
+            It 'Should not have any open issues associated with it' {
+                $issue.milestone | Should -BeNullOrEmpty
+                $milestone.open_issues | Should -Be 0
             }
 
-            It "Should allow the addition of an existing issue" {
-                Update-GitHubIssue -Uri $repo.svn_url -Issue $issue.number -Milestone $existingMilestone.number
+            $issue = $issue | Update-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $milestone = $milestone | Get-GitHubMilestone
+            It "Should be associated to the milestone now" {
+                $issue.milestone.number | Should -Be $milestone.MilestoneNumber
+                $milestone.open_issues | Should -Be 1
+            }
+
+            $issue = $issue | Update-GitHubIssue -Milestone 0
+            $milestone = $milestone | Get-GitHubMilestone
+            It 'Should no longer be associated to the milestone' {
+                $issue.milestone | Should -BeNullOrEmpty
+                $milestone.open_issues | Should -Be 0
+            }
+
+            $issue = $issue | Update-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $milestone = $milestone | Get-GitHubMilestone
+            It "Should be associated to the milestone again" {
+                $issue.milestone.number | Should -Be $milestone.MilestoneNumber
+                $milestone.open_issues | Should -Be 1
+            }
+
+            $milestone | Remove-GitHubMilestone -Force
+            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
+            It 'Should have removed the association when the milestone was deleted' {
+                $issue.milestone | Should -BeNullOrEmpty
+            }
+        }
+    }
+
+    Describe 'Getting milestones' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $title = 'Milestone title'
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Force
+        }
+
+        Context 'Getting a specific milestone' {
+            BeforeAll {
+                $closedMilestone = 'C' | New-GitHubMilestone -Uri $repo.RepositoryUrl -State 'Closed'
+                $openMilestone = 'O' | New-GitHubMilestone -Uri $repo.RepositoryUrl -State 'Open'
+            }
+
+            AfterAll {
+                $closedMilestone | Remove-GitHubMilestone -Force
+                $openMilestone | Remove-GitHubMilestone -Force
+            }
+
+            $milestone = $closedMilestone
+            $returned = Get-GitHubMilestone -Uri $repo.RepositoryUrl -Milestone $milestone.MilestoneNumber
+            It 'Should get the right milestone as a parameter' {
+                $returned.MilestoneId | Should -Be $milestone.MilestoneId
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $returned.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $returned.MilestoneId | Should -Be $returned.id
+                $returned.MilestoneNumber | Should -Be $returned.number
+                $returned.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $milestone = $openMilestone
+            $returned = $openMilestone | Get-GitHubMilestone
+            It 'Should get the right milestone via the pipeline' {
+                $returned.MilestoneId | Should -Be $milestone.MilestoneId
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $returned.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $returned.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $returned.MilestoneId | Should -Be $returned.id
+                $returned.MilestoneNumber | Should -Be $returned.number
+                $returned.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
-        Context 'For getting milestones from a repo' {
-            $existingMilestones =@(Get-GitHubMilestone -Uri $repo.svn_url -State Closed)
-            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
+        Context 'Getting multiple milestones' {
+            BeforeAll {
+                $today = (Get-Date).ToUniversalTime()
+                $nextWeek = (Get-Date).AddDays(7).ToUniversalTime()
+                $numClosedMilestones = 3
+                $numOpenMilestones = 4
+                $closed = 1..$numClosedMilestones | ForEach-Object { $repo | New-GitHubMilestone -Title "Closed $_" -State 'Closed' -DueOn $today }
+                $open = 1..$numOpenMilestones | ForEach-Object { $repo | New-GitHubMilestone -Title "Open $_" -State 'Open' -DueOn $nextWeek }
+            }
+
+            AfterAll {
+                $closed | Remove-GitHubMilestone -Force
+                $open | Remove-GitHubMilestone -Force
+            }
 
             It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 3
+                $milestones = @(Get-GitHubMilestone -Uri $repo.RepositoryUrl -State 'All')
+                $milestones.Count | Should -Be ($numClosedMilestones + $numOpenMilestones)
             }
 
-            It 'Should have the expected title text on the first milestone' {
-                $existingMilestones[0].title | Should be $defaultMilestoneTitle1
+            It 'Should have the expected number of open milestones' {
+                $milestones = @($repo | Get-GitHubMilestone -State 'Open')
+                $milestones.Count | Should -Be $numOpenMilestones
             }
 
-            It 'Should have the expected issue in the first milestone' {
-                $existingMilestones[0].open_issues | should be 1
-                $issue.milestone.number | Should be 1
+            It 'Should have the expected number of closed milestones' {
+                $milestones = @(Get-GitHubMilestone -Uri $repo.RepositoryUrl -State 'Closed')
+                $milestones.Count | Should -Be $numClosedMilestones
+            }
+
+            It 'Should sort them the right way | DueOn, Descending' {
+                $milestones = @(Get-GitHubMilestone -Uri $repo.RepositoryUrl -State 'All' -Sort 'DueOn' -Direction 'Descending')
+                $milestones[0].state | Should -Be 'Open'
+            }
+
+            It 'Should sort them the right way | DueOn, Ascending' {
+                $milestones = @(Get-GitHubMilestone -Uri $repo.RepositoryUrl -State 'All' -Sort 'DueOn' -Direction 'Ascending')
+                $milestones[0].state | Should -Be 'Closed'
+            }
+        }
+    }
+
+    Describe 'Editing a milestone' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+
+            $createParams = @{
+                'Title' = 'Created Title'
+                'State' = 'Open'
+                'Description' = 'Created Description'
+                'DueOn' = (Get-Date).ToUniversalTime()
+            }
+
+            $editParams = @{
+                'Title' = 'Edited Title'
+                'State' = 'Closed'
+                'Description' = 'Edited Description'
+                'DueOn' = (Get-Date).AddDays(7).ToUniversalTime()
             }
         }
 
-        Context 'For editing a milestone' {
-            $newMilestone = New-GitHubMilestone -Uri $repo.svn_url -Title $defaultMilestoneTitle4 -Description $defaultMilestoneDescription
-            $editedMilestone = Set-GitHubMilestone -Uri $repo.svn_url -Milestone $newMilestone.number -Title $defaultEditedMilestoneTitle -Description $defaultEditedMilestoneDescription
+        AfterAll {
+            $repo | Remove-GitHubRepository -Force
+        }
 
-            It 'Should have a title/description that is not equal to the original title/description' {
-                $editedMilestone.title | Should not be $newMilestone.title
-                $editedMilestone.description | Should not be $newMilestone.description
+        Context 'Using the parameter' {
+            BeforeAll {
+                $milestone = New-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name @createParams
+                $edited = Set-GitHubMilestone -Uri $milestone.RepositoryUrl -Milestone $milestone.MilestoneNumber @editParams
             }
 
-            It 'Should have the edited content' {
-                $editedMilestone.title | Should be $defaultEditedMilestoneTitle
-                $editedMilestone.description | Should be $defaultEditedMilestoneDescription
+            AfterAll {
+                $milestone | Remove-GitHubMilestone -Force
+            }
+
+            It 'Should be editable via the parameter' {
+                $edited.id | Should -Be $milestone.id
+                $edited.title | Should -Be $editParams['Title']
+                $edited.state | Should -Be $editParams['State']
+                $edited.description | Should -Be $editParams['Description']
+
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $edited.due_on).Date | Should -Be $editParams['DueOn'].Date
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $edited.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $edited.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $edited.MilestoneId | Should -Be $milestone.id
+                $edited.MilestoneNumber | Should -Be $milestone.number
+                $edited.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
 
-        Context 'For getting milestones from a repository and deleting them' {
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All -Sort Completeness -Direction Descending)
-
-            It 'Should have the expected number of milestones' {
-                $existingMilestones.Count | Should be 4
+        Context 'Using the pipeline' {
+            BeforeAll {
+                $milestone = New-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name @createParams
+                $edited = $milestone | Set-GitHubMilestone @editParams
             }
 
-            foreach($milestone in $existingMilestones) {
-                Remove-GitHubMilestone -Uri $repo.svn_url -Milestone $milestone.number -Confirm:$false
+            AfterAll {
+                $milestone | Remove-GitHubMilestone -Force
             }
 
-            $existingMilestones = @(Get-GitHubMilestone -Uri $repo.svn_url -State All)
-            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
+            It 'Should be editable via the pipeline' {
+                $edited.id | Should -Be $milestone.id
+                $edited.title | Should -Be $editParams['Title']
+                $edited.state | Should -Be $editParams['State']
+                $edited.description | Should -Be $editParams['Description']
 
-            It 'Should have no milestones' {
-                $existingMilestones.Count | Should be 0
-                $issue.milestone | Should be $null
+                # GitHub drops the time that is attached to 'due_on', so it's only relevant
+                # to compare the dates against each other.
+                (Get-Date -Date $edited.due_on).Date | Should -Be $editParams['DueOn'].Date
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $edited.PSObject.TypeNames[0] | Should -Be 'GitHub.Milestone'
+                $edited.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $edited.MilestoneId | Should -Be $milestone.id
+                $edited.MilestoneNumber | Should -Be $milestone.number
+                $edited.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+    }
+
+    Describe 'Deleting a milestone' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Force
+        }
+
+        Context 'Using the parameter' {
+            $milestone = $repo | New-GitHubMilestone -Title 'Milestone title' -State "Closed" -DueOn $defaultMilestoneDueOn
+            Remove-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name -Milestone $milestone.MilestoneNumber -Force
+
+            It 'Should be deleted' {
+                { Get-GitHubMilestone -OwnerName $repo.owner.login -RepositoryName $repo.name -Milestone $milestone.MilestoneNumber } | Should -Throw
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        Context 'Using the pipeline' {
+            $milestone = $repo | New-GitHubMilestone -Title 'Milestone title' -State "Closed" -DueOn $defaultMilestoneDueOn
+            $milestone | Remove-GitHubMilestone -Force
+
+            It 'Should be deleted' {
+                { $milestone | Get-GitHubMilestone } | Should -Throw
+            }
+        }
     }
 }
 finally
