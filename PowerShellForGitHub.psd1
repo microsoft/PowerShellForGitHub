@@ -111,7 +111,6 @@
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
-        'New-GitHubComment',
         'New-GitHubIssue',
         'New-GitHubIssueComment',
         'New-GitHubLabel',
