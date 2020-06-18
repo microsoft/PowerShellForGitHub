@@ -39,7 +39,7 @@ try
                 $branches.name | Should -Contain $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
+            It 'Should have the expected type and addititional properties' {
                 $branches[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branches[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branches[0].BranchName | Should -Be $branches[0].name
@@ -57,7 +57,7 @@ try
                 $branches.name | Should -Contain $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
+            It 'Should have the expected type and addititional properties' {
                 $branches[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branches[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branches[0].BranchName | Should -Be $branches[0].name
@@ -71,7 +71,7 @@ try
                 $branch.name | Should -Be $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
+            It 'Should have the expected type and addititional properties' {
                 $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branch.BranchName | Should -Be $branch.name
@@ -85,7 +85,7 @@ try
                 $branch.name | Should -Be $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
+            It 'Should have the expected type and addititional properties' {
                 $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branch.BranchName | Should -Be $branch.name
@@ -100,7 +100,7 @@ try
                 $branchAgain.name | Should -Be $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
+            It 'Should have the expected type and addititional properties' {
                 $branchAgain.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branchAgain.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branchAgain.BranchName | Should -Be $branchAgain.name
@@ -110,7 +110,7 @@ try
 
     Describe 'GitHubBranches\New-GitHubRepositoryBranch' {
         Context 'When creating a new GitHub repository branch' {
-            BeforeAll -Scriptblock {
+            BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
                 $originBranchName = 'master'
                 $newBranchName = 'develop'
@@ -123,25 +123,33 @@ try
                 $newGitHubRepositoryBranchParms = @{
                     OwnerName = $script:ownerName
                     RepositoryName = $repoName
-                    Name = $newBranchName
+                    BranchName = $newBranchName
                     OriginBranchName = $originBranchName
                 }
                 $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
             }
 
-            It 'Should return an object of the correct type' {
-                $branch | Should -BeOfType PSCustomObject
+            It 'Should support pipeline input for the uri parameter' {
+                { $repo | New-GitHubRepositoryBranch -BranchName $newBranchName -WhatIf } |
+                    Should -Not -Throw
             }
 
-            It 'Should return the correct properties' {
-                $branch.ref | Should -Be "refs/heads/$newBranchName"
+            It 'Should support pipeline input for the BranchName parameter' {
+                { $newBranchName | New-GitHubRepositoryBranch -Uri $repo.html_url -WhatIf } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $branch.BranchName | Should -Be $newBranchName
             }
 
             It 'Should have created the branch' {
                 $getGitHubRepositoryBranchParms = @{
                     OwnerName = $script:ownerName
                     RepositoryName = $repoName
-                    Name = $newBranchName
+                    BranchName = $newBranchName
                 }
                 { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
                     Should -Not -Throw
@@ -158,7 +166,7 @@ try
                     $newGitHubRepositoryBranchParms = @{
                         OwnerName = $script:ownerName
                         RepositoryName = $repoName
-                        Name = $newBranchName
+                        BranchName = $newBranchName
                         OriginBranchName = $missingOriginBranchName
                     }
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
@@ -171,7 +179,7 @@ try
                     $newGitHubRepositoryBranchParms = @{
                         OwnerName = $script:ownerName
                         RepositoryName = 'test'
-                        Name = 'test'
+                        BranchName = 'test'
                         OriginBranchName = 'test'
                     }
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
@@ -202,17 +210,21 @@ try
             $newGitHubRepositoryBranchParms = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repoName
-                Name = $newBranchName
+                BranchName = $newBranchName
                 OriginBranchName = $originBranchName
             }
             $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+        }
+
+        It 'Should support pipeline input for the BranchName and Uri parameters' {
+            { $branch | Remove-GitHubRepositoryBranch -WhatIf } | Should -Not -Throw
         }
 
         It 'Should not throw an exception' {
             $removeGitHubRepositoryBranchParms = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repoName
-                Name = $newBranchName
+                BranchName = $newBranchName
                 Confirm = $false
             }
             { Remove-GitHubRepositoryBranch @removeGitHubRepositoryBranchParms } |
@@ -223,7 +235,7 @@ try
             $getGitHubRepositoryBranchParms = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repoName
-                Name = $newBranchName
+                BranchName = $newBranchName
             }
             { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
                 Should -Throw
