@@ -105,13 +105,6 @@ try
                 $branchAgain.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branchAgain.BranchName | Should -Be $branchAgain.name
             }
-
-            AfterAll -ScriptBlock {
-                if ($repo)
-                {
-                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-                }
-            }
         }
     }
 
