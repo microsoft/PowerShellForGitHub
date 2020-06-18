@@ -3,6 +3,7 @@
 
 @{
     GitHubReleaseTypeName = 'GitHub.Release'
+    GitHubReleaseAssetTypeName = 'GitHub.ReleaseAsset'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -67,6 +68,7 @@ filter Get-GitHubRelease
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -279,6 +281,25 @@ filter New-GitHubRelease
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Release
+
     .EXAMPLE
         New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
 
@@ -291,6 +312,7 @@ filter New-GitHubRelease
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReleaseTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -352,22 +374,17 @@ filter New-GitHubRelease
     if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
 
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases"
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating release at $TagName"
+        'Description' = "Creating release at $TagName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
 }
 
 filter Set-GitHubRelease
@@ -427,6 +444,25 @@ filter Set-GitHubRelease
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Release
+
     .EXAMPLE
         Set-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0 -Body 'Adds core support for Projects'
 
@@ -436,6 +472,7 @@ filter Set-GitHubRelease
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReleaseTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -501,22 +538,17 @@ filter Set-GitHubRelease
     if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
 
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/$Release"
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/$Release"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Creating release at $TagName"
+        'Description' = "Creating release at $TagName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    # Add additional property to ease pipelining
-    Add-Member -InputObject $result -Name 'ReleaseId' -Value $result.id -MemberType NoteProperty -Force
-
-    return $result
+    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
 }
 
 filter Remove-GitHubRelease
@@ -556,6 +588,22 @@ filter Remove-GitHubRelease
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
     .EXAMPLE
         Remove-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
@@ -584,7 +632,7 @@ filter Remove-GitHubRelease
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias('ReositoryUrl')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
@@ -610,9 +658,9 @@ filter Remove-GitHubRelease
     }
 
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/$Release"
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/$Release"
         'Method' = 'Delete'
-        'Description' =  "Deleting release $Release"
+        'Description' = "Deleting release $Release"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -671,6 +719,25 @@ filter Get-GitHubReleaseAsset
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.ReleaseAsset
+
     .EXAMPLE
         Get-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 1234567890
 
@@ -685,6 +752,7 @@ filter Get-GitHubReleaseAsset
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements-List')]
+    [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -796,9 +864,9 @@ filter Get-GitHubReleaseAsset
     }
 
     $params = @{
-        'UriFragment' =  $uriFragment
+        'UriFragment' = $uriFragment
         'Method' = 'Get'
-        'Description' =  $description
+        'Description' = $description
         'AcceptHeader' = $acceptHeader
         'Save' = $shouldSave
         'AccessToken' = $AccessToken
@@ -816,7 +884,7 @@ filter Get-GitHubReleaseAsset
     }
     else
     {
-        return $result
+        return ($result | Add-GitHubReleaseAssetAdditionalProperties)
     }
 }
 
@@ -871,6 +939,25 @@ filter New-GitHubReleaseAsset
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.ReleaseAsset
+
     .EXAMPLE
         New-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
 
@@ -884,6 +971,7 @@ filter New-GitHubReleaseAsset
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -917,9 +1005,11 @@ filter New-GitHubReleaseAsset
         [string] $UploadUrl,
 
         [Parameter(
-            Mandatory
+            Mandatory,
             ValueFromPipeline)]
-        [ValidateScript({if (Test-Path -Path $_ -PathType Leaf) { $true } else { throw "$_ does not exist or is inaccessible." }})]
+        [ValidateScript(
+            {if (Test-Path -Path $_ -PathType Leaf) { $true}
+            else { throw "$_ does not exist or is inaccessible." }})]
         [string] $Path,
 
         [string] $Label,
@@ -949,7 +1039,15 @@ filter New-GitHubReleaseAsset
         $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
         $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
 
-        $releaseInfo = Get-GitHubRelease -OwnerName $OwnerName -RepositoryName $RepositoryName -Release $Release -AccessToken:$AccessToken -NoStatus:$NoStatus
+        $params = @{
+            'OwnerName' = $OwnerName
+            'RepositoryName' = $RepositoryName
+            'Release' = $Release
+            'AccessToken' = $AccessToken
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        $releaseInfo = Get-GitHubRelease @params
         $UploadUrl = $releaseInfo.upload_url
     }
 
@@ -969,9 +1067,9 @@ filter New-GitHubReleaseAsset
     if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
 
     $params = @{
-        'UriFragment' =  $UploadUrl + '?' + ($queryParams -join '&')
+        'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
         'Method' = 'Post'
-        'Description' =  "Uploading $fileName as a release asset"
+        'Description' = "Uploading $fileName as a release asset"
         'InFile' = $Path
         'ContentType' = $ContentType
         'AccessToken' = $AccessToken
@@ -980,7 +1078,7 @@ filter New-GitHubReleaseAsset
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
 }
 
 filter Set-GitHubReleaseAsset
@@ -1026,6 +1124,25 @@ filter Set-GitHubReleaseAsset
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.ReleaseAsset
+
     .EXAMPLE
         Set-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 123456 -Name bar.zip
 
@@ -1037,6 +1154,7 @@ filter Set-GitHubReleaseAsset
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1086,17 +1204,17 @@ filter Set-GitHubReleaseAsset
     if (-not [String]::IsNullOrWhiteSpace($Label)) { $hashBody['label'] = $Label }
 
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Editing asset $Asset"
+        'Description' = "Editing asset $Asset"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
 }
 
 filter Remove-GitHubReleaseAsset
@@ -1135,6 +1253,22 @@ filter Remove-GitHubReleaseAsset
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
 
     .EXAMPLE
         Remove-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Asset 1234567890
@@ -1187,9 +1321,9 @@ filter Remove-GitHubReleaseAsset
     }
 
     $params = @{
-        'UriFragment' =  "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
         'Method' = 'Delete'
-        'Description' =  "Deleting asset $Asset"
+        'Description' = "Deleting asset $Asset"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -1252,6 +1386,60 @@ filter Add-GitHubReleaseAdditionalProperties
             if ($null -ne $item.author)
             {
                 $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubReleaseAssetAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Release Asset objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.ReleaseAsset
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubReleaseAssetTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            Add-Member -InputObject $item -Name 'AssetId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($null -ne $item.uploader)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.uploader
             }
         }
 

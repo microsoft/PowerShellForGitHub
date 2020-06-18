@@ -250,6 +250,7 @@ filter Get-GitHubLicense
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -488,6 +489,7 @@ filter Get-GitHubCodeOfConduct
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS

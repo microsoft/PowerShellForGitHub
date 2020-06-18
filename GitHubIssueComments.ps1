@@ -81,6 +81,7 @@ filter Get-GitHubIssueComment
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -346,6 +347,7 @@ filter New-GitHubIssueComment
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -490,6 +492,7 @@ filter Set-GitHubIssueComment
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -621,6 +624,7 @@ filter Remove-GitHubIssueComment
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .EXAMPLE

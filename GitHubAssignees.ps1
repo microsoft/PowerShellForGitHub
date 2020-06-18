@@ -46,6 +46,7 @@ filter Get-GitHubAssignee
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -159,6 +160,7 @@ filter Test-GitHubAssignee
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -303,6 +305,7 @@ function Add-GitHubAssignee
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -481,6 +484,7 @@ function Remove-GitHubAssignee
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS

@@ -60,6 +60,7 @@ filter Get-GitHubEvent
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS

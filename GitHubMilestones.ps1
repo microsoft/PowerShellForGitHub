@@ -69,6 +69,7 @@ filter Get-GitHubMilestone
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -272,6 +273,7 @@ filter New-GitHubMilestone
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -454,6 +456,7 @@ filter Set-GitHubMilestone
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -635,6 +638,7 @@ filter Remove-GitHubMilestone
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .EXAMPLE

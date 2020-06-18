@@ -58,6 +58,7 @@ filter Get-GitHubRepositoryBranch
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS

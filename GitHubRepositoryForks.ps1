@@ -52,6 +52,7 @@ filter Get-GitHubRepositoryFork
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -170,6 +171,7 @@ filter New-GitHubRepositoryFork
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS

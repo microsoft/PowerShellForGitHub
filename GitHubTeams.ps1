@@ -62,6 +62,7 @@ filter Get-GitHubTeam
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.Team
 
@@ -201,6 +202,7 @@ filter Get-GitHubTeamMember
         GitHub.ProjectCard
         GitHub.ProjectColumn
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.Team
 

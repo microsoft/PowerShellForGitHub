@@ -341,7 +341,7 @@ function Invoke-GHRestMethod
             $finalResult = $finalResult
         }
 
-        if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
+        if ((-not $Save) -and (-not (Get-GitHubConfiguration -Name DisableSmarterObjects)))
         {
             # In the case of getting raw content from the repo, we'll end up with a large object/byte
             # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting

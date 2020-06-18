@@ -130,6 +130,7 @@ filter Get-GitHubIssue
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
         GitHub.User
 
@@ -434,6 +435,7 @@ filter Get-GitHubIssueTimeline
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -573,6 +575,7 @@ filter New-GitHubIssue
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -742,6 +745,7 @@ filter Set-GitHubIssue
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -893,6 +897,7 @@ filter Lock-GitHubIssue
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .EXAMPLE
@@ -1024,6 +1029,7 @@ filter Unlock-GitHubIssue
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .EXAMPLE

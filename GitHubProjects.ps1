@@ -64,6 +64,7 @@ filter Get-GitHubProject
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -277,6 +278,7 @@ filter New-GitHubProject
         GitHub.ProjectColumn
         GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -457,6 +459,7 @@ filter Set-GitHubProject
         GitHub.ProjectCard
         GitHub.ProjectColumn
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .OUTPUTS
@@ -585,6 +588,7 @@ filter Remove-GitHubProject
         GitHub.ProjectCard
         GitHub.ProjectColumn
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
 
     .EXAMPLE
