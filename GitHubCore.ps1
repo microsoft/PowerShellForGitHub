@@ -201,6 +201,7 @@ function Invoke-GHRestMethod
     }
 
     $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
+    $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     try
     {
@@ -559,6 +560,10 @@ function Invoke-GHRestMethod
         Write-Log -Message $newLineOutput -Level Error
         Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
         throw $newLineOutput
+    }
+    finally
+    {
+        [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
     }
 }
 
