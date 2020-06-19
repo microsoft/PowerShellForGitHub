@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubEvent
+@{
+    GitHubEventTypeName = 'GitHub.Event'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubEvent
 {
 <#
     .DESCRIPTION
@@ -22,11 +28,13 @@ function Get-GitHubEvent
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER EventID
-        The ID of a specific event to get. If not supplied, will return back all events for this repository.
+    .PARAMETER EventId
+        The ID of a specific event to get.
+        If not supplied, will return back all events for this repository.
 
     .PARAMETER Issue
-        Issue number to get events for. If not supplied, will return back all events for this repository.
+        Issue number to get events for.
+        If not supplied, will return back all events for this repository.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -38,37 +46,91 @@ function Get-GitHubEvent
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Get the events for the Microsoft\PowerShellForGitHub project.
+    .OUTPUTS
+        GitHub.Event
+
+    .EXAMPLE
+        Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Get the events for the microsoft\PowerShellForGitHub project.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='RepositoryElements')]
+    [OutputType({$script:GitHubEventTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='EventElements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryElements')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='RepositoryElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='EventElements')]
         [string] $RepositoryName,
 
-        [Parameter(Mandatory, ParameterSetName='RepositoryUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='EventUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='RepositoryUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventUri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory, ParameterSetName='EventUri')]
-        [Parameter(Mandatory, ParameterSetName='EventElements')]
-        [int64] $EventID,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='EventElements')]
+        [int64] $EventId,
 
-        [Parameter(Mandatory, ParameterSetName='IssueUri')]
-        [Parameter(Mandatory, ParameterSetName='IssueElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='IssueElements')]
+        [Alias('IssueNumber')]
         [int64] $Issue,
 
         [string] $AccessToken,
@@ -86,16 +148,16 @@ function Get-GitHubEvent
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
-        'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventID')
+        'ProvidedEvent' = $PSBoundParameters.ContainsKey('EventId')
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events"
     $description = "Getting events for $RepositoryName"
 
-    if ($PSBoundParameters.ContainsKey('EventID'))
+    if ($PSBoundParameters.ContainsKey('EventId'))
     {
-        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventID"
-        $description = "Getting event $EventID for $RepositoryName"
+        $uriFragment = "repos/$OwnerName/$RepositoryName/issues/events/$EventId"
+        $description = "Getting event $EventId for $RepositoryName"
     }
     elseif ($PSBoundParameters.ContainsKey('Issue'))
     {
@@ -104,10 +166,10 @@ function Get-GitHubEvent
     }
 
     $acceptHeaders = @(
-        'application/vnd.github.starfox-preview+json',
-        'application/vnd.github.sailer-v-preview+json',
-        'application/vnd.github.symmetra-preview+json',
-        'application/vnd.github.machine-man-preview')
+        $script:starfoxAcceptHeader,
+        $script:sailorVAcceptHeader,
+        $script:symmetraAcceptHeader,
+        $script:machineManAcceptHeader)
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -119,5 +181,134 @@ function Get-GitHubEvent
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubEventAdditionalProperties)
+}
+
+filter Add-GitHubEventAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Event objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Event
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubEventTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'EventId' -Value $item.id -MemberType NoteProperty -Force
+
+            @('actor', 'assignee', 'assigner', 'assignees', 'committer', 'requested_reviewer', 'review_requester', 'user') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
+
+            if ($null -ne $item.issue)
+            {
+                $null = Add-GitHubIssueAdditionalProperties -InputObject $item.issue
+                Add-Member -InputObject $item -Name 'IssueId' -Value $item.issue.id -MemberType NoteProperty -Force
+                Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.issue.number -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.label)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
+            }
+
+            if ($null -ne $item.labels)
+            {
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
+            }
+
+            if ($null -ne $item.milestone)
+            {
+                $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
+            }
+
+            if ($null -ne $item.project_id)
+            {
+                Add-Member -InputObject $item -Name 'ProjectId' -Value $item.project_id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.project_card)
+            {
+                $null = Add-GitHubProjectCardAdditionalProperties -InputObject $item.project_card
+                Add-Member -InputObject $item -Name 'CardId' -Value $item.project_card.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.column_name)
+            {
+                Add-Member -InputObject $item -Name 'ColumnName' -Value $item.column_name -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.source)
+            {
+                $null = Add-GitHubIssueAdditionalProperties -InputObject $item.source
+                if ($item.source.PSObject.TypeNames[0] -eq 'GitHub.PullRequest')
+                {
+                    Add-Member -InputObject $item -Name 'PullRequestId' -Value $item.source.id -MemberType NoteProperty -Force
+                    Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $item.source.number -MemberType NoteProperty -Force
+                }
+                else
+                {
+                    Add-Member -InputObject $item -Name 'IssueId' -Value $item.source.id -MemberType NoteProperty -Force
+                    Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.source.number -MemberType NoteProperty -Force
+                }
+            }
+
+            if ($item.issue_url -match '^.*/issues/(\d+)$')
+            {
+                $issueNumber = $Matches[1]
+                Add-Member -InputObject $item -Name 'IssueNumber' -Value $issueNumber -MemberType NoteProperty -Force
+            }
+
+            if ($item.pull_request_url -match '^.*/pull/(\d+)$')
+            {
+                $pullRequestNumber = $Matches[1]
+                Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $pullRequestNumber -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.dismissed_review)
+            {
+                # TODO: Add dismissed_review (object) and dismissed_review[review_id] once Reviews are supported
+
+                # $null = Add-GitHubPullRequestReviewAdditionalProperties -InputObject $item.dismissed_review
+                # Add-Member -InputObject $item -Name 'ReviewId' -Value $item.dismissed_review.review_id -MemberType NoteProperty -Force
+            }
+        }
+
+        Write-Output $item
+    }
 }

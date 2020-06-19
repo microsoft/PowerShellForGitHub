@@ -95,6 +95,13 @@ function Set-GitHubConfiguration
         Specify this switch to disable the hashing of potential PII data prior to submitting the
         data to telemetry (if telemetry hasn't been disabled via DisableTelemetry).
 
+    .PARAMETER DisablePipelineSupport
+        By default, this module will modify all objects returned by the API calls by adding
+        additional, consistent properties to those objects which ease pipelining those objects
+        into other functions.  This is highly convenient functionality.  You would only want to
+        disable this functionality if you are experiencing some edge case problems and are awaiting
+        a proper fix.
+
     .PARAMETER DisableSmarterObjects
         By default, this module will modify all objects returned by the API calls to update
         any properties that can be converted to objects (like strings for Date/Time's being
@@ -169,7 +176,9 @@ function Set-GitHubConfiguration
         Sets all requests to connect to a GitHub Enterprise server running at
         github.contoso.com.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [ValidatePattern('^(?!https?:)(?!api\.)(?!www\.).*')]
@@ -186,6 +195,8 @@ function Set-GitHubConfiguration
         [switch] $DisableLogging,
 
         [switch] $DisablePiiProtection,
+
+        [switch] $DisablePipelineSupport,
 
         [switch] $DisableSmarterObjects,
 
@@ -277,6 +288,7 @@ function Get-GitHubConfiguration
             'DefaultRepositoryName',
             'DisableLogging',
             'DisablePiiProtection',
+            'DisablePipelineSupport',
             'DisableSmarterObjects',
             'DisableTelemetry',
             'DisableUpdateCheck',
@@ -336,7 +348,8 @@ function Save-GitHubConfiguration
 
     if (($null -ne $ev) -and ($ev.Count -gt 0))
     {
-        Write-Log -Message "Failed to persist these updated settings to disk.  They will remain for this PowerShell session only." -Level Warning -Exception $ev[0]
+        $message = "Failed to persist these updated settings to disk.  They will remain for this PowerShell session only."
+        Write-Log -Message $message -Level Warning -Exception $ev[0]
     }
 }
 
@@ -447,7 +460,8 @@ function Resolve-PropertyValue
         }
         else
         {
-            Write-Log "The locally cached $Name configuration was not of type $Type.  Reverting to default value." -Level Warning
+            $message = "The locally cached $Name configuration was not of type $Type.  Reverting to default value."
+            Write-Log -Message $message -Level Warning
             return $DefaultValue
         }
     }
@@ -483,7 +497,8 @@ function Reset-GitHubConfiguration
         Deletes the local configuration file and loads in all default configuration values.
 
     .NOTES
-        This command will not clear your authentication token.  Please use Clear-GitHubAuthentication to accomplish that.
+        This command will not clear your authentication token.
+        Please use Clear-GitHubAuthentication to accomplish that.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -501,13 +516,15 @@ function Reset-GitHubConfiguration
 
         if (($null -ne $ev) -and ($ev.Count -gt 0) -and ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
         {
-            Write-Log -Message "Reset was unsuccessful.  Experienced a problem trying to remove the file [$script:configurationFilePath]." -Level Warning -Exception $ev[0]
+            $message = "Reset was unsuccessful.  Experienced a problem trying to remove the file [$script:configurationFilePath]."
+            Write-Log -Message $message -Level Warning -Exception $ev[0]
         }
     }
 
     Initialize-GitHubConfiguration
 
-    Write-Log -Message "This has not cleared your authentication token.  Call Clear-GitHubAuthentication to accomplish that." -Level Verbose
+    $message = "This has not cleared your authentication token.  Call Clear-GitHubAuthentication to accomplish that."
+    Write-Log -Message $message -Level Verbose
 }
 
 function Read-GitHubConfiguration
@@ -553,7 +570,8 @@ function Read-GitHubConfiguration
         }
         catch
         {
-            Write-Log -Message 'The configuration file for this module is in an invalid state.  Use Reset-GitHubConfiguration to recover.' -Level Warning
+            $message = 'The configuration file for this module is in an invalid state.  Use Reset-GitHubConfiguration to recover.'
+            Write-Log -Message $message -Level Warning
         }
     }
 
@@ -611,6 +629,7 @@ function Import-GitHubConfiguration
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
         'disablePiiProtection' = $false
+        'disablePipelineSupport' = $false
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false
         'disableUpdateCheck' = $false
@@ -626,11 +645,13 @@ function Import-GitHubConfiguration
         'suppressTelemetryReminder' = $false
         'webRequestTimeoutSec' = 0
 
-        # This hash is generated by using Helper.ps1's Get-Sha512Hash in Tests/Config/Settings.ps1 like so:
+        # This hash is generated by using Helper.ps1's Get-Sha512Hash in Tests/Config/Settings.ps1
+        # like so:
         #    . ./Helpers.ps1; Get-Sha512Hash -PlainText (Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding Utf8)
-        # The hash is used to identify if the user has made changes to the config file prior to running the UT's locally.
-        # It intentionally cannot be modified via Set-GitHubConfiguration and must be updated directly in the
-        # source code here should the default Settings.ps1 file ever be changed.
+        # The hash is used to identify if the user has made changes to the config file prior to
+        # running the UT's locally.  It intentionally cannot be modified via Set-GitHubConfiguration
+        # and must be updated directly in the source code here should the default Settings.ps1 file
+        # ever be changed.
         'testConfigSettingsHash' = '272EE14CED396100A7AFD23EA21CA262470B7F4D80E47B7ABD90508B86210775F020EEF79D322F4C22A53835F700E1DFD13D0509C1D08DD6F9771B3F0133EDAB'
     }
 
@@ -662,7 +683,7 @@ function Backup-GitHubConfiguration
         The path to store the user's current configuration file.
 
     .PARAMETER Force
-        If specified, will overwrite the contents of any file with the same name at th
+        If specified, will overwrite the contents of any file with the same name at the
         location specified by Path.
 
     .EXAMPLE
@@ -715,7 +736,9 @@ function Restore-GitHubConfiguration
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [ValidateScript({if (Test-Path -Path $_ -PathType Leaf) { $true } else { throw "$_ does not exist." }})]
+        [ValidateScript({
+            if (Test-Path -Path $_ -PathType Leaf) { $true }
+            else { throw "$_ does not exist." }})]
         [string] $Path
     )
 
@@ -922,7 +945,8 @@ function Clear-GitHubAuthentication
         Clears out any GitHub API token from memory, as well as from local file storage.
 
     .NOTES
-        This command will not clear your configuration settings.  Please use Reset-GitHubConfiguration to accomplish that.
+        This command will not clear your configuration settings.
+        Please use Reset-GitHubConfiguration to accomplish that.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -944,14 +968,18 @@ function Clear-GitHubAuthentication
         {
             Remove-Item -Path $script:accessTokenFilePath -Force -ErrorAction SilentlyContinue -ErrorVariable ev
 
-            if (($null -ne $ev) -and ($ev.Count -gt 0) -and ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
+            if (($null -ne $ev) -and
+                ($ev.Count -gt 0) -and
+                ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
             {
-                Write-Log -Message "Experienced a problem trying to remove the file that persists the Access Token [$script:accessTokenFilePath]." -Level Warning -Exception $ev[0]
+                $message = "Experienced a problem trying to remove the file that persists the Access Token [$script:accessTokenFilePath]."
+                Write-Log -Message $message -Level Warning -Exception $ev[0]
             }
         }
     }
 
-    Write-Log -Message "This has not cleared your configuration settings.  Call Reset-GitHubConfiguration to accomplish that." -Level Verbose
+    $message = "This has not cleared your configuration settings.  Call Reset-GitHubConfiguration to accomplish that."
+    Write-Log -Message $message -Level Verbose
 }
 
 function Get-AccessToken
@@ -1008,19 +1036,22 @@ function Get-AccessToken
         {
             $secureString = $content | ConvertTo-SecureString
 
-            Write-Log -Message "Restoring Access Token from file.  This value can be cleared in the future by calling Clear-GitHubAuthentication." -Level Verbose
+            $message = "Restoring Access Token from file.  This value can be cleared in the future by calling Clear-GitHubAuthentication."
+            Write-Log -Message $messsage -Level Verbose
             $script:accessTokenCredential = New-Object System.Management.Automation.PSCredential "<username is ignored>", $secureString
             return $script:accessTokenCredential.GetNetworkCredential().Password
         }
         catch
         {
-           Write-Log -Message 'The Access Token file for this module contains an invalid SecureString (files can''t be shared by users or computers).  Use Set-GitHubAuthentication to update it.' -Level Warning
+           $message = 'The Access Token file for this module contains an invalid SecureString (files can''t be shared by users or computers).  Use Set-GitHubAuthentication to update it.'
+           Write-Log -Message $message -Level Warning
         }
     }
 
     if (-not [String]::IsNullOrEmpty($global:gitHubApiToken))
     {
-        Write-Log -Message 'Storing the Access Token in `$global:gitHubApiToken` is insecure and is no longer recommended.  To cache your Access Token for use across future PowerShell sessions, please use Set-GitHubAuthentication instead.' -Level Warning
+        $message = 'Storing the Access Token in `$global:gitHubApiToken` is insecure and is no longer recommended.  To cache your Access Token for use across future PowerShell sessions, please use Set-GitHubAuthentication instead.'
+        Write-Log -Message $message -Level Warning
         return $global:gitHubApiToken
     }
 
@@ -1028,7 +1059,8 @@ function Get-AccessToken
         (-not $script:seenTokenWarningThisSession))
     {
         $script:seenTokenWarningThisSession = $true
-        Write-Log -Message 'This module has not yet been configured with a personal GitHub Access token.  The module can still be used, but GitHub will limit your usage to 60 queries per hour.  You can get a GitHub API token from https://github.com/settings/tokens/new (provide a description and check any appropriate scopes).' -Level Warning
+        $message = 'This module has not yet been configured with a personal GitHub Access token.  The module can still be used, but GitHub will limit your usage to 60 queries per hour.  You can get a GitHub API token from https://github.com/settings/tokens/new (provide a description and check any appropriate scopes).'
+        Write-Log -Message $message -Level Warning
     }
 
     return $null

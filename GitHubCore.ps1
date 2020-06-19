@@ -4,15 +4,21 @@
 @{
     defaultAcceptHeader = 'application/vnd.github.v3+json'
     mediaTypeVersion = 'v3'
-    squirrelAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
-    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
-    mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
-    nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
     baptisteAcceptHeader = 'application/vnd.github.baptiste-preview+json'
-    scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
     dorianAcceptHeader = 'application/vnd.github.dorian-preview+json'
+    hagarAcceptHeader = 'application/vnd.github.hagar-preview+json'
+    hellcatAcceptHeader = 'application/vnd.github.hellcat-preview+json'
+    inertiaAcceptHeader = 'application/vnd.github.inertia-preview+json'
     londonAcceptHeader = 'application/vnd.github.london-preview+json'
-
+    machineManAcceptHeader = 'application/vnd.github.machine-man-preview'
+    mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
+    mockingbirdAcceptHeader = 'application/vnd.github.mockingbird-preview'
+    nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
+    sailorVAcceptHeader = 'application/vnd.github.sailor-v-preview+json'
+    scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
+    squirrelGirlAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
+    starfoxAcceptHeader = 'application/vnd.github.starfox-preview+json'
+    symmetraAcceptHeader = 'application/vnd.github.symmetra-preview+json'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -97,8 +103,8 @@ function Invoke-GHRestMethod
         no additional status shown to the user until a response is returned from the REST request.
 
     .NOTES
-        This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access to the headers
-        that are returned in the response, and Invoke-RestMethod drops those headers.
+        This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
+        to the headers that are returned in the response, and Invoke-RestMethod drops those headers.
 #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -195,6 +201,7 @@ function Invoke-GHRestMethod
     }
 
     $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
+    $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     try
     {
@@ -239,7 +246,15 @@ function Invoke-GHRestMethod
             $jobName = "Invoke-GHRestMethod-" + (Get-Date).ToFileTime().ToString()
 
             [scriptblock]$scriptBlock = {
-                param($Url, $Method, $Headers, $Body, $ValidBodyContainingRequestMethods, $TimeoutSec, $LogRequestBody, $ScriptRootPath)
+                param(
+                    $Url,
+                    $Method,
+                    $Headers,
+                    $Body,
+                    $ValidBodyContainingRequestMethods,
+                    $TimeoutSec,
+                    $LogRequestBody,
+                    $ScriptRootPath)
 
                 # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
                 # the context of this script block since we're running in a different
@@ -341,14 +356,25 @@ function Invoke-GHRestMethod
         }
         catch [ArgumentException]
         {
-            # The content must not be JSON (which is a legitimate situation).  We'll return the raw content result instead.
+            # The content must not be JSON (which is a legitimate situation).
+            # We'll return the raw content result instead.
             # We do this unnecessary assignment to avoid PSScriptAnalyzer's PSAvoidUsingEmptyCatchBlock.
             $finalResult = $finalResult
         }
 
         if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
         {
-            $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+            # In the case of getting raw content from the repo, we'll end up with a large object/byte
+            # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
+            # a lot of time.  Let's optimize here by not bothering to send in something that we
+            # know is definitely not convertible ([int32] on PS5, [long] on PS7).
+            if (($finalResult -isnot [Object[]]) -or
+                (($finalResult.Count -gt 0) -and
+                 ($finalResult[0] -isnot [int]) -and
+                 ($finalResult[0] -isnot [long])))
+            {
+                $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+            }
         }
 
         $links = $result.Headers['Link'] -split ','
@@ -410,8 +436,9 @@ function Invoke-GHRestMethod
     }
     catch
     {
-        # We only know how to handle WebExceptions, which will either come in "pure" when running with -NoStatus,
-        # or will come in as a RemoteException when running normally (since it's coming from the asynchronous Job).
+        # We only know how to handle WebExceptions, which will either come in "pure"
+        # when running with -NoStatus, or will come in as a RemoteException when running
+        # normally (since it's coming from the asynchronous Job).
         $ex = $null
         $message = $null
         $statusCode = $null
@@ -516,7 +543,9 @@ function Invoke-GHRestMethod
 
         if ($statusCode -eq 404)
         {
-            $output += "This typically happens when the current user isn't properly authenticated.  You may need an Access Token with additional scopes checked."
+            $explanation = @('This typically happens when the current user isn''t properly authenticated.',
+              'You may need an Access Token with additional scopes checked.')
+            $output += ($explanation -join ' ')
         }
 
         if (-not [String]::IsNullOrEmpty($requestId))
@@ -531,6 +560,10 @@ function Invoke-GHRestMethod
         Write-Log -Message $newLineOutput -Level Error
         Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
         throw $newLineOutput
+    }
+    finally
+    {
+        [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
     }
 }
 
@@ -693,7 +726,7 @@ function Invoke-GHRestMethodMultipleResult
     }
 }
 
-function Split-GitHubUri
+filter Split-GitHubUri
 {
 <#
     .SYNOPSIS
@@ -715,28 +748,39 @@ function Split-GitHubUri
     .PARAMETER RepositoryName
         Returns the Repository Name from the Uri if it can be identified.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [PSCustomObject] - The OwnerName and RepositoryName elements from the provided URL
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub'
 
         PowerShellForGitHub
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -RepositoryName
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub' -RepositoryName
 
         PowerShellForGitHub
 
     .EXAMPLE
-        Split-GitHubUri -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OwnerName
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub' -OwnerName
 
-        PowerShell
+        microsoft
+
+    .EXAMPLE
+        Split-GitHubUri -Uri 'https://github.com/microsoft/PowerShellForGitHub'
+
+        @{'ownerName' = 'microsoft'; 'repositoryName' = 'PowerShellForGitHub'}
 #>
     [CmdletBinding(DefaultParameterSetName='RepositoryName')]
+    [OutputType([Hashtable])]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
         [string] $Uri,
 
@@ -768,10 +812,50 @@ function Split-GitHubUri
     {
         return $components.ownerName
     }
-    elseif ($RepositoryName -or ($PSCmdlet.ParameterSetName -eq 'RepositoryName'))
+    elseif ($RepositoryName)
     {
         return $components.repositoryName
     }
+    else
+    {
+        return $components
+    }
+}
+
+function Join-GitHubUri
+{
+<#
+    .SYNOPSIS
+        Combines the provided repository elements into a repository URL.
+
+    .DESCRIPTION
+        Combines the provided repository elements into a repository URL.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+
+    .OUTPUTS
+        [String] - The repository URL.
+#>
+    [CmdletBinding()]
+    [OutputType([String])]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryName
+    )
+
+
+    $hostName = (Get-GitHubConfiguration -Name 'ApiHostName')
+    return "https://$hostName/$OwnerName/$RepositoryName"
 }
 
 function Resolve-RepositoryElements
@@ -884,6 +968,12 @@ filter ConvertTo-SmarterObject
 
     .PARAMETER InputObject
         The object to update
+
+    .INPUTS
+        [object]
+
+    .OUTPUTS
+        [object]
 #>
     [CmdletBinding()]
     param(
@@ -900,7 +990,13 @@ filter ConvertTo-SmarterObject
         return $null
     }
 
-    if ($InputObject -is [System.Collections.IList])
+    if (($InputObject -is [int]) -or ($InputObject -is [long]))
+    {
+        # In some instances, an int/long was being seen as a [PSCustomObject].
+        # This attempts to short-circuit extra work we would have done had that happened.
+        Write-Output -InputObject $InputObject
+    }
+    elseif ($InputObject -is [System.Collections.IList])
     {
         $InputObject |
             ConvertTo-SmarterObject |
@@ -923,7 +1019,8 @@ filter ConvertTo-SmarterObject
                 }
                 catch
                 {
-                    Write-Log -Message "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is." -Level Verbose
+                    $message = "Unable to convert $($property.Name) value of $($property.Value) to a [DateTime] object.  Leaving as-is."
+                    Write-Log -Message $message -Level Verbose
                 }
             }
 
@@ -956,10 +1053,15 @@ function Get-MediaAcceptHeader
     .PARAMETER MediaType
         The format in which the API will return the body of the comment or issue.
 
-        Raw - Return the raw markdown body. Response will include body. This is the default if you do not pass any specific media type.
-        Text - Return a text only representation of the markdown body. Response will include body_text.
-        Html - Return HTML rendered from the body's markdown. Response will include body_html.
-        Full - Return raw, text and HTML representations. Response will include body, body_text, and body_html.
+        Raw  - Return the raw markdown body.
+               Response will include body.
+               This is the default if you do not pass any specific media type.
+        Text - Return a text only representation of the markdown body.
+               Response will include body_text.
+        Html - Return HTML rendered from the body's markdown.
+               Response will include body_html.
+        Full - Return raw, text and HTML representations.
+               Response will include body, body_text, and body_html.
         Object - Return a json object representation a file or folder.
 
     .PARAMETER AsJson
@@ -968,12 +1070,16 @@ function Get-MediaAcceptHeader
     .PARAMETER AcceptHeader
         The accept header that should be included with the MediaType accept header.
 
+    .OUTPUTS
+        [String]
+
     .EXAMPLE
         Get-MediaAcceptHeader -MediaType Raw
 
         Returns a formatted AcceptHeader for v3 of the response object
 #>
     [CmdletBinding()]
+    [OutputType([String])]
     param(
         [ValidateSet('Raw', 'Text', 'Html', 'Full', 'Object')]
         [string] $MediaType = 'Raw',

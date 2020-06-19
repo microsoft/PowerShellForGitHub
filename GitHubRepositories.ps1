@@ -1,7 +1,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function New-GitHubRepository
+@{
+    GitHubRepositoryTypeName = 'GitHub.Repository'
+    GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
+    GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
+    GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
+    GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter New-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -85,19 +95,45 @@ function New-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         New-GitHubRepository -RepositoryName MyNewRepo -AutoInit
+
+    .EXAMPLE
+        'MyNewRepo' | New-GitHubRepository -AutoInit
 
     .EXAMPLE
         New-GitHubRepository -RepositoryName MyNewRepo -Organization MyOrg -DisallowRebaseMerge
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
+        [Alias('Name')]
         [string] $RepositoryName,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $OrganizationName,
 
         [string] $Description,
@@ -185,13 +221,13 @@ function New-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
-function Remove-GitHubRepository
+filter Remove-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -228,6 +264,21 @@ function Remove-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .EXAMPLE
         Remove-GitHubRepository -OwnerName You -RepositoryName YourRepoToDelete
 
@@ -243,6 +294,12 @@ function Remove-GitHubRepository
         Remove-GitHubRepository -Uri https://github.com/You/YourRepoToDelete -Force
 
         Remove repository with the given URI, without prompting for confirmation.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -Uri https://github.com/You/YourRepoToDelete
+        $repo | Remove-GitHubRepository -Force
+
+        You can also pipe in a repo that was returned from a previous command.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -258,7 +315,9 @@ function Remove-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [switch] $Force,
@@ -293,14 +352,14 @@ function Remove-GitHubRepository
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return Invoke-GHRestMethod @params
     }
 }
 
-function Get-GitHubRepository
+filter Get-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -370,6 +429,24 @@ function Get-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         Get-GitHubRepository
 
@@ -386,9 +463,19 @@ function Get-GitHubRepository
         Gets all of the repositories for the user octocat
 
     .EXAMPLE
+        Get-GitHubUser -UserName octocat | Get-GitHubRepository
+
+        Gets all of the repositories for the user octocat
+
+    .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/microsoft/PowerShellForGitHub
 
         Gets information about the microsoft/PowerShellForGitHub repository.
+
+    .EXAMPLE
+        $repo | Get-GitHubRepository
+
+        You can pipe in a previous repository to get its refreshed information.
 
     .EXAMPLE
         Get-GitHubRepository -OrganizationName PowerShell
@@ -398,10 +485,14 @@ function Get-GitHubRepository
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='AuthenticatedUser')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(ParameterSetName='ElementsOrUser')]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ElementsOrUser')]
+        [Alias('UserName')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName='ElementsOrUser')]
@@ -409,14 +500,18 @@ function Get-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(ParameterSetName='Organization')]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Organization')]
         [string] $OrganizationName,
 
-        [ValidateSet('All', 'Public', 'Private')]
         [Parameter(ParameterSetName='AuthenticatedUser')]
+        [ValidateSet('All', 'Public', 'Private')]
         [string] $Visibility,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
@@ -521,7 +616,6 @@ function Get-GitHubRepository
         }
 
         'Organization' {
-
             $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
             $uriFragment = "orgs/$OrganizationName/repos"
@@ -598,13 +692,13 @@ function Get-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
-function Rename-GitHubRepository
+filter Rename-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -625,7 +719,8 @@ function Rename-GitHubRepository
 
     .PARAMETER Uri
         Uri for the repository to rename. You can supply this directly, or more easily by
-        using Get-GitHubRepository to get the repository as you please, and then piping the result to this cmdlet
+        using Get-GitHubRepository to get the repository as you please,
+        and then piping the result to this cmdlet.
 
     .PARAMETER NewName
         The new name to set for the given GitHub repository
@@ -643,56 +738,87 @@ function Rename-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
         Get-GitHubRepository -Owner octocat -RepositoryName hello-world | Rename-GitHubRepository -NewName hello-again-world
 
-        Get the given 'hello-world' repo from the user 'octocat' and rename it to be https://github.com/octocat/hello-again-world.
+        Get the given 'hello-world' repo from the user 'octocat' and then
+        rename it to be https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/octocat/hello-world | Rename-GitHubRepository -NewName hello-again-world -Confirm:$false
 
-        Get the repository at https://github.com/octocat/hello-world and then rename it https://github.com/octocat/hello-again-world. Will not prompt for confirmation, as -Confirm:$false was specified.
+        Get the repository at https://github.com/octocat/hello-world and then
+        rename it https://github.com/octocat/hello-again-world.
+        Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world.
 
     .EXAMPLE
         New-GitHubRepositoryFork -Uri https://github.com/octocat/hello-world | Foreach-Object {$_ | Rename-GitHubRepository -NewName "$($_.name)_fork"}
 
-        Fork the `hello-world` repository from the user 'octocat', and then rename the newly forked repository by appending '_fork'.
+        Fork the `hello-world` repository from the user 'octocat', and then
+        rename the newly forked repository by appending '_fork'.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Confirm:$false
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world without prompting for confirmation.
 
     .EXAMPLE
         Rename-GitHubRepository -Uri https://github.com/octocat/hello-world -NewName hello-again-world -Force
 
-        Rename the repository at https://github.com/octocat/hello-world to https://github.com/octocat/hello-again-world without prompting for confirmation.
+        Rename the repository at https://github.com/octocat/hello-world to
+        https://github.com/octocat/hello-again-world without prompting for confirmation.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Uri',
         ConfirmImpact="High")]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory=$true, ParameterSetName='Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
-        [Alias("html_url")]
+        [Alias("RepositoryUrl")]
         [string] $Uri,
 
-        [parameter(Mandatory)][String]$NewName,
+        [parameter(Mandatory)]
+        [String] $NewName,
 
         [switch] $Force,
 
@@ -701,44 +827,12 @@ function Rename-GitHubRepository
         [switch] $NoStatus
     )
 
-    process
-    {
-        $repositoryInfoForDisplayMessage = if ($PSCmdlet.ParameterSetName -eq "Uri") { $Uri } else { $OwnerName, $RepositoryName -join "/" }
-
-        if ($Force -and (-not $Confirm))
-        {
-            $ConfirmPreference = 'None'
-        }
-
-        if ($PSCmdlet.ShouldProcess($repositoryInfoForDisplayMessage, "Rename repository to '$NewName'"))
-        {
-            Write-InvocationLog -Invocation $MyInvocation
-            $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
-            $OwnerName = $elements.ownerName
-            $RepositoryName = $elements.repositoryName
-
-            $telemetryProperties = @{
-                'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-                'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-            }
-
-            $params = @{
-                'UriFragment' = "repos/$OwnerName/$RepositoryName"
-                'Method' = 'Patch'
-                Body = ConvertTo-Json -InputObject @{name = $NewName}
-                'Description' =  "Renaming repository at '$repositoryInfoForDisplayMessage' to '$NewName'"
-                'AccessToken' = $AccessToken
-                'TelemetryEventName' = $MyInvocation.MyCommand.Name
-                'TelemetryProperties' = $telemetryProperties
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-            }
-
-            return Invoke-GHRestMethod @params
-        }
-    }
+    # This method was created by mistake and is now retained to avoid a breaking change.
+    # Update-GitHubRepository is able to handle this scenario just fine.
+    return Update-GitHubRepository @PSBoundParameters
 }
 
-function Update-GitHubRepository
+filter Update-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -761,6 +855,9 @@ function Update-GitHubRepository
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
+
+    .PARAMETER NewName
+        Rename the repository to this new name.
 
     .PARAMETER Description
         A short description of the repository.
@@ -808,6 +905,10 @@ function Update-GitHubRepository
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution
+        when renaming the repository.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -818,8 +919,26 @@ function Update-GitHubRepository
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
-        Update-GitHubRepository -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
+        Update-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
         Changes the description of the specified repository.
 
@@ -827,10 +946,19 @@ function Update-GitHubRepository
         Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
 
         Changes the visibility of the specified repository to be public.
+
+    .EXAMPLE
+        Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
+            Update-GitHubRepository -NewName 'PoShForGitHub' -Force
+
+        Renames the repository without any user confirmation prompting.  This is identical to using
+        Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        ConfirmImpact='High')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -841,8 +969,13 @@ function Update-GitHubRepository
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $NewName,
 
         [string] $Description,
 
@@ -870,6 +1003,8 @@ function Update-GitHubRepository
 
         [switch] $Archived,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -886,8 +1021,22 @@ function Update-GitHubRepository
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $hashBody = @{
-        'name' = $RepositoryName
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    $hashBody = @{}
+
+    if ($PSBoundParameters.ContainsKey('NewName'))
+    {
+        $existingName = if ($PSCmdlet.ParameterSetName -eq 'Uri') { $Uri } else { $OwnerName, $RepositoryName -join '/' }
+        if (-not $PSCmdlet.ShouldProcess($existingName, "Rename repository to '$NewName'"))
+        {
+            return
+        }
+
+        $hashBody['name'] = $NewName
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
@@ -913,13 +1062,13 @@ function Update-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
-function Get-GitHubRepositoryTopic
+filter Get-GitHubRepositoryTopic
 {
 <#
     .SYNOPSIS
@@ -953,8 +1102,26 @@ function Get-GitHubRepositoryTopic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.RepositoryTopic
+
     .EXAMPLE
-        Get-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTopic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -962,6 +1129,7 @@ function Get-GitHubRepositoryTopic
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTopicTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -972,7 +1140,9 @@ function Get-GitHubRepositoryTopic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -999,10 +1169,11 @@ function Get-GitHubRepositoryTopic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
 function Set-GitHubRepositoryTopic
@@ -1029,7 +1200,7 @@ function Set-GitHubRepositoryTopic
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER Topic
         Array of topics to add to the repository.
 
     .PARAMETER Clear
@@ -1045,15 +1216,44 @@ function Set-GitHubRepositoryTopic
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Set-GitHubRepositoryTopic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Clear
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.RepositoryTopic
 
     .EXAMPLE
-        Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Name ('octocat', 'powershell', 'github')
+        Set-GitHubRepositoryTopic -OwnerName microsoft -RepositoryName PowerShellForGitHub -Clear
+
+    .EXAMPLE
+        Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub -Topic ('octocat', 'powershell', 'github')
+
+    .EXAMPLE
+        ('octocat', 'powershell', 'github') | Set-GitHubRepositoryTopic -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+    .NOTES
+        This is implemented as a function rather than a filter because the ValueFromPipeline
+        parameter (Topic) is itself an array which we want to ensure is processed only a single time.
+        This API endpoint doesn't add topics to a repository, it replaces the existing topics with
+        the new set provided, so we need to make sure that we have all the requested topics available
+        to us at the time that the API endpoint is called.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ElementsName')]
+    [OutputType({$script:GitHubRepositoryTopicTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='ElementsName')]
@@ -1066,19 +1266,25 @@ function Set-GitHubRepositoryTopic
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='UriName')]
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='UriClear')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             ParameterSetName='ElementsName')]
         [Parameter(
             Mandatory,
+            ValueFromPipeline,
             ParameterSetName='UriName')]
-        [string[]] $Name,
+        [Alias('Name')]
+        [string[]] $Topic,
 
         [Parameter(
             Mandatory,
@@ -1093,48 +1299,64 @@ function Set-GitHubRepositoryTopic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
-
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
-    $telemetryProperties = @{
-        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
-        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Clear' = $PSBoundParameters.ContainsKey('Clear')
-    }
-
-    if ($Clear)
+    begin
     {
-        $description = "Clearing topics in $RepositoryName"
-        $Name = @()
+        $topics = @()
     }
-    else
+
+    process
     {
-        $description = "Replacing topics in $RepositoryName"
+        foreach ($value in $Topic)
+        {
+            $topics += $value
+        }
     }
 
-    $hashBody = @{
-        'names' = $Name
-    }
+    end
+    {
+        Write-InvocationLog -Invocation $MyInvocation
 
-    $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Put'
-        'Description' =  $description
-        'AcceptHeader' = $script:mercyAcceptHeader
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
 
-    return Invoke-GHRestMethod @params
+        $telemetryProperties = @{
+            'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+            'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+            'Clear' = $PSBoundParameters.ContainsKey('Clear')
+        }
+
+        if ($Clear)
+        {
+            $description = "Clearing topics in $RepositoryName"
+        }
+        else
+        {
+            $description = "Replacing topics in $RepositoryName"
+        }
+
+        $hashBody = @{
+            'names' = $topics
+        }
+
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Put'
+            'Description' =  $description
+            'AcceptHeader' = $script:mercyAcceptHeader
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params |
+            Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+    }
 }
 
-function Get-GitHubRepositoryContributor
+filter Get-GitHubRepositoryContributor
 {
 <#
     .SYNOPSIS
@@ -1181,11 +1403,27 @@ function Get-GitHubRepositoryContributor
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .OUTPUTS
-        [PSCustomObject[]] List of contributors for the repository.
+        GitHub.User
+        GitHub.RepositoryContributorStatistics
 
     .EXAMPLE
-        Get-GitHubRepositoryContributor -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryContributor -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
@@ -1193,6 +1431,8 @@ function Get-GitHubRepositoryContributor
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1203,7 +1443,9 @@ function Get-GitHubRepositoryContributor
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [switch] $IncludeAnonymousContributors,
@@ -1240,13 +1482,34 @@ function Get-GitHubRepositoryContributor
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    $results = Invoke-GHRestMethodMultipleResult @params
+
+    if ($IncludeStatistics)
+    {
+        foreach ($item in $results)
+        {
+            $item.PSObject.TypeNames.Insert(0, $script:GitHubRepositoryContributorStatisticsTypeName)
+
+            if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+            {
+                $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.author
+            }
+        }
+    }
+    else
+    {
+        $results = $results | Add-GitHubUserAdditionalProperties
+    }
+
+    return $results
 }
 
-function Get-GitHubRepositoryCollaborator
+filter Get-GitHubRepositoryCollaborator
 {
 <#
     .SYNOPSIS
@@ -1274,17 +1537,39 @@ function Get-GitHubRepositoryCollaborator
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
+    .PARAMETER Affiliation
+        Filter collaborators returned by their affiliation. Can be one of:
+           All:     All collaborators the authenticated user can see.
+           Direct:  All collaborators with permissions to an organization-owned repository,
+                     regardless of organization membership status.
+           Outside: All outside collaborators of an organization-owned repository.
+
     .PARAMETER NoStatus
         If this switch is specified, long-running commands will run on the main thread
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .OUTPUTS
-        [PSCustomObject[]] List of collaborators for the repository.
+        GitHub.User
 
     .EXAMPLE
-        Get-GitHubRepositoryCollaborator -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryCollaborator -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
@@ -1292,7 +1577,8 @@ function Get-GitHubRepositoryCollaborator
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        [OutputType({$script:GitHubUserTypeName})]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1302,8 +1588,13 @@ function Get-GitHubRepositoryCollaborator
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
+
+        [ValidateSet('All', 'Direct', 'Outside')]
+        [string] $Affiliation = 'All',
 
         [string] $AccessToken,
 
@@ -1321,19 +1612,23 @@ function Get-GitHubRepositoryCollaborator
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $getParams = @(
+        "affiliation=$($Affiliation.ToLower())"
+    )
+
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/collaborators"
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/collaborators?" + ($getParams -join '&')
         'Description' =  "Getting collaborators for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-function Get-GitHubRepositoryLanguage
+filter Get-GitHubRepositoryLanguage
 {
 <#
     .SYNOPSIS
@@ -1367,12 +1662,27 @@ function Get-GitHubRepositoryLanguage
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
     .OUTPUTS
-        [PSCustomObject[]] List of languages for the specified repository.  The value shown
-        for each language is the number of bytes of code written in that language.
+        GitHub.RepositoryLanguage - The value shown for each language is the number
+        of bytes of code written in that language.
 
     .EXAMPLE
-        Get-GitHubRepositoryLanguage -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryLanguage -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryLanguage -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1380,6 +1690,7 @@ function Get-GitHubRepositoryLanguage
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryLanguageTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1390,7 +1701,9 @@ function Get-GitHubRepositoryLanguage
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1415,13 +1728,14 @@ function Get-GitHubRepositoryLanguage
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryLanguageTypeName)
 }
 
-function Get-GitHubRepositoryTag
+filter Get-GitHubRepositoryTag
 {
 <#
     .SYNOPSIS
@@ -1455,8 +1769,26 @@ function Get-GitHubRepositoryTag
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.RepositoryTag
+
     .EXAMPLE
-        Get-GitHubRepositoryTag -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryTag -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
     .EXAMPLE
         Get-GitHubRepositoryTag -Uri https://github.com/PowerShell/PowerShellForGitHub
@@ -1464,6 +1796,7 @@ function Get-GitHubRepositoryTag
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTagTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1474,7 +1807,9 @@ function Get-GitHubRepositoryTag
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -1499,13 +1834,14 @@ function Get-GitHubRepositoryTag
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTagTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
 }
 
-function Move-GitHubRepositoryOwnership
+filter Move-GitHubRepositoryOwnership
 {
 <#
     .SYNOPSIS
@@ -1546,12 +1882,31 @@ function Move-GitHubRepositoryOwnership
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
-        Move-GitHubRepositoryOwnership -OwnerName Microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
+        Move-GitHubRepositoryOwnership -OwnerName microsoft -RepositoryName PowerShellForGitHub -NewOwnerName OctoCat
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Alias('Transfer-GitHubRepositoryOwnership')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
@@ -1563,7 +1918,9 @@ function Move-GitHubRepositoryOwnership
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(Mandatory)]
@@ -1602,8 +1959,98 @@ function Move-GitHubRepositoryOwnership
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+}
+
+filter Add-GitHubRepositoryAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Repository
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryTypeName,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $repositoryUrl = [String]::Empty
+            if ([String]::IsNullOrEmpty($item.html_url))
+            {
+                if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                    $PSBoundParameters.ContainsKey('RepositoryName'))
+                {
+                    $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                }
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+            }
+
+            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            if ($item.id -gt 0)
+            {
+                Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.owner)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
+            }
+
+            if ($null -ne $item.organization)
+            {
+                $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+            }
+        }
+
+        Write-Output $item
+    }
 }

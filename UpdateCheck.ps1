@@ -58,7 +58,8 @@ function Invoke-UpdateCheck
         if ($state -eq 'Failed')
         {
             # We'll just assume we're up-to-date if we failed to check today.
-            Write-Log -Message '[$moduleName] update check failed for today (web request failed).  Assuming up-to-date.' -Level Verbose
+            $message = '[$moduleName] update check failed for today (web request failed).  Assuming up-to-date.'
+            Write-Log -Message $message -Level Verbose
             $script:HasLatestVersion = $true
 
             # Clear out the job info (even though we don't need the result)
@@ -81,22 +82,26 @@ function Invoke-UpdateCheck
                 $script:HasLatestVersion = $latestVersion -eq $moduleVersion
                 if ($script:HasLatestVersion)
                 {
-                    Write-Log "[$moduleName] update check complete.  Running latest version: $latestVersion" -Level Verbose
+                    $message = "[$moduleName] update check complete.  Running latest version: $latestVersion"
+                    Write-Log =Message $message -Level Verbose
                 }
                 elseif ($moduleVersion -gt $latestVersion)
                 {
-                    Write-Log "[$moduleName] update check complete.  This version ($moduleVersion) is newer than the latest published version ($latestVersion)." -Level Verbose
+                    $message = "[$moduleName] update check complete.  This version ($moduleVersion) is newer than the latest published version ($latestVersion)."
+                    Write-Log -Message $message -Level Verbose
                 }
                 else
                 {
-                    Write-Log "A newer version of $moduleName is available ($latestVersion).  Your current version is $moduleVersion.  Run 'Update-Module $moduleName' to get up-to-date." -Level Warning
+                    $message = "A newer version of $moduleName is available ($latestVersion).  Your current version is $moduleVersion.  Run 'Update-Module $moduleName' to get up-to-date."
+                    Write-Log -Message $message -Level Warning
                 }
             }
             catch
             {
                 # This could happen if the server returned back an invalid (non-XML) response for the request
                 # for some reason.
-                Write-Log -Message "[$moduleName] update check failed for today (invalid XML response).  Assuming up-to-date." -Level Verbose
+                $message = "[$moduleName] update check failed for today (invalid XML response).  Assuming up-to-date."
+                Write-Log -Message $message -Level Verbose
                 $script:HasLatestVersion = $true
             }
 

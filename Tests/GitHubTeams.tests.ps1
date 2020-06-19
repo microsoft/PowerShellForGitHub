@@ -3,7 +3,7 @@
 
 <#
 .Synopsis
-   Tests for GitHubAnalytics.ps1 module
+   Tests for GitHubTeams.ps1 module
 #>
 
 [CmdletBinding()]
@@ -17,7 +17,7 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
-    # TODO
+    # TODO once more capabilities exist in the module's API set
 }
 finally
 {

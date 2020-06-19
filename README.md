@@ -8,9 +8,9 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3990/badge)](https://bestpractices.coreinfrastructure.org/projects/3990)
 [![tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2FQuackFu)](https://twitter.com/intent/tweet?text=%23PowerShellForGitHub%20%40QuackFu%20&original_referer=https://github.com/microsoft/PowerShellForGitHub)
 <br />
-[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
-[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
-[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build?definitionId=109&_a=summary&repositoryFilter=63&branchFilter=2197)
+[![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
+[![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/ms/PowerShellForGitHub/109/master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
 <br />
 [![Help Wanted Issues](https://img.shields.io/github/issues/microsoft/PowerShellForGitHub/help%20wanted)](https://github.com/microsoft/PowerShellForGitHub/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 [![GitHub last commit](https://img.shields.io/github/last-commit/microsoft/PowerShellForGitHub)](https://github.com/HowardWolosky/PowerShellForGitHub/commits/master)
@@ -35,28 +35,58 @@
 ## Overview
 
 This is a [PowerShell](https://microsoft.com/powershell) [module](https://technet.microsoft.com/en-us/library/dd901839.aspx)
-that provides command-line interaction and automation for the [GitHub v3 API](https://developer.github.com/v3/).
+that provides stateless command-line interaction and automation for the
+[GitHub v3 API](https://developer.github.com/v3/).
+
+**Embracing the benefits of PowerShell, it has
+[full support for pipelining](./USAGE.md#embracing-the-pipeline), allowing you pipe the output of
+virtually any command into any other command within the module.**
 
 ----------
 
 ## Current API Support
 
 At present, this module can:
- * Query issues
- * Query [pull requests](https://developer.github.com/v3/pulls/)
+ * Query, create, update and remove [Repositories](https://developer.github.com/v3/repos/) including
+      * Query [Branches](https://developer.github.com/v3/repos/branches/)
+      * Query and create new [Forks](https://developer.github.com/v3/repos/forks/)
+      * Query/retrieve [Content](https://developer.github.com/v3/repos/contents/) from a repo.
+      * Query the languages and tags in a repository, and and query/update its topics.
+      * Change repository ownership.
+      * Query various [traffic reports](https://developer.github.com/v3/repos/traffic/) including
+        referral sources and paths, page views and clones.
+ * Query, create, edit, lock/unlock [Issues](https://developer.github.com/v3/issues/) and
+   all of their related properties:
+      * Query, check, add and remove [Assignees](https://developer.github.com/v3/issues/assignees/)
+      * Query, create, edit and remove [Issue Comments](https://developer.github.com/v3/issues/comments/)
+      * Query, create, edit and remove [Labels](https://developer.github.com/v3/issues/labels/)
+      * Query [Events](https://developer.github.com/v3/issues/events/) and the
+        [timeline](https://developer.github.com/v3/issues/timeline/)
+      * Query, create, edit and remove [Milestones](https://developer.github.com/v3/issues/milestones/)
+ * Query and create [Pull Requests](https://developer.github.com/v3/pulls/)
  * Query [collaborators](https://developer.github.com/v3/repos/collaborators/)
  * Query [contributors](https://developer.github.com/v3/repos/statistics/)
- * Query [organizations](https://developer.github.com/v3/orgs/)
- * Query, create, update and remove [Issues](https://developer.github.com/v3/issues/) and
-   all of their related properties (assignees, comments, events, labels, milestones, timeline)
- * Query, create, update and remove [Labels](https://developer.github.com/v3/issues/labels/)
- * Query, check, add and remove [Assignees](https://developer.github.com/v3/issues/assignees/)
- * Query, create, update and remove [Repositories](https://developer.github.com/v3/repos/)
+ * Query [organizations](https://developer.github.com/v3/orgs/) and their members.
  * Query and update [Users](https://developer.github.com/v3/users/)
+ * Query [Teams](https://developer.github.com/v3/teams/) and their members.
+ * Query, create, edit and remove [Projects](https://developer.github.com/v3/projects/), along with
+   [Project Columns](https://developer.github.com/v3/projects/columns/) and
+   [Project Cards](https://developer.github.com/v3/projects/cards/)
+ * Query [Releases](https://developer.github.com/v3/repos/releases/)
+ * Miscellaneous functionality:
+      * Get all [Codes of Conduct](https://developer.github.com/v3/codes_of_conduct/) as well as that
+        of a specific repo.
+      * Get all [GitHub emojis](https://developer.github.com/v3/emojis/)
+      * Get [gitignore templates](https://developer.github.com/v3/gitignore/)
+      * Get [commonly used licenses](https://developer.github.com/v3/licenses/) as well as that for
+        a specific repository.
+      * [Convert markdown](https://developer.github.com/v3/markdown/) to the equivalent HTML
+      * Get your current [rate limit](https://developer.github.com/v3/rate_limit/) for API usage.
 
 Development is ongoing, with the goal to add broad support for the entire API set.
 
-For a comprehensive look at what work is remaining to be API Complete, refer to [Issue #70](https://github.com/PowerShell/PowerShellForGitHub/issues/70).
+For a comprehensive look at what work is remaining to be API Complete, refer to
+[Issue #70](https://github.com/microsoft/PowerShellForGitHub/issues/70).
 
 Review [examples](USAGE.md#examples) to see how the module can be used to accomplish some of these tasks.
 
@@ -135,7 +165,7 @@ Set-GitHubConfiguration -ApiHostName "github.contoso.com"
 Example command:
 
 ```powershell
-$issues = Get-GitHubIssue -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+$issues = Get-GitHubIssue -Uri 'https://github.com/microsoft/PowerShellForGitHub'
 ```
 
 For more example commands, please refer to [USAGE](USAGE.md#examples).
@@ -147,7 +177,7 @@ For more example commands, please refer to [USAGE](USAGE.md#examples).
 Please see the [Contribution Guide](CONTRIBUTING.md) for information on how to develop and
 contribute.
 
-If you have any problems, please consult [GitHub Issues](https://github.com/PowerShell/PowerShellForGitHub/issues)
+If you have any problems, please consult [GitHub Issues](https://github.com/microsoft/PowerShellForGitHub/issues)
 to see if has already been discussed.
 
 If you do not see your problem captured, please file [feedback](CONTRIBUTING.md#feedback).

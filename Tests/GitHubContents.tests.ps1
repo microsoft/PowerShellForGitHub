@@ -6,6 +6,11 @@
    Tests for GitHubContents.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -29,74 +34,133 @@ try
     }
 
     Describe 'Getting file and folder content' {
-        # AutoInit will create a readme with the GUID of the repo name
-        $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
+        BeforeAll {
+            # AutoInit will create a readme with the GUID of the repo name
+            $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
+        }
 
-        Context 'For getting folder contents' {
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
 
+        Context 'For getting folder contents with parameters' {
             $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
 
             It "Should have the expected name" {
-                $folderOutput.name | Should be ""
+                $folderOutput.name | Should -BeNullOrEmpty
             }
+
             It "Should have the expected path" {
-                $folderOutput.path | Should be ""
+                $folderOutput.path | Should -BeNullOrEmpty
             }
+
             It "Should have the expected type" {
-                $folderOutput.type | Should be "dir"
+                $folderOutput.type | Should -Be "dir"
             }
+
             It "Should have the expected entries" {
-                $folderOutput.entries.length | Should be 1
+                $folderOutput.entries.length | Should -Be 1
             }
+
             It "Should have the expected entry data" {
-                $folderOutput.entries[0].name | Should be $readmeFileName
-                $folderOutput.entries[0].path | Should be $readmeFileName
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
+            }
+
+            It "Should have the expected type and additional properties" {
+                $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
         Context 'For getting folder contents via URL' {
-
             $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
 
             It "Should have the expected name" {
-                $folderOutput.name | Should be ""
+                $folderOutput.name | Should -BeNullOrEmpty
             }
+
             It "Should have the expected path" {
-                $folderOutput.path | Should be ""
+                $folderOutput.path | Should -BeNullOrEmpty
             }
+
             It "Should have the expected type" {
-                $folderOutput.type | Should be "dir"
+                $folderOutput.type | Should -Be "dir"
             }
+
             It "Should have the expected entries" {
-                $folderOutput.entries.length | Should be 1
+                $folderOutput.entries.length | Should -Be 1
             }
+
             It "Should have the expected entry data" {
-                $folderOutput.entries[0].name | Should be $readmeFileName
-                $folderOutput.entries[0].path | Should be $readmeFileName
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
+            }
+
+            It "Should have the expected type" {
+                $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
+
+        Context 'For getting folder contents with the repo on the pipeline' {
+            $folderOutput = $repo | Get-GitHubContent
+
+            It "Should have the expected name" {
+                $folderOutput.name | Should -BeNullOrEmpty
+            }
+
+            It "Should have the expected path" {
+                $folderOutput.path | Should -BeNullOrEmpty
+            }
+
+            It "Should have the expected type" {
+                $folderOutput.type | Should -Be "dir"
+            }
+
+            It "Should have the expected entries" {
+                $folderOutput.entries.length | Should -Be 1
+            }
+
+            It "Should have the expected entry data" {
+                $folderOutput.entries[0].name | Should -Be $readmeFileName
+                $folderOutput.entries[0].path | Should -Be $readmeFileName
+            }
+
+            It "Should have the expected type" {
+                $folderOutput.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $folderOutput.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
         Context 'For getting raw (byte) file contents' {
-
             $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw
             $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
             It "Should have the expected content" {
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
+            }
+
+            It "Should have the expected type" {
+                $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
         Context 'For getting raw (string) file contents' {
-
             $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw -ResultAsString
 
             It "Should have the expected content" {
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
+            }
+
+            It "Should have the expected type" {
+                $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
             }
         }
 
         Context 'For getting html (byte) file contents' {
-
             $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html
             $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
@@ -108,10 +172,14 @@ try
                 $readmeNoBreaks.StartsWith($htmlOutputStart) | Should -BeTrue
                 $readmeNoBreaks.IndexOf($repoGuid) | Should -BeGreaterOrEqual 0
             }
+
+            It "Should have the expected type" {
+                $readmeNoBreaks.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeNoBreaks.RepositoryUrl | Should -BeNullOrEmpty
+            }
         }
 
         Context 'For getting html (string) file contents' {
-
             $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html -ResultAsString
 
             # Replace newlines with empty for comparison purposes
@@ -122,55 +190,69 @@ try
                 $readmeNoBreaks.StartsWith($htmlOutputStart) | Should -BeTrue
                 $readmeNoBreaks.IndexOf($repoGuid) | Should -BeGreaterOrEqual 0
             }
+
+            It "Should have the expected type" {
+                $readmeFileString.PSObject.TypeNames[0] | Should -Not -Be 'GitHub.Content'
+                $readmeFileString.RepositoryUrl | Should -BeNullOrEmpty
+            }
         }
 
         Context 'For getting object (default) file result' {
-
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName
 
             It "Should have the expected name" {
-                $readmeFileObject.name | Should be $readmeFileName
+                $readmeFileObject.name | Should -Be $readmeFileName
             }
+
             It "Should have the expected path" {
-                $readmeFileObject.path | Should be $readmeFileName
+                $readmeFileObject.path | Should -Be $readmeFileName
             }
+
             It "Should have the expected type" {
-                $readmeFileObject.type | Should be "file"
+                $readmeFileObject.type | Should -Be "file"
             }
+
             It "Should have the expected encoding" {
-                $readmeFileObject.encoding | Should be "base64"
+                $readmeFileObject.encoding | Should -Be "base64"
             }
 
             It "Should have the expected content" {
                 # Convert from base64
                 $readmeFileString = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($readmeFileObject.content))
-                $readmeFileString | Should be $rawOutput
+                $readmeFileString | Should -Be $rawOutput
+            }
+
+            It "Should have the expected type" {
+                $readmeFileObject.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $readmeFileObject.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
 
         Context 'For getting object file result as string' {
-
             $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Object -ResultAsString
 
             It "Should have the expected name" {
-                $readmeFileObject.name | Should be $readmeFileName
+                $readmeFileObject.name | Should -Be $readmeFileName
             }
             It "Should have the expected path" {
-                $readmeFileObject.path | Should be $readmeFileName
+                $readmeFileObject.path | Should -Be $readmeFileName
             }
             It "Should have the expected type" {
-                $readmeFileObject.type | Should be "file"
+                $readmeFileObject.type | Should -Be "file"
             }
             It "Should have the expected encoding" {
-                $readmeFileObject.encoding | Should be "base64"
+                $readmeFileObject.encoding | Should -Be "base64"
             }
 
             It "Should have the expected content" {
-                $readmeFileObject.contentAsString | Should be $rawOutput
+                $readmeFileObject.contentAsString | Should -Be $rawOutput
+            }
+
+            It "Should have the expected type" {
+                $readmeFileObject.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $readmeFileObject.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
         }
-
-        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
     }
 }
 finally

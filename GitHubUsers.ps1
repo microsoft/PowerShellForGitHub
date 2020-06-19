@@ -1,7 +1,14 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubUser
+@{
+    GitHubUserTypeName = 'GitHub.User'
+    GitHubUserContextualInformationTypeName = 'GitHub.UserContextualInformation'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubUser
 {
 <#
     .SYNOPSIS
@@ -14,7 +21,8 @@ function Get-GitHubUser
 
     .PARAMETER User
         The GitHub user to retrieve information for.
-        If not specified, will retrieve information on all GitHub users (and may take a while to complete).
+        If not specified, will retrieve information on all GitHub users
+        (and may take a while to complete).
 
     .PARAMETER Current
         If specified, gets information on the current user.
@@ -38,10 +46,21 @@ function Get-GitHubUser
         which provides an email entry for this endpoint.  If the user does not set a public
         email address for email, then it will have a value of null.
 
+    .INPUTS
+        GitHub.User
+
+    .OUTPUTS
+        GitHub.User
+
     .EXAMPLE
-        Get-GitHubUser -User octocat
+        Get-GitHubUser -UserName octocat
 
         Gets information on just the user named 'octocat'
+
+    .EXAMPLE
+        'octocat', 'PowerShellForGitHubTeam' | Get-GitHubUser
+
+        Gets information on the users named 'octocat' and 'PowerShellForGitHubTeam'
 
     .EXAMPLE
         Get-GitHubUser
@@ -56,11 +75,17 @@ function Get-GitHubUser
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ListAndSearch')]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(ParameterSetName='ListAndSearch')]
-        [string] $User,
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='ListAndSearch')]
+        [Alias('Name')]
+        [Alias('User')]
+        [string] $UserName,
 
         [Parameter(ParameterSetName='Current')]
         [switch] $Current,
@@ -80,19 +105,22 @@ function Get-GitHubUser
 
     if ($Current)
     {
-        return Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params
+        return (Invoke-GHRestMethod -UriFragment "user" -Description "Getting current authenticated user" -Method 'Get' @params |
+            Add-GitHubUserAdditionalProperties)
     }
-    elseif ([String]::IsNullOrEmpty($User))
+    elseif ([String]::IsNullOrEmpty($UserName))
     {
-        return Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params
+        return (Invoke-GHRestMethodMultipleResult -UriFragment 'users' -Description 'Getting all users' @params |
+            Add-GitHubUserAdditionalProperties)
     }
     else
     {
-        return Invoke-GHRestMethod -UriFragment "users/$User" -Description "Getting user $User" -Method 'Get' @params
+        return (Invoke-GHRestMethod -UriFragment "users/$UserName" -Description "Getting user $UserName" -Method 'Get' @params |
+            Add-GitHubUserAdditionalProperties)
     }
 }
 
-function Get-GitHubUserContextualInformation
+filter Get-GitHubUserContextualInformation
 {
 <#
     .SYNOPSIS
@@ -106,11 +134,23 @@ function Get-GitHubUserContextualInformation
     .PARAMETER User
         The GitHub user to retrieve information for.
 
-    .PARAMETER Subject
-        Identifies which additional information to receive about the user's hovercard.
+    .PARAMETER OrganizationId
+        The ID of an Organization.  When provided, this returns back the context for the user
+        in relation to this Organization.
 
-    .PARAMETER SubjectId
-        The ID for the Subject.  Required when Subject has been specified.
+    .PARAMETER RepositoryId
+        The ID for a Repository.  When provided, this returns back the context for the user
+        in relation to this Repository.
+
+    .PARAMETER IssueId
+        The ID for a Issue.  When provided, this returns back the context for the user
+        in relation to this Issue.
+        NOTE: This is the *id* of the issue and not the issue *number*.
+
+    .PARAMETER PullRequestId
+        The ID for a PullRequest.  When provided, this returns back the context for the user
+        in relation to this Pull Request.
+        NOTE: This is the *id* of the pull request and not the pull request *number*.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -122,23 +162,68 @@ function Get-GitHubUserContextualInformation
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Issue
+        GitHub.Organization
+        GitHub.PullRequest
+        GitHub.Repository
+        GitHub.User
+
+    .OUTPUTS
+        GitHub.UserContextualInformation
+
     .EXAMPLE
         Get-GitHubUserContextualInformation -User octocat
 
     .EXAMPLE
-        Get-GitHubUserContextualInformation -User octocat -Subject Repository -SubjectId 1300192
+        Get-GitHubUserContextualInformation -User octocat -RepositoryId 1300192
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName 'PowerShellForGitHub'
+        $repo | Get-GitHubUserContextualInformation -User octocat
+
+    .EXAMPLE
+        Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 70 |
+            Get-GitHubUserContextualInformation -User octocat
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='NoContext')]
+    [OutputType({$script:GitHubUserContextualInformationTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
-        [Parameter(Mandatory)]
-        [string] $User,
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [Alias('Name')]
+        [Alias('User')]
+        [string] $UserName,
 
-        [ValidateSet('Organization', 'Repository', 'Issue', 'PullRequest')]
-        [string] $Subject,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Organization')]
+        [int64] $OrganizationId,
 
-        [string] $SubjectId,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Repository')]
+        [int64] $RepositoryId,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Issue')]
+        [int64] $IssueId,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='PullRequest')]
+        [int64] $PullRequestId,
 
         [string] $AccessToken,
 
@@ -149,38 +234,70 @@ function Get-GitHubUserContextualInformation
 
     $getParams = @()
 
-    # Intentionally not using -xor here because we need to know if we're setting the GET parameters as well.
-    if ((-not [String]::IsNullOrEmpty($Subject)) -or (-not [String]::IsNullOrEmpty($SubjectId)))
+    $contextType = [String]::Empty
+    $contextId = 0
+    if ($PSCmdlet.ParameterSetName -ne 'NoContext')
     {
-        if ([String]::IsNullOrEmpty($Subject) -or [String]::IsNullOrEmpty($SubjectId))
+        if ($PSCmdlet.ParameterSetName -eq 'Organization')
         {
-            $message = 'If either Subject or SubjectId has been provided, then BOTH must be provided.'
-            Write-Log -Message $message -Level Error
-            throw $message
-        }
+            $getParams += 'subject_type=organization'
+            $getParams += "subject_id=$OrganizationId"
 
-        $subjectConverter = @{
-            'Organization' = 'organization'
-            'Repository' = 'repository'
-            'Issue' = 'issue'
-            'PullRequest' = 'pull_request'
+            $contextType = 'OrganizationId'
+            $contextId = $OrganizationId
         }
+        elseif ($PSCmdlet.ParameterSetName -eq 'Repository')
+        {
+            $getParams += 'subject_type=repository'
+            $getParams += "subject_id=$RepositoryId"
 
-        $getParams += "subject_type=$($subjectConverter[$Subject])"
-        $getParams += "subject_id=$SubjectId"
+            $contextType = 'RepositoryId'
+            $contextId = $RepositoryId
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'Issue')
+        {
+            $getParams += 'subject_type=issue'
+            $getParams += "subject_id=$IssueId"
+
+            $contextType = 'IssueId'
+            $contextId = $IssueId
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'PullRequest')
+        {
+            $getParams += 'subject_type=pull_request'
+            $getParams += "subject_id=$PullRequestId"
+
+            $contextType = 'PullRequestId'
+            $contextId = $PullRequestId
+        }
     }
 
     $params = @{
-        'UriFragment' = "users/$User/hovercard`?" + ($getParams -join '&')
+        'UriFragment' = "users/$UserName/hovercard`?" + ($getParams -join '&')
         'Method' = 'Get'
-        'Description' =  "Getting hovercard information for $User"
-        'AcceptHeader' = 'application/vnd.github.hagar-preview+json'
+        'Description' =  "Getting hovercard information for $UserName"
+        'AcceptHeader' = $script:hagarAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    Invoke-GHRestMethod @params
+    $result = Invoke-GHRestMethod @params
+    foreach ($item in $result.contexts)
+    {
+        $item.PSObject.TypeNames.Insert(0, $script:GitHubUserContextualInformationTypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'UserName' -Value $UserName -MemberType NoteProperty -Force
+            if ($PSCmdlet.ParameterSetName -ne 'NoContext')
+            {
+                Add-Member -InputObject $item -Name $contextType -Value $contextId -MemberType NoteProperty -Force
+            }
+        }
+    }
+
+    return $result
 }
 
 function Update-GitHubCurrentUser
@@ -226,6 +343,9 @@ function Update-GitHubCurrentUser
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .OUTPUTS
+        GitHub.User
+
     .EXAMPLE
         Update-GitHubCurrentUser -Location 'Seattle, WA' -Hireable:$false
 
@@ -233,6 +353,7 @@ function Update-GitHubCurrentUser
         are not currently hireable.
 #>
     [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [string] $Name,
@@ -275,5 +396,82 @@ function Update-GitHubCurrentUser
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubUserAdditionalProperties)
+}
+
+filter Add-GitHubUserAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub User objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the user.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the user.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.User
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubUserTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $userName = $item.login
+            if ([String]::IsNullOrEmpty($userName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $userName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($userName))
+            {
+                Add-Member -InputObject $item -Name 'UserName' -Value $userName -MemberType NoteProperty -Force
+            }
+
+            $userId = $item.id
+            if (($userId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $userId = $Id
+            }
+
+            if ($userId -ne 0)
+            {
+                Add-Member -InputObject $item -Name 'UserId' -Value $userId -MemberType NoteProperty -Force
+            }
+        }
+
+        Write-Output $item
+    }
 }

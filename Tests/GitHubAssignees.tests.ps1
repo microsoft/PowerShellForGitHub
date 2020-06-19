@@ -6,62 +6,253 @@
    Tests for GitHubAssignees.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
 {
-    $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-    $issue = New-GitHubIssue -Uri $repo.svn_url -Title "Test issue"
+    Describe 'Getting an Assignee' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
 
-    Describe 'Getting a valid assignee' {
+        AfterAll {
+            $repo | Remove-GitHubRepository -Confirm:$false
+        }
 
-        Context 'For getting a valid assignee' {
-            $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
+        Context 'For getting assignees in a repository via parameters' {
+            $assigneeList = @(Get-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name)
 
             It 'Should have returned the one assignee' {
-                $assigneeList.Count | Should be 1
+                $assigneeList.Count | Should -Be 1
             }
 
-            $assigneeUserName = $assigneeList[0].login
-
-            It 'Should have returned an assignee with a login'{
-                $assigneeUserName | Should not be $null
+            It 'Should have the expected type' {
+                $assigneeList[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
-
-            $hasPermission = Test-GitHubAssignee -Uri $repo.svn_url -Assignee $assigneeUserName
-
-            It 'Should have returned an assignee with permission to be assigned to an issue'{
-                $hasPermission | Should be $true
-            }
-
         }
-    }
 
-    Describe 'Adding and removing an assignee to an issue'{
+        Context 'For getting assignees in a repository with the repo on the pipeline' {
+            $assigneeList = @($repo | Get-GitHubAssignee)
 
-        Context 'For adding an assignee to an issue'{
-            $assigneeList = @(Get-GitHubAssignee -Uri $repo.svn_url)
-            $assigneeUserName = $assigneeList[0].login
-            $assignees = $assigneeUserName
-            New-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees
-            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
-
-            It 'Should have assigned the user to the issue' {
-                $issue.assignee.login | Should be $assigneeUserName
+            It 'Should have returned the one assignee' {
+                $assigneeList.Count | Should -Be 1
             }
 
-            Remove-GithubAssignee -Uri $repo.svn_url -Issue $issue.number -Assignee $assignees -Confirm:$false
-            $issue = Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number
-
-            It 'Should have removed the user from issue' {
-                $issue.assignees.Count | Should be 0
+            It 'Should have the expected type' {
+                $assigneeList[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
     }
 
-    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+    Describe 'Testing for a valid Assignee' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $octocat = Get-GitHubUser -UserName 'octocat'
+            $owner = Get-GitHubUser -UserName $script:ownerName
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Confirm:$false
+        }
+
+        Context 'For testing valid owner with parameters' {
+            $hasPermission = Test-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Assignee $script:ownerName
+
+            It 'Should consider the owner of the repo to be a valid assignee' {
+                $hasPermission | Should -BeTrue
+            }
+        }
+
+        Context 'For testing valid owner with the repo on the pipeline' {
+            $hasPermission = $repo | Test-GitHubAssignee -Assignee $script:ownerName
+
+            It 'Should consider the owner of the repo to be a valid assignee' {
+                $hasPermission | Should -BeTrue
+            }
+        }
+
+        Context 'For testing valid owner with a user object on the pipeline' {
+            $hasPermission = $owner | Test-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name
+
+            It 'Should consider the owner of the repo to be a valid assignee' {
+                $hasPermission | Should -BeTrue
+            }
+        }
+
+        Context 'For testing invalid owner with a user object on the pipeline' {
+            $hasPermission = $octocat | Test-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name
+
+            It 'Should consider the owner of the repo to be a valid assignee' {
+                $hasPermission | Should -BeFalse
+            }
+        }
+    }
+
+    Describe 'Adding and Removing Assignees from an Issue' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $owner = Get-GitHubUser -UserName $script:ownerName
+        }
+
+        AfterAll {
+            $repo | Remove-GitHubRepository -Confirm:$false
+        }
+
+        Context 'Adding and removing an assignee via parameters' {
+            $issue = $repo | New-GitHubIssue -Title "Test issue"
+            It 'Should have no assignees when created' {
+                $issue.assignee.login | Should -BeNullOrEmpty
+                $issue.assignees | Should -BeNullOrEmpty
+            }
+
+            $updatedIssue = New-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Assignee $owner.login
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignees.Count | Should -Be 1
+                $updatedIssue.assignee.login | Should -Be $owner.login
+                $updatedIssue.assignees[0].login | Should -Be $owner.login
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+
+            $updatedIssue = Remove-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Assignee $owner.login -Confirm:$false
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignee.login | Should -BeNullOrEmpty
+                $updatedIssue.assignees | Should -BeNullOrEmpty
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+        }
+
+        Context 'Adding an assignee with the repo on the pipeline' {
+            $issue = $repo | New-GitHubIssue -Title "Test issue"
+            It 'Should have no assignees when created' {
+                $issue.assignee.login | Should -BeNullOrEmpty
+                $issue.assignees | Should -BeNullOrEmpty
+            }
+
+            $updatedIssue = $repo | New-GitHubAssignee -Issue $issue.number -Assignee $owner.login
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignees.Count | Should -Be 1
+                $updatedIssue.assignee.login | Should -Be $owner.login
+                $updatedIssue.assignees[0].login | Should -Be $owner.login
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+
+            $updatedIssue = $repo | Remove-GitHubAssignee -Issue $issue.number -Assignee $owner.login -Force -Confirm:$false
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignee.login | Should -BeNullOrEmpty
+                $updatedIssue.assignees | Should -BeNullOrEmpty
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+        }
+
+        Context 'Adding an assignee with the issue on the pipeline' {
+            $issue = $repo | New-GitHubIssue -Title "Test issue"
+            It 'Should have no assignees when created' {
+                $issue.assignee.login | Should -BeNullOrEmpty
+                $issue.assignees | Should -BeNullOrEmpty
+            }
+
+            $updatedIssue = $issue | New-GitHubAssignee -Assignee $owner.login
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignees.Count | Should -Be 1
+                $updatedIssue.assignee.login | Should -Be $owner.login
+                $updatedIssue.assignees[0].login | Should -Be $owner.login
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+
+            $updatedIssue = $issue | Remove-GitHubAssignee -Assignee $owner.login -Force
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignee.login | Should -BeNullOrEmpty
+                $updatedIssue.assignees | Should -BeNullOrEmpty
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+        }
+
+        Context 'Adding an assignee with the assignee user object on the pipeline' {
+            $issue = $repo | New-GitHubIssue -Title "Test issue"
+            It 'Should have no assignees when created' {
+                $issue.assignee.login | Should -BeNullOrEmpty
+                $issue.assignees | Should -BeNullOrEmpty
+            }
+
+            $updatedIssue = $owner | New-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignees.Count | Should -Be 1
+                $updatedIssue.assignee.login | Should -Be $owner.login
+                $updatedIssue.assignees[0].login | Should -Be $owner.login
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+
+            $updatedIssue = $owner | Remove-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Force
+            It 'Should have returned the same issue' {
+                $updatedIssue.number | Should -Be $issue.number
+            }
+
+            It 'Should have added the requested Assignee to the issue' {
+                $updatedIssue.assignee.login | Should -BeNullOrEmpty
+                $updatedIssue.assignees | Should -BeNullOrEmpty
+            }
+
+            It 'Should be of the expected type' {
+                $updatedIssue.PSObject.TypeNames[0] | Should -Be 'GitHub.Issue'
+            }
+        }
+    }
 }
 finally
 {

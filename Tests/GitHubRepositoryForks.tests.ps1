@@ -32,7 +32,7 @@ try
             }
 
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                $repo | Remove-GitHubRepository -Force
             }
 
             $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
@@ -42,6 +42,36 @@ try
                 # Doing this syntax, because due to odd timing with GitHub, it's possible it may
                 # think that there's an existing clone out there and so may name this one "...-1"
                 $ourFork.full_name.StartsWith("$($script:ownerName)/$script:upstreamRepositoryName") | Should -BeTrue
+            }
+
+            It 'Should have the expected additional type and properties' {
+                $ourFork.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $ourFork.RepositoryId | Should -Be $ourFork.id
+            }
+        }
+
+        Context 'When a new fork is created (with the pipeline)' {
+            BeforeAll {
+                $upstream = Get-GitHubRepository -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName
+                $repo = $upstream | New-GitHubRepositoryFork
+            }
+
+            AfterAll {
+                $repo | Remove-GitHubRepository -Force
+            }
+
+            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
+
+            It 'Should be in the list' {
+                # Doing this syntax, because due to odd timing with GitHub, it's possible it may
+                # think that there's an existing clone out there and so may name this one "...-1"
+                $ourFork.full_name.StartsWith("$($script:ownerName)/$script:upstreamRepositoryName") | Should -BeTrue
+            }
+
+            It 'Should have the expected additional type and properties' {
+                $ourFork.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $ourFork.RepositoryId | Should -Be $ourFork.id
             }
         }
     }
@@ -53,7 +83,8 @@ try
             }
 
             AfterAll {
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                Start-Sleep -Seconds 3 # Trying to avoid an issue with deleting the repo if it's still being created by GitHub
+                $repo | Remove-GitHubRepository -Force
             }
 
             $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
