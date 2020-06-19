@@ -11,6 +11,8 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+Set-StrictMode -Version 1.0
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -291,10 +293,11 @@ try
     }
 
     Describe 'GitHubRepositories\New-GitHubRepositoryFromTemplate' {
-        BeforeAll -ScriptBlock {
+        BeforeAll {
             $templateRepoName = ([Guid]::NewGuid().Guid)
-            $testGitIgnoreTemplate=(Get-GitHubGitIgnore)[0]
-            $testLicenseTemplate=(Get-GitHubLicense)[0].key
+            $ownerName = $script:ownerName
+            $testGitIgnoreTemplate = (Get-GitHubGitIgnore)[0]
+            $testLicenseTemplate = (Get-GitHubLicense)[0].key
 
             $newGitHubRepositoryParms = @{
                 RepositoryName = $templateRepoName
@@ -306,30 +309,38 @@ try
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
         }
 
-        Context -Name 'When creating a public repository from a template' -Fixture {
-            BeforeAll -ScriptBlock {
+        Context 'When creating a public repository from a template' {
+            BeforeAll {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $newRepoDesc = 'New Repo Description'
                 $newGitHubRepositoryFromTemplateParms = @{
-                    RepositoryName = $repoName
-                    OwnerName = $script:ownerName
-                    TemplateOwnerName = $templateRepo.owner.login
-                    TemplateRepositoryName = $templateRepoName
+                    RepositoryName = $templateRepoName
+                    OwnerName = $templateRepo.owner.login
+                    TargetOwnerName = $ownerName
+                    TargetRepositoryName = $repoName
                     Description = $newRepoDesc
                 }
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
             }
 
-            It 'Should return an object of the correct type' {
-                $repo | Should -BeOfType PSCustomObject
+            It 'Should support pipeline input for the uri parameter' {
+                $newGitHubRepositoryFromTemplateParms = @{
+                    TargetOwnerName = $ownerName
+                    TargetRepositoryName = $repoName
+                }
+                { $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms -WhatIf } |
+                    Should -Not -Throw
             }
 
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and addititional properties' {
+                $repo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 $repo.name | Should -Be $repoName
                 $repo.private | Should -BeFalse
                 $repo.owner.login | Should -Be $script:ownerName
                 $repo.description | Should -Be $newRepoDesc
                 $repo.is_template | Should -BeFalse
+                $repo.RepositoryId | Should -Be $repo.id
+                $repo.RepositoryUrl | Should -Be $repo.html_url
             }
 
             It 'Should have created a .gitignore file' {
@@ -340,16 +351,16 @@ try
                 { Get-GitHubContent -Uri $repo.svn_url -Path 'LICENSE' } | Should -Not -Throw
             }
 
-            AfterAll -ScriptBlock {
-                if ($repo)
+            AfterAll {
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
                 {
                     Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
                 }
             }
         }
 
-        AfterAll -ScriptBlock {
-            if ($repo)
+        AfterAll {
+            if (Get-Variable -Name templateRepo -ErrorAction SilentlyContinue)
             {
                 Remove-GitHubRepository -Uri $templateRepo.svn_url -Confirm:$false
             }

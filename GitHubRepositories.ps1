@@ -227,7 +227,7 @@ filter New-GitHubRepository
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
-function New-GitHubRepositoryFromTemplate
+filter New-GitHubRepositoryFromTemplate
 {
 <#
     .SYNOPSIS
@@ -238,18 +238,21 @@ function New-GitHubRepositoryFromTemplate
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER RepositoryName
-        Name of the repository to be created.
-
-    .PARAMETER TemplateOwnerName
+    .PARAMETER OwnerName
         Owner of the template repository.
+        If no value is specified, the DefaultOwnerName configuration property value will be used,
+        and if there is no configuration value defined, the current authenticated user will be used.
 
-    .PARAMETER TemplateRepositoryName
+    .PARAMETER RepositoryName
         Name of the template repository.
 
-    .PARAMETER OwnerName
-        Owner of the repository to be created. If not specified, the DefaultOwnerName configuration
-        property value will be used.
+    .PARAMETER TargetRepositoryName
+        Name of the repository to be created.
+
+    .PARAMETER TargetOwnerName
+        The organization or person who will own the new repository.
+        To create a new repository in an organization, the authenticated user must be a member
+        of the specified organization.
 
     .PARAMETER Description
         A short description of the repository.
@@ -268,37 +271,78 @@ function New-GitHubRepositoryFromTemplate
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo -OwnerName Me
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Creates a new GitHub repository from the specified template repository
+    .OUTPUTS
+        GitHub.Repository
+
+    .NOTES
+        The authenticated user must own or be a member of an organization that owns the repository.
+
+        To check if a repository is available to use as a template, call `Get-GitHubRepository` on the
+        repository in question and check that the is_template property is $true.
+
+    .EXAMPLE
+        New-GitHubRepositoryFromTemplate -OwnerName MyOrg -RepositoryName MyTemplateRepo -TargetRepositoryName MyNewRepo -TargetOwnerName Me
+
+        Creates a new GitHub repository from the specified template repository.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName MyOrg -RepositoryName MyTemplateRepo
+        $repo | New-GitHubRepositoryFromTemplate -TargetRepositoryName MyNewRepo -TargetOwnerName Me
+
+        You can also pipe in a repo that was returned from a previous command.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false
         )]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
         Justification="Methods called within here make use of PSShouldProcess, and the switch is
         passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
-            Position = 1)]
+            Position = 1,
+            ParameterSetName='Elements')]
         [ValidateNotNullOrEmpty()]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
-            Position = 2)]
-        [ValidateNotNullOrEmpty()]
-        [string] $TemplateOwnerName,
+            Position = 2,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
 
         [Parameter(
             Mandatory,
             Position = 3)]
         [ValidateNotNullOrEmpty()]
-        [string] $TemplateRepositoryName,
+        [string] $TargetOwnerName,
 
+        [Parameter(
+            Mandatory,
+            Position = 4)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetRepositoryName,
+
+        [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
 
         [string] $Description,
@@ -318,13 +362,15 @@ function New-GitHubRepositoryFromTemplate
     $telemetryProperties = @{
         RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
         OwnerName = (Get-PiiSafeString -PlainText $OwnerName)
+        TargetRepositoryName = (Get-PiiSafeString -PlainText $TargetRepositoryName)
+        TargetOwnerName = (Get-PiiSafeString -PlainText $TargetOwnerName)
     }
 
-    $uriFragment = "repos/$TemplateOwnerName/$TemplateRepositoryName/generate"
+    $uriFragment = "repos/$OwnerName/$RepositoryName/generate"
 
     $hashBody = @{
-        owner = $OwnerName
-        name = $RepositoryName
+        owner = $TargetOwnerName
+        name = $TargetRepositoryName
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
@@ -334,7 +380,7 @@ function New-GitHubRepositoryFromTemplate
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating $RepositoryName from Template"
+        'Description' =  "Creating $TargetName from Template"
         'AcceptHeader' = $script:baptisteAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -343,7 +389,7 @@ function New-GitHubRepositoryFromTemplate
             -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
 filter Remove-GitHubRepository
