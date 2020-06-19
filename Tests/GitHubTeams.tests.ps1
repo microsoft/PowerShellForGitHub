@@ -29,58 +29,52 @@ try
     }
 
     Describe 'GitHubTeams\Get-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+        }
 
         Context 'When getting a GitHub Team by organization' {
             BeforeAll {
-                $repoName = [Guid]::NewGuid().Guid
-
-                $newGithubRepositoryParms = @{
-                    RepositoryName = $repoName
-                    OrganizationName = $script:organizationName
-                }
-                $repo = New-GitHubRepository @newGitHubRepositoryParms
-
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'closed'
                 $maintainers = $script:ownerName
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryName = $repo.full_name
                     Privacy = $privacy
                     Maintainers = $maintainers
                 }
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
                 $getGitHubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                 }
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $team | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $team.name | Should -Be $teamName
                 $team.description | Should -Be $description
-                $team.organization.login | Should -Be $script:organizationName
+                $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
                 $team.members_count | Should -Be 1
-                $team.repos_count | Should -Be 1
+                $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
                 if ($team)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $team.name
                         Confirm = $false
                     }
@@ -95,7 +89,7 @@ try
 
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                 }
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
 
@@ -104,7 +98,7 @@ try
                 $privacy = 'closed'
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
                     RepositoryName = $repo.full_name
@@ -113,28 +107,28 @@ try
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
                 $getGitHubTeamParms = @{
-                    OwnerName = $script:organizationName
+                    OwnerName = $organizationName
                     RepositoryName = $repoName
                 }
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $team | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $team.name | Should -Be $teamName
                 $team.description | Should -Be $description
                 $team.parent | Should -BeNullOrEmpty
                 $team.privacy | Should -Be $privacy
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
                 if ($repo)
                 {
                     $removeGitHubRepositoryParms = @{
-                        OwnerName = $script:organizationName
+                        OwnerName = $organizationName
                         RepositoryName = $repo.name
                         Confirm = $false
                     }
@@ -144,7 +138,7 @@ try
                 if ($team)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $team.name
                         Confirm = $false
                     }
@@ -155,14 +149,6 @@ try
 
         Context 'When getting a GitHub Team by TeamId' {
             BeforeAll {
-                $repoName = [Guid]::NewGuid().Guid
-
-                $newGithubRepositoryParms = @{
-                    RepositoryName = $repoName
-                    OrganizationName = $script:organizationName
-                }
-                $repo = New-GitHubRepository @newGitHubRepositoryParms
-
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'closed'
@@ -172,7 +158,6 @@ try
                     OrganizationName = $script:organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryName = $repo.full_name
                     Privacy = $privacy
                     Maintainers = $maintainers
                 }
@@ -184,18 +169,18 @@ try
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $team | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $team.name | Should -Be $teamName
                 $team.description | Should -Be $description
-                $team.organization.login | Should -Be $script:organizationName
+                $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
                 $team.members_count | Should -Be 1
-                $team.repos_count | Should -Be 1
+                $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
@@ -213,28 +198,31 @@ try
     }
 
     Describe 'GitHubTeams\New-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+        }
 
         Context 'When creating a new GitHub team with default settings' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                 }
                 $team = New-GitHubTeam @newGithubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $team | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $team.name | Should -Be $teamName
-                $team.organization.login | Should -Be $OrganizationName
                 $team.description | Should -BeNullOrEmpty
+                $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
@@ -276,34 +264,35 @@ try
                 $team = New-GitHubTeam @newGithubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $team | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $team.name | Should -Be $teamName
-                $team.organization.login | Should -Be $OrganizationName
                 $team.description | Should -Be $description
+                $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 1
                 $team.privacy | Should -Be $privacy
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
                 if ($repo)
                 {
                     $removeGitHubRepositoryParms = @{
-                        OwnerName = $script:organizationName
+                        OwnerName = $organizationName
                         RepositoryName = $repo.name
                         Confirm = $false
                     }
                     Remove-GitHubRepository @removeGitHubRepositoryParms
                 }
+
                 if ($team)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $team.name
                         Confirm = $false
                     }
@@ -314,12 +303,11 @@ try
 
         Context 'When creating a child GitHub team' {
             BeforeAll {
-
                 $parentTeamName = [Guid]::NewGuid().Guid
                 $privacy= 'Closed'
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $parentTeamName
                     Privacy = $privacy
                 }
@@ -328,7 +316,7 @@ try
                 $childTeamName = [Guid]::NewGuid().Guid
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $childTeamName
                     ParentTeamName = $parentTeamName
                     Privacy = $privacy
@@ -336,22 +324,22 @@ try
                 $childTeam = New-GitHubTeam @newGithubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $childTeam | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $childTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $childTeam.name | Should -Be $childTeamName
-                $childTeam.organization.login | Should -Be $OrganizationName
+                $childTeam.organization.login | Should -Be $organizationName
                 $childTeam.parent.name | Should -Be $parentTeamName
                 $childTeam.privacy | Should -Be $privacy
+                $childTeam.TeamName | Should -Be $childTeamName
+                $childTeam.TeamId | Should -Be $childTeam.id
+                $childTeam.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
                 if ($childTeam)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $childTeam.name
                         Confirm = $false
                     }
@@ -361,7 +349,7 @@ try
                 if ($parentTeam)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $parentTeam.name
                         Confirm = $false
                     }
@@ -372,30 +360,33 @@ try
     }
 
     Describe 'GitHubTeams\Update-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+        }
 
         Context 'When updating a Child GitHub team' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
+                $parentTeamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'Closed'
-                $parentTeamName = [Guid]::NewGuid().Guid
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $parentTeamName
                     Privacy = $privacy
                 }
                 $parentTeam = New-GitHubTeam @newGithubTeamParms
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Privacy = $privacy
                 }
                 $team = New-GitHubTeam @newGithubTeamParms
 
                 $updateGitHubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
                     Privacy = $privacy
@@ -405,23 +396,23 @@ try
                 $updatedTeam = Update-GitHubTeam @updateGitHubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $updatedTeam | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $teamName
-                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.organization.login | Should -Be $organizationName
                 $updatedTeam.description | Should -Be $description
                 $updatedTeam.parent.name | Should -Be $parentTeamName
                 $updatedTeam.privacy | Should -Be $privacy
+                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamId | Should -Be $team.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
                 if ($team)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $team.name
                         Confirm = $false
                     }
@@ -431,7 +422,7 @@ try
                 if ($parentTeam)
                 {
                     $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
+                        OrganizationName = $organizationName
                         TeamName = $parentTeam.name
                         Confirm = $false
                     }
@@ -440,21 +431,21 @@ try
             }
         }
 
-        Context 'When updating a non-nested GitHub team' {
+        Context 'When updating a non-child GitHub team' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'Closed'
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Privacy = 'Secret'
                 }
                 $team = New-GitHubTeam @newGithubTeamParms
 
                 $updateGitHubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
                     Privacy = $privacy
@@ -463,16 +454,16 @@ try
                 $updatedTeam = Update-GitHubTeam @updateGitHubTeamParms
             }
 
-            It 'Should return an object of the correct type' {
-                $updatedTeam | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $teamName
                 $updatedTeam.organization.login | Should -Be $OrganizationName
                 $updatedTeam.description | Should -Be $description
                 $updatedTeam.parent.name | Should -BeNullOrEmpty
                 $updatedTeam.privacy | Should -Be $privacy
+                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamId | Should -Be $team.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
@@ -490,12 +481,15 @@ try
     }
 
     Describe 'GitHubTeams\Remove-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+        }
 
         Context 'When removing a GitHub team' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                 }
                 $team = New-GitHubTeam @newGithubTeamParms
@@ -503,7 +497,7 @@ try
 
             It 'Should not throw an exception' {
                 $removeGitHubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Confirm = $false
                 }
@@ -514,7 +508,7 @@ try
 
             It 'Should have removed the team' {
                 $getGitHubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                 }
                 { Get-GitHubTeam @getGitHubTeamParms } | Should -Throw
