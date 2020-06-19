@@ -314,7 +314,7 @@ filter Get-GitHubTeamMember
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-function New-GitHubTeam
+filter New-GitHubTeam
 {
 <#
     .SYNOPSIS
@@ -356,8 +356,11 @@ function New-GitHubTeam
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        System.String
+
     .OUTPUTS
-        PSCustomObject
+        GitHub.Team
 
     .EXAMPLE
         New-GitHubTeam -OrganizationName PowerShell -TeamName 'Developers'
@@ -374,13 +377,19 @@ function New-GitHubTeam
         SupportsShouldProcess,
         PositionalBinding = $false
     )]
+    [OutputType({$script:GitHubTeamTypeName})]
     param
     (
-        [Parameter(Mandatory, Position = 1)]
+        [Parameter(
+            Mandatory,
+            Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, Position = 2)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
@@ -450,10 +459,10 @@ function New-GitHubTeam
             -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
 }
 
-function Update-GitHubTeam
+filter Update-GitHubTeam
 {
 <#
     .SYNOPSIS
@@ -489,8 +498,12 @@ function Update-GitHubTeam
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Team
+        System.String
+
     .OUTPUTS
-        PSCustomObject
+        GitHub.User
 
     .EXAMPLE
         Update-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Description 'New Description'
@@ -507,13 +520,20 @@ function Update-GitHubTeam
         SupportsShouldProcess,
         PositionalBinding = $false
     )]
+    [OutputType({$script:GitHubTeamTypeName})]
     param
     (
-        [Parameter(Mandatory, Position = 1)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, Position = 2)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
@@ -593,10 +613,10 @@ function Update-GitHubTeam
             -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
 }
 
-function Remove-GitHubTeam
+filter Remove-GitHubTeam
 {
 <#
     .SYNOPSIS
@@ -627,7 +647,7 @@ function Remove-GitHubTeam
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .OUTPUTS
-        PSCustomObject
+        None
 
     .EXAMPLE
         Remove-GitHubTeam -OrganizationName PowerShell -TeamName Developers
@@ -653,11 +673,19 @@ function Remove-GitHubTeam
     [Alias('Delete-GitHubTeam')]
     param
     (
-        [Parameter(Mandatory, Position = 1)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
-        [Parameter(Mandatory, Position = 2)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
@@ -711,7 +739,7 @@ function Remove-GitHubTeam
                 -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        return Invoke-GHRestMethod @params
+        Invoke-GHRestMethod @params | Out-Null
     }
 }
 
@@ -755,6 +783,25 @@ filter Add-GitHubTeamAdditionalProperties
         {
             Add-Member -InputObject $item -Name 'TeamName' -Value $item.name -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'TeamId' -Value $item.id -MemberType NoteProperty -Force
+
+            if ($item.organization)
+            {
+                $organizationName = $item.organization.login
+            }
+            else
+            {
+                $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
+
+                if ($item.html_url -match "^https?://$hostName/orgs/([^/]+)/?([^/]+)?(?:/.*)?$")
+                {
+                    $organizationName = $Matches[1]
+                }
+                else
+                {
+                    $organizationName = ''
+                }
+            }
+            Add-Member -InputObject $item -Name 'OrganizationName' -value $organizationName -MemberType NoteProperty -Force
 
             # Apply these properties to any embedded parent teams as well.
             if ($null -ne $item.parent)
