@@ -158,8 +158,7 @@ filter Get-GitHubTeam
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params | Add-GitHubTeamAdditionalProperties
@@ -174,8 +173,8 @@ filter Get-GitHubTeam
         }
         else
         {
-            $uriFragment = "/teams/$($team.Id)"
-            $description = "Getting team $($team.Id)"
+            $uriFragment = "/teams/$($team.id)"
+            $description = "Getting team $($team.id)"
 
             $params = @{
                 UriFragment = $uriFragment
@@ -314,14 +313,14 @@ filter Get-GitHubTeamMember
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-filter New-GitHubTeam
+function New-GitHubTeam
 {
 <#
     .SYNOPSIS
         Creates a team within an organization on GitHub.
 
     .DESCRIPTION
-        Creates a team or within an organization on GitHub.
+        Creates a team within an organization on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -334,11 +333,11 @@ filter New-GitHubTeam
     .PARAMETER Description
         The description for the team.
 
-    .PARAMETER Maintainers
+    .PARAMETER MaintainerName
         A list of GitHub IDs for organization members who will become team maintainers.
 
-    .PARAMETER RepositoryName
-        A list of repositories to add the team to.
+    .PARAMETER RepositoryFullName
+        The full name (e.g., "organization-name/repository-name") of repositories to add the team to.
 
     .PARAMETER Privacy
         The level of privacy this team should have.
@@ -358,6 +357,7 @@ filter New-GitHubTeam
 
     .INPUTS
         System.String
+        GitHub.User
 
     .OUTPUTS
         GitHub.Team
@@ -366,6 +366,18 @@ filter New-GitHubTeam
         New-GitHubTeam -OrganizationName PowerShell -TeamName 'Developers'
 
         Creates a new GitHub team called 'Developers' in the 'PowerShell' organization.
+
+    .EXAMPLE
+        $teamName = 'Team1'
+        $teamName | New-GitHubTeam -OrganizationName PowerShell
+
+        You can also pipe in a team name that was returned from a previous command.
+
+    .EXAMPLE
+        $users = Get-GitHubUsers -OrganizationName PowerShell
+        $users | New-GitHubTeam -OrganizationName PowerShell -TeamName 'Team1'
+
+        You can also pipe in a list of GitHub users that were returned from a previous command.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
@@ -388,18 +400,20 @@ filter New-GitHubTeam
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
+            ValueFromPipeline,
             Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
         [string] $Description,
 
-        [string[]] $Maintainers,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [Alias('UserName')]
+        [string[]] $MaintainerName,
 
-        [string[]] $RepositoryName,
+        [string[]] $RepositoryFullName,
 
-        [ValidateSet('Secret','Closed')]
+        [ValidateSet('Secret', 'Closed')]
         [string] $Privacy,
 
         [string] $ParentTeamName,
@@ -409,60 +423,80 @@ filter New-GitHubTeam
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
-    $telemetryProperties = @{
-        OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
-        TeamName = (Get-PiiSafeString -PlainText $TeamName)
-    }
-
-    $uriFragment = "/orgs/$OrganizationName/teams"
-
-    $hashBody = @{
-        name = $TeamName
-    }
-
-    if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
-    if ($PSBoundParameters.ContainsKey('Maintainers')) { $hashBody['maintainers'] = $Maintainers }
-    if ($PSBoundParameters.ContainsKey('RepositoryName')) { $hashBody['repo_names'] = $RepositoryName }
-    if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
-    if ($PSBoundParameters.ContainsKey('ParentTeamName'))
+    begin
     {
-        $getGitHubTeamParms = @{
-            OrganizationName = $OrganizationName
-            TeamName = $ParentTeamName
-            Whatif = $false
-            Confirm = $false
-        }
-        if ($PSBoundParameters.ContainsKey('AccessToken'))
-        {
-            $getGitHubTeamParms['AccessToken'] = $AccessToken
-        }
-        if ($PSBoundParameters.ContainsKey('NoStatus'))
-        {
-            $getGitHubTeamParms['NoStatus'] = $NoStatus
-        }
-        $team = Get-GitHubTeam @getGitHubTeamParms
-
-        $hashBody['parent_team_id'] = $team.id
+        $maintainerNames = @()
     }
 
-    $params = @{
-        UriFragment = $uriFragment
-        Body = (ConvertTo-Json -InputObject $hashBody)
-        Method = 'Post'
-        Description =  "Creating $TeamName"
-        AccessToken = $AccessToken
-        TelemetryEventName = $MyInvocation.MyCommand.Name
-        TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
+    process
+    {
+        foreach ($user in $MaintainerName)
+        {
+            $maintainerNames += $user
+        }
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
+    end
+    {
+        Write-InvocationLog
+
+        $telemetryProperties = @{
+            OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
+            TeamName = (Get-PiiSafeString -PlainText $TeamName)
+        }
+
+        $uriFragment = "/orgs/$OrganizationName/teams"
+
+        $hashBody = @{
+            name = $TeamName
+        }
+
+        if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
+        if ($PSBoundParameters.ContainsKey('RepositoryFullName')) { $hashBody['repo_names'] = $RepositoryFullName }
+        if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
+        if ($MaintainerName.Count -gt 0)
+        {
+            $hashBody['maintainers'] = $maintainerNames
+        }
+        if ($PSBoundParameters.ContainsKey('ParentTeamName'))
+        {
+            $getGitHubTeamParms = @{
+                OrganizationName = $OrganizationName
+                TeamName = $ParentTeamName
+                Whatif = $false
+                Confirm = $false
+            }
+            if ($PSBoundParameters.ContainsKey('AccessToken'))
+            {
+                $getGitHubTeamParms['AccessToken'] = $AccessToken
+            }
+            if ($PSBoundParameters.ContainsKey('NoStatus'))
+            {
+                $getGitHubTeamParms['NoStatus'] = $NoStatus
+            }
+
+            $team = Get-GitHubTeam @getGitHubTeamParms
+
+            $hashBody['parent_team_id'] = $team.id
+        }
+
+        $params = @{
+            UriFragment = $uriFragment
+            Body = (ConvertTo-Json -InputObject $hashBody)
+            Method = 'Post'
+            Description =  "Creating $TeamName"
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
+    }
 }
 
-filter Update-GitHubTeam
+filter Set-GitHubTeam
 {
 <#
     .SYNOPSIS
@@ -506,9 +540,15 @@ filter Update-GitHubTeam
         GitHub.User
 
     .EXAMPLE
-        Update-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Description 'New Description'
+        Set-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Description 'New Description'
 
         Updates the description for the 'Developers' GitHub team in the 'PowerShell' organization.
+
+    .EXAMPLE
+        $team = Get-GitHubTeam -OrganizationName PowerShell -TeamName Developers
+        $team | Set-GitHubTeam -Description 'New Description'
+
+        You can also pipe in a GitHub team that was returned from a previous command.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
@@ -570,6 +610,7 @@ filter Update-GitHubTeam
     {
         $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
+
     $team = Get-GitHubTeam @getGitHubTeamParms
 
     $uriFragment = "/orgs/$OrganizationName/teams/$($team.slug)"
@@ -620,10 +661,10 @@ filter Remove-GitHubTeam
 {
 <#
     .SYNOPSIS
-        Removes a team within an organization on GitHub.
+        Removes a team from an organization on GitHub.
 
     .DESCRIPTION
-        Removes a team within an organization on GitHub.
+        Removes a team from an organization on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -658,6 +699,12 @@ filter Remove-GitHubTeam
         Remove-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Force
 
         Removes the 'Developers' GitHub team from the 'PowerShell' organization without prompting.
+
+    .EXAMPLE
+        $team = Get-GitHubTeam -OrganizationName PowerShell -TeamName Developers
+        $team | Remove-GitHubTeam -Force
+
+        You can also pipe in a GitHub team that was returned from a previous command.
 #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
         Justification = 'Methods called within here make use of PSShouldProcess, and the switch
@@ -715,6 +762,7 @@ filter Remove-GitHubTeam
     {
         $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
+
     $team = Get-GitHubTeam @getGitHubTeamParms
 
     $uriFragment = "/orgs/$OrganizationName/teams/$($team.slug)"

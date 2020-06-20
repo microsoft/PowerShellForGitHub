@@ -111,7 +111,7 @@
         'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFork',
-        'New-GithubTeam',
+        'New-GitHubTeam',
         'Remove-GitHubAssignee',
         'Remove-GitHubIssueComment',
         'Remove-GitHubIssueLabel',
@@ -135,6 +135,7 @@
         'Set-GitHubProjectCard',
         'Set-GitHubProjectColumn',
         'Set-GitHubRepositoryTopic',
+        'Set-GitHubTeam',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
@@ -143,8 +144,7 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
-        'Update-GitHubRepository',
-        'Update-GitHubTeam'
+        'Update-GitHubRepository'
     )
 
     AliasesToExport = @(
