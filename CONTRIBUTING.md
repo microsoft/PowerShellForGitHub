@@ -153,7 +153,7 @@ Update-Module -Name PSScriptAnalyzer
 Once it's installed (or updated), from the root of your enlistment simply call
 
 ```powershell
-Invoke-ScriptAnalyzer -Path .\ -Recurse
+Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ -Recurse
 ```
 
 That should return with no output.  If you see any output when calling that command,
