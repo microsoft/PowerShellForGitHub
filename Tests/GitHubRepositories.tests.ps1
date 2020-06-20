@@ -370,20 +370,20 @@ try
 
     Describe 'GitHubRepositories\Get-GitHubRepository' {
         Context 'When getting a repository for the authenticated user' {
-            BeforeAll -Scriptblock {
+            BeforeAll {
                 $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Private
             }
 
             Context 'When specify the visibility parameter' {
-                BeforeAll -ScriptBlock {
+                BeforeAll {
                     $publicRepos = Get-GitHubRepository -Visibility Public
                     $privateRepos = Get-GitHubRepository -Visibility Private
                 }
 
                 It 'Should return objects of the correct type' {
-                    $publicRepos | Should -BeOfType PSCustomObject
-                    $privateRepos | Should -BeOfType PSCustomObject
+                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $privateRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -395,7 +395,7 @@ try
             }
 
             Context 'When specifying the Type parameter' {
-                BeforeAll -ScriptBlock {
+                BeforeAll {
                     $publicRepos = Get-GitHubRepository -Type Public
                     $privateRepos = Get-GitHubRepository -Type Private
                     $ownerRepos = Get-GitHubRepository -Type Owner
@@ -403,9 +403,9 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $publicRepos | Should -BeOfType PSCustomObject
-                    $privateRepos | Should -BeOfType PSCustomObject
-                    $ownerRepos | Should -BeOfType PSCustomObject
+                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $ownerRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -421,12 +421,12 @@ try
             }
 
             Context 'When specifying the Affiliation parameter' {
-                BeforeAll -ScriptBlock {
+                BeforeAll {
                     $ownerRepos = Get-GitHubRepository -Affiliation Owner, Collaborator
                 }
 
                 It 'Should return objects of the correct type' {
-                    $ownerRepos | Should -BeOfType PSCustomObject
+                    $ownerRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -436,7 +436,7 @@ try
             }
 
             Context 'When specifying the Sort and Direction parameters' {
-                BeforeAll -ScriptBlock {
+                BeforeAll {
                     $sortedRepos = Get-GitHubRepository -Sort 'FullName'
                     $sortedDescendingRepos = Get-GitHubRepository -Sort FullName -Direction Descending
 
@@ -448,8 +448,8 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $sortedRepos | Should -BeOfType PSCustomObject
-                    $sortedDescendingRepos | Should -BeOfType PSCustomObject
+                    $sortedRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $sortedDescendingRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership order" {
@@ -474,7 +474,7 @@ try
                 }
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $publicRepo.svn_url -Force
                 Remove-GitHubRepository -Uri $privateRepo.svn_url -Force
             }
@@ -502,7 +502,7 @@ try
         }
 
         Context 'When getting a repository for a specified organization' {
-            BeforeAll -Scriptblock {
+            BeforeAll {
                 $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid)
             }
 
@@ -511,13 +511,13 @@ try
                 $repo.name | Should -BeIn $repos.name
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
 
         Context 'When getting all public repositories' {
-            BeforeAll -Scriptblock {
+            BeforeAll {
                 $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
 
@@ -525,7 +525,7 @@ try
             }
 
             It 'Should return an object of the correct type' {
-                $repos | Should -BeOfType PSCustomObject
+                $repos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
             It 'Should return at least one result' {
@@ -536,14 +536,14 @@ try
                 $repo2.name | Should -BeIn $repos.name
             }
 
-            AfterAll -ScriptBlock {
+            AfterAll {
                 Remove-GitHubRepository -Uri $repo1.svn_url -Force
                 Remove-GitHubRepository -Uri $repo2.svn_url -Force
             }
         }
 
         Context 'When getting a specific repository' {
-            BeforeAll -ScriptBlock {
+            BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
                 $newGitHubRepositoryParms = @{
                     RepositoryName = $repoName
@@ -559,7 +559,7 @@ try
                 }
 
                 It 'Should return an object of the correct type' {
-                    $uriRepo | Should -BeOfType PSCustomObject
+                    $uriRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It 'Should return a single result' {
@@ -579,7 +579,7 @@ try
                 }
 
                 It 'Should return an object of the correct type' {
-                    $uriRepo | Should -BeOfType PSCustomObject
+                    $uriRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It 'Should return a single result' {
@@ -877,7 +877,8 @@ try
         Context -Name 'When getting a repository topic' {
             BeforeAll {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic | Out-Null
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic |
+                    Out-Null
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
             }
 
@@ -955,7 +956,7 @@ try
             }
 
             It 'Should return an object of the correct type' {
-                $topic | Should -BeOfType PSCustomObject
+                $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.Topic'
             }
 
             It 'Should return the correct properties' {
@@ -984,7 +985,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors | Should -BeOfType PSCustomObject
+                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
             It 'Should return at least one result' {
@@ -1007,7 +1008,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors | Should -BeOfType PSCustomObject
+                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
             It 'Should return at least one result' {
@@ -1034,7 +1035,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors | Should -BeOfType PSCustomObject
+                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
             It 'Should return at least one result' {
@@ -1067,7 +1068,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $collaborators | Should -BeOfType PSCustomObject
+                $collaborators.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
             It 'Should return at least one result' {
