@@ -329,7 +329,7 @@ filter Remove-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -552,7 +552,7 @@ filter Get-GitHubRepository
     # allows the OwnerName to be passed in, but not the RepositoryName.  That would allow the caller
     # to get all of the repositories owned by a specific username.  Therefore, we don't want to fail
     # if both have not been supplied...we'll do the extra validation within the function.
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1016,7 +1016,7 @@ filter Update-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1156,7 +1156,7 @@ filter Get-GitHubRepositoryTopic
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1320,7 +1320,7 @@ function Set-GitHubRepositoryTopic
     {
         Write-InvocationLog -Invocation $MyInvocation
 
-        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
 
@@ -1463,7 +1463,7 @@ filter Get-GitHubRepositoryContributor
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1607,7 +1607,7 @@ filter Get-GitHubRepositoryCollaborator
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1717,7 +1717,7 @@ filter Get-GitHubRepositoryLanguage
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1823,7 +1823,7 @@ filter Get-GitHubRepositoryTag
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1940,7 +1940,7 @@ filter Move-GitHubRepositoryOwnership
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 

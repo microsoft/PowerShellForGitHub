@@ -925,8 +925,8 @@ function Resolve-RepositoryElements
     }
     else
     {
-        $elements.ownerName = Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $BoundParameters -Name OwnerName -ConfigValueName DefaultOwnerName -NonEmptyStringRequired:$validate
-        $elements.repositoryName = Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $BoundParameters -Name RepositoryName -ConfigValueName DefaultRepositoryName -NonEmptyStringRequired:$validate
+        $elements.ownerName = Resolve-ParameterWithDefaultConfigurationValue -Name OwnerName -ConfigValueName DefaultOwnerName -NonEmptyStringRequired:$validate
+        $elements.repositoryName = Resolve-ParameterWithDefaultConfigurationValue -Name RepositoryName -ConfigValueName DefaultRepositoryName -NonEmptyStringRequired:$validate
     }
 
     return ([PSCustomObject] $elements)
