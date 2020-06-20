@@ -16,7 +16,7 @@
         Overwrite the file at Path if it exists.
 
     .EXAMPLE
-        $results = Invoke-ScriptAnalyzer -Path ./ -Recurse
+        $results = Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ -Recurse
         .\ConverTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -Path ./PSScriptAnalyzerFailures.xml
 #>
 [CmdletBinding()]
