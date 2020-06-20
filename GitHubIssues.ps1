@@ -219,6 +219,9 @@ filter Get-GitHubIssue
 
     Write-InvocationLog
 
+    # Intentionally disabling validation here because parameter sets exist that do not require
+    # an OwnerName and RepositoryName.  Therefore, we will do futher parameter validation further
+    # into the function.
     $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -226,6 +229,7 @@ filter Get-GitHubIssue
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'OrganizationName' = (Get-PiiSafeString -PlainText $OrganizationName)
         'ProvidedIssue' = $PSBoundParameters.ContainsKey('Issue')
     }
 

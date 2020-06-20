@@ -548,6 +548,10 @@ filter Get-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
+    # We are explicitly disabling validation here because a valid parameter set for this function
+    # allows the OwnerName to be passed in, but not the RepositoryName.  That would allow the caller
+    # to get all of the repositories owned by a specific username.  Therefore, we don't want to fail
+    # if both have not been supplied...we'll do the extra validation within the function.
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName

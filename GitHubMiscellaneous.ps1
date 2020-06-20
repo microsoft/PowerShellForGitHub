@@ -310,10 +310,6 @@ filter Get-GitHubLicense
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
     $telemetryProperties = @{}
 
     $uriFragment = 'licenses'
@@ -324,8 +320,12 @@ filter Get-GitHubLicense
         $uriFragment = "licenses/$Key"
         $description = "Getting the $Key license"
     }
-    elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
+    else
     {
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
         $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
         $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
         $uriFragment = "repos/$OwnerName/$RepositoryName/license"
@@ -537,10 +537,6 @@ filter Get-GitHubCodeOfConduct
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
     $telemetryProperties = @{}
 
     $uriFragment = 'codes_of_conduct'
@@ -551,8 +547,12 @@ filter Get-GitHubCodeOfConduct
         $uriFragment = "codes_of_conduct/$Key"
         $description = "Getting the $Key Code of Conduct"
     }
-    elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
+    else
     {
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
         $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
         $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
         $uriFragment = "repos/$OwnerName/$RepositoryName/community/code_of_conduct"
