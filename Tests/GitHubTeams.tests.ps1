@@ -11,8 +11,6 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-Set-StrictMode -Version 1.0
-
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -38,21 +36,23 @@ try
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'closed'
-                $maintainers = $script:ownerName
+                $MaintainerName = $script:ownerName
 
                 $newGithubTeamParms = @{
                     OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
                     Privacy = $privacy
-                    Maintainers = $maintainers
+                    MaintainerName = $MaintainerName
                 }
+
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
                 $getGitHubTeamParms = @{
                     OrganizationName = $organizationName
                     TeamName = $teamName
                 }
+
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
@@ -70,27 +70,27 @@ try
                 $team.OrganizationName | Should -Be $organizationName
             }
 
+            It 'Should support pipeline input for the organization parameter' {
+                { $team | Get-GitHubTeam -WhatIf } | Should -Not -Throw
+            }
+
             AfterAll {
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
 
         Context 'When getting a GitHub Team by repository' {
-            BeforeAll -ScriptBlock {
+            BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
 
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     OrganizationName = $organizationName
                 }
+
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
 
                 $teamName = [Guid]::NewGuid().Guid
@@ -101,15 +101,17 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryName = $repo.full_name
+                    RepositoryFullName = $repo.full_name
                     Privacy = $privacy
                 }
+
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
                 $getGitHubTeamParms = @{
                     OwnerName = $organizationName
                     RepositoryName = $repoName
                 }
+
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
@@ -124,25 +126,19 @@ try
                 $team.OrganizationName | Should -Be $organizationName
             }
 
+            It 'Should support pipeline input for the uri parameter' {
+                { $repo | Get-GitHubTeam -WhatIf } | Should -Not -Throw
+            }
+
             AfterAll {
-                if ($repo)
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubRepositoryParms = @{
-                        OwnerName = $organizationName
-                        RepositoryName = $repo.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubRepository @removeGitHubRepositoryParms
+                    $repo | Remove-GitHubRepository -Force
                 }
 
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -152,20 +148,22 @@ try
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'closed'
-                $maintainers = $script:ownerName
+                $MaintainerName = $script:ownerName
 
                 $newGithubTeamParms = @{
                     OrganizationName = $script:organizationName
                     TeamName = $teamName
                     Description = $description
                     Privacy = $privacy
-                    Maintainers = $maintainers
+                    MaintainerName = $MaintainerName
                 }
+
                 $newTeam = New-GitHubTeam @newGithubTeamParms
 
                 $getGitHubTeamParms = @{
                     TeamId = $newTeam.id
                 }
+
                 $team = Get-GitHubTeam @getGitHubTeamParms
             }
 
@@ -184,14 +182,9 @@ try
             }
 
             AfterAll {
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -209,6 +202,7 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                 }
+
                 $team = New-GitHubTeam @newGithubTeamParms
             }
 
@@ -225,15 +219,15 @@ try
                 $team.OrganizationName | Should -Be $organizationName
             }
 
+            It 'Should support pipeline input for the TeamName parameter' {
+                { $teamName | New-GitHubTeam -OrganizationName $organizationName -WhatIf } |
+                    Should -Not -Throw
+            }
+
             AfterAll {
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -244,23 +238,26 @@ try
 
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                 }
+
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+                $maintainer = Get-GitHubUser -UserName $script:ownerName
 
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
                 $privacy = 'closed'
-                $maintainers = $script:ownerName
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $script:organizationName
+                    OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryName = $repo.full_name
+                    RepositoryFullName = $repo.full_name
                     Privacy = $privacy
-                    Maintainers = $maintainers
+                    MaintainerName = $maintainer.UserName
                 }
+
                 $team = New-GitHubTeam @newGithubTeamParms
             }
 
@@ -278,25 +275,24 @@ try
                 $team.OrganizationName | Should -Be $organizationName
             }
 
+            It 'Should support pipeline input for the MaintainerName parameter' {
+                $newGithubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName
+                }
+                { $maintainer | New-GitHubTeam @newGithubTeamParms -WhatIf } |
+                    Should -Not -Throw
+            }
+
             AfterAll {
-                if ($repo)
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubRepositoryParms = @{
-                        OwnerName = $organizationName
-                        RepositoryName = $repo.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubRepository @removeGitHubRepositoryParms
+                    $repo | Remove-GitHubRepository -Force
                 }
 
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -311,6 +307,7 @@ try
                     TeamName = $parentTeamName
                     Privacy = $privacy
                 }
+
                 $parentTeam = New-GitHubTeam @newGithubTeamParms
 
                 $childTeamName = [Guid]::NewGuid().Guid
@@ -321,6 +318,7 @@ try
                     ParentTeamName = $parentTeamName
                     Privacy = $privacy
                 }
+
                 $childTeam = New-GitHubTeam @newGithubTeamParms
             }
 
@@ -336,30 +334,20 @@ try
             }
 
             AfterAll {
-                if ($childTeam)
+                if (Get-Variable -Name childTeam -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $childTeam.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $childTeam | Remove-GitHubTeam -Force
                 }
 
-                if ($parentTeam)
+                if (Get-Variable -Name parentTeam -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $parentTeam.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $parentTeam | Remove-GitHubTeam -Force
                 }
             }
         }
     }
 
-    Describe 'GitHubTeams\Update-GitHubTeam' {
+    Describe 'GitHubTeams\Set-GitHubTeam' {
         BeforeAll {
             $organizationName = $script:organizationName
         }
@@ -376,6 +364,7 @@ try
                     TeamName = $parentTeamName
                     Privacy = $privacy
                 }
+
                 $parentTeam = New-GitHubTeam @newGithubTeamParms
 
                 $newGithubTeamParms = @{
@@ -383,6 +372,7 @@ try
                     TeamName = $teamName
                     Privacy = $privacy
                 }
+
                 $team = New-GitHubTeam @newGithubTeamParms
 
                 $updateGitHubTeamParms = @{
@@ -393,7 +383,7 @@ try
                     ParentTeamName = $parentTeamName
                 }
 
-                $updatedTeam = Update-GitHubTeam @updateGitHubTeamParms
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
             }
 
             It 'Should have the expected type and additional properties' {
@@ -408,25 +398,20 @@ try
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
 
+            It 'Should support pipeline input for the OrganizationName and TeamName parameters' {
+                { $team | Set-GitHubTeam -Description $description -WhatIf } |
+                    Should -Not -Throw
+            }
+
             AfterAll {
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
 
-                if ($parentTeam)
+                if (Get-Variable -Name parentTeam -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $organizationName
-                        TeamName = $parentTeam.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $parentTeam | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -442,6 +427,7 @@ try
                     TeamName = $teamName
                     Privacy = 'Secret'
                 }
+
                 $team = New-GitHubTeam @newGithubTeamParms
 
                 $updateGitHubTeamParms = @{
@@ -451,7 +437,7 @@ try
                     Privacy = $privacy
                 }
 
-                $updatedTeam = Update-GitHubTeam @updateGitHubTeamParms
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
             }
 
             It 'Should have the expected type and additional properties' {
@@ -467,14 +453,9 @@ try
             }
 
             AfterAll {
-                if ($team)
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    $removeGitHubTeamParms = @{
-                        OrganizationName = $script:organizationName
-                        TeamName = $team.name
-                        Confirm = $false
-                    }
-                    Remove-GitHubTeam @RemoveGitHubTeamParms
+                    $team | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -492,7 +473,12 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                 }
+
                 $team = New-GitHubTeam @newGithubTeamParms
+            }
+
+            It 'Should support pipeline input for the TeamName parameter' {
+                { $team | Remove-GitHubTeam -Force -WhatIf } | Should -Not -Throw
             }
 
             It 'Should not throw an exception' {
@@ -501,9 +487,8 @@ try
                     TeamName = $teamName
                     Confirm = $false
                 }
-                { Remove-GitHubTeam @RemoveGitHubTeamParms } |
-                    Should -Not -Throw
 
+                { Remove-GitHubTeam @RemoveGitHubTeamParms } | Should -Not -Throw
             }
 
             It 'Should have removed the team' {
@@ -511,6 +496,7 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                 }
+
                 { Get-GitHubTeam @getGitHubTeamParms } | Should -Throw
             }
         }

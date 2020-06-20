@@ -141,7 +141,7 @@
         'New-GitHubRepositoryBranch',
         'New-GitHubRepositoryBranchProtectionRule',
         'New-GitHubRepositoryFork',
-        'New-GithubTeam',
+        'New-GitHubTeam',
         'Remove-GitHubAssignee',
         'Remove-GitHubComment',
         'Remove-GitHubGist',
@@ -187,6 +187,7 @@
         'Set-GitHubReleaseAsset',
         'Set-GitHubRepository',
         'Set-GitHubRepositoryTopic',
+        'Set-GitHubTeam',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
         'Test-GitHubAuthenticationConfigured',
@@ -198,8 +199,7 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
-        'Update-GitHubRepository',
-        'Update-GitHubTeam'
+        'Update-GitHubRepository'
     )
 
     AliasesToExport = @(
