@@ -812,7 +812,9 @@ try
                 $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
         }
-    Describe 'GitHubRepositories\Get-GitHubRepositoryVulnerabilityAlert' {
+    }
+
+    Describe 'GitHubRepositories\Test-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll -ScriptBlock {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
         }
@@ -820,7 +822,7 @@ try
         Context 'When the Git Hub Repository Vulnerability Alert Status is Enabled' {
             BeforeAll -ScriptBlock {
                 Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
-                $result = Get-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+                $result = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             }
 
             It 'Should return an object of the correct type' {
@@ -835,7 +837,7 @@ try
         Context 'When the Git Hub Repository Vulnerability Alert Status is Disabled' {
             BeforeAll -ScriptBlock {
                 Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
-                $status = Get-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+                $status = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             }
 
             It 'Should return an object of the correct type' {
@@ -853,7 +855,7 @@ try
                     OwnerName = 'octocat'
                     RepositoryName = 'IncorrectRepostioryName'
                 }
-                { Get-GitHubRepositoryVulnerabilityAlert @getGitHubRepositoryVulnerabilityAlertParms } |
+                { Test-GitHubRepositoryVulnerabilityAlert @getGitHubRepositoryVulnerabilityAlertParms } |
                     Should -Throw
             }
         }

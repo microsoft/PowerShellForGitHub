@@ -2055,7 +2055,8 @@ filter Add-GitHubRepositoryAdditionalProperties
     }
 }
 
-Function Get-GitHubRepositoryVulnerabilityAlert {
+Filter Test-GitHubRepositoryVulnerabilityAlert
+{
  <#
     .SYNOPSIS
         Retrieves the status of vulnerability alerts for a repository on GitHub.
@@ -2089,17 +2090,20 @@ Function Get-GitHubRepositoryVulnerabilityAlert {
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
 
     .OUTPUTS
-        PSCustomObject
+        System.Boolean
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Test-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
     .EXAMPLE
-        Get-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
+        Test-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
         Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
 #>
@@ -2116,7 +2120,9 @@ Function Get-GitHubRepositoryVulnerabilityAlert {
         [Parameter(
             Mandatory,
             Position = 1,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -2124,7 +2130,7 @@ Function Get-GitHubRepositoryVulnerabilityAlert {
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
@@ -2137,7 +2143,7 @@ Function Get-GitHubRepositoryVulnerabilityAlert {
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
-        Description =  "Getting Vulnerability Alerts status for $RepositoryName"
+        Description = "Getting Vulnerability Alerts status for $RepositoryName"
         AcceptHeader = $script:dorianAcceptHeader
         Method = 'Get'
         AccessToken = $AccessToken
@@ -2183,7 +2189,8 @@ Function Get-GitHubRepositoryVulnerabilityAlert {
     return $result
 }
 
-Function Enable-GitHubRepositoryVulnerabilityAlert {
+filter Enable-GitHubRepositoryVulnerabilityAlert
+{
  <#
     .SYNOPSIS
         Enables vulnerability alerts for a repository on GitHub.
@@ -2217,15 +2224,19 @@ Function Enable-GitHubRepositoryVulnerabilityAlert {
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
 
     .OUTPUTS
         None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
 
     .EXAMPLE
         Enable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Enables vulnerability alerts for the PowerShellForGithub repository.
+
     .EXAMPLE
         Enable-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
@@ -2246,7 +2257,9 @@ Function Enable-GitHubRepositoryVulnerabilityAlert {
         [Parameter(
             Mandatory,
             Position = 1,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -2265,7 +2278,7 @@ Function Enable-GitHubRepositoryVulnerabilityAlert {
 
     if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Vulnerability Alerts'))
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
 
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
@@ -2279,11 +2292,12 @@ Function Enable-GitHubRepositoryVulnerabilityAlert {
                 -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        Invoke-GHRestMethod @params
+        Invoke-GHRestMethod @params |Out-Null
     }
 }
 
-Function Disable-GitHubRepositoryVulnerabilityAlert {
+filter Disable-GitHubRepositoryVulnerabilityAlert
+{
  <#
     .SYNOPSIS
         Disables vulnerability alerts for a repository on GitHub.
@@ -2317,10 +2331,13 @@ Function Disable-GitHubRepositoryVulnerabilityAlert {
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
 
     .OUTPUTS
         None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
 
     .EXAMPLE
         Disable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -2346,6 +2363,7 @@ Function Disable-GitHubRepositoryVulnerabilityAlert {
         [Parameter(
             Mandatory,
             Position = 1,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
 
@@ -2363,13 +2381,13 @@ Function Disable-GitHubRepositoryVulnerabilityAlert {
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Vulnerability Alerts'))
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Disable Vulnerability Alerts'))
     {
         Write-InvocationLog
 
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
-            Description =  "Enabling Vulnerability Alerts for $RepositoryName"
+            Description =  "Disabling Vulnerability Alerts for $RepositoryName"
             AcceptHeader = $script:dorianAcceptHeader
             Method = 'Delete'
             AccessToken = $AccessToken
@@ -2379,11 +2397,12 @@ Function Disable-GitHubRepositoryVulnerabilityAlert {
                 -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        Invoke-GHRestMethod @params
+        Invoke-GHRestMethod @params | Out-Null
     }
 }
 
-Function Enable-GitHubRepositorySecurityFix {
+filter Enable-GitHubRepositorySecurityFix
+{
  <#
     .SYNOPSIS
         Enables automated security fixes for a repository on GitHub.
@@ -2417,10 +2436,13 @@ Function Enable-GitHubRepositorySecurityFix {
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
 
     .OUTPUTS
         None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
 
     .EXAMPLE
         Enable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -2446,6 +2468,7 @@ Function Enable-GitHubRepositorySecurityFix {
         [Parameter(
             Mandatory,
             Position = 1,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
 
@@ -2463,9 +2486,9 @@ Function Enable-GitHubRepositorySecurityFix {
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Vulnerability Alerts'))
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Automated Security Fixes'))
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
 
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
@@ -2483,7 +2506,8 @@ Function Enable-GitHubRepositorySecurityFix {
     }
 }
 
-Function Disable-GitHubRepositorySecurityFix {
+filter Disable-GitHubRepositorySecurityFix
+{
  <#
     .SYNOPSIS
         Disables automated security fixes for a repository on GitHub.
@@ -2517,10 +2541,13 @@ Function Disable-GitHubRepositorySecurityFix {
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
 
     .OUTPUTS
         None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
 
     .EXAMPLE
         Disable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
@@ -2545,6 +2572,7 @@ Function Disable-GitHubRepositorySecurityFix {
         [Parameter(
             Mandatory,
             Position = 1,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
 
@@ -2562,13 +2590,13 @@ Function Disable-GitHubRepositorySecurityFix {
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Vulnerability Alerts'))
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Disable Automated Security Fixes'))
     {
         Write-InvocationLog
 
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
-            Description =  "Enabling Automated Security Fixes for $RepositoryName"
+            Description =  "Disabling Automated Security Fixes for $RepositoryName"
             AcceptHeader = $script:londonAcceptHeader
             Method = 'Delete'
             AccessToken = $AccessToken
@@ -2578,6 +2606,6 @@ Function Disable-GitHubRepositorySecurityFix {
                 -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        Invoke-GHRestMethod @params
+        Invoke-GHRestMethod @params | Out-Null
     }
 }
