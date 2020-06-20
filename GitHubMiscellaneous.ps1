@@ -312,24 +312,34 @@ filter Get-GitHubLicense
 
     $telemetryProperties = @{}
 
+    # Intentionally disabling validation because parameter sets exist that both require
+    # OwnerName/RepositoryName (to get that repo's License) as well as don't (to get
+    # all known Licenses).  We'll do additional parameter validation within the function.
+    $elements = Resolve-RepositoryElements -DisableValidation
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
     $uriFragment = 'licenses'
     $description = 'Getting all licenses'
+
     if ($PSBoundParameters.ContainsKey('Key'))
     {
         $telemetryProperties['Key'] = $Name
         $uriFragment = "licenses/$Key"
         $description = "Getting the $Key license"
     }
-    else
+    elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
     {
-        $elements = Resolve-RepositoryElements
-        $OwnerName = $elements.ownerName
-        $RepositoryName = $elements.repositoryName
-
         $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
         $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
         $uriFragment = "repos/$OwnerName/$RepositoryName/license"
         $description = "Getting the license for $RepositoryName"
+    }
+    elseif ([String]::IsNullOrEmpty($OwnerName) -xor [String]::IsNullOrEmpty($RepositoryName))
+    {
+        $message = 'When specifying OwnerName and/or RepositorName, BOTH must be specified.'
+        Write-Log -Message $message -Level Error
+        throw $message
     }
 
     $params = @{
@@ -537,26 +547,36 @@ filter Get-GitHubCodeOfConduct
 
     Write-InvocationLog
 
+    # Intentionally disabling validation because parameter sets exist that both require
+    # OwnerName/RepositoryName (to get that repo's Code of Conduct) as well as don't (to get
+    # all known Codes of Conduct).  We'll do additional parameter validation within the function.
+    $elements = Resolve-RepositoryElements -DisableValidation
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
     $telemetryProperties = @{}
 
     $uriFragment = 'codes_of_conduct'
     $description = 'Getting all Codes of Conduct'
+
     if ($PSBoundParameters.ContainsKey('Key'))
     {
         $telemetryProperties['Key'] = $Name
         $uriFragment = "codes_of_conduct/$Key"
         $description = "Getting the $Key Code of Conduct"
     }
-    else
+    elseif ((-not [String]::IsNullOrEmpty($OwnerName)) -and (-not [String]::IsNullOrEmpty($RepositoryName)))
     {
-        $elements = Resolve-RepositoryElements
-        $OwnerName = $elements.ownerName
-        $RepositoryName = $elements.repositoryName
-
         $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
         $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
         $uriFragment = "repos/$OwnerName/$RepositoryName/community/code_of_conduct"
         $description = "Getting the Code of Conduct for $RepositoryName"
+    }
+    elseif ([String]::IsNullOrEmpty($OwnerName) -xor [String]::IsNullOrEmpty($RepositoryName))
+    {
+        $message = 'When specifying OwnerName and/or RepositorName, BOTH must be specified.'
+        Write-Log -Message $message -Level Error
+        throw $message
     }
 
     $params = @{

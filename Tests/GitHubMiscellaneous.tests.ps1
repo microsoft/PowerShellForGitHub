@@ -99,6 +99,16 @@ Describe 'Get-GitHubLicense' {
         }
     }
 
+    Context 'Will fail if not provided both OwnerName and RepositoryName' {
+        It 'Should fail if only OwnerName is specified' {
+            { Get-GitHubLicense -OwnerName 'PowerShell' } | Should -Throw
+        }
+
+        It 'Should fail if only RepositoryName is specified' {
+            { Get-GitHubLicense -RepositoryName 'PowerShell' } | Should -Throw
+        }
+    }
+
     Context 'Can get the license for a repo with the repo on the pipeline' {
         BeforeAll {
             $result = Get-GitHubRepository -OwnerName 'PowerShell' -RepositoryName 'PowerShell' | Get-GitHubLicense
@@ -210,6 +220,16 @@ Describe 'Get-GitHubCodeOfConduct' {
         It 'Has the expected type and additional properties' {
             $result.PSObject.TypeNames[0] | Should -Be 'GitHub.CodeOfConduct'
             $result.CodeOfConductKey | Should -Be $result.key
+        }
+    }
+
+    Context 'Will fail if not provided both OwnerName and RepositoryName' {
+        It 'Should fail if only OwnerName is specified' {
+            { Get-GitHubCodeOfConduct -OwnerName 'PowerShell' } | Should -Throw
+        }
+
+        It 'Should fail if only RepositoryName is specified' {
+            { Get-GitHubCodeOfConduct -RepositoryName 'PowerShell' } | Should -Throw
         }
     }
 
