@@ -453,7 +453,7 @@ try
                 }
 
                 It "Should return the correct membership order" {
-                    for ($i=1; $i -le $sortedRepos.count; $i++) {
+                    for ($i = 1; $i -le $sortedRepos.count; $i++) {
                         $sortedRepos[$i].full_name | Should -Be $sortedRepoFullNames[$i]
                         $sortedDescendingRepos[$i].full_name | Should -Be $sortedDescendingRepoFullNames[$i]
                     }

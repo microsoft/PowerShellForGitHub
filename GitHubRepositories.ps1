@@ -743,7 +743,7 @@ filter Get-GitHubRepository
             # This is a little tricky.  Ideally we'd have two separate ParameterSets (Elements, User),
             # however PowerShell would be unable to disambiguate between the two, so unfortunately
             # we need to do some additional work here.  And because fallthru doesn't appear to be
-            # working right, we're combining both of those, along with Uri.
+            # working right, we're combining both of those.
 
             if ([String]::IsNullOrWhiteSpace($OwnerName))
             {
@@ -782,6 +782,15 @@ filter Get-GitHubRepository
         }
 
         'Uri' {
+            if ($PSBoundParameters.ContainsKey('Type') -or
+                $PSBoundParameters.ContainsKey('Sort') -or
+                $PSBoundParameters.ContainsKey('Direction'))
+            {
+                $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
             $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
             $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
 
@@ -1605,6 +1614,7 @@ filter Get-GitHubRepositoryContributor
         Get-GitHubRepositoryContributor -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets a list of contributors for the PowerShellForGithub repository.
+
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
 
@@ -1755,6 +1765,7 @@ filter Get-GitHubRepositoryCollaborator
         Get-GitHubRepositoryCollaborator -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets a list of collaborators for the PowerShellForGithub repository.
+
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
 
