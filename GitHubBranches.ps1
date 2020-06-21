@@ -200,12 +200,12 @@ filter Get-GitHubRepositoryBranchProtectionRule
         GitHub.BranchProtectionRule
 
     .EXAMPLE
-        Get-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 
         Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub'
+        Get-GitHubRepositoryBranchProtectionRule -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName master
 
         Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
 #>
@@ -217,16 +217,16 @@ filter Get-GitHubRepositoryBranchProtectionRule
     param(
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 1)]
-        [string] $BranchName,
-
-        [Parameter(
-            Mandatory,
-            Position = 2,
+            Position = 1,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [string] $BranchName,
 
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -252,7 +252,7 @@ filter Get-GitHubRepositoryBranchProtectionRule
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
-        Description =  "Getting branch protection status for $RepositoryName"
+        Description = "Getting branch protection status for $RepositoryName"
         Method = 'Get'
         AcceptHeader = $script:lukeCageAcceptHeader
         AccessToken = $AccessToken
@@ -295,13 +295,15 @@ filter Set-GitHubRepositoryBranchProtectionRule
         The list of status checks to require in order to merge into the branch.
 
     .PARAMETER RequireUpToDateBranches
-        Require branches to be up to date before merging.
+        Require branches to be up to date before merging. This setting will not take effect unless
+        at least one status check is defined.
 
     .PARAMETER EnforceAdmins
         Enforce all configured restrictions for administrators.
 
     .PARAMETER DismissalUsers
-        Specify which users can dismiss pull request reviews.
+        Specify the user names of users who can dismiss pull request reviews. This can only be
+        specified for organization-owned repositories.
 
     .PARAMETER DismissalTeams
         Specify which teams can dismiss pull request reviews.
@@ -326,9 +328,10 @@ filter Set-GitHubRepositoryBranchProtectionRule
     .PARAMETER RestrictPushApps
         Specify which apps have push access.
 
-    .PARAMETER RequiredLinearHistory
+    .PARAMETER RequireLinearHistory
         Enforces a linear commit Git history, which prevents anyone from pushing merge commits to a
-        branch.
+        branch. Your repository must allow squash merging or rebase merging before you can enable a
+        linear commit history.
 
     .PARAMETER AllowForcePushes
         Permits force pushes to the protected branch by anyone with write access to the repository.
@@ -354,14 +357,17 @@ filter Set-GitHubRepositoryBranchProtectionRule
     .OUTPUTS
         GitHub.BranchRepositoryRule
 
+    .NOTES
+        Protecting a branch requires admin or owner permissions to the repository.
+
     .EXAMPLE
-        Set-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub -EnforceAdmins
+        Set-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -EnforceAdmins
 
         Sets a branch protection rule for the master branch of the PowerShellForGithub repository
         enforcing all configuration restrictions for administrators.
 
     .EXAMPLE
-        Set-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub' -RequiredApprovingReviewCount 1
+        Set-GitHubRepositoryBranchProtectionRule -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName master -RequiredApprovingReviewCount 1
 
         Sets a branch protection rule for the master branch of the PowerShellForGithub repository
         requiring one approving review.
@@ -376,15 +382,15 @@ filter Set-GitHubRepositoryBranchProtectionRule
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            Position = 1)]
-        [string] $BranchName,
+            Position = 1,
+            ParameterSetName='Uri')]
+        [string] $Uri,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName='Uri')]
-        [string] $Uri,
+            Position = 2)]
+        [string] $BranchName,
 
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -406,7 +412,7 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         [switch] $RequireCodeOwnerReviews,
 
-        [ValidateRange(1,6)]
+        [ValidateRange(1, 6)]
         [int] $RequiredApprovingReviewCount,
 
         [string[]] $RestrictPushUsers,
@@ -415,7 +421,7 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         [string[]] $RestrictPushApps,
 
-        [switch]$RequiredLinearHistory,
+        [switch]$RequireLinearHistory,
 
         [switch] $AllowForcePushes,
 
@@ -449,8 +455,10 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
     $dismissalRestrictions = @{}
 
-    if ($PSBoundParameters.ContainsKey('DismissalUsers')) {
-       $dismissalRestrictions['users'] = $DismissalUsers }
+    if ($PSBoundParameters.ContainsKey('DismissalUsers'))
+    {
+       $dismissalRestrictions['users'] = $DismissalUsers
+    }
     if ($PSBoundParameters.ContainsKey('DismissalTeams'))
     {
         $teams = Get-GitHubTeam -OwnerName $OwnerName -RepositoryName $RepositoryName |
@@ -460,12 +468,18 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
     $requiredPullRequestReviews = @{}
 
-    if ($PSBoundParameters.ContainsKey('DismissStaleReviews')) {
-        $requiredPullRequestReviews['dismiss_stale_reviews'] = $DismissStaleReviews.ToBool() }
-    if ($PSBoundParameters.ContainsKey('RequireCodeOwnerReviews')) {
-        $requiredPullRequestReviews['require_code_owner_reviews'] = $RequireCodeOwnerReviews.ToBool() }
-    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount')) {
-        $requiredPullRequestReviews['required_approving_review_count'] = $RequiredApprovingReviewCount }
+    if ($PSBoundParameters.ContainsKey('DismissStaleReviews'))
+    {
+        $requiredPullRequestReviews['dismiss_stale_reviews'] = $DismissStaleReviews.ToBool()
+    }
+    if ($PSBoundParameters.ContainsKey('RequireCodeOwnerReviews'))
+    {
+        $requiredPullRequestReviews['require_code_owner_reviews'] = $RequireCodeOwnerReviews.ToBool()
+    }
+    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
+    {
+        $requiredPullRequestReviews['required_approving_review_count'] = $RequiredApprovingReviewCount
+    }
 
     if ($dismissalRestrictions.count -gt 0)
     {
@@ -488,12 +502,18 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         if ($null -eq $RestrictPushTeams)
         {
-            $RestrictPushTeams = @()
+            $restrictPushTeamSlugs = @()
+        }
+        else
+        {
+            $teams = Get-GitHubTeam -OwnerName $OwnerName -RepositoryName $RepositoryName |
+                Where-Object -FilterScript { $RestrictPushTeams -contains $_.name }
+            $restrictPushTeamSlugs['teams'] = @($teams.slug)
         }
 
         $restrictions = @{
             users = $RestrictPushUsers
-            teams = $RestrictPushTeams
+            teams = $restrictPushTeamSlugs
         }
 
         if ($PSBoundParameters.ContainsKey('RestrictPushApps')) {
@@ -505,28 +525,35 @@ filter Set-GitHubRepositoryBranchProtectionRule
     }
 
     $hashBody = @{
-        name = $RepositoryName
         required_status_checks = $requiredStatusChecks
         enforce_admins = $EnforceAdmins.ToBool()
         required_pull_request_reviews = $requiredPullRequestReviews
         restrictions = $restrictions
     }
 
-    if ($PSBoundParameters.ContainsKey('RequiredLinearHistory')) {
-        $hashBody['required_linear_history'] = $RequiredLinearHistory.ToBool() }
-    if ($PSBoundParameters.ContainsKey('AllowForcePushes')) {
-        $hashBody['allow_force_pushes'] = $AllowForcePushes.ToBool() }
-    if ($PSBoundParameters.ContainsKey('AllowDeletions')) {
-        $hashBody['allow_deletions'] = $AllowDeletions.ToBool() }
+    if ($PSBoundParameters.ContainsKey('RequireLinearHistory'))
+    {
+        $hashBody['required_linear_history'] = $RequireLinearHistory.ToBool()
+    }
+    if ($PSBoundParameters.ContainsKey('AllowForcePushes'))
+    {
+        $hashBody['allow_force_pushes'] = $AllowForcePushes.ToBool()
+    }
+    if ($PSBoundParameters.ContainsKey('AllowDeletions'))
+    {
+        $hashBody['allow_deletions'] = $AllowDeletions.ToBool()
+    }
 
     if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
         'Set GitHub Repository Branch Protection'))
     {
         Write-InvocationLog
 
+        $jsonConversionDepth = 3
+
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
-            Body = (ConvertTo-Json -InputObject $hashBody -Depth 3)
+            Body = (ConvertTo-Json -InputObject $hashBody -Depth $jsonConversionDepth)
             Description =  "Setting $BranchName branch protection status for $RepositoryName"
             Method = 'Put'
             AcceptHeader = $script:lukeCageAcceptHeader
@@ -586,23 +613,17 @@ filter Remove-GitHubRepositoryBranchProtectionRule
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub'
+        Removes-GitHubRepositoryBranchProtection -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName master
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub' -Confirm:$false
-
-        Removes branch protection rules from the master branch of the PowerShellForGithub repository
-        without prompting for confirmation.
-
-    .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/master/PowerShellForGitHub' -Force
+        Removes-GitHubRepositoryBranchProtection -Uri 'https://github.com/master/PowerShellForGitHub' -BranchName master -Force
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository
         without prompting for confirmation.
@@ -618,16 +639,16 @@ filter Remove-GitHubRepositoryBranchProtectionRule
     param(
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 1)]
-        [string] $BranchName,
-
-        [Parameter(
-            Mandatory,
-            Position = 2,
+            Position = 1,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [string] $BranchName,
 
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -765,7 +786,7 @@ filter Add-GitHubBranchProtectionRuleAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.url -
+            $elements = Split-GitHubUri -Uri $item.url
             $repositoryUrl = Join-GitHubUri @elements
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 

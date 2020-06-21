@@ -423,19 +423,19 @@ Get-GitHubUser
 #### Getting a repository branch protection rule
 
 ```powershell
-Get-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master 
 ```
 
 #### Setting a repository branch protection rule
 
 ```powershell
-Set-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub -RequiredApprovingReviewCount 1
+Set-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -RequiredApprovingReviewCount 1
 ```
 
 #### Removing a repository branch protection rule
 
 ```powershell
-Remove-GitHubRepositoryBranchProtectionRule -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 ```
 
 ----------

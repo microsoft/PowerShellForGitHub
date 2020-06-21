@@ -114,8 +114,8 @@ try
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
                 $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
-                Set-GitHubRepositoryBranchProtectionRule -Name $branchName -Uri $repo.svn_url | Out-Null
-                $protection = Get-GitHubRepositoryBranchProtectionRule -Name $branchName -uri $repo.svn_url
+                Set-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
+                $protection = Get-GitHubRepositoryBranchProtectionRule -uri $repo.svn_url -BranchName $branchName
             }
 
             It 'Should return an object of the correct type' {
@@ -149,19 +149,21 @@ try
                     RepositoryName = $repoName
                     AutoInit = $true
                 }
+
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
             }
 
             Context 'When setting base protection options' {
                 BeforeAll {
                     $setGitHubRepositoryBranchProtectionParms = @{
-                        Name = $branchName
                         Uri = $repo.svn_url
+                        BranchName = $branchName
                         EnforceAdmins = $true
-                        RequiredLinearHistory = $true
+                        RequireLinearHistory = $true
                         AllowForcePushes = $true
                         AllowDeletions = $true
                     }
+
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
@@ -182,11 +184,12 @@ try
                 BeforeAll {
                     $statusChecks = 'test'
                     $setGitHubRepositoryBranchProtectionParms = @{
-                        Name = $branchName
                         Uri = $repo.svn_url
+                        BranchName = $branchName
                         RequireUpToDateBranches = $true
                         StatusChecks = $statusChecks
                     }
+
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
@@ -204,13 +207,14 @@ try
             Context 'When setting required pull request reviews' {
                 BeforeAll {
                     $setGitHubRepositoryBranchProtectionParms = @{
-                        Name = $branchName
                         Uri = $repo.svn_url
+                        BranchName = $branchName
                         DismissalUsers = $script:OwnerName
                         DismissStaleReviews = $true
                         RequireCodeOwnerReviews = $true
                         RequiredApprovingReviewCount = 1
                     }
+
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
@@ -228,10 +232,11 @@ try
             Context 'When setting push restrictions' {
                 BeforeAll {
                     $setGitHubRepositoryBranchProtectionParms = @{
-                        Name = $branchName
                         Uri = $repo.svn_url
+                        BranchName = $branchName
                         RestrictPushUsers = $script:OwnerName
                     }
+
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
@@ -260,11 +265,11 @@ try
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
                 $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
-                Set-GitHubRepositoryBranchProtectionRule -Name $branchName -Uri $repo.svn_url | Out-Null
+                Set-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
             }
 
             It 'Should not throw' {
-                { Remove-GitHubRepositoryBranchProtectionRule -Name $branchName -Uri $repo.svn_url -Force } |
+                { Remove-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName -Force } |
                     Should -Not -Throw
             }
 
