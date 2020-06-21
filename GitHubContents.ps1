@@ -138,7 +138,7 @@
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
