@@ -471,6 +471,7 @@ filter Remove-GitHubRepository
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
     [Alias('Delete-GitHubRepository')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -494,7 +495,7 @@ filter Remove-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -713,7 +714,11 @@ filter Get-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    # We are explicitly disabling validation here because a valid parameter set for this function
+    # allows the OwnerName to be passed in, but not the RepositoryName.  That would allow the caller
+    # to get all of the repositories owned by a specific username.  Therefore, we don't want to fail
+    # if both have not been supplied...we'll do the extra validation within the function.
+    $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1177,7 +1182,7 @@ filter Update-GitHubRepository
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1296,6 +1301,7 @@ filter Get-GitHubRepositoryTopic
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubRepositoryTopicTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1317,7 +1323,7 @@ filter Get-GitHubRepositoryTopic
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1481,7 +1487,7 @@ function Set-GitHubRepositoryTopic
     {
         Write-InvocationLog -Invocation $MyInvocation
 
-        $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+        $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
 
@@ -1599,6 +1605,7 @@ filter Get-GitHubRepositoryContributor
     [OutputType({$script:GitHubUserTypeName})]
     [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1624,7 +1631,7 @@ filter Get-GitHubRepositoryContributor
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1742,8 +1749,9 @@ filter Get-GitHubRepositoryCollaborator
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-        [OutputType({$script:GitHubUserTypeName})]
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [OutputType({$script:GitHubUserTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1768,7 +1776,7 @@ filter Get-GitHubRepositoryCollaborator
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1857,6 +1865,7 @@ filter Get-GitHubRepositoryLanguage
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubRepositoryLanguageTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1878,7 +1887,7 @@ filter Get-GitHubRepositoryLanguage
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -1963,6 +1972,7 @@ filter Get-GitHubRepositoryTag
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubRepositoryTagTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1984,7 +1994,7 @@ filter Get-GitHubRepositoryTag
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -2074,6 +2084,7 @@ filter Move-GitHubRepositoryOwnership
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Alias('Transfer-GitHubRepositoryOwnership')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -2101,7 +2112,7 @@ filter Move-GitHubRepositoryOwnership
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
