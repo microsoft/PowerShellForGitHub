@@ -3,6 +3,7 @@
 
 @{
     GitHubBranchTypeName = 'GitHub.Branch'
+    GitHubBranchProtectionRuleName = 'GitHub.BranchProtectionRule'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -154,7 +155,7 @@ filter Get-GitHubRepositoryBranch
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubBranchAdditionalProperties)
 }
 
-function Get-GitHubRepositoryBranchProtectionRule
+filter Get-GitHubRepositoryBranchProtectionRule
 {
 <#
     .SYNOPSIS
@@ -192,18 +193,19 @@ function Get-GitHubRepositoryBranchProtectionRule
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
+        GitHub.Branch
 
     .OUTPUTS
-        PSCustomObject
+        GitHub.BranchProtectionRule
 
     .EXAMPLE
-        Get-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Get-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+        Get-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub'
 
         Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
 #>
@@ -215,12 +217,14 @@ function Get-GitHubRepositoryBranchProtectionRule
     param(
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 1)]
-        [string] $Name,
+        [string] $BranchName,
 
         [Parameter(
             Mandatory,
             Position = 2,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
 
@@ -247,7 +251,7 @@ function Get-GitHubRepositoryBranchProtectionRule
     }
 
     $params = @{
-        UriFragment = "repos/$OwnerName/$RepositoryName/branches/$Name/protection"
+        UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
         Description =  "Getting branch protection status for $RepositoryName"
         Method = 'Get'
         AcceptHeader = $script:lukeCageAcceptHeader
@@ -257,10 +261,10 @@ function Get-GitHubRepositoryBranchProtectionRule
         NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
 }
 
-function Set-GitHubRepositoryBranchProtectionRule
+filter Set-GitHubRepositoryBranchProtectionRule
 {
 <#
     .SYNOPSIS
@@ -343,19 +347,21 @@ function Set-GitHubRepositoryBranchProtectionRule
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
+        GitHub.Branch
+        GitHub.BranchRepositoryRule
 
     .OUTPUTS
-        PSCustomObject
+        GitHub.BranchRepositoryRule
 
     .EXAMPLE
-        Set-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EnforceAdmins
+        Set-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub -EnforceAdmins
 
         Sets a branch protection rule for the master branch of the PowerShellForGithub repository
         enforcing all configuration restrictions for administrators.
 
     .EXAMPLE
-        Set-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -RequiredApprovingReviewCount 1
+        Set-GitHubRepositoryBranchProtectionRule  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub' -RequiredApprovingReviewCount 1
 
         Sets a branch protection rule for the master branch of the PowerShellForGithub repository
         requiring one approving review.
@@ -369,11 +375,13 @@ function Set-GitHubRepositoryBranchProtectionRule
     param(
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 1)]
-        [string] $Name,
+        [string] $BranchName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 2,
             ParameterSetName='Uri')]
         [string] $Uri,
@@ -511,15 +519,15 @@ function Set-GitHubRepositoryBranchProtectionRule
     if ($PSBoundParameters.ContainsKey('AllowDeletions')) {
         $hashBody['allow_deletions'] = $AllowDeletions.ToBool() }
 
-    if ($PSCmdlet.ShouldProcess("'$Name' branch of repository '$RepositoryName'",
+    if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
         'Set GitHub Repository Branch Protection'))
     {
         Write-InvocationLog
 
         $params = @{
-            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$Name/protection"
+            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
             Body = (ConvertTo-Json -InputObject $hashBody -Depth 3)
-            Description =  "Setting $Name branch protection status for $RepositoryName"
+            Description =  "Setting $BranchName branch protection status for $RepositoryName"
             Method = 'Put'
             AcceptHeader = $script:lukeCageAcceptHeader
             AccessToken = $AccessToken
@@ -529,23 +537,23 @@ function Set-GitHubRepositoryBranchProtectionRule
                 -ConfigValueName DefaultNoStatus)
         }
 
-        return Invoke-GHRestMethod @params
+        return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
     }
 }
 
-function Remove-GitHubRepositoryBranchProtectionRule
+filter Remove-GitHubRepositoryBranchProtectionRule
 {
 <#
     .SYNOPSIS
-        Remove branch protection rules for a given GitHub repository.
+        Remove branch protection rules from a given GitHub repository.
 
     .DESCRIPTION
-        Remove branch protection rules for a given GitHub repository.
+        Remove branch protection rules from a given GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER Name
-        Name of the specific branch to be retrieved.  If not supplied, all branches will be retrieved.
+        Name of the specific branch to be removed.
 
     .PARAMETER Uri
         Uri for the repository.
@@ -571,29 +579,30 @@ function Remove-GitHubRepositoryBranchProtectionRule
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        None
+        GitHub.Repository
+        GitHub.Branch
 
     .OUTPUTS
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepositoryBranchProtectionRule  -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub'
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository.
 
     .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Confirm:$false
+        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/microsoft/PowerShellForGitHub' -Confirm:$false
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository
         without prompting for confirmation.
 
     .EXAMPLE
-        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -Force
+        Removes-GitHubRepositoryBranchProtection  -Name master -Uri 'https://github.com/master/PowerShellForGitHub' -Force
 
         Removes branch protection rules from the master branch of the PowerShellForGithub repository
         without prompting for confirmation.
@@ -609,12 +618,14 @@ function Remove-GitHubRepositoryBranchProtectionRule
     param(
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 1)]
-        [string] $Name,
+        [string] $BranchName,
 
         [Parameter(
             Mandatory,
             Position = 2,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
         [string] $Uri,
 
@@ -645,14 +656,14 @@ function Remove-GitHubRepositoryBranchProtectionRule
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess("'$Name' branch of repository '$RepositoryName'",
+    if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
         'Remove GitHub Repository Branch Protection Rule'))
     {
         Write-InvocationLog
 
         $params = @{
-            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$Name/protection"
-            Description =  "Removing $Name branch protection rule for $RepositoryName"
+            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
+            Description =  "Removing $BranchName branch protection rule for $RepositoryName"
             Method = 'Delete'
             AcceptHeader = $script:lukeCageAcceptHeader
             AccessToken = $AccessToken
@@ -662,7 +673,7 @@ function Remove-GitHubRepositoryBranchProtectionRule
                 -ConfigValueName DefaultNoStatus)
         }
 
-        return Invoke-GHRestMethod @params
+        return Invoke-GHRestMethod @params | Out-Null
     }
 }
 
@@ -679,7 +690,7 @@ filter Add-GitHubBranchAdditionalProperties
         The type that should be assigned to the object.
 
     .INPUTS
-        [PSCustomObject]
+        PSCustomObject
 
     .OUTPUTS
         GitHub.Branch
@@ -709,6 +720,67 @@ filter Add-GitHubBranchAdditionalProperties
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
             Add-Member -InputObject $item -Name 'BranchName' -Value $item.name -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubBranchProtectionRuleAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Branch Protection Rule objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.Branch
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubBranchTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.url -
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
+
+            if ($item.html_url -match "^https?://api.$hostName/repos/([^/]+)/?([^/]+)/?([^/]+)/?([^/]+)?(?:/.*)?$")
+            {
+                $branchName = $Matches[4]
+            }
+            else
+            {
+                $branchName = ''
+            }
+
+            Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
         }
 
         Write-Output $item
