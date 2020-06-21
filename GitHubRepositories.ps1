@@ -1965,97 +1965,7 @@ filter Move-GitHubRepositoryOwnership
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
-filter Add-GitHubRepositoryAdditionalProperties
-{
-<#
-    .SYNOPSIS
-        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
-
-    .PARAMETER InputObject
-        The GitHub object to add additional properties to.
-
-    .PARAMETER TypeName
-        The type that should be assigned to the object.
-
-    .PARAMETER OwnerName
-        Owner of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .PARAMETER RepositoryName
-        Name of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .INPUTS
-        [PSCustomObject]
-
-    .OUTPUTS
-        GitHub.Repository
-#>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
-    param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline)]
-        [AllowNull()]
-        [AllowEmptyCollection()]
-        [PSCustomObject[]] $InputObject,
-
-        [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubRepositoryTypeName,
-
-        [string] $OwnerName,
-
-        [string] $RepositoryName
-    )
-
-    foreach ($item in $InputObject)
-    {
-        $item.PSObject.TypeNames.Insert(0, $TypeName)
-
-        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
-        {
-            $repositoryUrl = [String]::Empty
-            if ([String]::IsNullOrEmpty($item.html_url))
-            {
-                if ($PSBoundParameters.ContainsKey('OwnerName') -and
-                    $PSBoundParameters.ContainsKey('RepositoryName'))
-                {
-                    $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
-                }
-            }
-            else
-            {
-                $elements = Split-GitHubUri -Uri $item.html_url
-                $repositoryUrl = Join-GitHubUri @elements
-            }
-
-            if (-not [String]::IsNullOrEmpty($repositoryUrl))
-            {
-                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
-            }
-
-            if ($item.id -gt 0)
-            {
-                Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
-            }
-
-            if ($null -ne $item.owner)
-            {
-                $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
-            }
-
-            if ($null -ne $item.organization)
-            {
-                $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
-            }
-        }
-
-        Write-Output $item
-    }
-}
-
-Filter Test-GitHubRepositoryVulnerabilityAlert
+filter Test-GitHubRepositoryVulnerabilityAlert
 {
  <#
     .SYNOPSIS
@@ -2090,6 +2000,18 @@ Filter Test-GitHubRepositoryVulnerabilityAlert
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
         GitHub.Repository
 
     .OUTPUTS
@@ -2102,6 +2024,7 @@ Filter Test-GitHubRepositoryVulnerabilityAlert
         Test-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
 
         Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
+
     .EXAMPLE
         Test-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
 
@@ -2224,6 +2147,18 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
         GitHub.Repository
 
     .OUTPUTS
@@ -2292,7 +2227,7 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
                 -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        Invoke-GHRestMethod @params |Out-Null
+        Invoke-GHRestMethod @params | Out-Null
     }
 }
 
@@ -2331,6 +2266,18 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
         GitHub.Repository
 
     .OUTPUTS
@@ -2436,6 +2383,18 @@ filter Enable-GitHubRepositorySecurityFix
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
         GitHub.Repository
 
     .OUTPUTS
@@ -2541,6 +2500,18 @@ filter Disable-GitHubRepositorySecurityFix
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
         GitHub.Repository
 
     .OUTPUTS
@@ -2607,5 +2578,95 @@ filter Disable-GitHubRepositorySecurityFix
         }
 
         Invoke-GHRestMethod @params | Out-Null
+    }
+}
+
+filter Add-GitHubRepositoryAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Repository
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryTypeName,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $repositoryUrl = [String]::Empty
+            if ([String]::IsNullOrEmpty($item.html_url))
+            {
+                if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                    $PSBoundParameters.ContainsKey('RepositoryName'))
+                {
+                    $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                }
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+            }
+
+            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            if ($item.id -gt 0)
+            {
+                Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.owner)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
+            }
+
+            if ($null -ne $item.organization)
+            {
+                $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+            }
+        }
+
+        Write-Output $item
     }
 }
