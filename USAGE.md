@@ -542,19 +542,19 @@ Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerSh
 #### Getting a repository branch protection rule
 
 ```powershell
-Get-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master 
 ```
 
 #### Creating a repository branch protection rule
 
 ```powershell
-New-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub -RequiredApprovingReviewCount 1
+Set-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -RequiredApprovingReviewCount 1
 ```
 
 #### Removing a repository branch protection rule
 
 ```powershell
-Remove-GitHubRepositoryBranchProtectionRule -Name master -OwnerName microsoft -RepositoryName PowerShellForGitHub
+Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 ```
 
 ----------
