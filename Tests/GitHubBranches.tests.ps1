@@ -188,7 +188,7 @@ try
             }
 
             AfterAll -ScriptBlock {
-                if ($repo)
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
                 {
                     Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
                 }
@@ -242,7 +242,7 @@ try
         }
 
         AfterAll -ScriptBlock {
-            if ($repo)
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
             {
                 Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
