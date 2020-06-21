@@ -176,7 +176,7 @@ filter Get-GitHubRelease
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters -DisableValidation
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
