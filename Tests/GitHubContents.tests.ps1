@@ -282,17 +282,15 @@ try
                     Uri = $repo.svn_url
                     CommitterName = $committerName
                     CommitterEmail = $committerEmail
-                    AuthorName = $authorName
+                    authorName = $authorName
                     authorEmail = $authorEmail
                 }
+
                 $result = Set-GitHubContent @setGitHubContentParms
             }
 
-            It 'Should return an object of the correct type' {
-                $result | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
                 $result.content.name | Should -Be $fileName
                 $result.content.path | Should -Be "$filePath/$fileName"
                 $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +
@@ -311,6 +309,7 @@ try
                     MediaType = 'Raw'
                     ResultAsString = $true
                 }
+
                 $writtenContent = Get-GitHubContent @getGitHubContentParms
 
                 $content | Should -Be $writtenContent
@@ -337,18 +336,15 @@ try
                     Uri = $repo.svn_url
                     CommitterName = $committerName
                     CommitterEmail = $committerEmail
-                    AuthorName = $authorName
+                    authorName = $authorName
                     authorEmail = $authorEmail
                     NoStatus = $true
                 }
                 $result = Set-GitHubContent @setGitHubContentParms
             }
 
-            It 'Should return an object of the correct type' {
-                $result | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
                 $result.content.name | Should -Be $fileName
                 $result.content.path | Should -Be "$filePath/$fileName"
                 $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +

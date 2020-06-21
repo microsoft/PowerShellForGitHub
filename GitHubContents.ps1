@@ -129,6 +129,7 @@
 
         [string] $Path,
 
+        [ValidateNotNullOrEmpty()]
         [string] $BranchName,
 
         [ValidateSet('Raw', 'Html', 'Object')]
@@ -167,9 +168,9 @@
         $description = "Getting all content for in $RepositoryName"
     }
 
-    if ($PSBoundParameters.ContainsKey('Branch'))
+    if ($PSBoundParameters.ContainsKey('BranchName'))
     {
-        $uriFragment += "?ref=$Branch"
+        $uriFragment += "?ref=$BranchName"
     }
 
     $params = @{
@@ -207,7 +208,7 @@
     return $result
 }
 
-function Set-GitHubContent
+filter Set-GitHubContent
 {
     <#
     .SYNOPSIS
@@ -240,6 +241,11 @@ function Set-GitHubContent
     .PARAMETER Content
         The new file content.
 
+    .PARAMETER Sha
+        The SHA value of the current file if present. If this parameter is not provided, and the
+        file currently exists in the specified branch of the repo, it will be read to obtain this
+        value.
+
     .PARAMETER BranchName
         The branch, or defaults to the default branch of not specified.
 
@@ -269,37 +275,61 @@ function Set-GitHubContent
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Content
+
     .EXAMPLE
-        Set-GitHubContent  -Path README.md -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
+        Set-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
 
         Sets the contents of the README.md file on the master branch of the PowerShellForGithub repository.
 #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false,
         DefaultParameterSetName = 'Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification='One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+    [OutputType({$script:GitHubContentTypeName})]
     param(
         [Parameter(
             Mandatory,
-            Position = 1)]
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [string] $Path,
 
         [Parameter(
             Mandatory,
-            Position = 2)]
+            Position = 3)]
         [string] $CommitMessage,
 
         [Parameter(
             Mandatory,
-            Position = 3)]
+            Position = 4)]
         [string] $Content,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Uri')]
-        [string] $Uri,
 
         [Parameter(
             Mandatory,
@@ -311,6 +341,10 @@ function Set-GitHubContent
             ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string] $Sha,
+
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $BranchName,
 
         [string] $CommitterName,
@@ -362,7 +396,9 @@ function Set-GitHubContent
         }
         else
         {
-            throw 'Both CommiterName and CommitterEmail need to be specified.'
+            $message = 'Both CommiterName and CommitterEmail need to be specified.'
+            Write-Log -Message $message -Level Error
+            throw $message
         }
     }
 
@@ -379,11 +415,19 @@ function Set-GitHubContent
         }
         else
         {
-            throw 'Both AuthorName and AuthorEmail need to be specified.'
+            $message = 'Both AuthorName and AuthorEmail need to be specified.'
+            Write-Log -Message $message -Level Error
+            throw $message
         }
     }
 
-    if ($PSCmdlet.ShouldProcess("$BranchName branch of $RepositoryName",
+    if ($PSBoundParameters.ContainsKey('Sha'))
+    {
+        $hashBody['sha'] = $Sha
+    }
+
+    if ($PSCmdlet.ShouldProcess(
+        "$BranchName branch of $RepositoryName",
         "Set GitHub Contents on $Path"))
     {
         Write-InvocationLog
@@ -402,7 +446,7 @@ function Set-GitHubContent
 
         try
         {
-            return Invoke-GHRestMethod @params
+            return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
         }
         catch
         {
@@ -464,7 +508,11 @@ function Set-GitHubContent
                 $hashBody['sha'] = $object.sha
                 $params['body'] = ConvertTo-Json -InputObject $hashBody
 
-                return Invoke-GHRestMethod @params
+                $message = 'Replacing the content of an existing file requires the current SHA ' +
+                    'of that file.  Retrieving the SHA now.'
+                Write-Log -Level Verbose -Message $message
+
+                return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
             }
         }
     }
@@ -508,9 +556,35 @@ filter Add-GitHubContentAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.url
+            if ($item.url)
+            {
+                $uri = $item.html_url
+            }
+            else
+            {
+                $uri = $item.content.html_url
+            }
+
+            $elements = Split-GitHubUri -Uri $uri
             $repositoryUrl = Join-GitHubUri @elements
+
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+
+            $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
+
+            if ($uri -match "^https?://$hostName/?([^/]+)/?([^/]+)/blob/?([^/]+)/?([^#]*)?$")
+            {
+                $branchName = $Matches[3]
+                $path = $Matches[4]
+            }
+            else
+            {
+                $branchName = ''
+                $path = ''
+            }
+
+            Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'Path' -Value $path -MemberType NoteProperty -Force
         }
 
         Write-Output $item

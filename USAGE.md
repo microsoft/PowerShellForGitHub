@@ -456,7 +456,7 @@ Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path
 #### Write a file to a branch of a repository
 
 ```powershell
-Set-GitHubContent  -Path README.md -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
+Set-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
 ```
 
 ----------
