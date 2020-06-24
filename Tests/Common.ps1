@@ -1,6 +1,15 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+# PSScriptAnalyzer incorrectly flags a number of variables as PSUseDeclaredVarsMoreThanAssignments
+# since it doesn't work well with variables defined in BeforeAll{} but only referenced in a later Context.
+# We are suppressing that rule in Test files, which means that we are then losing out on catching
+# scenarios where we might be assigning to a variable and then referencing it with a typo.
+# By setting StrictMode, the test file will immediately fail if there are any variables that are
+# being referenced before they were assigned.  It won't catch variables that are assigned to but
+# never referenced, but that's not as big of a deal for tests.
+Set-StrictMode -Version 1.0
+
 # Caches if the tests are actively configured with an access token.
 $script:accessTokenConfigured = $false
 

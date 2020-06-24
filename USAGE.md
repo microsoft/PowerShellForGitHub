@@ -5,6 +5,9 @@
 *   [Logging](#logging)
 *   [Telemetry](#telemetry)
 *   [Examples](#examples)
+    *   [Overview](#overview)
+        *   [Embracing the pipeline](#embracing-the-pipeline)
+        *   [Pipeline Example](#pipeline-example)
     *   [Analytics](#analytics)
         *   [Querying Issues](#querying-issues)
         *   [Querying Pull Requests](#querying-pull-requests)
@@ -26,6 +29,12 @@
         *   [Updating the current authenticated user](#updating-the-current-authenticated-user)
         *   [Getting any user](#getting-any-user)
         *   [Getting all users](#getting-all-users)
+    *   [Repositories](#repositories)
+        *   [Get repository vulnerability alert status](#get-repository-vulnerability-alert-status)
+        *   [Enable repository vulnerability alerts](#enable-repository-vulnerability-alerts)
+        *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
+        *   [Enable repository automatic security fixes](#enable-repository-automatic-security-fixes)
+        *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -40,12 +49,12 @@
         *   [Add assignee to an issue](#add-assignee-to-an-issue)
         *   [Remove assignee from an issue](#remove-assignee-from-an-issue)
     *   [Comments](#comments)
-        *   [Get comments from an issue](#get-comments-from-an-issue)
-        *   [Get comments from a repository](#get-comments-from-a-repository)
-        *   [Get a single comment](#get-a-single-comment)
-        *   [Adding a new comment to an issue](#adding-a-new-comment-to-an-issue)
-        *   [Editing an existing comment](#editing-an-existing-comment)
-        *   [Removing a comment](#removing-a-comment)
+        *   [Get comments from an Issue](#get-comments-from-an-issue)
+        *   [Get Issue comments from a repository](#get-issue-comments-from-a-repository)
+        *   [Get a single Issue comment](#get-a-single-issue-comment)
+        *   [Adding a new comment to an Issue](#adding-a-new-comment-to-an-issue)
+        *   [Editing an existing Issue comment](#editing-an-existing-issue-comment)
+        *   [Removing an Issue comment](#removing-an-issue-comment)
     *   [Milestones](#milestones)
         *   [Get milestones from a repository](#get-milestones-from-a-repository)
         *   [Get a single milestone](#get-a-single-milestone)
@@ -104,12 +113,6 @@ In order to track usage, gauge performance and identify areas for improvement, t
 employed during execution of commands within this module (via Application Insights).  For more
 information, refer to the [Privacy Policy](README.md#privacy-policy).
 
-> You may notice some needed assemblies for communicating with Application Insights being
-> downloaded on first run of a command within each PowerShell session.  The
-> [automatic dependency downloads](#automatic-dependency-downloads) section of the setup
-> documentation describes how you can avoid having to always re-download the telemetry assemblies
-> in the future.
-
 We recommend that you always leave the telemetry feature enabled, but a situation may arise where
 it must be disabled for some reason.  In this scenario, you can disable telemetry by calling:
 
@@ -161,6 +164,58 @@ us for analysis.  We expose it here for complete transparency.
 
 ## Examples
 
+### Overview
+
+#### Embracing the Pipeline
+
+One of the major benefits of PowerShell is its pipeline -- allowing you to "pipe" a saved value or
+the output of a previous command directly into the next command.  There is absolutely no requirement
+to make use of it in order to use the module, but you will find that the module becomes increasingly
+easier to use and more powerful if you do.
+
+Some of the examples that you find below will show how you might be able to use it to your advantage.
+
+#### Pipeline Example
+
+Most commands require you to pass in either a `Uri` for the repository or its elements (the
+`OwnerName` and `RepositoryName`).  If you keep around the repo that you're interacting with in
+a local var (like `$repo`), then you can pipe that into any command to avoid having to specify that
+information.  Further, piping in a more specific object (like an `Issue`) allows you to avoid even
+specifying the relevant Issue number.
+
+Without the pipeline, an interaction log might look like this:
+
+```powershell
+# Find all of the issues that have the label "repro steps needed" and add a new comment to those
+# issues asking for an update.
+$issues = @(Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label 'repro steps needed')
+foreach ($issue in $issues)
+{
+    $params = @{
+        'OwnerName' = 'microsoft'
+        'RepositoryName' = 'PowerShellForGitHub'
+        'Issue' = $issue.number
+        'Body' = 'Any update on those repro steps?'
+    }
+
+    New-GitHubIssueComment @params
+}
+
+```
+
+With the pipeline, a similar interaction log might look like this:
+
+```powershell
+# Find all of the issues that have the label "repro steps needed" and add a new comment to those
+# issues asking for an update.
+Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub |
+    Get-GitHubIssue -Label 'repro steps needed' |
+    New-GitHubIssueComment -Body 'Any update on those repro steps?'
+```
+
+We encourage you to explore how embracing the pipeline may simplify your code and interaction
+with GitHub using this module!
+
 ### Analytics
 
 #### Querying Issues
@@ -204,8 +259,8 @@ $issueCounts | Sort-Object -Property Count -Descending
 #### Querying Pull Requests
 
 ```powershell
-# Getting all of the pull requests from the Microsoft\PowerShellForGitHub repository
-$issues = Get-GitHubIssue -OwnerName Microsoft -RepositoryName 'PowerShellForGitHub'
+# Getting all of the pull requests from the microsoft\PowerShellForGitHub repository
+$issues = Get-GitHubIssue -OwnerName microsoft -RepositoryName 'PowerShellForGitHub'
 ```
 
 ```powershell
@@ -324,12 +379,12 @@ Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryNam
 
 #### Removing a Label From an Issue
 ```powershell
-Remove-GitHubIssueLabel -OwnerName Microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -Issue 1
+Remove-GitHubIssueLabel -OwnerName microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -Issue 1
 ```
 
 #### Updating a Label With a New Name and Color
 ```powershell
-Update-GitHubLabel -OwnerName Microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -NewName NewTestLabel -Color BBBB00
+Update-GitHubLabel -OwnerName microsoft -RepositoryName DesiredStateConfiguration -Name TestLabel -NewName NewTestLabel -Color BBBB00
 ```
 
 #### Bulk Updating Labels in a Repository
@@ -354,7 +409,7 @@ Update-GitHubCurrentUser -Location 'Seattle, WA' -Hireable:$false
 
 #### Getting any user
 ```powershell
-Get-GitHubUser -Name octocat
+Get-GitHubUser -UserName octocat
 ```
 
 #### Getting all users
@@ -365,16 +420,50 @@ Get-GitHubUser
 
 ----------
 
+### Repositories
+
+#### Get repository vulnerability alert status
+
+```powershell
+Test-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Enable repository vulnerability alerts
+
+```powershell
+Enable-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Disable repository vulnerability alert
+
+```powershell
+Disable-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Enable repository automatic security fixes
+
+```powershell
+Enable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Disable repository automatic security fixes
+
+```powershell
+Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+----------
+
 ### Forks
 
 #### Get all the forks for a repository
 ```powershell
-Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Create a new fork
 ```powershell
-New-GitHubRepositoryForm -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+New-GitHubRepositoryForm -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------
@@ -383,22 +472,22 @@ New-GitHubRepositoryForm -OwnerName Microsoft -RepositoryName PowerShellForGitHu
 
 #### Get the referrer traffic for a repository
 ```powershell
-Get-GitHubReferrerTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubReferrerTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get the popular content for a repository
 ```powershell
-Get-GitHubPathTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubPathTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get the number of views for a repository
 ```powershell
-Get-GitHubViewTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Per Week
+Get-GitHubViewTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub -Per Week
 ```
 
 #### Get the number of clones for a repository
 ```powershell
-Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Per Day
+Get-GitHubCloneTraffic -OwnerName microsoft -RepositoryName PowerShellForGitHub -Per Day
 ```
 
 ----------
@@ -407,56 +496,56 @@ Get-GitHubCloneTraffic -OwnerName Microsoft -RepositoryName PowerShellForGitHub 
 
 #### Get assignees
 ```powershell
-Get-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Check assignee permission
 ```powershell
-$HasPermission = Test-GitHubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
+$HasPermission = Test-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignee "LoginID123"
 ```
 
 #### Add assignee to an issue
 ```powershell
-New-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
 ```
 
 #### Remove assignee from an issue
 ```powershell
-Remove-GithubAssignee -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
+Remove-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Assignees $assignees -Issue 1
 ```
 
 ----------
 
 ### Comments
 
-#### Get comments from an issue
+#### Get comments from an Issue
 ```powershell
-Get-GitHubIssueComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1
+Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
-#### Get comments from a repository
+#### Get Issue comments from a repository
 ```powershell
-Get-GitHubRepositoryComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
+Get-GitHubRepositoryComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Sort Created -Direction Ascending -Since '2011-04-14T16:00:49Z'
 ```
 
-#### Get a single comment
+#### Get a single Issue comment
 ```powershell
-Get-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+Get-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
-#### Adding a new comment to an issue
+#### Adding a new comment to an Issue
 ```powershell
-New-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
+New-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Body "Testing this API"
 ```
 
-#### Editing an existing comment
+#### Editing an existing Issue comment
 ```powershell
-Set-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
+Set-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1 -Body "Testing this API"
 ```
 
-#### Removing a comment
+#### Removing an Issue comment
 ```powershell
-Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -CommentID 1
+Remove-GitHubIssueComment -OwnerName microsoft -RepositoryName PowerShellForGitHub -CommentID 1
 ```
 
 ----------
@@ -465,28 +554,28 @@ Remove-GitHubComment -OwnerName Microsoft -RepositoryName PowerShellForGitHub -C
 
 #### Get milestones from a repository
 ```powershell
-Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Sort DueOn -Direction Ascending -DueOn '2011-04-14T16:00:49Z'
+Get-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Sort DueOn -Direction Ascending -DueOn '2011-04-14T16:00:49Z'
 ```
 
 #### Get a single milestone
 ```powershell
-Get-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
+Get-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
 #### Assign an existing issue to a new milestone
 ```powershell
-New-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
-Update-GitHubIssue -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1
+New-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Title "Testing this API"
+Update-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 2 -Milestone 1
 ```
 
 #### Editing an existing milestone
 ```powershell
-Set-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
+Set-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1 -Title "Testing this API edited"
 ```
 
 #### Removing a milestone
 ```powershell
-Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Milestone 1
+Remove-GitHubMilestone -OwnerName microsoft -RepositoryName PowerShellForGitHub -Milestone 1
 ```
 
 ----------
@@ -495,17 +584,17 @@ Remove-GitHubMilestone -OwnerName Microsoft -RepositoryName PowerShellForGitHub 
 
 #### Get events from a repository
 ```powershell
-Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get events from an issue
 ```powershell
-Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Issue 1
+Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 ```
 
 #### Get a single event
 ```powershell
-Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventID 1
+Get-GitHubEvent -OwnerName microsoft -RepositoryName PowerShellForGitHub -EventID 1
 ```
 
 ----------
@@ -514,7 +603,7 @@ Get-GitHubEvent -OwnerName Microsoft -RepositoryName PowerShellForGitHub -EventI
 
 #### Get projects for a repository
 ```powershell
-Get-GitHubProject -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubProject -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Get projects for a user
@@ -524,12 +613,12 @@ Get-GitHubProject -UserName octocat
 
 #### Create a project
 ```powershell
-New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -Name TestProject
+New-GitHubProject -OwnerName octocat -RepositoryName PowerShellForGitHub -ProjectName TestProject
 ```
 
 #### Add a column to a project
 ```powershell
-New-GitHubProjectColumn -Project 1 -Name 'To Do'
+New-GitHubProjectColumn -Project 1 -ColumnName 'To Do'
 ```
 
 #### Add a card to a column
@@ -560,12 +649,15 @@ Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
 @LazyWinAdmin used this module to migrate his blog comments from Disqus to GitHub Issues. [See blog post](https://lazywinadmin.com/2019/04/moving_blog_comments.html) for full details.
 
 ```powershell
+# Get your repo
+$repo = Get-GitHubRepository -OwnerName <yourName> -RepositoryName RepoName
+
 # Create an issue
-$IssueObject = New-GitHubIssue @githubsplat -Title $IssueTitle -Body $body -Label 'blog comments'
+$issue = $repo | New-GitHubIssue -Title $IssueTitle -Body $body -Label 'blog comments'
 
 # Create Comment
-New-GitHubComment @githubsplat -Issue $IssueObject.number -Body $CommentBody
+$issue | New-GitHubIssueComment -Body $CommentBody
 
 # Close issue
-Update-GitHubIssue @githubsplat -Issue $IssueObject.number -State Closed
+$issue | Update-GitHubIssue -State Closed
 ```

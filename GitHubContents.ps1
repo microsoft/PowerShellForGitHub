@@ -1,4 +1,10 @@
-function Get-GitHubContent
+@{
+    GitHubContentTypeName = 'GitHub.Content'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+ filter Get-GitHubContent
 {
     <#
     .SYNOPSIS
@@ -26,14 +32,19 @@ function Get-GitHubContent
 
     .PARAMETER MediaType
         The format in which the API will return the body of the issue.
-        Object - Return a json object representation a file or folder. This is the default if you do not pass any specific media type.
-        Raw - Return the raw contents of a file.
-        Html - For markup files such as Markdown or AsciiDoc, you can retrieve the rendered HTML using the Html media type.
+
+        Object - Return a json object representation a file or folder.
+                 This is the default if you do not pass any specific media type.
+        Raw    - Return the raw contents of a file.
+        Html   - For markup files such as Markdown or AsciiDoc,
+                 you can retrieve the rendered HTML using the Html media type.
 
     .PARAMETER ResultAsString
-        If this switch is specified and the MediaType is either Raw or Html then the resulting bytes will be decoded the result will be
-        returned as a string instead of bytes. If the MediaType is Object, then an additional property on the object is returned 'contentAsString'
-        which will be the decoded base64 result as a string.
+        If this switch is specified and the MediaType is either Raw or Html then the
+        resulting bytes will be decoded the result will be  returned as a string instead of bytes.
+        If the MediaType is Object, then an additional property on the object named
+        'contentAsString' will be included and its value will be the decoded base64 result
+        as a string.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -44,6 +55,25 @@ function Get-GitHubContent
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        [String]
+        GitHub.Content
 
     .EXAMPLE
         Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -MediaType Html
@@ -59,21 +89,39 @@ function Get-GitHubContent
         Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path Tests
 
         List the files within the "Tests" path of the repository
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
+        $repo | Get-GitHubContent -Path Tests
+
+        List the files within the "Tests" path of the repository
+
+    .NOTES
+        Unable to specify Path as ValueFromPipeline because a Repository object may be incorrectly
+        coerced into a string used for Path, thus confusing things.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
+    [OutputType([String])]
+    [OutputType({$script:GitHubContentTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'Elements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $Path,
@@ -90,7 +138,7 @@ function Get-GitHubContent
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -141,5 +189,57 @@ function Get-GitHubContent
         }
     }
 
+    if ($MediaType -eq 'Object')
+    {
+        $null = $result | Add-GitHubContentAdditionalProperties
+    }
+
     return $result
+}
+
+filter Add-GitHubContentAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Content objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Content
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubContentTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $elements = Split-GitHubUri -Uri $item.url
+            $repositoryUrl = Join-GitHubUri @elements
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
+    }
 }

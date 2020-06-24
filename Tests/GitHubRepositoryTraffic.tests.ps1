@@ -6,65 +6,102 @@
    Tests for GitHubRepositoryTraffic.ps1 module
 #>
 
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
+
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
 try
 {
-    Describe 'Getting the referrer list' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+    Describe 'Testing the referrer traffic on a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
 
         Context 'When initially created, there are no referrers' {
-            $referrerList = Get-GitHubReferrerTraffic -Uri $repo.svn_url
-
             It 'Should return expected number of referrers' {
-                $referrerList.Count | Should be 0
+                $traffic = Get-GitHubReferrerTraffic -Uri $repo.svn_url
+                $traffic | Should -BeNullOrEmpty
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            It 'Should have the expected type (via pipeline)' {
+                $traffic = $repo | Get-GitHubReferrerTraffic
+                $traffic | Should -BeNullOrEmpty
+            }
         }
     }
 
-    Describe 'Getting the popular content over the last 14 days' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+    Describe 'Testing the path traffic on a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
 
-        Context 'When initially created, there are is no popular content' {
-            $pathList = Get-GitHubPathTraffic -Uri $repo.svn_url
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
 
-            It 'Should return expected number of popular content' {
-                $pathList.Count | Should be 0
+        Context 'Getting the popular content over the last 14 days' {
+            It 'Should have no traffic since it was just created' {
+                $traffic = Get-GitHubPathTraffic -Uri $repo.svn_url
+                $traffic | Should -BeNullOrEmpty
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            It 'Should have the expected type (via pipeline)' {
+                $traffic = $repo | Get-GitHubPathTraffic
+                $traffic | Should -BeNullOrEmpty
+            }
         }
     }
 
-    Describe 'Getting the views over the last 14 days' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+    Describe 'Testing the view traffic on a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
 
-        Context 'When initially created, there are no views' {
-            $viewList = Get-GitHubViewTraffic -Uri $repo.svn_url
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
 
-            It 'Should return 0 in the count property' {
-                $viewList.Count | Should be 0
+        Context 'Getting the views over the last 14 days' {
+            It 'Should have no traffic since it was just created' {
+                $traffic = Get-GitHubViewTraffic -Uri $repo.svn_url
+                $traffic.Count | Should -Be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            It 'Should have the expected type (via pipeline)' {
+                $traffic = $repo | Get-GitHubViewTraffic
+                $traffic.PSObject.TypeNames[0] | Should -Be 'GitHub.ViewTraffic'
+            }
         }
     }
 
-    Describe 'Getting the clones over the last 14 days' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+    Describe 'Testing the clone traffic on a repository' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+        }
 
-        Context 'When initially created, there is 0 clones' {
-            $cloneList = Get-GitHubCloneTraffic -Uri $repo.svn_url
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
+        }
 
-            It 'Should return expected number of clones' {
-                $cloneList.Count | Should be 0
+        Context 'Getting the clones over the last 14 days' {
+            It 'Should have no clones since it was just created' {
+                $traffic = Get-GitHubCloneTraffic -Uri $repo.svn_url
+                $traffic.Count | Should -Be 0
             }
 
-            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            It 'Should have no clones since it was just created (via pipeline)' {
+                $traffic = $repo | Get-GitHubCloneTraffic
+                $traffic.PSObject.TypeNames[0] | Should -Be 'GitHub.CloneTraffic'
+            }
         }
     }
 }

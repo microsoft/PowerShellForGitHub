@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubOrganizationMember
+@{
+    GitHubOrganizationTypeName = 'GitHub.Organization'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubOrganizationMember
 {
 <#
     .SYNOPSIS
@@ -25,18 +31,26 @@ function Get-GitHubOrganizationMember
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
-        [PSCustomObject[]] List of members within the organization.
+        GitHub.User
+        List of members within the organization.
 
     .EXAMPLE
         Get-GitHubOrganizationMember -OrganizationName PowerShell
 #>
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType({$script:GitHubUserTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
-    [CmdletBinding(SupportsShouldProcess)]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
@@ -53,17 +67,17 @@ function Get-GitHubOrganizationMember
 
     $params = @{
         'UriFragment' = "orgs/$OrganizationName/members"
-        'Description' =  "Getting members for $OrganizationName"
+        'Description' = "Getting members for $OrganizationName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
 }
 
-function Test-GitHubOrganizationMember
+filter Test-GitHubOrganizationMember
 {
 <#
     .SYNOPSIS
@@ -90,23 +104,30 @@ function Test-GitHubOrganizationMember
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        [String]
+
     .OUTPUTS
         [Bool]
 
     .EXAMPLE
         Test-GitHubOrganizationMember -OrganizationName PowerShell -UserName Octocat
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $OrganizationName,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [String] $UserName,
 
@@ -123,7 +144,7 @@ function Test-GitHubOrganizationMember
 
     $params = @{
         'UriFragment' = "orgs/$OrganizationName/members/$UserName"
-        'Description' =  "Checking if $UserName is a member of $OrganizationName"
+        'Description' = "Checking if $UserName is a member of $OrganizationName"
         'Method' = 'Get'
         'ExtendedResult' = $true
         'AccessToken' = $AccessToken
@@ -140,5 +161,51 @@ function Test-GitHubOrganizationMember
     catch
     {
         return $false
+    }
+}
+
+filter Add-GitHubOrganizationAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Organization objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Organization
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubOrganizationTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'OrganizationName' -Value $item.login -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'OrganizationId' -Value $item.id -MemberType NoteProperty -Force
+        }
+
+        Write-Output $item
     }
 }

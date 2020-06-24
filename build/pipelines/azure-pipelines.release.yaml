@@ -27,10 +27,15 @@ variables:
 jobs:
 - job: Validate
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   steps:
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(GitHubAccessToken)
+      gitHubOwnerName: $(GitHubOwnerName)
+      gitHubOrganizationName: $(GitHubOrganizationName)
+      platformName: 'Windows'
 
 - job: Release
   dependsOn: Validate

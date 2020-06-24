@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubRepositoryFork
+filter Get-GitHubRepositoryFork
 {
 <#
     .SYNOPSIS
@@ -38,14 +38,33 @@ function Get-GitHubRepositoryFork
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-    .EXAMPLE
-        Get-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
-        Gets all of the forks for the Microsoft\PowerShellForGitHub repository.
+    .OUTPUTS
+        GitHub.Repository
+
+    .EXAMPLE
+        Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Gets all of the forks for the microsoft\PowerShellForGitHub repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -57,7 +76,9 @@ function Get-GitHubRepositoryFork
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [ValidateSet('Newest', 'Oldest', 'Stargazers')]
@@ -70,7 +91,7 @@ function Get-GitHubRepositoryFork
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -86,17 +107,17 @@ function Get-GitHubRepositoryFork
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
-        'Description' =  "Getting all forks of $RepositoryName"
+        'Description' = "Getting all forks of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethodMultipleResult @params
+    return (Invoke-GHRestMethodMultipleResult @params  | Add-GitHubRepositoryAdditionalProperties)
 }
 
-function New-GitHubRepositoryFork
+filter New-GitHubRepositoryFork
 {
 <#
     .SYNOPSIS
@@ -134,19 +155,38 @@ function New-GitHubRepositoryFork
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Creates a fork of this repository under the current authenticated user's account.
 
     .EXAMPLE
-        New-GitHubRepositoryFork -OwnerName Microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
+        New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs
 
         Creates a fork of this repository under the OctoLabs organization.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
+    [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -157,7 +197,9 @@ function New-GitHubRepositoryFork
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $OrganizationName,
@@ -169,7 +211,7 @@ function New-GitHubRepositoryFork
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements -DisableValidation
+    $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
@@ -189,14 +231,14 @@ function New-GitHubRepositoryFork
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
         'Method' = 'Post'
-        'Description' =  "Creating fork of $RepositoryName"
+        'Description' = "Creating fork of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethod @params
+    $result = (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 
     Write-Log -Message 'Forking a repository happens asynchronously.  You may have to wait a short period of time (up to 5 minutes) before you can access the git objects.' -Level Warning
     return $result
