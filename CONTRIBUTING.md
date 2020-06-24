@@ -243,7 +243,8 @@ Here are some general guidelines
   reviewing/maintaining code.  There are of course exceptions, but this is generally an enforced
   preference.  The [Visual Studio Productivity Power Tools](https://visualstudiogallery.msdn.microsoft.com/34ebc6a2-2777-421d-8914-e29c1dfa7f5d)
   extension has a "Column Guides" feature that makes it easy to add a Guideline in column 100
-  to make it really obvious when coding.
+  to make it really obvious when coding.  If you use VS Code, this module's `.vscode/settings.json`
+  configures that for you automatically.
 
 ----------
 

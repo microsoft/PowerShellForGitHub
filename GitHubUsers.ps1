@@ -275,7 +275,7 @@ filter Get-GitHubUserContextualInformation
     $params = @{
         'UriFragment' = "users/$UserName/hovercard`?" + ($getParams -join '&')
         'Method' = 'Get'
-        'Description' =  "Getting hovercard information for $UserName"
+        'Description' = "Getting hovercard information for $UserName"
         'AcceptHeader' = $script:hagarAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -390,7 +390,7 @@ function Update-GitHubCurrentUser
         'UriFragment' = 'user'
         'Method' = 'Patch'
         'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Description' =  "Updating current authenticated user"
+        'Description' = "Updating current authenticated user"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
