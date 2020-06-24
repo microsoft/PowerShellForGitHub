@@ -180,7 +180,7 @@ filter Get-GitHubPullRequest
 
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
-        'Description' =  $description
+        'Description' = $description
         'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name

@@ -77,7 +77,7 @@ function Get-GitHubRateLimit
     $params = @{
         'UriFragment' = 'rate_limit'
         'Method' = 'Get'
-        'Description' =  "Getting your API rate limit"
+        'Description' = "Getting your API rate limit"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -186,7 +186,7 @@ function ConvertFrom-GitHubMarkdown
             'UriFragment' = 'markdown'
             'Body' = (ConvertTo-Json -InputObject $hashBody)
             'Method' = 'Post'
-            'Description' =  "Converting Markdown to HTML"
+            'Description' = "Converting Markdown to HTML"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
@@ -345,7 +345,7 @@ filter Get-GitHubLicense
     $params = @{
         'UriFragment' = $uriFragment
         'Method' = 'Get'
-        'Description' =  $description
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -425,7 +425,7 @@ function Get-GitHubEmoji
     $params = @{
         'UriFragment' = 'emojis'
         'Method' = 'Get'
-        'Description' =  "Getting all GitHub emojis"
+        'Description' = "Getting all GitHub emojis"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
@@ -583,7 +583,7 @@ filter Get-GitHubCodeOfConduct
         'UriFragment' = $uriFragment
         'Method' = 'Get'
         'AcceptHeader' = $script:scarletWitchAcceptHeader
-        'Description' =  $description
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -680,7 +680,7 @@ filter Get-GitHubGitIgnore
     $params = @{
         'UriFragment' = $uriFragment
         'Method' = 'Get'
-        'Description' =  $description
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

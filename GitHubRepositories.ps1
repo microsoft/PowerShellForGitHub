@@ -518,7 +518,7 @@ filter Remove-GitHubRepository
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName"
             'Method' = 'Delete'
-            'Description' =  "Deleting $RepositoryName"
+            'Description' = "Deleting $RepositoryName"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
@@ -861,7 +861,7 @@ filter Get-GitHubRepository
 
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
-        'Description' =  $description
+        'Description' = $description
         'AcceptHeader' = "$script:nebulaAcceptHeader,$script:baptisteAcceptHeader,$script:mercyAcceptHeader"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1232,7 +1232,7 @@ filter Update-GitHubRepository
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
         'AcceptHeader' = $script:baptisteAcceptHeader
-        'Description' =  "Updating $RepositoryName"
+        'Description' = "Updating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -1339,7 +1339,7 @@ filter Get-GitHubRepositoryTopic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
         'Method' = 'Get'
-        'Description' =  "Getting topics for $RepositoryName"
+        'Description' = "Getting topics for $RepositoryName"
         'AcceptHeader' = $script:mercyAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1518,7 +1518,7 @@ function Set-GitHubRepositoryTopic
             'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
             'Body' = (ConvertTo-Json -InputObject $hashBody)
             'Method' = 'Put'
-            'Description' =  $description
+            'Description' = $description
             'AcceptHeader' = $script:mercyAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1654,7 +1654,7 @@ filter Get-GitHubRepositoryContributor
 
     $params = @{
         'UriFragment' = $uriFragment + '?' + ($getParams -join '&')
-        'Description' =  "Getting contributors for $RepositoryName"
+        'Description' = "Getting contributors for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -1795,7 +1795,7 @@ filter Get-GitHubRepositoryCollaborator
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/collaborators?" + ($getParams -join '&')
-        'Description' =  "Getting collaborators for $RepositoryName"
+        'Description' = "Getting collaborators for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -1902,7 +1902,7 @@ filter Get-GitHubRepositoryLanguage
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/languages"
-        'Description' =  "Getting languages for $RepositoryName"
+        'Description' = "Getting languages for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -2009,7 +2009,7 @@ filter Get-GitHubRepositoryTag
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/tags"
-        'Description' =  "Getting tags for $RepositoryName"
+        'Description' = "Getting tags for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -2135,7 +2135,7 @@ filter Move-GitHubRepositoryOwnership
         'UriFragment' = "repos/$OwnerName/$RepositoryName/transfer"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Transferring ownership of $RepositoryName to $NewOwnerName"
+        'Description' = "Transferring ownership of $RepositoryName to $NewOwnerName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

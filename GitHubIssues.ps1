@@ -357,7 +357,7 @@ filter Get-GitHubIssue
 
     $params = @{
         'UriFragment' = $uriFragment + '?' +  ($getParams -join '&')
-        'Description' =  $description
+        'Description' = $description
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -484,7 +484,7 @@ filter Get-GitHubIssueTimeline
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/timeline"
-        'Description' =  "Getting timeline for Issue #$Issue in $RepositoryName"
+        'Description' = "Getting timeline for Issue #$Issue in $RepositoryName"
         'AcceptHeader' = $script:mockingbirdAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -643,7 +643,7 @@ filter New-GitHubIssue
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating new Issue ""$Title"" on $RepositoryName"
+        'Description' = "Creating new Issue ""$Title"" on $RepositoryName"
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -823,7 +823,7 @@ filter Update-GitHubIssue
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Updating Issue #$Issue on $RepositoryName"
+        'Description' = "Updating Issue #$Issue on $RepositoryName"
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $symmetraAcceptHeader)
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -956,7 +956,7 @@ filter Lock-GitHubIssue
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Put'
-        'Description' =  "Locking Issue #$Issue on $RepositoryName"
+        'Description' = "Locking Issue #$Issue on $RepositoryName"
         'AcceptHeader' = $script:sailorVAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1066,7 +1066,7 @@ filter Unlock-GitHubIssue
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
         'Method' = 'Delete'
-        'Description' =  "Unlocking Issue #$Issue on $RepositoryName"
+        'Description' = "Unlocking Issue #$Issue on $RepositoryName"
         'AcceptHeader' = $script:sailorVAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
