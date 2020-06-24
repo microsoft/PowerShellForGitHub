@@ -340,6 +340,7 @@ try
                     authorEmail = $authorEmail
                     NoStatus = $true
                 }
+
                 $result = Set-GitHubContent @setGitHubContentParms
             }
 
@@ -363,6 +364,7 @@ try
                     MediaType = 'Raw'
                     ResultAsString = $true
                 }
+
                 $writtenContent = Get-GitHubContent @getGitHubContentParms
 
                 $content | Should -Be $writtenContent

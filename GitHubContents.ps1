@@ -303,10 +303,19 @@ filter Set-GitHubContent
         methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
-        PositionalBinding = $false,
-        DefaultParameterSetName = 'Elements')]
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubContentTypeName})]
     param(
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
@@ -330,16 +339,6 @@ filter Set-GitHubContent
             Mandatory,
             Position = 4)]
         [string] $Content,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName = 'Elements')]
-        [string] $OwnerName,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName = 'Elements')]
-        [string] $RepositoryName,
 
         [Parameter(ValueFromPipelineByPropertyName)]
         [string] $Sha,
@@ -572,15 +571,15 @@ filter Add-GitHubContentAdditionalProperties
 
             $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
 
-            if ($uri -match "^https?://$hostName/?([^/]+)/?([^/]+)/blob/?([^/]+)/?([^#]*)?$")
+            if ($uri -match "^https?://(?:www\.|api\.|)$hostName/(?:[^/]+)/(?:[^/]+)/(?:blob|tree)/([^/]+)/([^#]*)?$")
             {
-                $branchName = $Matches[3]
-                $path = $Matches[4]
+                $branchName = $Matches[1]
+                $path = $Matches[2]
             }
             else
             {
-                $branchName = ''
-                $path = ''
+                $branchName = [String]::Empty
+                $path = [String]::Empty
             }
 
             Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
