@@ -313,8 +313,7 @@ filter New-GitHubRepositoryFromTemplate
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        PositionalBinding = $false
-        )]
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
         Justification="Methods called within here make use of PSShouldProcess, and the switch is
