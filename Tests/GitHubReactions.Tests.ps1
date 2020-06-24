@@ -27,8 +27,8 @@ try
         $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
 
         Context 'For creating a reaction' {
-            Set-GitHubReaction -Uri $repo.svn_url -Issue $issue.number -ReactionType $defaultReactionType
-            $existingReaction = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number
+            Set-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number -ReactionType $defaultReactionType
+            $existingReaction = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number
 
             It "Should have the expected reaction type" {
                 $existingReaction.content | Should be $defaultReactionType
@@ -36,9 +36,9 @@ try
         }
 
         Context 'For getting reactions from an issue' {
-            Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.number | Set-GitHubReaction -ReactionType $otherReactionType
-            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number
-            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number -ReactionType $otherReactionType
+            Get-GitHubIssue -Uri $repo.svn_url -IssueNumber $issue.number | Set-GitHubReaction -ReactionType $otherReactionType
+            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number
+            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number -ReactionType $otherReactionType
 
             It 'Should have the expected number of reactions' {
                 $allReactions.Count | Should be 2
@@ -47,12 +47,35 @@ try
 
             It 'Should have the expected reaction content' {
                 $specificReactions.content | Should be $otherReactionType
-                $specificReactions.RepositoryName | Should be $repo.name
+                $specificReactions.RepositoryUrl | Should be $repo.RepositoryUrl
+            }
+        }
+
+        Context 'For getting reactions from a pull request' {
+            # TODO: there are currently PRs out to add the ability to create new branches and add content to a repo.
+            # When those go in, this test can be refactored to use those so the test is more reliable using a test PR.
+            $url = 'https://github.com/microsoft/PowerShellForGitHub'
+            $pr = Get-GitHubPullRequest -Uri $url -PullRequest 193
+            $pr | Get-GitHubReaction | Remove-GitHubReaction -ErrorAction Ignore -Confirm:$false
+
+            $pr | Set-GitHubReaction -ReactionType $defaultReactionType
+            $pr | Set-GitHubReaction -ReactionType $otherReactionType
+            $allReactions = $pr | Get-GitHubReaction
+            $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
+
+            It 'Should have the expected number of reactions' {
+                $allReactions.Count | Should be 2
+                $specificReactions.Count | Should be 1
+            }
+
+            It 'Should have the expected reaction content' {
+                $specificReactions.content | Should be $otherReactionType
+                $specificReactions.RepositoryUrl | Should be $url
             }
         }
 
         Context 'For getting reactions from an Issue and deleting them' {
-            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
+            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number)
 
             It 'Should have the expected number of reactions' {
                 $existingReactions.Count | Should be 2
@@ -60,7 +83,7 @@ try
 
             $existingReactions | Remove-GitHubReaction -Confirm:$false
 
-            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
+            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number)
 
             It 'Should have no reactions' {
                 $existingReactions
