@@ -67,7 +67,7 @@ filter Get-GitHubOrganizationMember
 
     $params = @{
         'UriFragment' = "orgs/$OrganizationName/members"
-        'Description' =  "Getting members for $OrganizationName"
+        'Description' = "Getting members for $OrganizationName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -144,7 +144,7 @@ filter Test-GitHubOrganizationMember
 
     $params = @{
         'UriFragment' = "orgs/$OrganizationName/members/$UserName"
-        'Description' =  "Checking if $UserName is a member of $OrganizationName"
+        'Description' = "Checking if $UserName is a member of $OrganizationName"
         'Method' = 'Get'
         'ExtendedResult' = $true
         'AccessToken' = $AccessToken

@@ -100,7 +100,7 @@ filter Get-GitHubAssignee
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/assignees"
-        'Description' =  "Getting assignee list for $RepositoryName"
+        'Description' = "Getting assignee list for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -228,7 +228,7 @@ filter Test-GitHubAssignee
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/assignees/$Assignee"
         'Method' = 'Get'
-        'Description' =  "Checking permission for $Assignee for $RepositoryName"
+        'Description' = "Checking permission for $Assignee for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -411,7 +411,7 @@ function New-GitHubAssignee
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
             'Body' = (ConvertTo-Json -InputObject $hashBody)
             'Method' = 'Post'
-            'Description' =  "Add assignees to issue $Issue for $RepositoryName"
+            'Description' = "Add assignees to issue $Issue for $RepositoryName"
             'AccessToken' = $AccessToken
             'AcceptHeader' = $script:symmetraAcceptHeader
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -603,7 +603,7 @@ function Remove-GitHubAssignee
                 'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
                 'Body' = (ConvertTo-Json -InputObject $hashBody)
                 'Method' = 'Delete'
-                'Description' =  "Removing assignees from issue $Issue for $RepositoryName"
+                'Description' = "Removing assignees from issue $Issue for $RepositoryName"
                 'AccessToken' = $AccessToken
                 'AcceptHeader' = $script:symmetraAcceptHeader
                 'TelemetryEventName' = $MyInvocation.MyCommand.Name
