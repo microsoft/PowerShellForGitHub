@@ -384,7 +384,7 @@ filter New-GitHubRepositoryFromTemplate
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating $TargetName from Template"
+        'Description' = "Creating $TargetRepositoryName from Template"
         'AcceptHeader' = $script:baptisteAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
