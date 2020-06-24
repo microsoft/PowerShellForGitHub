@@ -891,6 +891,127 @@ try
             }
         }
     }
+
+    Describe 'GitHubRepositories\Test-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll -ScriptBlock {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Enabled' {
+            BeforeAll -ScriptBlock {
+                Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $result = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $result | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $result | Should -Be $true
+            }
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Disabled' {
+            BeforeAll -ScriptBlock {
+                Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $status = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $status | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $status | Should -BeFalse
+            }
+        }
+
+        Context 'When Invoke-GHRestMethod returns an unexpected error' {
+            It 'Should throw' {
+                $getGitHubRepositoryVulnerabilityAlertParms = @{
+                    OwnerName = 'octocat'
+                    RepositoryName = 'IncorrectRepostioryName'
+                }
+                { Test-GitHubRepositoryVulnerabilityAlert @getGitHubRepositoryVulnerabilityAlertParms } |
+                    Should -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Security Fixes' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFix' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Security Fixes' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
 }
 finally
 {
