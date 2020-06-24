@@ -304,6 +304,7 @@ try
                 LicenseTemplate = $testLicenseTemplate
                 IsTemplate = $true
             }
+
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
         }
 
@@ -318,6 +319,7 @@ try
                     TargetRepositoryName = $repoName
                     Description = $newRepoDesc
                 }
+
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
             }
 
@@ -326,6 +328,7 @@ try
                     TargetOwnerName = $ownerName
                     TargetRepositoryName = $repoName
                 }
+
                 { $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms -WhatIf } |
                     Should -Not -Throw
             }

@@ -246,13 +246,18 @@ filter New-GitHubRepositoryFromTemplate
     .PARAMETER RepositoryName
         Name of the template repository.
 
-    .PARAMETER TargetRepositoryName
-        Name of the repository to be created.
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
 
     .PARAMETER TargetOwnerName
         The organization or person who will own the new repository.
         To create a new repository in an organization, the authenticated user must be a member
         of the specified organization.
+
+    .PARAMETER TargetRepositoryName
+        Name of the repository to be created.
 
     .PARAMETER Description
         A short description of the repository.
@@ -315,10 +320,13 @@ filter New-GitHubRepositoryFromTemplate
         Justification="Methods called within here make use of PSShouldProcess, and the switch is
         passed on to them inherently.")]
     param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
         [Parameter(
             Mandatory,
             Position = 1,
-            ParameterSetName='Elements')]
+            ParameterSetName = 'Elements')]
         [ValidateNotNullOrEmpty()]
         [string] $RepositoryName,
 
@@ -326,7 +334,7 @@ filter New-GitHubRepositoryFromTemplate
             Mandatory,
             Position = 2,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName = 'Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -341,9 +349,6 @@ filter New-GitHubRepositoryFromTemplate
             Position = 4)]
         [ValidateNotNullOrEmpty()]
         [string] $TargetRepositoryName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
 
         [string] $Description,
 

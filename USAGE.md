@@ -445,7 +445,7 @@ New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $m
 #### Create a repository from a template repository
 
 ```powershell
-New-GitHubRepositoryFromTemplate -RepositoryName MyNewRepo -OwnerName MyOrg -TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
 ```
 
 ----------
