@@ -58,19 +58,25 @@ try
             $pr = Get-GitHubPullRequest -Uri $url -PullRequest 193
             $pr | Get-GitHubReaction | Remove-GitHubReaction -ErrorAction Ignore -Confirm:$false
 
-            $pr | Set-GitHubReaction -ReactionType $defaultReactionType
-            $pr | Set-GitHubReaction -ReactionType $otherReactionType
-            $allReactions = $pr | Get-GitHubReaction
-            $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
+            $reaction1 = $pr | Set-GitHubReaction -ReactionType $defaultReactionType
+            $reaction2 = $pr | Set-GitHubReaction -ReactionType $otherReactionType
 
-            It 'Should have the expected number of reactions' {
-                $allReactions.Count | Should be 2
-                $specificReactions.Count | Should be 1
-            }
+            try {
+                $allReactions = $pr | Get-GitHubReaction
+                $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
 
-            It 'Should have the expected reaction content' {
-                $specificReactions.content | Should be $otherReactionType
-                $specificReactions.RepositoryUrl | Should be $url
+                It 'Should have the expected number of reactions' {
+                    $allReactions.Count | Should be 2
+                    $specificReactions.Count | Should be 1
+                }
+
+                It 'Should have the expected reaction content' {
+                    $specificReactions.content | Should be $otherReactionType
+                    $specificReactions.RepositoryUrl | Should be $url
+                }
+            } finally {
+                $reaction1 | Remove-GitHubReaction -Force
+                $reaction2 | Remove-GitHubReaction -Force
             }
         }
 
@@ -81,7 +87,7 @@ try
                 $existingReactions.Count | Should be 2
             }
 
-            $existingReactions | Remove-GitHubReaction -Confirm:$false
+            $existingReactions | Remove-GitHubReaction -Force
 
             $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number)
 

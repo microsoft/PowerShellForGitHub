@@ -388,6 +388,9 @@ filter Remove-GitHubReaction
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ValueFromPipeline)]
         [int64] $ReactionId,
 
+        [Parameter()]
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -407,7 +410,7 @@ filter Remove-GitHubReaction
     $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$IssueNumber/reactions/$ReactionId"
     $description = "Removing reaction $ReactionId for Issue $IssueNumber in $RepositoryName"
 
-    if ($PSCmdlet.ShouldProcess($ReactionId, "Removing reaction for Issue $IssueNumber in $RepositoryName"))
+    if ($Force.IsPresent -or $PSCmdlet.ShouldProcess($ReactionId, "Removing reaction for Issue $IssueNumber in $RepositoryName"))
     {
         $params = @{
             'UriFragment' = $uriFragment
