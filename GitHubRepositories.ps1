@@ -1976,6 +1976,622 @@ filter Move-GitHubRepositoryOwnership
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
 }
 
+filter Test-GitHubRepositoryVulnerabilityAlert
+{
+ <#
+    .SYNOPSIS
+        Retrieves the status of vulnerability alerts for a repository on GitHub.
+
+    .DESCRIPTION
+        Retrieves the status of vulnerability alerts for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        System.Boolean
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Test-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Test-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Retrieves the status of vulnerability alerts for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
+        Description = "Getting Vulnerability Alerts status for $RepositoryName"
+        AcceptHeader = $script:dorianAcceptHeader
+        Method = 'Get'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    try
+    {
+        Invoke-GHRestMethod @params | Out-Null
+        $result = $true
+    }
+    catch
+    {
+        # Temporary code to handle current differences in exception object between PS5 and PS7
+        if ($PSVersionTable.PSedition -eq 'Core')
+        {
+            if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
+                ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Vulnerability alerts are disabled.')
+            {
+                $result = $false
+            }
+            else
+            {
+                throw $_
+            }
+        }
+        else
+        {
+            if ($_.Exception.Message -like '*Vulnerability alerts are disabled.*')
+            {
+                $result = $false
+            }
+            else
+            {
+                throw $_
+            }
+        }
+    }
+
+    return $result
+}
+
+filter Enable-GitHubRepositoryVulnerabilityAlert
+{
+ <#
+    .SYNOPSIS
+        Enables vulnerability alerts for a repository on GitHub.
+
+    .DESCRIPTION
+        Enables vulnerability alerts for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Enable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Enables vulnerability alerts for the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Enable-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Enables vulnerability alerts for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(
+            ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Vulnerability Alerts'))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
+            Description =  "Enabling Vulnerability Alerts for $RepositoryName"
+            AcceptHeader = $script:dorianAcceptHeader
+            Method = 'Put'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params | Out-Null
+    }
+}
+
+filter Disable-GitHubRepositoryVulnerabilityAlert
+{
+ <#
+    .SYNOPSIS
+        Disables vulnerability alerts for a repository on GitHub.
+
+    .DESCRIPTION
+        Disables vulnerability alerts for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Disable-GitHubRepositoryVulnerabilityAlert -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Disables vulnerability alerts for the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Disable-GitHubRepositoryVulnerabilityAlert -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Disables vulnerability alerts for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Disable Vulnerability Alerts'))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
+            Description =  "Disabling Vulnerability Alerts for $RepositoryName"
+            AcceptHeader = $script:dorianAcceptHeader
+            Method = 'Delete'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params | Out-Null
+    }
+}
+
+filter Enable-GitHubRepositorySecurityFix
+{
+ <#
+    .SYNOPSIS
+        Enables automated security fixes for a repository on GitHub.
+
+    .DESCRIPTION
+        Enables automated security fixes for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Enable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Enables automated security fixes for the PowerShellForGitHub repository.
+    .EXAMPLE
+        Enable-GitHubRepositorySecurityFix -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Enables automated security fixes for the PowerShellForGitHub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(
+            ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Enable Automated Security Fixes'))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
+            Description =  "Enabling Automated Security Fixes for $RepositoryName"
+            AcceptHeader = $script:londonAcceptHeader
+            Method = 'Put'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params
+    }
+}
+
+filter Disable-GitHubRepositorySecurityFix
+{
+ <#
+    .SYNOPSIS
+        Disables automated security fixes for a repository on GitHub.
+
+    .DESCRIPTION
+        Disables automated security fixes for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Disable-GitHubRepositorySecurityFix -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Disables automated security fixes for the PowerShellForGithub repository.
+    .EXAMPLE
+        Disable-GitHubRepositorySecurityFix -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Disables automated security fixes for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [string] $Uri,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($PSCmdlet.ShouldProcess($RepositoryName, 'Disable Automated Security Fixes'))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
+            Description =  "Disabling Automated Security Fixes for $RepositoryName"
+            AcceptHeader = $script:londonAcceptHeader
+            Method = 'Delete'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+            TelemetryProperties = $telemetryProperties
+            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params | Out-Null
+    }
+}
+
 filter Add-GitHubRepositoryAdditionalProperties
 {
 <#

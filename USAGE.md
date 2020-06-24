@@ -29,6 +29,12 @@
         *   [Updating the current authenticated user](#updating-the-current-authenticated-user)
         *   [Getting any user](#getting-any-user)
         *   [Getting all users](#getting-all-users)
+    *   [Repositories](#repositories)
+        *   [Get repository vulnerability alert status](#get-repository-vulnerability-alert-status)
+        *   [Enable repository vulnerability alerts](#enable-repository-vulnerability-alerts)
+        *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
+        *   [Enable repository automatic security fixes](#enable-repository-automatic-security-fixes)
+        *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -416,6 +422,40 @@ Get-GitHubUser -UserName octocat
 Get-GitHubUser
 ```
 > Warning: This will take a while.  It's getting _every_ GitHub user.
+
+----------
+
+### Repositories
+
+#### Get repository vulnerability alert status
+
+```powershell
+Test-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Enable repository vulnerability alerts
+
+```powershell
+Enable-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Disable repository vulnerability alert
+
+```powershell
+Disable-GitHubRepositoryVulnerabilityAlert -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Enable repository automatic security fixes
+
+```powershell
+Enable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Disable repository automatic security fixes
+
+```powershell
+Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
 
 ----------
 
