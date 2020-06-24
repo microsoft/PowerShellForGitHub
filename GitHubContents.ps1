@@ -555,7 +555,7 @@ filter Add-GitHubContentAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ($item.url)
+            if ($item.html_url)
             {
                 $uri = $item.html_url
             }

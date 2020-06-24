@@ -314,6 +314,26 @@ try
 
                 $content | Should -Be $writtenContent
             }
+
+            It 'Should support pipeline input' {
+                $getGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                }
+
+                $writtenContent = Get-GitHubContent @getGitHubContentParms
+
+                $setGitHubContentParms = @{
+                    CommitMessage = $commitMessage
+                    Content = $content
+                    CommitterName = $committerName
+                    CommitterEmail = $committerEmail
+                    authorName = $authorName
+                    authorEmail = $authorEmail
+                }
+
+                { $writtenContent | Set-GitHubContent @setGitHubContentParms -WhatIf } | Should -Not -Throw
+            }
         }
 
         Context 'When overwriting file content' {
