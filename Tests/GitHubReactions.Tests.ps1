@@ -26,6 +26,10 @@ try
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+            $issueComment = $issue | New-GitHubIssueComment -Body "Foo"
+
+            # To get rid of linting issue saying this variable isn't used.
+            $issueComment.CommentId
         }
 
         Context 'For creating a reaction' {
@@ -33,7 +37,7 @@ try
             $existingReaction = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber
 
             It "Should have the expected reaction type" {
-                $existingReaction.content | Should be $defaultReactionType
+                $existingReaction.content | Should -Be $defaultReactionType
             }
         }
 
@@ -43,15 +47,16 @@ try
             $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber -ReactionType $otherReactionType
 
             It 'Should have the expected number of reactions' {
-                $allReactions.Count | Should be 2
-                $specificReactions.Count | Should be 1
+                $allReactions.Count | Should -Be 2
+                $specificReactions.Count | Should -Be 1
             }
 
             It 'Should have the expected reaction content' {
-                $specificReactions.content | Should be $otherReactionType
-                $specificReactions.RepositoryUrl | Should be $repo.RepositoryUrl
-                $specificReactions.IssueNumber | Should be $issue.IssueNumber
-                $specificReactions.ReactionId | Should be $specificReactions.id
+                $specificReactions.content | Should -Be $otherReactionType
+                $specificReactions.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $specificReactions.IssueNumber | Should -Be $issue.IssueNumber
+                $specificReactions.ReactionId | Should -Be $specificReactions.id
+                $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
             }
         }
 
@@ -70,15 +75,16 @@ try
                 $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
 
                 It 'Should have the expected number of reactions' {
-                    $allReactions.Count | Should be 2
-                    $specificReactions.Count | Should be 1
+                    $allReactions.Count | Should -Be 2
+                    $specificReactions.Count | Should -Be 1
                 }
 
                 It 'Should have the expected reaction content' {
-                    $specificReactions.content | Should be $otherReactionType
-                    $specificReactions.RepositoryUrl | Should be $url
-                    $specificReactions.PullRequestNumber | Should be $pr.PullRequestNumber
-                    $specificReactions.ReactionId | Should be $specificReactions.id
+                    $specificReactions.content | Should -Be $otherReactionType
+                    $specificReactions.RepositoryUrl | Should -Be $url
+                    $specificReactions.PullRequestNumber | Should -Be $pr.PullRequestNumber
+                    $specificReactions.ReactionId | Should -Be $specificReactions.id
+                    $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
                 }
             } finally {
                 $reaction1 | Remove-GitHubReaction -Force
@@ -86,11 +92,31 @@ try
             }
         }
 
+        Context 'For getting reactions from an issue comment' {
+            Set-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId -ReactionType $defaultReactionType
+            $issueComment | Set-GitHubReaction -ReactionType $otherReactionType
+            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId
+            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId -ReactionType $otherReactionType
+
+            It 'Should have the expected number of reactions' {
+                $allReactions.Count | Should -Be 2
+                $specificReactions.Count | Should -Be 1
+            }
+
+            It 'Should have the expected reaction content' {
+                $specificReactions.content | Should -Be $otherReactionType
+                $specificReactions.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $specificReactions.CommentId | Should -Be $issueComment.CommentId
+                $specificReactions.ReactionId | Should -Be $specificReactions.id
+                $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
+            }
+        }
+
         Context 'For getting reactions from an Issue and deleting them' {
             $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have the expected number of reactions' {
-                $existingReactions.Count | Should be 2
+                $existingReactions.Count | Should -Be 2
             }
 
             $existingReactions | Remove-GitHubReaction -Force
@@ -99,7 +125,7 @@ try
 
             It 'Should have no reactions' {
                 $existingReactions
-                $existingReactions.Count | Should be 0
+                $existingReactions.Count | Should -Be 0
             }
         }
 
