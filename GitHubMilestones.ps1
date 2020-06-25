@@ -382,7 +382,7 @@ filter New-GitHubMilestone
         'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating milestone for $RepositoryName"
+        'Description' = "Creating milestone for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -574,7 +574,7 @@ filter Set-GitHubMilestone
         'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Setting milestone $Milestone for $RepositoryName"
+        'Description' = "Setting milestone $Milestone for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -718,7 +718,7 @@ filter Remove-GitHubMilestone
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"
             'Method' = 'Delete'
-            'Description' =  "Removing milestone $Milestone for $RepositoryName"
+            'Description' = "Removing milestone $Milestone for $RepositoryName"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties

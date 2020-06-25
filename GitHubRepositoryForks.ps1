@@ -108,7 +108,7 @@ filter Get-GitHubRepositoryFork
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
-        'Description' =  "Getting all forks of $RepositoryName"
+        'Description' = "Getting all forks of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -233,7 +233,7 @@ filter New-GitHubRepositoryFork
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
         'Method' = 'Post'
-        'Description' =  "Creating fork of $RepositoryName"
+        'Description' = "Creating fork of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

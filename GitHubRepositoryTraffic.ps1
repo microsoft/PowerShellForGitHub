@@ -107,7 +107,7 @@ filter Get-GitHubReferrerTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/referrers"
         'Method' = 'Get'
-        'Description' =  "Getting referrers for $RepositoryName"
+        'Description' = "Getting referrers for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -222,7 +222,7 @@ filter Get-GitHubPathTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/popular/paths"
         'Method' = 'Get'
-        'Description' =  "Getting popular contents for $RepositoryName"
+        'Description' = "Getting popular contents for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -347,7 +347,7 @@ filter Get-GitHubViewTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/views`?per=$($Per.ToLower())"
         'Method' = 'Get'
-        'Description' =  "Getting views for $RepositoryName"
+        'Description' = "Getting views for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -472,7 +472,7 @@ filter Get-GitHubCloneTraffic
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/traffic/clones`?per=$($Per.ToLower())"
         'Method' = 'Get'
-        'Description' =  "Getting number of clones for $RepositoryName"
+        'Description' = "Getting number of clones for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

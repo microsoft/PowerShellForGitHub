@@ -145,7 +145,7 @@ filter Get-GitHubRepositoryBranch
 
     $params = @{
         'UriFragment' = $uriFragment + '?' + ($getParams -join '&')
-        'Description' =  "Getting branches for $RepositoryName"
+        'Description' = "Getting branches for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

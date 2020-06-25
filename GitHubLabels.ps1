@@ -183,7 +183,7 @@ filter Get-GitHubLabel
 
     $params = @{
         'UriFragment' = $uriFragment
-        'Description' =  $description
+        'Description' = $description
         'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -329,7 +329,7 @@ filter New-GitHubLabel
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating label $Label in $RepositoryName"
+        'Description' = "Creating label $Label in $RepositoryName"
         'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -477,7 +477,7 @@ filter Remove-GitHubLabel
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
             'Method' = 'Delete'
-            'Description' =  "Deleting label $Label from $RepositoryName"
+            'Description' = "Deleting label $Label from $RepositoryName"
             'AcceptHeader' = $script:symmetraAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -630,7 +630,7 @@ filter Update-GitHubLabel
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Updating label $Label"
+        'Description' = "Updating label $Label"
         'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -934,7 +934,7 @@ function Add-GitHubIssueLabel
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
             'Body' = (ConvertTo-Json -InputObject $hashBody)
             'Method' = 'Post'
-            'Description' =  "Adding labels to issue $Issue in $RepositoryName"
+            'Description' = "Adding labels to issue $Issue in $RepositoryName"
             'AcceptHeader' = $script:symmetraAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1124,7 +1124,7 @@ function Set-GitHubIssueLabel
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
             'Body' = (ConvertTo-Json -InputObject $hashBody)
             'Method' = 'Put'
-            'Description' =  "Replacing labels to issue $Issue in $RepositoryName"
+            'Description' = "Replacing labels to issue $Issue in $RepositoryName"
             'AcceptHeader' = $script:symmetraAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1283,7 +1283,7 @@ filter Remove-GitHubIssueLabel
         $params = @{
             'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Label"
             'Method' = 'Delete'
-            'Description' =  $description
+            'Description' = $description
             'AcceptHeader' = $script:symmetraAcceptHeader
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name

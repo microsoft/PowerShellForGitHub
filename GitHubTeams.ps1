@@ -147,7 +147,7 @@ filter Get-GitHubTeam
     $params = @{
         'UriFragment' = $uriFragment
         'AcceptHeader' = $script:hellcatAcceptHeader
-        'Description' =  $description
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -267,7 +267,7 @@ filter Get-GitHubTeamMember
 
     $params = @{
         'UriFragment' = "teams/$TeamId/members"
-        'Description' =  "Getting members of team $TeamId"
+        'Description' = "Getting members of team $TeamId"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties

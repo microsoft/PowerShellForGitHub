@@ -215,7 +215,7 @@ filter Get-GitHubRelease
 
     $params = @{
         'UriFragment' = $uriFragment
-        'Description' =  $description
+        'Description' = $description
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
