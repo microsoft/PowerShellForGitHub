@@ -384,7 +384,9 @@ function Write-Log
                 }
                 else
                 {
-                    $logFileMessage | Out-File -FilePath $Path -Append
+                    $stream = [System.IO.StreamWriter]::new($Path, [System.Text.Encoding]::UTF8)
+                    $stream.WriteLine($logFileMessage)
+                    $stream.Close()
                 }
             }
         }
@@ -798,5 +800,31 @@ function Get-HttpWebResponseContent
         {
             $streamReader.Close()
         }
+    }
+}
+
+function Repair-LogFile
+{
+<#
+    .SYNOPSIS
+        Repais the log file encoding.
+
+    .DESCRIPTION
+        Repairs the log file by encoding it to UTF8 if it is currently UTF16.
+
+    .EXAMPLE
+        Repair-LogFile
+#>
+    $path = (Get-GitHubConfiguration -Name LogPath)
+
+    $logFileBytes = Get-Content -Encoding Byte -ReadCount 2 -Path $path
+
+    if ($logFileBytes -eq @(254, 255))
+    {
+        $logFileContent = [System.IO.File]::ReadLines($path)
+
+        $stream = [System.IO.StreamWriter]::new($path, [System.Text.Encoding]::UTF8)
+        $stream.Write($logFileContent)
+        $stream.Close()
     }
 }
