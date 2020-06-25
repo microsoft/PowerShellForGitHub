@@ -54,9 +54,20 @@ filter Get-GitHubReaction
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
         GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
         GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
         GitHub.Reaction
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
         GitHub.Reaction
@@ -251,9 +262,20 @@ filter Set-GitHubReaction
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
         GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
         GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
         GitHub.Reaction
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
         GitHub.Reaction
@@ -432,9 +454,20 @@ filter Remove-GitHubReaction
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
         GitHub.Issue
-        GitHub.PullRequests
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
         GitHub.Reaction
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
         None
@@ -603,9 +636,10 @@ filter Add-GitHubReactionAdditionalProperties
         If not supplied here, the DefaultRepositoryName configuration property value will be used.
 
     .PARAMETER Issue
-        The issue *OR* pull request number. This parameter has an alias called
-        `PullRequestNumber` so that the experience feels natural but in this case,
-        PRs are handled the same as issues.
+        The issue number.
+
+    .PARAMETER PullRequest
+        The pull request number.
 
     .INPUTS
         [PSCustomObject]

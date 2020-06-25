@@ -62,6 +62,7 @@ filter Get-GitHubProject
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -274,6 +275,7 @@ filter New-GitHubProject
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 

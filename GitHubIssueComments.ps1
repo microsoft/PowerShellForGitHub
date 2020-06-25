@@ -79,6 +79,7 @@ filter Get-GitHubIssueComment
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -343,6 +344,7 @@ filter New-GitHubIssueComment
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
         GitHub.User
@@ -486,6 +488,7 @@ filter Set-GitHubIssueComment
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
         GitHub.User
@@ -616,6 +619,7 @@ filter Remove-GitHubIssueComment
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 

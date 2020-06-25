@@ -56,6 +56,7 @@ filter Get-GitHubRepositoryBranch
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
