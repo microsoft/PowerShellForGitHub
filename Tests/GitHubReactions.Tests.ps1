@@ -3,8 +3,13 @@
 
 <#
 .Synopsis
-   Tests for GitHubReactions.ps1 module
+   Tests for GitHubAssignees.ps1 module
 #>
+
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
+    Justification='Suppress false positives in Pester code blocks')]
+param()
 
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
@@ -27,9 +32,6 @@ try
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
             $issueComment = $issue | New-GitHubIssueComment -Body "Foo"
-
-            # To get rid of linting issue saying this variable isn't used.
-            $issueComment.CommentId
         }
 
         Context 'For creating a reaction' {

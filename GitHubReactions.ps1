@@ -38,7 +38,7 @@ filter Get-GitHubReaction
         The pull request number.
 
     .PARAMETER Comment
-        The comment id.
+        The comment ID.
 
     .PARAMETER ReactionType
         The type of reaction you want to retrieve. This is also called the 'content' in
@@ -228,6 +228,8 @@ filter Get-GitHubReaction
         $splatForAddedProperties.Comment = $Comment
         $targetObjectNumber = $Comment
         $targetObjectTypeName = 'Comment'
+
+        # Even for PR comments, you can use the same endpoint as issue comments.
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions"
     }
 
@@ -283,7 +285,7 @@ filter Set-GitHubReaction
         The pull request number.
 
     .PARAMETER Comment
-        The comment id.
+        The comment ID.
 
     .PARAMETER ReactionType
         The type of reaction you want to set. This is aslo called the 'content' in the GitHub API.
@@ -459,6 +461,8 @@ filter Set-GitHubReaction
         $splatForAddedProperties.Comment = $Comment
         $targetObjectNumber = $Comment
         $targetObjectTypeName = 'Comment'
+
+        # Even for PR comments, you can use the same endpoint as issue comments.
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions"
     }
 
@@ -512,7 +516,7 @@ filter Remove-GitHubReaction
         The pull request number.
 
     .PARAMETER Comment
-        The comment id.
+        The comment ID.
 
     .PARAMETER ReactionId
         The Id of the reaction. You can get this from using Get-GitHubReaction.
@@ -689,6 +693,8 @@ filter Remove-GitHubReaction
         # Comments
         $targetObjectNumber = $Comment
         $targetObjectTypeName = 'Comment'
+
+        # Even for PR comments, you can use the same endpoint as issue comments.
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions/$ReactionId"
     }
 
@@ -743,7 +749,7 @@ filter Add-GitHubReactionAdditionalProperties
         The pull request number.
 
     .PARAMETER Comment
-        The comment id.
+        The comment ID.
 
     .INPUTS
         [PSCustomObject]
