@@ -413,7 +413,7 @@ filter New-GitHubIssueComment
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/comments"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating comment under issue $Issue for $RepositoryName"
+        'Description' = "Creating comment under issue $Issue for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelGirlAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -556,7 +556,7 @@ filter Set-GitHubIssueComment
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Update comment $Comment for $RepositoryName"
+        'Description' = "Update comment $Comment for $RepositoryName"
         'AccessToken' = $AccessToken
         'AcceptHeader' = (Get-MediaAcceptHeader -MediaType $MediaType -AsJson -AcceptHeader $squirrelGirlAcceptHeader)
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -693,7 +693,7 @@ filter Remove-GitHubIssueComment
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
             'Method' = 'Delete'
-            'Description' =  "Removing comment $Comment for $RepositoryName"
+            'Description' = "Removing comment $Comment for $RepositoryName"
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
