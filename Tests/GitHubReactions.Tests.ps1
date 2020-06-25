@@ -23,12 +23,14 @@ try
     }
 
     Describe 'Creating, modifying and deleting comments' {
-        $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
-        $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+            $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
+        }
 
         Context 'For creating a reaction' {
-            Set-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number -ReactionType $defaultReactionType
-            $existingReaction = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number
+            Set-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber -ReactionType $defaultReactionType
+            $existingReaction = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber
 
             It "Should have the expected reaction type" {
                 $existingReaction.content | Should be $defaultReactionType
@@ -36,9 +38,9 @@ try
         }
 
         Context 'For getting reactions from an issue' {
-            Get-GitHubIssue -Uri $repo.svn_url -IssueNumber $issue.number | Set-GitHubReaction -ReactionType $otherReactionType
-            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number
-            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number -ReactionType $otherReactionType
+            Get-GitHubIssue -Uri $repo.svn_url -Issue $issue.IssueNumber | Set-GitHubReaction -ReactionType $otherReactionType
+            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber
+            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.IssueNumber -ReactionType $otherReactionType
 
             It 'Should have the expected number of reactions' {
                 $allReactions.Count | Should be 2
@@ -48,6 +50,8 @@ try
             It 'Should have the expected reaction content' {
                 $specificReactions.content | Should be $otherReactionType
                 $specificReactions.RepositoryUrl | Should be $repo.RepositoryUrl
+                $specificReactions.IssueNumber | Should be $issue.IssueNumber
+                $specificReactions.ReactionId | Should be $specificReactions.id
             }
         }
 
@@ -73,6 +77,8 @@ try
                 It 'Should have the expected reaction content' {
                     $specificReactions.content | Should be $otherReactionType
                     $specificReactions.RepositoryUrl | Should be $url
+                    $specificReactions.PullRequestNumber | Should be $pr.PullRequestNumber
+                    $specificReactions.ReactionId | Should be $specificReactions.id
                 }
             } finally {
                 $reaction1 | Remove-GitHubReaction -Force
@@ -81,7 +87,7 @@ try
         }
 
         Context 'For getting reactions from an Issue and deleting them' {
-            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number)
+            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have the expected number of reactions' {
                 $existingReactions.Count | Should be 2
@@ -89,7 +95,7 @@ try
 
             $existingReactions | Remove-GitHubReaction -Force
 
-            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -IssueNumber $issue.number)
+            $existingReactions = @(Get-GitHubReaction -Uri $repo.svn_url -Issue $issue.number)
 
             It 'Should have no reactions' {
                 $existingReactions
@@ -97,7 +103,9 @@ try
             }
         }
 
-        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
     }
 }
 finally

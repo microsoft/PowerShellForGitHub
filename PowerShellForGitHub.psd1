@@ -155,7 +155,8 @@
         'Delete-GitHubMilestone',
         'Delete-GitHubProject',
         'Delete-GitHubProjectCard',
-        'Delete-GitHubProjectColumn'
+        'Delete-GitHubProjectColumn',
+        'Delete-GitHubReaction',
         'Delete-GitHubRepository',
         'Get-GitHubBranch',
         'Get-GitHubComment',
