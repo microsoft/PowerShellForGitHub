@@ -19,6 +19,8 @@
         # GitHubConfiguration.ps1) depend on some of the code in Helpers being around at load time.
         'Helpers.ps1',
         'GitHubConfiguration.ps1',
+        'OnModuleLoad.ps1'
+
         'GitHubAnalytics.ps1',
         'GitHubAssignees.ps1',
         'GitHubBranches.ps1',
@@ -203,9 +205,7 @@
     # RequiredAssemblies = @()
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-    ScriptsToProcess = @(
-        'OnModuleLoad.ps1'
-    )
+    # ScriptsToProcess = @()
 
     # List of all modules packaged with this module
     # ModuleList = @()

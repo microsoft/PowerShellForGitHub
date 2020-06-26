@@ -807,10 +807,10 @@ function Repair-LogFile
 {
 <#
     .SYNOPSIS
-        Repais the log file encoding.
+        Repairs the log file by rewriting its contents to UTF8 if it is currently UTF16.
 
     .DESCRIPTION
-        Repairs the log file by encoding it to UTF8 if it is currently UTF16.
+        Repairs the log file by rewriting its contents to UTF8 if it is currently UTF16.
 
     .EXAMPLE
         Repair-LogFile
@@ -824,7 +824,13 @@ function Repair-LogFile
         $logFileContent = [System.IO.File]::ReadLines($path)
 
         $stream = [System.IO.StreamWriter]::new($path, [System.Text.Encoding]::UTF8)
-        $stream.Write($logFileContent)
-        $stream.Close()
+        try
+        {
+            $stream.WriteLine($logFileMessage)
+        }
+        finally
+        {
+            $stream.Close()
+        }
     }
 }
