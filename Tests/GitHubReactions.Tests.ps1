@@ -3,7 +3,7 @@
 
 <#
 .Synopsis
-   Tests for GitHubAssignees.ps1 module
+   Tests for GitHubReactions.ps1 module
 #>
 
 [CmdletBinding()]
