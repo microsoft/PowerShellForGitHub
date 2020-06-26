@@ -67,30 +67,21 @@ try
             # When those go in, this test can be refactored to use those so the test is more reliable using a test PR.
             $url = 'https://github.com/microsoft/PowerShellForGitHub'
             $pr = Get-GitHubPullRequest -Uri $url -PullRequest 193
-            $pr | Get-GitHubReaction | Remove-GitHubReaction -ErrorAction Ignore -Confirm:$false
 
-            $reaction1 = $pr | Set-GitHubReaction -ReactionType $defaultReactionType
-            $reaction2 = $pr | Set-GitHubReaction -ReactionType $otherReactionType
+            $allReactions = $pr | Get-GitHubReaction
+            $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
 
-            try {
-                $allReactions = $pr | Get-GitHubReaction
-                $specificReactions = $pr | Get-GitHubReaction -ReactionType $otherReactionType
+            It 'Should have the expected number of reactions' {
+                $allReactions.Count | Should -Be 2
+                $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
+            }
 
-                It 'Should have the expected number of reactions' {
-                    $allReactions.Count | Should -Be 2
-                    $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
-                }
-
-                It 'Should have the expected reaction content' {
-                    $specificReactions.content | Should -Be $otherReactionType
-                    $specificReactions.RepositoryUrl | Should -Be $url
-                    $specificReactions.PullRequestNumber | Should -Be $pr.PullRequestNumber
-                    $specificReactions.ReactionId | Should -Be $specificReactions.id
-                    $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
-                }
-            } finally {
-                $reaction1 | Remove-GitHubReaction -Force
-                $reaction2 | Remove-GitHubReaction -Force
+            It 'Should have the expected reaction content' {
+                $specificReactions.content | Should -Be $otherReactionType
+                $specificReactions.RepositoryUrl | Should -Be $url
+                $specificReactions.PullRequestNumber | Should -Be $pr.PullRequestNumber
+                $specificReactions.ReactionId | Should -Be $specificReactions.id
+                $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
             }
         }
 
