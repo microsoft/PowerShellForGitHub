@@ -50,7 +50,7 @@ try
 
             It 'Should have the expected number of reactions' {
                 $allReactions.Count | Should -Be 2
-                $specificReactions.Count | Should -Be 1
+                $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
             }
 
             It 'Should have the expected reaction content' {
@@ -78,7 +78,7 @@ try
 
                 It 'Should have the expected number of reactions' {
                     $allReactions.Count | Should -Be 2
-                    $specificReactions.Count | Should -Be 1
+                    $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
                 }
 
                 It 'Should have the expected reaction content' {
@@ -102,7 +102,7 @@ try
 
             It 'Should have the expected number of reactions' {
                 $allReactions.Count | Should -Be 2
-                $specificReactions.Count | Should -Be 1
+                $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
             }
 
             It 'Should have the expected reaction content' {
