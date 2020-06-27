@@ -135,6 +135,7 @@
         'Restore-GitHubConfiguration',
         'Set-GitHubAuthentication',
         'Set-GitHubConfiguration',
+        'Set-GitHubContent',
         'Set-GitHubIssueComment',
         'Set-GitHubIssueLabel',
         'Set-GitHubLabel',

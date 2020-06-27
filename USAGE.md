@@ -42,6 +42,11 @@
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
+    *   [Content](#content)
+        *   [Get html output for a file](#get-html-output-for-a-file)
+        *   [Get raw output for a file](#get-raw-output-for-a-file)
+        *   [Get a list of files](#get-a-list-of-files)
+        *   [Write a file to a branch of a repository](#write-a-file-to-a-branch-of-a-repository)
     *   [Traffic](#traffic)
         *   [Get the referrer traffic for a repository](#get-the-referrer-traffic-for-a-repository)
         *   [Get the popular content for a repository](#get-the-popular-content-for-a-repository)
@@ -494,6 +499,34 @@ Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHu
 #### Create a new fork
 ```powershell
 New-GitHubRepositoryForm -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+----------
+
+### Content
+
+#### Get html output for a file
+
+```powershell
+Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -MediaType Html
+```
+
+#### Get raw output for a file
+
+```powershell
+Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path LICENSE
+```
+
+#### Get a list of files
+
+```powershell
+Get-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path Tests
+```
+
+#### Write a file to a branch of a repository
+
+```powershell
+Set-GitHubContent -OwnerName microsoft -RepositoryName PowerShellForGitHub -Path README.md -CommitMessage 'Adding README.md' -Content '# README' -BranchName master
 ```
 
 ----------
