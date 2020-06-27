@@ -384,9 +384,15 @@ function Write-Log
                 }
                 else
                 {
-                    $stream = [System.IO.StreamWriter]::new($Path, [System.Text.Encoding]::UTF8)
-                    $stream.WriteLine($logFileMessage)
-                    $stream.Close()
+                    $stream = New-Object -TypeName System.IO.StreamWriter -ArgumentList ($Path, [System.Text.Encoding]::UTF8)
+                    try
+                    {
+                        $stream.WriteLine($logFileMessage)
+                    }
+                    finally
+                    {
+                        $stream.Close()
+                    }
                 }
             }
         }
@@ -815,22 +821,23 @@ function Repair-LogFile
     .EXAMPLE
         Repair-LogFile
 #>
-    $path = (Get-GitHubConfiguration -Name LogPath)
-
-    $logFileBytes = Get-Content -Encoding Byte -ReadCount 2 -Path $path
-
-    if ($logFileBytes -eq @(254, 255))
+    $path = (Get-GitHubConfiguration -Name LogPath -ErrorAction SilentlyContinue)
+    if ($path)
     {
-        $logFileContent = [System.IO.File]::ReadLines($path)
-
-        $stream = [System.IO.StreamWriter]::new($path, [System.Text.Encoding]::UTF8)
-        try
+        $logFileBytes = Get-Content -Encoding Byte -TotalCount 2 -Path $path
+        if ($logFileBytes -eq @(254, 255))
         {
-            $stream.WriteLine($logFileMessage)
-        }
-        finally
-        {
-            $stream.Close()
+            $logFileContent = [System.IO.File]::ReadLines($path, [System.Text.Encoding]::Unicode)
+            $stream = New-Object -TypeName System.IO.StreamWriter -ArgumentList ($path, [System.Text.Encoding]::UTF8)
+            try
+            {
+                $stream.WriteLine($logFileContent)
+                Write-Log -Message 'Log file [$path] has been rewritten to be encoded with UTF8.' -Level Verbose
+            }
+            finally
+            {
+                $stream.Close()
+            }
         }
     }
 }
