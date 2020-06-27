@@ -550,6 +550,7 @@ try
                     Description = $defaultRepoDesc
                     HomePage = $defaultRepoHomePage
                 }
+
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
             }
 
@@ -981,7 +982,8 @@ try
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                 }
-                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+
+                $contributors = @(Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms)
             }
 
             It 'Should return objects of the correct type' {
@@ -1004,7 +1006,8 @@ try
                     RepositoryName = $repoName
                     IncludeStatistics = $true
                 }
-                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+
+                $contributors = @(Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms)
             }
 
             It 'Should return objects of the correct type' {
@@ -1032,7 +1035,8 @@ try
                     RepositoryName = $repoName
                     IncludeAnonymousContributors = $true
                 }
-                $contributors = Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms
+
+                $contributors = @(Get-GitHubRepositoryContributor @getGitHubRepositoryContributorParms)
             }
 
             It 'Should return objects of the correct type' {
@@ -1065,7 +1069,8 @@ try
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                 }
-                $collaborators = Get-GitHubRepositoryCollaborator @getGitHubRepositoryCollaboratorParms
+
+                $collaborators = @(Get-GitHubRepositoryCollaborator @getGitHubRepositoryCollaboratorParms)
             }
 
             It 'Should return objects of the correct type' {
