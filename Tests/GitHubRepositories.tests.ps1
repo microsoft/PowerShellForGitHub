@@ -382,8 +382,8 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
-                    $privateRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $publicRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $privateRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -403,9 +403,9 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
-                    $publicRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
-                    $ownerRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $publicRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $publicRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $ownerRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -426,7 +426,7 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $ownerRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $ownerRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership" {
@@ -448,8 +448,8 @@ try
                 }
 
                 It 'Should return objects of the correct type' {
-                    $sortedRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
-                    $sortedDescendingRepos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $sortedRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                    $sortedDescendingRepos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
                 }
 
                 It "Should return the correct membership order" {
@@ -525,7 +525,7 @@ try
             }
 
             It 'Should return an object of the correct type' {
-                $repos.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $repos[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
             It 'Should return at least one result' {
@@ -956,7 +956,7 @@ try
             }
 
             It 'Should return an object of the correct type' {
-                $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.Topic'
+                $topic.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
             }
 
             It 'Should return the correct properties' {
@@ -988,8 +988,8 @@ try
                 $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            It 'Should return at least one result' {
-                $contributors.count | Should -BeGreaterOrEqual 1
+            It 'Should return expected number of contributors' {
+                $contributors.Count | Should -Be 1
             }
 
             It "Should return the correct membership" {
@@ -1008,11 +1008,12 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryContributorStatistics'
+                $contributors[0].author.PSObject.TypeNames[0] = 'GitHub.User'
             }
 
-            It 'Should return at least one result' {
-                $contributors.count | Should -BeGreaterOrEqual 1
+            It 'Should return expected number of contributors' {
+                $contributors.Count | Should -Be 1
             }
 
             It 'Should return the correct membership' {
@@ -1068,11 +1069,29 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $collaborators.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            It 'Should return at least one result' {
-                $collaborators.count | Should -BeGreaterOrEqual 1
+            It 'Should return expected number of collaborators' {
+                $collaborators.Count | Should -Be 1
+            }
+
+            It "Should return the correct membership" {
+                $repo.owner.login | Should -BeIn $collaborators.login
+            }
+        }
+
+        Context 'When getting GitHub Repository Collaborators (via pipeline)' {
+            BeforeAll {
+                $collaborators = @($repo | Get-GitHubRepositoryCollaborator)
+            }
+
+            It 'Should return objects of the correct type' {
+                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should return expected number of collaborators' {
+                $collaborators.Count | Should -Be 1
             }
 
             It "Should return the correct membership" {
@@ -1135,72 +1154,6 @@ try
 
             AfterAll {
                 Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-            }
-        }
-    }
-
-    Describe 'Contributors for a repository' {
-        BeforeAll {
-            $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
-        }
-
-        AfterAll {
-            $null = Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
-        }
-
-        Context -Name 'Obtaining contributors for repository' -Fixture {
-            $contributors = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl)
-
-            It 'Should return expected number of contributors' {
-                $contributors.Count | Should -Be 1
-                $contributors[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributor'
-            }
-        }
-
-        Context -Name 'Obtaining contributors for repository (via pipeline)' -Fixture {
-            $contributors = @($repo | Get-GitHubRepositoryContributor -IncludeStatistics)
-
-            It 'Should return expected number of contributors' {
-                $contributors.Count | Should -Be 1
-                $contributors[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributor'
-            }
-        }
-
-        Context -Name 'Obtaining contributor statistics for repository' -Fixture {
-            $stats = @(Get-GitHubRepositoryContributor -Uri $repo.RepositoryUrl -IncludeStatistics)
-
-            It 'Should return expected number of contributors' {
-                $stats.Count | Should -Be 1
-                $stats[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributorStatistics'
-                $stats[0].author.PSObject.TypeNames[0] = 'GitHub.User'
-            }
-        }
-    }
-
-    Describe 'Collaborators for a repository' {
-        BeforeAll {
-            $repo = New-GitHubRepository -RepositoryName ([guid]::NewGuid().Guid) -AutoInit
-        }
-
-        AfterAll {
-            $null = Remove-GitHubRepository -Uri $repo.RepositoryUrl -Confirm:$false
-        }
-
-        Context -Name 'Obtaining collaborators for repository' -Fixture {
-            $collaborators = @(Get-GitHubRepositoryCollaborator -Uri $repo.RepositoryUrl)
-
-            It 'Should return expected number of collaborators' {
-                $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.RepositoryCollaborator'
-            }
-        }
-
-        Context -Name 'Obtaining collaborators for repository (via pipeline)' -Fixture {
-            $collaborators = @($repo | Get-GitHubRepositoryCollaborator)
-
-            It 'Should return expected number of collaborators' {
-                $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.RepositoryCollaborator'
             }
         }
     }
