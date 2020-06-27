@@ -770,7 +770,7 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         [string[]] $RestrictPushApps,
 
-        [switch]$RequireLinearHistory,
+        [switch] $RequireLinearHistory,
 
         [switch] $AllowForcePushes,
 
@@ -893,7 +893,8 @@ filter Set-GitHubRepositoryBranchProtectionRule
         $hashBody['allow_deletions'] = $AllowDeletions.ToBool()
     }
 
-    if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
+    if ($PSCmdlet.ShouldProcess(
+        "'$BranchName' branch of repository '$RepositoryName'",
         'Set GitHub Repository Branch Protection'))
     {
         Write-InvocationLog
@@ -1076,7 +1077,7 @@ filter Add-GitHubBranchAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubBranchTypeName
+        [string] $TypeName = $script:GitHubBranchProtectionRuleName
     )
 
     foreach ($item in $InputObject)
@@ -1155,9 +1156,9 @@ filter Add-GitHubBranchProtectionRuleAdditionalProperties
 
             $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
 
-            if ($item.html_url -match "^https?://api.$hostName/repos/([^/]+)/?([^/]+)/?([^/]+)/?([^/]+)?(?:/.*)?$")
+            if ($item.html_url -match "^https?://(?:www\.|api\.|)$hostName/repos/(?:[^/]+)/(?:[^/]+)/branches/([^/]+)/.*$")
             {
-                $branchName = $Matches[4]
+                $branchName = $Matches[1]
             }
             else
             {
