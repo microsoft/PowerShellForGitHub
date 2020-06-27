@@ -38,7 +38,11 @@
         *   [Creating a child team](#Creating-a-child-team)
         *   [Updating a team](#Updating-a-team)
         *   [Removing a team](#Removing-a-team)
-    *   [Repositories](#repositories)
+    *   [Repositories](#repositories])
+        *   [Create a repository](#Create-a-repository)
+        *   [Create a repository in an organization](#Create-a-repository-in-an-organization)
+        *   [Create a repository in an organization and grant access to a team](#Create-a-repository-in-an-organization-and-grant-access-to-a-team)
+        *   [Create a repository from a template repository](#Create-a-repository-from-a-template-repository)
         *   [Get repository vulnerability alert status](#get-repository-vulnerability-alert-status)
         *   [Enable repository vulnerability alerts](#enable-repository-vulnerability-alerts)
         *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
@@ -112,7 +116,9 @@ The logging is affected by configuration properties (which can be checked with
     different log file for each PowerShell process. An easy way to view the filtered
     entries for a session is (replacing `PID` with the PID that you are interested in):
 
-    Get-Content -Path <logPath> -Encoding UTF8 | Where { $_ -like '*[[]PID[]]*' }
+```powershell
+Get-Content -Path <logPath> -Encoding UTF8 | Where { $_ -like '*[[]PID[]]*' }
+```
 
 ----------
 
@@ -480,6 +486,30 @@ Remove-GitHubTeam -OrganizationName Microsoft -TeamName MyTeam
 =======
 ### Repositories
 
+#### Create a repository
+
+```powershell
+New-GitHubRepository -RepositoryName TestRepo
+```
+
+#### Create a repository in an organization
+
+```powershell
+New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg
+```
+
+#### Create a repository in an organization and grant access to a team
+
+```powershell
+$myTeam = Get-GitHubTeam -OrganizationName MyOrg | Where-Object -Property name -eq MyTeam
+New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $myTeam.id
+```
+
+#### Create a repository from a template repository
+
+```powershell
+New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+=======
 #### Get repository vulnerability alert status
 
 ```powershell

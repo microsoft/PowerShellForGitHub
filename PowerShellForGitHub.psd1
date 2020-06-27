@@ -114,6 +114,7 @@
         'New-GitHubProjectColumn',
         'New-GitHubPullRequest',
         'New-GitHubRepository',
+        'New-GitHubRepositoryFromTemplate',
         'New-GitHubRepositoryFork',
         'New-GitHubTeam',
         'Remove-GitHubAssignee',
