@@ -118,6 +118,7 @@ try
                     RepositoryName = $repoName
                     AutoInit = $true
                 }
+
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
 
                 $newGitHubRepositoryBranchParms = @{
@@ -126,6 +127,7 @@ try
                     BranchName = $newBranchName
                     OriginBranchName = $originBranchName
                 }
+
                 $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
             }
 
@@ -151,6 +153,7 @@ try
                     RepositoryName = $repoName
                     BranchName = $newBranchName
                 }
+
                 { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
                     Should -Not -Throw
             }
@@ -169,6 +172,7 @@ try
                         BranchName = $newBranchName
                         OriginBranchName = $missingOriginBranchName
                     }
+
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
                         Should -Throw $errorMessage
                 }
@@ -182,6 +186,7 @@ try
                         BranchName = 'test'
                         OriginBranchName = 'test'
                     }
+
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
                         Should -Throw 'Not Found'
                 }
@@ -205,6 +210,7 @@ try
                 RepositoryName = $repoName
                 AutoInit = $true
             }
+
             $repo = New-GitHubRepository @newGitHubRepositoryParms
 
             $newGitHubRepositoryBranchParms = @{
@@ -213,6 +219,7 @@ try
                 BranchName = $newBranchName
                 OriginBranchName = $originBranchName
             }
+
             $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
         }
 
@@ -227,6 +234,7 @@ try
                 BranchName = $newBranchName
                 Confirm = $false
             }
+
             { Remove-GitHubRepositoryBranch @removeGitHubRepositoryBranchParms } |
                 Should -Not -Throw
         }
@@ -237,6 +245,7 @@ try
                 RepositoryName = $repoName
                 BranchName = $newBranchName
             }
+
             { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
                 Should -Throw
         }
