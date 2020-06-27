@@ -438,13 +438,13 @@ Get-GitHubUser
 #### Adding a new Branch to a Repository
 
 ```powershell
-New-GitHubRepositoryBranch -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+New-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
 ```
 
 #### Removing a Branch from a Repository
 
 ```powershell
-Remove-GitHubRepositoryBranch -Name develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
 ```
 
 ----------
