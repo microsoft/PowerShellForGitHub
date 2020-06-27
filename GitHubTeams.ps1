@@ -168,7 +168,9 @@ filter Get-GitHubTeam
 
         if ($null -eq $team)
         {
-            throw "Team '$TeamName' not found"
+            $message = "Team '$TeamName' not found"
+            Write-Log -Message $message -Level Error
+            throw $message
         }
         else
         {
@@ -531,10 +533,9 @@ filter Set-GitHubTeam
 
     .INPUTS
         GitHub.Team
-        System.String
 
     .OUTPUTS
-        GitHub.User
+        GitHub.Team
 
     .EXAMPLE
         Set-GitHubTeam -OrganizationName PowerShell -TeamName Developers -Description 'New Description'
@@ -634,6 +635,7 @@ filter Set-GitHubTeam
         {
             $getGitHubTeamParms['NoStatus'] = $NoStatus
         }
+
         $team = Get-GitHubTeam @getGitHubTeamParms
 
         $hashBody['parent_team_id'] = $team.id
@@ -683,6 +685,10 @@ filter Remove-GitHubTeam
         with no commandline status update.  When not specified, those commands run in
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+
+    .INPUTS
+        GitHub.Team
 
     .OUTPUTS
         None
@@ -837,15 +843,13 @@ filter Add-GitHubTeamAdditionalProperties
             {
                 $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
 
-                if ($item.html_url -match "^https?://$hostName/orgs/([^/]+)/?([^/]+)?(?:/.*)?$")
+                $organizationName = [String]::Empty
+                if ($item.html_url -match "^https?://$hostName/orgs/([^/]+)/.*$")
                 {
                     $organizationName = $Matches[1]
                 }
-                else
-                {
-                    $organizationName = ''
-                }
             }
+
             Add-Member -InputObject $item -Name 'OrganizationName' -value $organizationName -MemberType NoteProperty -Force
 
             # Apply these properties to any embedded parent teams as well.

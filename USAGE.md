@@ -492,49 +492,49 @@ Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellFor
 #### Getting teams in an Organization
 
 ```powershell
-Get-GitHubTeam -OrganizationName Microsoft
+Get-GitHubTeam -OrganizationName microsoft
 ```
 
 #### Getting teams assigned to a repository
 
 ```powershell
-Get-GitHubTeam -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+Get-GitHubTeam -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 #### Getting a team by team name
 
 ```powershell
-Get-GitHubTeam -OrganizationName Microsoft -TeamName MyTeam
+Get-GitHubTeam -OrganizationName microsoft -TeamName MyTeam
 ```
 
 #### Getting a team by team id
 
 ```powershell
-Get-GitHubTeam -OrganizationName Microsoft -TeamId 378661
+Get-GitHubTeam -OrganizationName microsoft -TeamId 378661
 ```
 
 #### Creating a team
 
 ```powershell
-New-GitHubTeam -OrganizationName Microsoft -TeamName MyTeam -Description 'Team Description'
+New-GitHubTeam -OrganizationName microsoft -TeamName MyTeam -Description 'Team Description'
 ```
 
 #### Creating a child team
 
 ```powershell
-New-GitHubTeam -OrganizationName Microsoft -TeamName MyChildTeam -Description 'Team Description' -ParentTeamName MyTeam
+New-GitHubTeam -OrganizationName microsoft -TeamName MyChildTeam -Description 'Team Description' -ParentTeamName MyTeam
 ```
 
 #### Updating a team
 
 ```powershell
-Update-GitHubTeam -OrganizationName Microsoft -TeamName MyChildTeam -Description 'Team Description' -ParentTeamName MyTeam
+Update-GitHubTeam -OrganizationName microsoft -TeamName MyChildTeam -Description 'Team Description' -ParentTeamName MyTeam
 ```
 
 #### Removing a team
 
 ```powershell
-Remove-GitHubTeam -OrganizationName Microsoft -TeamName MyTeam
+Remove-GitHubTeam -OrganizationName microsoft -TeamName MyTeam
 ```
 
 ----------
