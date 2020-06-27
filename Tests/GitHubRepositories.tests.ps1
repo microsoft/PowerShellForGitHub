@@ -840,7 +840,7 @@ try
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
-                $contributors[0].PSObject.TypeNames[0] = 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributor'
             }
         }
 
@@ -849,7 +849,7 @@ try
 
             It 'Should return expected number of contributors' {
                 $contributors.Count | Should -Be 1
-                $contributors[0].PSObject.TypeNames[0] = 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] = 'GitHub.RepositoryContributor'
             }
         }
 
@@ -878,7 +878,7 @@ try
 
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.RepositoryCollaborator'
             }
         }
 
@@ -887,7 +887,7 @@ try
 
             It 'Should return expected number of collaborators' {
                 $collaborators.Count | Should -Be 1
-                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] = 'GitHub.RepositoryCollaborator'
             }
         }
     }

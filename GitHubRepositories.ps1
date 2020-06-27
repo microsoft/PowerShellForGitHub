@@ -4,6 +4,8 @@
 @{
     GitHubRepositoryTypeName = 'GitHub.Repository'
     GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
+    GitHubRepositoryContributorTypeName = 'GitHub.RepositoryContributor'
+    GitHubRepositoryCollaboratorTypeName = 'GitHub.RepositoryCollaborator'
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
@@ -1606,7 +1608,7 @@ filter Get-GitHubRepositoryContributor
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryContributorTypeName})]
     [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -1679,7 +1681,7 @@ filter Get-GitHubRepositoryContributor
     }
     else
     {
-        $results = $results | Add-GitHubUserAdditionalProperties
+        $results = $results | Add-GitHubRepositoryContributorAdditionalProperties
     }
 
     return $results
@@ -1753,7 +1755,7 @@ filter Get-GitHubRepositoryCollaborator
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryCollaboratorTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1802,7 +1804,8 @@ filter Get-GitHubRepositoryCollaborator
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubRepositoryCollaboratorAdditionalProperties)
 }
 
 filter Get-GitHubRepositoryLanguage
@@ -2844,6 +2847,192 @@ filter Add-GitHubRepositoryAdditionalProperties
             if ($null -ne $item.organization)
             {
                 $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryContributorAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Contributor objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the Contributor.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the Contributor.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryContributor
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryContributorTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $UserName = $item.login
+            if ([String]::IsNullOrEmpty($UserName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $UserName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($UserName))
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserName'
+                    Value = $UserName
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+                Add-Member @addMemberParms
+            }
+
+            $UserId = $item.id
+            if (($UserId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $UserId = $Id
+            }
+
+            if ($UserId -ne 0)
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserId'
+                    Value = $UserId
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryCollaboratorAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Collaborator objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the Collaborator.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the Collaborator.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryCollaborator
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryCollaboratorTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $UserName = $item.login
+            if ([String]::IsNullOrEmpty($UserName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $UserName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($UserName))
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserName'
+                    Value = $UserName
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
+            }
+
+            $UserId = $item.id
+            if (($UserId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $UserId = $Id
+            }
+
+            if ($UserId -ne 0)
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserId'
+                    Value = $UserId
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
             }
         }
 
