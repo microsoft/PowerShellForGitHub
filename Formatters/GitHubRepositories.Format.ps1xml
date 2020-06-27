@@ -38,6 +38,9 @@
               <ListItem>
                 <PropertyName>names</PropertyName>
               </ListItem>
+              <ListItem>
+                <PropertyName>RepositoryUrl</PropertyName>
+              </ListItem>
             </ListItems>
           </ListEntry>
         </ListEntries>
@@ -54,13 +57,46 @@
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>login</PropertyName>
+                <PropertyName>UserName</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>type</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>contributions</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--========== GitHub.RepositoryContributorStatistics Type View ==========-->
+    <View>
+      <Name>GitHub.RepositoryContributorStatistics</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryContributorStatistics</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>author.UserName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader />
+          <TableColumnHeader />
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.author.UserName
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>total</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>weeks</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
@@ -90,7 +126,7 @@
           <TableRowEntry>
             <TableColumnItems>
               <TableColumnItem>
-                <PropertyName>login</PropertyName>
+                <PropertyName>UserName</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
