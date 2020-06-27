@@ -2997,18 +2997,18 @@ filter Add-GitHubRepositoryCollaboratorAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $UserName = $item.login
-            if ([String]::IsNullOrEmpty($UserName) -and $PSBoundParameters.ContainsKey('Name'))
+            $userName = $item.login
+            if ([String]::IsNullOrEmpty($userName) -and $PSBoundParameters.ContainsKey('Name'))
             {
-                $UserName = $Name
+                $userName = $Name
             }
 
-            if (-not [String]::IsNullOrEmpty($UserName))
+            if (-not [String]::IsNullOrEmpty($userName))
             {
                 $addMemberParms = @{
                     InputObject = $item
                     Name = 'UserName'
-                    Value = $UserName
+                    Value = $userName
                     MemberType = 'NoteProperty'
                     Force = $true
                 }
@@ -3016,18 +3016,18 @@ filter Add-GitHubRepositoryCollaboratorAdditionalProperties
                 Add-Member @addMemberParms
             }
 
-            $UserId = $item.id
-            if (($UserId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            $userId = $item.id
+            if (($userId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
             {
-                $UserId = $Id
+                $userId = $Id
             }
 
-            if ($UserId -ne 0)
+            if ($userId -ne 0)
             {
                 $addMemberParms = @{
                     InputObject = $item
                     Name = 'UserId'
-                    Value = $UserId
+                    Value = $userId
                     MemberType = 'NoteProperty'
                     Force = $true
                 }
