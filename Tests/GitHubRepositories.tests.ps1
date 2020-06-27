@@ -290,6 +290,84 @@ try
         }
     }
 
+    Describe 'GitHubRepositories\New-GitHubRepositoryFromTemplate' {
+        BeforeAll {
+            $templateRepoName = ([Guid]::NewGuid().Guid)
+            $ownerName = $script:ownerName
+            $testGitIgnoreTemplate = (Get-GitHubGitIgnore)[0]
+            $testLicenseTemplate = (Get-GitHubLicense)[0].key
+
+            $newGitHubRepositoryParms = @{
+                RepositoryName = $templateRepoName
+                Description = $defaultRepoDesc
+                GitIgnoreTemplate = $testGitIgnoreTemplate
+                LicenseTemplate = $testLicenseTemplate
+                IsTemplate = $true
+            }
+
+            $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
+        }
+
+        Context 'When creating a public repository from a template' {
+            BeforeAll {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newRepoDesc = 'New Repo Description'
+                $newGitHubRepositoryFromTemplateParms = @{
+                    RepositoryName = $templateRepoName
+                    OwnerName = $templateRepo.owner.login
+                    TargetOwnerName = $ownerName
+                    TargetRepositoryName = $repoName
+                    Description = $newRepoDesc
+                }
+
+                $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
+            }
+
+            It 'Should support pipeline input for the uri parameter' {
+                $newGitHubRepositoryFromTemplateParms = @{
+                    TargetOwnerName = $ownerName
+                    TargetRepositoryName = $repoName
+                }
+
+                { $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms -WhatIf } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $repo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $repo.name | Should -Be $repoName
+                $repo.private | Should -BeFalse
+                $repo.owner.login | Should -Be $script:ownerName
+                $repo.description | Should -Be $newRepoDesc
+                $repo.is_template | Should -BeFalse
+                $repo.RepositoryId | Should -Be $repo.id
+                $repo.RepositoryUrl | Should -Be $repo.html_url
+            }
+
+            It 'Should have created a .gitignore file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path '.gitignore' } | Should -Not -Throw
+            }
+
+            It 'Should have created a LICENSE file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path 'LICENSE' } | Should -Not -Throw
+            }
+
+            AfterAll {
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name templateRepo -ErrorAction SilentlyContinue)
+            {
+                Remove-GitHubRepository -Uri $templateRepo.svn_url -Confirm:$false
+            }
+        }
+    }
+
     Describe 'Getting repositories' {
         Context 'For authenticated user' {
             BeforeAll -Scriptblock {
@@ -811,6 +889,127 @@ try
                 $collaborators.Count | Should -Be 1
                 $collaborators[0].PSObject.TypeNames[0] = 'GitHub.User'
             }
+        }
+    }
+
+    Describe 'GitHubRepositories\Test-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll -ScriptBlock {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Enabled' {
+            BeforeAll -ScriptBlock {
+                Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $result = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $result | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $result | Should -Be $true
+            }
+        }
+
+        Context 'When the Git Hub Repository Vulnerability Alert Status is Disabled' {
+            BeforeAll -ScriptBlock {
+                Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+                $status = Test-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should return an object of the correct type' {
+                $status | Should -BeOfType System.Boolean
+            }
+
+            It 'Should return the correct value' {
+                $status | Should -BeFalse
+            }
+        }
+
+        Context 'When Invoke-GHRestMethod returns an unexpected error' {
+            It 'Should throw' {
+                $getGitHubRepositoryVulnerabilityAlertParms = @{
+                    OwnerName = 'octocat'
+                    RepositoryName = 'IncorrectRepostioryName'
+                }
+                { Test-GitHubRepositoryVulnerabilityAlert @getGitHubRepositoryVulnerabilityAlertParms } |
+                    Should -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlert' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Vulnerability Alerts' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+        }
+
+        Context 'When Enabling GitHub Repository Security Fixes' {
+            It 'Should not throw' {
+                { Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
+
+    Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFix' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url
+        }
+
+        Context 'When Disabling GitHub Repository Security Fixes' {
+            It 'Should not throw' {
+                { Disable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
         }
     }
 }
