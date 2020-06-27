@@ -178,11 +178,11 @@ filter New-GitHubRepositoryBranch
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
-        Name of the branch to be created.
-
-    .PARAMETER OriginBranchName
+    .PARAMETER BranchName
         The name of the origin branch to create the new branch from.
+
+    .PARAMETER TargetBranchName
+        Name of the branch to be created.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -213,18 +213,18 @@ filter New-GitHubRepositoryBranch
         GitHub.Branch
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -BranchName New-Branch1 -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        New-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -TargetBranchName new-branch
 
         Creates a new branch in the specified repository from the master branch.
 
     .EXAMPLE
-        New-GitHubRepositoryBranch -BranchName New-Branch2 -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -OriginBranchName 'New-Branch1'
+        New-GitHubRepositoryBranch -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName develop -TargetBranchName new-branch
 
-        Creates a new branch in the specified repository from the specified origin branch.
+        Creates a new branch in the specified repository from the 'develop' origin branch.
 
     .EXAMPLE
         $repo = Get-GithubRepository -Uri https://github.com/You/YourRepo
-        $repo | New-GitHubRepositoryBranch -BranchName 'NewBranch'
+        $repo | New-GitHubRepositoryBranch -TargetBranchName new-branch
 
         You can also pipe in a repo that was returned from a previous command.
 #>
@@ -234,35 +234,35 @@ filter New-GitHubRepositoryBranch
         PositionalBinding = $false
     )]
     [OutputType({$script:GitHubBranchTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
-        Justification = "Methods called within here make use of PSShouldProcess, and the switch is
-        passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification = "One or more parameters (like NoStatus) are only referenced by helper
-        methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
+        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [Alias('New-GitHubBranch')]
     param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipeline,
-            Position = 1)]
-        [string] $BranchName,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName = 'Uri')]
-        [Alias('RepositoryUrl')]
-        [string] $Uri,
-
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
-        [string] $OriginBranchName = 'master',
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $BranchName = 'master',
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            Position = 2)]
+        [string] $TargetBranchName,
 
         [string] $AccessToken,
 
@@ -285,7 +285,7 @@ filter New-GitHubRepositoryBranch
         $getGitHubRepositoryBranchParms = @{
             OwnerName = $OwnerName
             RepositoryName = $RepositoryName
-            BranchName = $OriginBranchName
+            BranchName = $BranchName
             Whatif = $false
             Confirm = $false
         }
@@ -297,6 +297,9 @@ filter New-GitHubRepositoryBranch
         {
             $getGitHubRepositoryBranchParms['NoStatus'] = $NoStatus
         }
+
+        Write-Log -Level Verbose "Getting $TargetBranchName branch for sha reference"
+
         $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
     }
     catch
@@ -309,24 +312,25 @@ filter New-GitHubRepositoryBranch
             if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
             ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
             {
-                $throwObject = "Origin branch $OriginBranchName not found"
+                $throwObject = "Origin branch $BranchName not found"
             }
         }
         else
         {
             if ($_.Exception.Message -like '*Not Found*')
             {
-                $throwObject = "Origin branch $OriginBranchName not found"
+                $throwObject = "Origin branch $BranchName not found"
             }
         }
 
+        Write-Log -Message $throwObject -Level Error
         throw $throwObject
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
 
     $hashBody = @{
-        ref = "refs/heads/$BranchName"
+        ref = "refs/heads/$TargetBranchName"
         sha = $originBranch.commit.sha
     }
 
@@ -334,7 +338,7 @@ filter New-GitHubRepositoryBranch
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' = "Creating branch $BranchName for $RepositoryName"
+        'Description' = "Creating branch $TargetBranchName for $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -368,7 +372,7 @@ filter Remove-GitHubRepositoryBranch
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Name
+    .PARAMETER BranchName
         Name of the branch to be removed.
 
     .PARAMETER Force
@@ -403,12 +407,12 @@ filter Remove-GitHubRepositoryBranch
         None
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -BranchName develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+        Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop
 
         Removes the 'develop' branch from the specified repository.
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -BranchName develop -OwnerName Microsoft -RepositoryName PowerShellForGitHub -Force
+        Remove-GitHubRepositoryBranch  -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop -Force
 
         Removes the 'develop' branch from the specified repository without prompting for confirmation.
 
@@ -433,25 +437,25 @@ filter Remove-GitHubRepositoryBranch
     [Alias('Delete-GitHubRepositoryBranch')]
     [Alias('Delete-GitHubBranch')]
     param(
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 1)]
-        [string] $BranchName,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName = 'Uri')]
-        [Alias('RepositoryUrl')]
-        [string] $Uri,
-
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
         [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [string] $BranchName,
 
         [switch] $Force,
 
