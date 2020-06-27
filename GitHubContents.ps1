@@ -247,7 +247,7 @@ filter Set-GitHubContent
         value.
 
     .PARAMETER BranchName
-        The branch, or defaults to the default branch of not specified.
+        The branch, or defaults to the default branch if not specified.
 
     .PARAMETER CommitterName
         The name of the committer of the commit. Defaults to the name of the authenticated user if
