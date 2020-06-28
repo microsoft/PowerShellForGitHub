@@ -1089,8 +1089,7 @@ function Set-GitHubIssueLabel
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
-        ConfirmImpact='High')]
+        DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubLabelTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1155,12 +1154,20 @@ function Set-GitHubIssueLabel
             'labels' = $labelNames
         }
 
+        $shouldProcessMessage = "Set GitHub Issue Label(s) $($Label -join ', ')"
+
+        if ([System.String]::IsNullOrEmpty($Label))
+        {
+            $ConfirmPreference = 'Low'
+            $shouldProcessMessage = 'Remove all GitHub Issue Labels'
+        }
+
         if ($Force -and (-not $Confirm))
         {
             $ConfirmPreference = 'None'
         }
 
-        if (-not $PSCmdlet.ShouldProcess(($Label -join ', '), 'Set GitHub Issue Label'))
+        if (-not $PSCmdlet.ShouldProcess("Issue #$Issue", $shouldProcessMessage))
         {
             return
         }
