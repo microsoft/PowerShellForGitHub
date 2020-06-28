@@ -1160,8 +1160,7 @@ filter Set-GitHubRepository
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
-        ConfirmImpact='High')]
+        DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Alias('Update-GitHubRepository')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     param(
@@ -1224,16 +1223,13 @@ filter Set-GitHubRepository
     }
 
     $hashBody = @{}
+    $shouldProcessMessage = 'Update GitHub Repository'
 
     if ($PSBoundParameters.ContainsKey('NewName'))
     {
-        $existingName = if ($PSCmdlet.ParameterSetName -eq 'Uri') { $Uri } else { $OwnerName, $RepositoryName -join '/' }
-        if (-not $PSCmdlet.ShouldProcess($existingName, "Rename repository to '$NewName'"))
-        {
-            return
-        }
-
         $hashBody['name'] = $NewName
+        $ConfirmPreference = 'Low'
+        $shouldProcessMessage = "Rename repository to '$NewName'"
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
@@ -1255,7 +1251,7 @@ filter Set-GitHubRepository
         $ConfirmPreference = 'None'
     }
 
-    if (-not $PSCmdlet.ShouldProcess($RepositoryName, 'Update GitHub Repository'))
+    if (-not $PSCmdlet.ShouldProcess($RepositoryName, $shouldProcessMessage))
     {
         return
     }
