@@ -85,11 +85,8 @@ filter Get-GitHubLabel
         input.  For the time being, the ParameterSets have been simplified and the validation of
         parameter combinations is happening within the function itself.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='NameUri')]
+    [CmdletBinding(DefaultParameterSetName = 'NameUri')]
     [OutputType({$script:GitHubLabelTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
@@ -265,7 +262,6 @@ filter New-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubLabelTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -299,8 +295,6 @@ filter New-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -322,6 +316,13 @@ filter New-GitHubLabel
         'color' = $Color
         'description' = $Description
     }
+
+    if (-not $PSCmdlet.ShouldProcess($Label, 'Create GitHub Label'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels"
@@ -453,8 +454,6 @@ filter Remove-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -469,21 +468,25 @@ filter Remove-GitHubLabel
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($Label, "Remove label"))
+    if (-not $PSCmdlet.ShouldProcess($Label, 'Remove GitHub label'))
     {
-        $params = @{
-            'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
-            'Method' = 'Delete'
-            'Description' = "Deleting label $Label from $RepositoryName"
-            'AcceptHeader' = $script:symmetraAcceptHeader
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    Write-InvocationLog
+
+    $params = @{
+        'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
+        'Method' = 'Delete'
+        'Description' = "Deleting label $Label from $RepositoryName"
+        'AcceptHeader' = $script:symmetraAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Update-GitHubLabel
@@ -564,7 +567,6 @@ filter Update-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubLabelTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -599,8 +601,6 @@ filter Update-GitHubLabel
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -621,6 +621,13 @@ filter Update-GitHubLabel
     if ($PSBoundParameters.ContainsKey('NewName')) { $hashBody['name'] = $NewName }
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
     if ($PSBoundParameters.ContainsKey('Color')) { $hashBody['color'] = $Color }
+
+    if (-not $PSCmdlet.ShouldProcess($Label, 'Update GitHub Label'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
@@ -713,7 +720,6 @@ filter Set-GitHubLabel
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -759,17 +765,39 @@ filter Set-GitHubLabel
     $existingLabels = Get-GitHubLabel @commonParams
     $existingLabelNames = $existingLabels.name
 
+    if (-not $PSCmdlet.ShouldProcess(($Label -join ', '), 'Set GitHub Label'))
+    {
+        return
+    }
+
+    Write-InvocationLog
+
     foreach ($labelToConfigure in $Label)
     {
         if ($labelToConfigure.name -notin $existingLabelNames)
         {
             # Create label if it doesn't exist
-            $null = New-GitHubLabel -Label $labelToConfigure.name -Color $labelToConfigure.color @commonParams
+            $newGitHubLabelParms = @{
+                Label = $labelToConfigure.name
+                Color = $labelToConfigure.color
+                Confirm = $false
+                WhatIf = $false
+            }
+
+            $null = New-GitHubLabel @newGitHubLabelParms @commonParams
         }
         else
         {
             # Update label's color if it already exists
-            $null = Update-GitHubLabel -Label $labelToConfigure.name -NewName $labelToConfigure.name -Color $labelToConfigure.color @commonParams
+            $updateGitHubLabelParms = @{
+                Label = $labelToConfigure.name
+                NewName = $labelToConfigure.name
+                Color = $labelToConfigure.color
+                Confirm = $false
+                WhatIf = $false
+            }
+
+            $null = Update-GitHubLabel @updateGitHubLabelParms @commonParams
         }
     }
 
@@ -778,7 +806,13 @@ filter Set-GitHubLabel
         if ($labelName -notin $labelNames)
         {
             # Remove label if it exists but is not in desired label list
-            $null = Remove-GitHubLabel -Label $labelName @commonParams -Confirm:$false
+            $removeGitHubLabelParms = @{
+                Label = $labelName
+                Confirm = $false
+                WhatIf = $false
+            }
+
+            $null = Remove-GitHubLabel @removeGitHubLabelParms @commonParams
         }
     }
 }
@@ -854,7 +888,6 @@ function Add-GitHubIssueLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubLabelTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -908,8 +941,6 @@ function Add-GitHubIssueLabel
 
     end
     {
-        Write-InvocationLog
-
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -923,6 +954,13 @@ function Add-GitHubIssueLabel
         $hashBody = @{
             'labels' = $labelNames
         }
+
+        if (-not $PSCmdlet.ShouldProcess(($Label -join ', '), 'Add GitHub Issue Label'))
+        {
+            return
+        }
+
+        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
@@ -1039,7 +1077,6 @@ function Set-GitHubIssueLabel
         DefaultParameterSetName='Elements',
         ConfirmImpact='High')]
     [OutputType({$script:GitHubLabelTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1108,10 +1145,12 @@ function Set-GitHubIssueLabel
             $ConfirmPreference = 'None'
         }
 
-        if (($labelNames.Count -eq 0) -and (-not $PSCmdlet.ShouldProcess($Issue, "Remove all labels from issue")))
+        if (-not $PSCmdlet.ShouldProcess(($Label -join ', '), 'Set GitHub Issue Label'))
         {
             return
         }
+
+        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
@@ -1270,21 +1309,23 @@ filter Remove-GitHubIssueLabel
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($Label, "Remove label"))
+    if (-not $PSCmdlet.ShouldProcess($Label, 'Remove GitHub Issue label'))
     {
-        $params = @{
-            'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Label"
-            'Method' = 'Delete'
-            'Description' = $description
-            'AcceptHeader' = $script:symmetraAcceptHeader
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    $params = @{
+        'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/labels/$Label"
+        'Method' = 'Delete'
+        'Description' = $description
+        'AcceptHeader' = $script:symmetraAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Add-GitHubLabelAdditionalProperties

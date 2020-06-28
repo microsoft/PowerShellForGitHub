@@ -105,11 +105,8 @@ filter Get-GitHubRelease
         Information about published releases are available to everyone. Only users with push
         access will receive listings for draft releases.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubReleaseTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [Parameter(ParameterSetName="Elements-ReleaseId")]

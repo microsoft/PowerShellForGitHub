@@ -59,11 +59,8 @@ filter Get-GitHubProjectCard
 
         Gets the card with ID 999999.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName = 'Card')]
+    [CmdletBinding(DefaultParameterSetName = 'Card')]
     [OutputType({$script:GitHubProjectCardTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
@@ -194,7 +191,6 @@ filter New-GitHubProjectCard
         SupportsShouldProcess,
         DefaultParameterSetName = 'Note')]
     [OutputType({$script:GitHubProjectCardTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -225,8 +221,6 @@ filter New-GitHubProjectCard
 
         [switch] $NoStatus
     )
-
-    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -259,6 +253,13 @@ filter New-GitHubProjectCard
             $hashBody['content_id'] = $PullRequestId
         }
     }
+
+    if (-not $PSCmdlet.ShouldProcess($Column, 'Create GitHub Project Card'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -331,7 +332,6 @@ filter Set-GitHubProjectCard
         SupportsShouldProcess,
         DefaultParameterSetName = 'Note')]
     [OutputType({$script:GitHubProjectCardTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
@@ -352,8 +352,6 @@ filter Set-GitHubProjectCard
 
         [switch] $NoStatus
     )
-
-    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -379,6 +377,13 @@ filter Set-GitHubProjectCard
         $telemetryProperties['Restore'] = $true
         $hashBody.add('archived', $false)
     }
+
+    if (-not $PSCmdlet.ShouldProcess($Card, 'Set GitHub Project Card'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -468,21 +473,23 @@ filter Remove-GitHubProjectCard
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($Card, "Remove card"))
+    if (-not $PSCmdlet.ShouldProcess($Card, 'Remove GitHub Project Card'))
     {
-        $params = @{
-            'UriFragment' = $uriFragment
-            'Description' = $description
-            'AccessToken' = $AccessToken
-            'Method' = 'Delete'
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            'AcceptHeader' = $script:inertiaAcceptHeader
-        }
-
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Description' = $description
+        'AccessToken' = $AccessToken
+        'Method' = 'Delete'
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        'AcceptHeader' = $script:inertiaAcceptHeader
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Move-GitHubProjectCard
@@ -545,7 +552,6 @@ filter Move-GitHubProjectCard
         the column with ID 123456.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
@@ -603,6 +609,13 @@ filter Move-GitHubProjectCard
         $telemetryProperties['Column'] = $true
         $hashBody.add('column_id', $Column)
     }
+
+    if (-not $PSCmdlet.ShouldProcess($Card, 'Move GitHub Project Card'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment

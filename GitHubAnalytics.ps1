@@ -37,10 +37,7 @@ function Group-GitHubIssue
         $issues += Get-GitHubIssue -Uri 'https://github.com/powershell/xactivedirectory'
         $issues | Group-GitHubIssue -Weeks 12 -DateType Closed
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Weekly')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding(DefaultParameterSetName='Weekly')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="DateType due to PowerShell/PSScriptAnalyzer#1472")]
     param
     (
@@ -165,10 +162,7 @@ function Group-GitHubPullRequest
         $pullRequests += Get-GitHubPullRequest -Uri 'https://github.com/powershell/xactivedirectory'
         $pullRequests | Group-GitHubPullRequest -Weeks 12 -DateType Closed
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Weekly')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding(DefaultParameterSetName='Weekly')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="DateType due to PowerShell/PSScriptAnalyzer#1472")]
     param
     (

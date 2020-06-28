@@ -62,11 +62,8 @@ filter Get-GitHubAssignee
 
         Lists the available assignees for issues from the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubUserTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -184,11 +181,8 @@ filter Test-GitHubAssignee
         Checks if a user has permission to be assigned to an issue
         from the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType([bool])]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -341,7 +335,6 @@ function New-GitHubAssignee
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubIssueTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -390,8 +383,6 @@ function New-GitHubAssignee
 
     end
     {
-        Write-InvocationLog
-
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -418,6 +409,13 @@ function New-GitHubAssignee
             'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
+
+        if (-not $PSCmdlet.ShouldProcess($Issue, "Add Assignee(s) $($userNames -join ',')"))
+        {
+            return
+        }
+
+        Write-InvocationLog
 
         return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
     }
@@ -575,8 +573,6 @@ function Remove-GitHubAssignee
 
     end
     {
-        Write-InvocationLog
-
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -597,21 +593,25 @@ function Remove-GitHubAssignee
             $ConfirmPreference = 'None'
         }
 
-        if ($PSCmdlet.ShouldProcess($userNames -join ', ', "Remove assignee(s)"))
+        if (-not $PSCmdlet.ShouldProcess($Issue, "Remove assignee(s) $($userNames -join ', ')"))
         {
-            $params = @{
-                'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
-                'Body' = (ConvertTo-Json -InputObject $hashBody)
-                'Method' = 'Delete'
-                'Description' = "Removing assignees from issue $Issue for $RepositoryName"
-                'AccessToken' = $AccessToken
-                'AcceptHeader' = $script:symmetraAcceptHeader
-                'TelemetryEventName' = $MyInvocation.MyCommand.Name
-                'TelemetryProperties' = $telemetryProperties
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            }
-
-            return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+            return
         }
+
+        Write-InvocationLog
+
+        $params = @{
+            'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Delete'
+            'Description' = "Removing assignees from issue $Issue for $RepositoryName"
+            'AccessToken' = $AccessToken
+            'AcceptHeader' = $script:symmetraAcceptHeader
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
     }
 }

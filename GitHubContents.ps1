@@ -103,12 +103,9 @@
         Unable to specify Path as ValueFromPipeline because a Repository object may be incorrectly
         coerced into a string used for Path, thus confusing things.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType([String])]
     [OutputType({$script:GitHubContentTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
@@ -425,94 +422,96 @@ filter Set-GitHubContent
         $hashBody['sha'] = $Sha
     }
 
-    if ($PSCmdlet.ShouldProcess(
+    if (-not $PSCmdlet.ShouldProcess(
         "$BranchName branch of $RepositoryName",
         "Set GitHub Contents on $Path"))
     {
-        Write-InvocationLog
+        return
+    }
 
-        $params = @{
-            UriFragment = $uriFragment
-            Description = "Writing content for $Path in the $BranchName branch of $RepositoryName"
-            Body = (ConvertTo-Json -InputObject $hashBody)
-            Method = 'Put'
-            AccessToken = $AccessToken
-            TelemetryEventName = $MyInvocation.MyCommand.Name
-            TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-                -ConfigValueName DefaultNoStatus)
-        }
+    Write-InvocationLog
 
-        try
+    $params = @{
+        UriFragment = $uriFragment
+        Description = "Writing content for $Path in the $BranchName branch of $RepositoryName"
+        Body = (ConvertTo-Json -InputObject $hashBody)
+        Method = 'Put'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
+            -ConfigValueName DefaultNoStatus)
+    }
+
+    try
+    {
+        return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+    }
+    catch
+    {
+        $overwriteShaRequired = $false
+
+        # Temporary code to handle current differences in exception object between PS5 and PS7
+        if ($PSVersionTable.PSedition -eq 'Core')
         {
-            return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
-        }
-        catch
-        {
-            $overwriteShaRequired = $false
-
-            # Temporary code to handle current differences in exception object between PS5 and PS7
-            if ($PSVersionTable.PSedition -eq 'Core')
+            $errorMessage = ($_.ErrorDetails.Message | ConvertFrom-Json).message -replace '\n',' ' -replace '\"','"'
+            if (($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException]) -and
+                ($errorMessage -eq 'Invalid request.  "sha" wasn''t supplied.'))
             {
-                $errorMessage = ($_.ErrorDetails.Message | ConvertFrom-Json).message -replace '\n',' ' -replace '\"','"'
-                if (($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException]) -and
-                    ($errorMessage -eq 'Invalid request.  "sha" wasn''t supplied.'))
-                {
-                    $overwriteShaRequired = $true
-                }
-                else
-                {
-                    throw $_
-                }
+                $overwriteShaRequired = $true
             }
             else
             {
-                $errorMessage = $_.Exception.Message  -replace '\n',' ' -replace '\"','"'
-                if ($errorMessage -like '*Invalid request.  "sha" wasn''t supplied.*')
-                {
-                    $overwriteShaRequired = $true
-                }
-                else
-                {
-                    throw $_
-                }
+                throw $_
             }
-
-            if ($overwriteShaRequired)
+        }
+        else
+        {
+            $errorMessage = $_.Exception.Message  -replace '\n',' ' -replace '\"','"'
+            if ($errorMessage -like '*Invalid request.  "sha" wasn''t supplied.*')
             {
-                # Get SHA from current file
-                $getGitHubContentParms = @{
-                    Path = $Path
-                    OwnerName = $OwnerName
-                    RepositoryName = $RepositoryName
-                }
-
-                if ($PSBoundParameters.ContainsKey('BranchName'))
-                {
-                    $getGitHubContentParms['BranchName'] = $BranchName
-                }
-
-                if ($PSBoundParameters.ContainsKey('AccessToken'))
-                {
-                    $getGitHubContentParms['AccessToken'] = $AccessToken
-                }
-
-                if ($PSBoundParameters.ContainsKey('NoStatus'))
-                {
-                    $getGitHubContentParms['NoStatus'] = $NoStatus
-                }
-
-                $object = Get-GitHubContent @getGitHubContentParms
-
-                $hashBody['sha'] = $object.sha
-                $params['body'] = ConvertTo-Json -InputObject $hashBody
-
-                $message = 'Replacing the content of an existing file requires the current SHA ' +
-                    'of that file.  Retrieving the SHA now.'
-                Write-Log -Level Verbose -Message $message
-
-                return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+                $overwriteShaRequired = $true
             }
+            else
+            {
+                throw $_
+            }
+        }
+
+        if ($overwriteShaRequired)
+        {
+            # Get SHA from current file
+            $getGitHubContentParms = @{
+                Path = $Path
+                OwnerName = $OwnerName
+                RepositoryName = $RepositoryName
+            }
+
+            if ($PSBoundParameters.ContainsKey('BranchName'))
+            {
+                $getGitHubContentParms['BranchName'] = $BranchName
+            }
+
+            if ($PSBoundParameters.ContainsKey('AccessToken'))
+            {
+                $getGitHubContentParms['AccessToken'] = $AccessToken
+            }
+
+            if ($PSBoundParameters.ContainsKey('NoStatus'))
+            {
+                $getGitHubContentParms['NoStatus'] = $NoStatus
+            }
+
+            $object = Get-GitHubContent @getGitHubContentParms
+
+            $hashBody['sha'] = $object.sha
+            $params['body'] = ConvertTo-Json -InputObject $hashBody
+
+            $message = 'Replacing the content of an existing file requires the current SHA ' +
+                'of that file.  Retrieving the SHA now.'
+            Write-Log -Level Verbose -Message $message
+
+            return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
         }
     }
 }

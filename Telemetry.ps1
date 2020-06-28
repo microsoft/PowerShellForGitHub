@@ -144,7 +144,7 @@ function Invoke-SendTelemetryEvent
         Invoke-* methods share a common base code.  Leaving this as-is to make this file
         easier to share out with other PowerShell projects.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We use global variables sparingly and intentionally for module configuration, and employ a consistent naming convention.")]
     param(
         [Parameter(Mandatory)]
@@ -170,80 +170,74 @@ function Invoke-SendTelemetryEvent
 
         if ($NoStatus)
         {
-            if ($PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
-            {
-                $params = @{}
-                $params.Add("Uri", $uri)
-                $params.Add("Method", $method)
-                $params.Add("Headers", $headers)
-                $params.Add("UseDefaultCredentials", $true)
-                $params.Add("UseBasicParsing", $true)
-                $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
-                $params.Add("Body", $bodyAsBytes)
+            $params = @{}
+            $params.Add("Uri", $uri)
+            $params.Add("Method", $method)
+            $params.Add("Headers", $headers)
+            $params.Add("UseDefaultCredentials", $true)
+            $params.Add("UseBasicParsing", $true)
+            $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+            $params.Add("Body", $bodyAsBytes)
 
-                # Disable Progress Bar in function scope during Invoke-WebRequest
-                $ProgressPreference = 'SilentlyContinue'
+            # Disable Progress Bar in function scope during Invoke-WebRequest
+            $ProgressPreference = 'SilentlyContinue'
 
-                $result = Invoke-WebRequest @params
-            }
+            $result = Invoke-WebRequest @params
         }
         else
         {
             $jobName = "Invoke-SendTelemetryEvent-" + (Get-Date).ToFileTime().ToString()
 
-            if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
-            {
-                [scriptblock]$scriptBlock = {
-                    param($Uri, $Method, $Headers, $BodyAsBytes, $TimeoutSec, $ScriptRootPath)
+            [scriptblock]$scriptBlock = {
+                param($Uri, $Method, $Headers, $BodyAsBytes, $TimeoutSec, $ScriptRootPath)
 
-                    # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
-                    # the context of this script block since we're running in a different
-                    # PowerShell process and need access to Get-HttpWebResponseContent and
-                    # config values referenced within Write-Log.
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
+                # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
+                # the context of this script block since we're running in a different
+                # PowerShell process and need access to Get-HttpWebResponseContent and
+                # config values referenced within Write-Log.
+                . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
+                . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
 
-                    $params = @{}
-                    $params.Add("Uri", $Uri)
-                    $params.Add("Method", $Method)
-                    $params.Add("Headers", $Headers)
-                    $params.Add("UseDefaultCredentials", $true)
-                    $params.Add("UseBasicParsing", $true)
-                    $params.Add("TimeoutSec", $TimeoutSec)
-                    $params.Add("Body", $BodyAsBytes)
+                $params = @{}
+                $params.Add("Uri", $Uri)
+                $params.Add("Method", $Method)
+                $params.Add("Headers", $Headers)
+                $params.Add("UseDefaultCredentials", $true)
+                $params.Add("UseBasicParsing", $true)
+                $params.Add("TimeoutSec", $TimeoutSec)
+                $params.Add("Body", $BodyAsBytes)
 
+                try
+                {
+                    # Disable Progress Bar in function scope during Invoke-WebRequest
+                    $ProgressPreference = 'SilentlyContinue'
+
+                    Invoke-WebRequest @params
+                }
+                catch [System.Net.WebException]
+                {
+                    # We need to access certain headers in the exception handling,
+                    # but the actual *values* of the headers of a WebException don't get serialized
+                    # when the RemoteException wraps it.  To work around that, we'll extract the
+                    # information that we actually care about *now*, and then we'll throw our own exception
+                    # that is just a JSON object with the data that we'll later extract for processing in
+                    # the main catch.
+                    $ex = @{}
+                    $ex.Message = $_.Exception.Message
+                    $ex.StatusCode = $_.Exception.Response.StatusCode
+                    $ex.StatusDescription = $_.Exception.Response.StatusDescription
+                    $ex.InnerMessage = $_.ErrorDetails.Message
                     try
                     {
-                        # Disable Progress Bar in function scope during Invoke-WebRequest
-                        $ProgressPreference = 'SilentlyContinue'
-
-                        Invoke-WebRequest @params
+                        $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
                     }
-                    catch [System.Net.WebException]
+                    catch
                     {
-                        # We need to access certain headers in the exception handling,
-                        # but the actual *values* of the headers of a WebException don't get serialized
-                        # when the RemoteException wraps it.  To work around that, we'll extract the
-                        # information that we actually care about *now*, and then we'll throw our own exception
-                        # that is just a JSON object with the data that we'll later extract for processing in
-                        # the main catch.
-                        $ex = @{}
-                        $ex.Message = $_.Exception.Message
-                        $ex.StatusCode = $_.Exception.Response.StatusCode
-                        $ex.StatusDescription = $_.Exception.Response.StatusDescription
-                        $ex.InnerMessage = $_.ErrorDetails.Message
-                        try
-                        {
-                            $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
-                        }
-                        catch
-                        {
-                            Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
-                        }
-
-                        $jsonConversionDepth = 20 # Seems like it should be more than sufficient
-                        throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
+                        Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
                     }
+
+                    $jsonConversionDepth = 20 # Seems like it should be more than sufficient
+                    throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
                 }
 
                 $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
@@ -254,16 +248,10 @@ function Invoke-SendTelemetryEvent
                     (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
                     $PSScriptRoot)
 
-                if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
-                {
-                    $description = 'Sending telemetry data'
-                    Wait-JobWithAnimation -Name $jobName -Description $Description
-                }
+                $description = 'Sending telemetry data'
+                Wait-JobWithAnimation -Name $jobName -Description $Description
 
-                if ($PSCmdlet.ShouldProcess($jobName, "Receive-Job"))
-                {
-                    $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
-                }
+                $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
             }
 
             if ($remoteErrors.Count -gt 0)
@@ -433,8 +421,9 @@ function Set-TelemetryEvent
         Because of the short-running nature of this module, we always "flush" the events as soon
         as they have been posted to ensure that they make it to Application Insights.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification='Function is not state changing')]
     param(
         [Parameter(Mandatory)]
         [string] $EventName,
@@ -546,8 +535,9 @@ function Set-TelemetryException
         Because of the short-running nature of this module, we always "flush" the events as soon
         as they have been posted to ensure that they make it to Application Insights.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification='Function is not state changing.')]
     param(
         [Parameter(Mandatory)]
         [System.Exception] $Exception,

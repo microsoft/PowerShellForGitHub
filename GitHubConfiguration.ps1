@@ -41,8 +41,7 @@ function Initialize-GitHubConfiguration
     .NOTES
         Internal helper method.  This is actually invoked at the END of this file.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     param()
 
     $script:seenTokenWarningThisSession = $false
@@ -179,7 +178,6 @@ function Set-GitHubConfiguration
     [CmdletBinding(
         PositionalBinding = $false,
         SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [ValidatePattern('^(?!https?:)(?!api\.)(?!www\.).*')]
         [string] $ApiHostName,
@@ -244,6 +242,11 @@ function Set-GitHubConfiguration
                 Add-Member -InputObject $persistedConfig -Name $name -Value $value -MemberType NoteProperty -Force
             }
         }
+    }
+
+    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration',' Save'))
+    {
+        return
     }
 
     if (-not $SessionOnly)
@@ -332,8 +335,7 @@ function Save-GitHubConfiguration
 
         Serializes $config as a JSON object to 'c:\foo\config.json'
 #>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [PSCustomObject] $Configuration,
@@ -341,6 +343,11 @@ function Save-GitHubConfiguration
         [Parameter(Mandatory)]
         [string] $Path
     )
+
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration','Save'))
+    {
+        return
+    }
 
     $null = New-Item -Path $Path -Force
     ConvertTo-Json -InputObject $Configuration |
@@ -507,12 +514,14 @@ function Reset-GitHubConfiguration
 
     Set-TelemetryEvent -EventName Reset-GitHubConfiguration
 
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration','Reset'))
+    {
+        return
+    }
+
     if (-not $SessionOnly)
     {
-        if ($PSCmdlet.ShouldProcess($script:configurationFilePath, "Delete configuration file"))
-        {
-            $null = Remove-Item -Path $script:configurationFilePath -Force -ErrorAction SilentlyContinue -ErrorVariable ev
-        }
+        $null = Remove-Item -Path $script:configurationFilePath -Force -ErrorAction SilentlyContinue -ErrorVariable ev
 
         if (($null -ne $ev) -and ($ev.Count -gt 0) -and ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
         {
@@ -555,8 +564,7 @@ function Read-GitHubConfiguration
         Returns back an object with the deserialized object contained in the specified file,
         if it exists and is valid.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     param(
         [string] $Path
     )
@@ -609,8 +617,7 @@ function Import-GitHubConfiguration
         within a deserialized object from the content in $Path.  The configuration object
         is then returned.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     param(
         [string] $Path
     )
@@ -692,12 +699,16 @@ function Backup-GitHubConfiguration
         Writes the user's current configuration file to c:\foo\config.json.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [string] $Path,
 
         [switch] $Force
     )
+
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration', 'Backup'))
+    {
+        return
+    }
 
     # Make sure that the path that we're going to be storing the file exists.
     $null = New-Item -Path (Split-Path -Path $Path -Parent) -ItemType Directory -Force
@@ -734,13 +745,17 @@ function Restore-GitHubConfiguration
         Makes the contents of c:\foo\config.json be the user's configuration for the module.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [ValidateScript({
             if (Test-Path -Path $_ -PathType Leaf) { $true }
             else { throw "$_ does not exist." }})]
         [string] $Path
     )
+
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration', 'Restore'))
+    {
+        return
+    }
 
     # Make sure that the path that we're going to be storing the file exists.
     $null = New-Item -Path (Split-Path -Path $script:configurationFilePath -Parent) -ItemType Directory -Force
@@ -787,8 +802,7 @@ function Resolve-ParameterWithDefaultConfigurationValue
         Checks to see if the NoStatus switch was provided by the user from the calling method.  If
         so, uses that value. otherwise uses the DefaultNoStatus value currently configured.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     param(
         $BoundParameters = (Get-Variable -Name PSBoundParameters -Scope 1 -ValueOnly),
 
@@ -880,15 +894,12 @@ function Set-GitHubAuthentication
         authentication, but keeps it in memory only for the duration of this PowerShell session..
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUsePSCredentialType", "", Justification="The System.Management.Automation.Credential() attribute does not appear to work in PowerShell v4 which we need to support.")]
     param(
         [PSCredential] $Credential,
 
         [switch] $SessionOnly
     )
-
-    Write-InvocationLog
 
     if (-not $PSBoundParameters.ContainsKey('Credential'))
     {
@@ -910,15 +921,20 @@ function Set-GitHubAuthentication
     }
 
     $script:accessTokenCredential = $Credential
+
+    if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Set'))
+    {
+        return
+    }
+
+    Write-InvocationLog
+
     if (-not $SessionOnly)
     {
-        if ($PSCmdlet.ShouldProcess("Store API token as a SecureString in a local file"))
-        {
-            $null = New-Item -Path $script:accessTokenFilePath -Force
-            $script:accessTokenCredential.Password |
-                ConvertFrom-SecureString |
-                Set-Content -Path $script:accessTokenFilePath -Force
-        }
+        $null = New-Item -Path $script:accessTokenFilePath -Force
+        $script:accessTokenCredential.Password |
+            ConvertFrom-SecureString |
+            Set-Content -Path $script:accessTokenFilePath -Force
     }
 }
 
@@ -953,28 +969,27 @@ function Clear-GitHubAuthentication
         [switch] $SessionOnly
     )
 
-    Write-InvocationLog
-
     Set-TelemetryEvent -EventName Clear-GitHubAuthentication
 
-    if ($PSCmdlet.ShouldProcess("Clear memory cache"))
+    if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Clear'))
     {
-        $script:accessTokenCredential = $null
+        return
     }
+
+    Write-InvocationLog
+
+    $script:accessTokenCredential = $null
 
     if (-not $SessionOnly)
     {
-        if ($PSCmdlet.ShouldProcess("Clear file-based cache"))
-        {
-            Remove-Item -Path $script:accessTokenFilePath -Force -ErrorAction SilentlyContinue -ErrorVariable ev
+        Remove-Item -Path $script:accessTokenFilePath -Force -ErrorAction SilentlyContinue -ErrorVariable ev
 
-            if (($null -ne $ev) -and
-                ($ev.Count -gt 0) -and
-                ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
-            {
-                $message = "Experienced a problem trying to remove the file that persists the Access Token [$script:accessTokenFilePath]."
-                Write-Log -Message $message -Level Warning -Exception $ev[0]
-            }
+        if (($null -ne $ev) -and
+            ($ev.Count -gt 0) -and
+            ($ev[0].FullyQualifiedErrorId -notlike 'PathNotFound*'))
+        {
+            $message = "Experienced a problem trying to remove the file that persists the Access Token [$script:accessTokenFilePath]."
+            Write-Log -Message $message -Level Warning -Exception $ev[0]
         }
     }
 
@@ -1006,9 +1021,8 @@ function Get-AccessToken
     .OUTPUTS
         System.String
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="For back-compat with v0.1.0, this still supports the deprecated method of using a global variable for storing the Access Token.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [OutputType([String])]
     param(
         [string] $AccessToken
@@ -1085,8 +1099,7 @@ function Test-GitHubAuthenticationConfigured
 
         Returns $true if the session is authenticated; $false otherwise
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     [OutputType([Boolean])]
     param()
 

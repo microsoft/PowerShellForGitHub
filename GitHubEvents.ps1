@@ -69,11 +69,8 @@ filter Get-GitHubEvent
 
         Get the events for the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='RepositoryElements')]
+    [CmdletBinding(DefaultParameterSetName = 'RepositoryElements')]
     [OutputType({$script:GitHubEventTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,

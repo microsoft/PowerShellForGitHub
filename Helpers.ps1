@@ -259,8 +259,7 @@ function Write-Log
         to make sense.  In this case, the cmdlet should accumulate the messages and, at the end,
         include the exception information.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We need to be able to access the PID for logging purposes, and it is accessed via a global variable.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidOverwritingBuiltInCmdlets", "", Justification="Write-Log is an internal function being incorrectly exported by PSDesiredStateConfiguration.  See PowerShell/PowerShell#7209")]
     param(
@@ -384,7 +383,7 @@ function Write-Log
                 }
                 else
                 {
-                    $logFileMessage | Out-File -FilePath $Path -Append
+                    $logFileMessage | Out-File -FilePath $Path -Append -WhatIf:$false -Confirm:$false
                 }
             }
         }
@@ -458,7 +457,7 @@ function Write-InvocationLog
 
         ExcludeParameter will always take precedence over RedactParameter.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param(
         [Management.Automation.InvocationInfo] $Invocation = (Get-Variable -Name MyInvocation -Scope 1 -ValueOnly),
 

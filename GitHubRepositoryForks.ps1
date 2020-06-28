@@ -61,11 +61,8 @@ filter Get-GitHubRepositoryFork
 
         Gets all of the forks for the microsoft\PowerShellForGitHub repository.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -187,7 +184,6 @@ filter New-GitHubRepositoryFork
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubRepositoryTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -209,8 +205,6 @@ filter New-GitHubRepositoryFork
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -227,6 +221,13 @@ filter New-GitHubRepositoryFork
         $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
         $getParams += "organization=$OrganizationName"
     }
+
+    if (-not $PSCmdlet.ShouldProcess($RepositoryName, 'Forking GitHub Repository'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')
