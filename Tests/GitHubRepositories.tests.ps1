@@ -987,7 +987,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryContributor'
             }
 
             It 'Should return expected number of contributors' {
@@ -1012,7 +1012,7 @@ try
 
             It 'Should return objects of the correct type' {
                 $contributors[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryContributorStatistics'
-                $contributors[0].author.PSObject.TypeNames[0] = 'GitHub.User'
+                $contributors[0].author.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
             It 'Should return expected number of contributors' {
@@ -1040,7 +1040,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $contributors.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $contributors[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryContributor'
             }
 
             It 'Should return at least one result' {
@@ -1074,7 +1074,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryCollaborator'
             }
 
             It 'Should return expected number of collaborators' {
@@ -1092,7 +1092,7 @@ try
             }
 
             It 'Should return objects of the correct type' {
-                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $collaborators[0].PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryCollaborator'
             }
 
             It 'Should return expected number of collaborators' {
