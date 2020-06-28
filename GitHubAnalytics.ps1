@@ -37,7 +37,7 @@ function Group-GitHubIssue
         $issues += Get-GitHubIssue -Uri 'https://github.com/powershell/xactivedirectory'
         $issues | Group-GitHubIssue -Weeks 12 -DateType Closed
 #>
-    [CmdletBinding(DefaultParameterSetName='Weekly')]
+    [CmdletBinding(DefaultParameterSetName = 'Weekly')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="DateType due to PowerShell/PSScriptAnalyzer#1472")]
     param
     (
