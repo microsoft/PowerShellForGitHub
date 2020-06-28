@@ -72,11 +72,8 @@ filter Get-GitHubUser
 
         Gets information on the current authenticated user.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='ListAndSearch')]
+    [CmdletBinding(DefaultParameterSetName = 'ListAndSearch')]
     [OutputType({$script:GitHubUserTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -186,11 +183,8 @@ filter Get-GitHubUserContextualInformation
         Get-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 70 |
             Get-GitHubUserContextualInformation -User octocat
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='NoContext')]
+    [CmdletBinding(DefaultParameterSetName = 'NoContext')]
     [OutputType({$script:GitHubUserContextualInformationTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -355,7 +349,6 @@ function Set-GitHubProfile
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType({$script:GitHubUserTypeName})]
     [Alias('Update-GitHubCurrentUser')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [string] $Name,
 
@@ -386,6 +379,13 @@ function Set-GitHubProfile
     if ($PSBoundParameters.ContainsKey('Location')) { $hashBody['location'] = $Location }
     if ($PSBoundParameters.ContainsKey('Bio')) { $hashBody['bio'] = $Bio }
     if ($PSBoundParameters.ContainsKey('Hireable')) { $hashBody['hireable'] = $Hireable.ToBool() }
+
+    if (-not $PSCmdlet.ShouldProcess('Update Current GitHub User'))
+    {
+        return
+    }
+
+    Write-InvocationLog
 
     $params = @{
         'UriFragment' = 'user'

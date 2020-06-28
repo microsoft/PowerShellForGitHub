@@ -69,11 +69,8 @@ filter Get-GitHubReferrerTraffic
 
         Get the top 10 referrers over the last 14 days from the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubReferrerTrafficTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -185,11 +182,8 @@ filter Get-GitHubPathTraffic
         Get the top 10 popular contents over the last 14 days
         from the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubPathTrafficTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -307,11 +301,8 @@ filter Get-GitHubViewTraffic
         Get the total number of views and breakdown per day or week for the last 14 days from
         the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubViewTrafficTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -433,11 +424,8 @@ filter Get-GitHubCloneTraffic
         Get the total number of clones and breakdown per day or week for the last 14 days
         from the microsoft\PowerShellForGitHub project.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubCloneTrafficTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]

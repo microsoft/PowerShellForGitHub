@@ -62,9 +62,8 @@ function Get-GitHubRateLimit
     .EXAMPLE
         Get-GitHubRateLimit
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [OutputType({$script:GitHubRateLimitTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [string] $AccessToken,
@@ -135,9 +134,8 @@ function ConvertFrom-GitHubMarkdown
 
         Returns back '<p><strong>Bolded Text</strong></p>'
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [OutputType([String])]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -276,12 +274,9 @@ filter Get-GitHubLicense
 
         [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='All')]
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType({$script:GitHubLicenseTypeName})]
     [OutputType({$script:GitHubContentTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -410,9 +405,8 @@ function Get-GitHubEmoji
     .EXAMPLE
         Get-GitHubEmoji
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [OutputType({$script:GitHubEmojiTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [string] $AccessToken,
@@ -517,9 +511,8 @@ filter Get-GitHubCodeOfConduct
 
         [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($result.content))
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [OutputType({$script:GitHubCodeOfConductTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -648,9 +641,8 @@ filter Get-GitHubGitIgnore
 
         Returns the content of the VisualStudio.gitignore template.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [OutputType({$script:GitHubGitignoreTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             ValueFromPipeline,

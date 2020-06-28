@@ -118,7 +118,7 @@ function Invoke-GHRestMethod
         This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
         to the headers that are returned in the response, and Invoke-RestMethod drops those headers.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string] $UriFragment,
@@ -254,11 +254,6 @@ function Invoke-GHRestMethod
         }
 
         $headers.Add("Content-Type", $ContentType)
-    }
-
-    if (-not $PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
-    {
-        return
     }
 
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
@@ -633,7 +628,7 @@ function Invoke-GHRestMethodMultipleResult
         but the request happens in the foreground and there is no additional status
         shown to the user until a response is returned from the REST request.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [OutputType([Object[]])]
     param(
@@ -918,8 +913,7 @@ function Resolve-RepositoryElements
     .OUTPUTS
         [PSCustomObject] - The OwnerName and RepositoryName elements to be used
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="This was the most accurate name that I could come up with.  Internal only anyway.")]
     param
     (

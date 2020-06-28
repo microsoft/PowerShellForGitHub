@@ -139,7 +139,8 @@ function Invoke-SendTelemetryEvent
         Invoke-* methods share a common base code.  Leaving this as-is to make this file
         easier to share out with other PowerShell projects.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We use global variables sparingly and intentionally for module configuration, and employ a consistent naming convention.")]
     param(
         [Parameter(Mandatory)]
         [PSCustomObject] $TelemetryEvent
@@ -296,8 +297,9 @@ function Set-TelemetryEvent
         Because of the short-running nature of this module, we always "flush" the events as soon
         as they have been posted to ensure that they make it to Application Insights.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification='Function is not state changing')]
     param(
         [Parameter(Mandatory)]
         [string] $EventName,
@@ -392,8 +394,9 @@ function Set-TelemetryException
         Because of the short-running nature of this module, we always "flush" the events as soon
         as they have been posted to ensure that they make it to Application Insights.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification='Function is not state changing.')]
     param(
         [Parameter(Mandatory)]
         [System.Exception] $Exception,

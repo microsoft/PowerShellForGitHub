@@ -96,11 +96,8 @@ filter Get-GitHubRepositoryBranch
         again.  This tries to show some of the different types of objects you can pipe into this
         function.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubBranchTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Get-GitHubBranch')]
     param(
