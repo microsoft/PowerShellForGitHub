@@ -821,8 +821,8 @@ function Repair-LogFile
     .EXAMPLE
         Repair-LogFile
 #>
-    $path = (Get-GitHubConfiguration -Name LogPath -ErrorAction SilentlyContinue)
-    if ($path)
+    $path = (Get-GitHubConfiguration -Name LogPath)
+    if (Test-Path -Path $path -PathType Leaf)
     {
         $logFileBytes = Get-Content -Encoding Byte -TotalCount 2 -Path $path
         if ($logFileBytes -eq @(254, 255))
@@ -832,7 +832,7 @@ function Repair-LogFile
             try
             {
                 $stream.WriteLine($logFileContent)
-                Write-Log -Message 'Log file [$path] has been rewritten to be encoded with UTF8.' -Level Verbose
+                Write-Log -Message "Log file [$path] has been rewritten to be encoded with UTF8." -Level Verbose
             }
             finally
             {
