@@ -79,8 +79,9 @@ function Set-GitHubConfiguration
     .PARAMETER DefaultNoStatus
         Control if the -NoStatus switch should be passed-in by default to all methods.
         The -NoStatus switch has been deprecated.  Commands in this module no longer display status
-        on the console, and therefore passing in -NoStatus to a command has no effect.
-        Therefore, the value of this configuration setting has no impact on command execution.
+        on the console, thus passing in -NoStatus to a command no longer has any impact.
+        Therefore, the value of this configuration setting also no longer has any impact on
+        command execution.
 
     .PARAMETER DefaultOwnerName
         The owner name that should be used with a command that takes OwnerName as a parameter
