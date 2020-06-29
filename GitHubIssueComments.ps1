@@ -556,7 +556,7 @@ filter Set-GitHubIssueComment
         'body' = $Body
     }
 
-    if (-not $PSCmdlet.ShouldProcess($Issue, 'Create GitHub Issue Comment'))
+    if (-not $PSCmdlet.ShouldProcess($Comment, 'Update GitHub Issue Comment'))
     {
         return
     }

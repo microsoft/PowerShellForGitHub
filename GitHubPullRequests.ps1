@@ -395,6 +395,7 @@ filter New-GitHubPullRequest
     if ($PSBoundParameters.ContainsKey('Title'))
     {
         $description = "Creating pull request $Title in $RepositoryName"
+        $shouldProcessAction = "Create GitHub Pull Request $Title"
         $postBody['title'] = $Title
 
         # Body may be whitespace, although this might not be useful
@@ -406,6 +407,7 @@ filter New-GitHubPullRequest
     else
     {
         $description = "Creating pull request for issue $Issue in $RepositoryName"
+        $shouldProcessAction = "Create GitHub Pull Request for Issue $Issue"
         $postBody['issue'] = $Issue
     }
 
@@ -420,7 +422,7 @@ filter New-GitHubPullRequest
         $acceptHeader = 'application/vnd.github.shadow-cat-preview+json'
     }
 
-    if (-not $PSCmdlet.ShouldProcess($Title, 'Create GitHub Pull Request'))
+    if (-not $PSCmdlet.ShouldProcess($RepositoryName, $shouldProcessAction))
     {
         return
     }

@@ -265,7 +265,7 @@ function Set-GitHubConfiguration
         }
     }
 
-    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration',' Save'))
+    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration','Save'))
     {
         return
     }
@@ -367,7 +367,7 @@ function Save-GitHubConfiguration
         [string] $Path
     )
 
-    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration','Save'))
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration', 'Save'))
     {
         return
     }
@@ -539,7 +539,7 @@ function Reset-GitHubConfiguration
 
     Set-TelemetryEvent -EventName Reset-GitHubConfiguration
 
-    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration','Reset'))
+    if (-not $PSCmdlet.ShouldProcess('GitHub Configuration', 'Reset'))
     {
         return
     }

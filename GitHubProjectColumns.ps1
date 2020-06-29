@@ -477,7 +477,7 @@ filter Move-GitHubProjectColumn
         'position' = $Position
     }
 
-    if (-not $PSCmdlet.ShouldProcess($ColumnName, 'Move GitHub Project Column'))
+    if (-not $PSCmdlet.ShouldProcess($Column, 'Move GitHub Project Column'))
     {
         return
     }
