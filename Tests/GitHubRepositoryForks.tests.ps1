@@ -19,8 +19,8 @@ try
 {
     # Define Script-scoped, readonly, hidden variables.
     @{
-        upstreamOwnerName = 'microsoft'
-        upstreamRepositoryName = 'PowerShellForGitHub'
+        upstreamOwnerName = 'octocat'
+        upstreamRepositoryName = 'Hello-World'
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }

@@ -112,7 +112,7 @@ try
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
-            $updatedIssue = New-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Assignee $owner.login
+            $updatedIssue = Add-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Assignee $owner.login
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -149,7 +149,7 @@ try
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
-            $updatedIssue = $repo | New-GitHubAssignee -Issue $issue.number -Assignee $owner.login
+            $updatedIssue = $repo | Add-GitHubAssignee -Issue $issue.number -Assignee $owner.login
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -186,7 +186,7 @@ try
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
-            $updatedIssue = $issue | New-GitHubAssignee -Assignee $owner.login
+            $updatedIssue = $issue | Add-GitHubAssignee -Assignee $owner.login
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -223,7 +223,7 @@ try
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
-            $updatedIssue = $owner | New-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number
+            $updatedIssue = $owner | Add-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
