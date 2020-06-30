@@ -105,7 +105,7 @@ function Invoke-GHRestMethod
         This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
         to the headers that are returned in the response, and Invoke-RestMethod drops those headers.
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string] $UriFragment,
@@ -192,6 +192,11 @@ function Invoke-GHRestMethod
     if ($Method -in $ValidBodyContainingRequestMethods)
     {
         $headers.Add("Content-Type", "application/json; charset=UTF-8")
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
+    {
+        return
     }
 
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
@@ -527,7 +532,7 @@ function Invoke-GHRestMethodMultipleResult
         but the request happens in the foreground and there is no additional status
         shown to the user until a response is returned from the REST request.
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [OutputType([Object[]])]
     param(
@@ -551,6 +556,11 @@ function Invoke-GHRestMethodMultipleResult
 
         [switch] $NoStatus
     )
+
+    if (-not $PSCmdlet.ShouldProcess($UriFragment, "Invoke-GHRestMethod"))
+    {
+        return
+    }
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
 

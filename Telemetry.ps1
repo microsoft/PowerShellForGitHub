@@ -139,7 +139,7 @@ function Invoke-SendTelemetryEvent
         Invoke-* methods share a common base code.  Leaving this as-is to make this file
         easier to share out with other PowerShell projects.
 #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [PSCustomObject] $TelemetryEvent
@@ -152,6 +152,11 @@ function Invoke-SendTelemetryEvent
 
     $body = ConvertTo-Json -InputObject $TelemetryEvent -Depth $jsonConversionDepth -Compress
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+
+    if (-not $PSCmdlet.ShouldProcess($uri, "Invoke-WebRequest"))
+    {
+        return
+    }
 
     try
     {
