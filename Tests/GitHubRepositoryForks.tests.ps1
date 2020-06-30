@@ -20,7 +20,7 @@ try
     # Define Script-scoped, readonly, hidden variables.
     @{
         upstreamOwnerName = 'octocat'
-        upstreamRepositoryName = 'Hello-World'
+        upstreamRepositoryName = 'git-consortium'
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
