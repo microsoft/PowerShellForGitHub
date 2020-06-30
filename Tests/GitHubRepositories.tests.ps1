@@ -321,16 +321,48 @@ try
                 }
 
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
+                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
             }
 
-            It 'Should support pipeline input for the uri parameter' {
+            It 'Should have the expected type and addititional properties' {
+                $repo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                $repo.name | Should -Be $repoName
+                $repo.private | Should -BeFalse
+                $repo.owner.login | Should -Be $script:ownerName
+                $repo.description | Should -Be $newRepoDesc
+                $repo.is_template | Should -BeFalse
+                $repo.RepositoryId | Should -Be $repo.id
+                $repo.RepositoryUrl | Should -Be $repo.html_url
+            }
+
+            It 'Should have created a .gitignore file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path '.gitignore' } | Should -Not -Throw
+            }
+
+            It 'Should have created a LICENSE file' {
+                { Get-GitHubContent -Uri $repo.svn_url -Path 'LICENSE' } | Should -Not -Throw
+            }
+
+            AfterAll {
+                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context 'When creating a public repository from a template (via pipeline input)' {
+            BeforeAll {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newRepoDesc = 'New Repo Description'
                 $newGitHubRepositoryFromTemplateParms = @{
                     TargetOwnerName = $ownerName
                     TargetRepositoryName = $repoName
+                    Description = $newRepoDesc
                 }
 
-                { $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms -WhatIf } |
-                    Should -Not -Throw
+                $repo = $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
+                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
             }
 
             It 'Should have the expected type and addititional properties' {
