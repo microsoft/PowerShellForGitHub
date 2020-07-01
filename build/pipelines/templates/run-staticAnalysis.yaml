@@ -3,10 +3,16 @@
 # report the results.
 #
 
+parameters:
+- name: 'usePowerShellCore'
+  default: true
+  type: boolean
+
 steps:
   - powershell: |
       Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Force -Verbose
     displayName: 'Install PSScriptAnalyzer'
+    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
 
   - powershell: |
        $results = try { Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ –Recurse -ErrorAction Stop } catch { 'Unexpected Error'; $_.Exception.StackTrace; if ($IsCoreCLR) { Get-Error }; throw }
@@ -16,6 +22,7 @@ steps:
        ./build/scripts/ConvertTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -Path ../ScriptAnalyzer/test-results.xml
     workingDirectory: '$(System.DefaultWorkingDirectory)'
     displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
+    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
 
   - task: PublishTestResults@2
     displayName: 'Publish ScriptAnalyzer Test Results'

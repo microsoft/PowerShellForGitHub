@@ -19,9 +19,42 @@ trigger:
 #- master
 
 jobs:
-- job: Windows
+- job: waitForRunningBuilds
+  displayName: 'Wait for Running Builds'
   pool:
     vmImage: 'windows-latest'
+  timeoutInMinutes: 240
+  continueOnError: true
+  steps:
+  - template: ./templates/wait-runningBuild.yaml
+    parameters:
+      buildQueryPersonalAccessToken: $(BuildQueryPersonalAccessToken)
+
+- job: WindowsPS5
+  displayName: 'Windows - PowerShell 5'
+  pool:
+    vmImage: 'windows-latest'
+  dependsOn: waitForRunningBuilds
+  steps:
+  - template: ./templates/verify-testConfigSettingsHash.yaml
+    parameters:
+      usePowerShellCore: false
+  - template: ./templates/run-staticAnalysis.yaml
+    parameters:
+      usePowerShellCore: false
+  - template: ./templates/run-unitTests.yaml
+    parameters:
+      gitHubAccessToken: $(WindowsPS5CIGitHubAccessToken)
+      gitHubOwnerName: $(WindowsPS5CIGitHubOwnerName)
+      gitHubOrganizationName: $(WindowsPS5CIGitHubOrganizationName)
+      platformName: 'Windows'
+      usePowerShellCore: false
+
+- job: Windows
+  displayName: 'Windows - PowerShell Core'
+  pool:
+    vmImage: 'windows-latest'
+  dependsOn: waitForRunningBuilds
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
@@ -33,8 +66,10 @@ jobs:
       platformName: 'Windows'
 
 - job: Linux
+  displayName: 'Linux - PowerShell Core'
   pool:
     vmImage: 'ubuntu-latest'
+  dependsOn: waitForRunningBuilds
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
@@ -46,8 +81,10 @@ jobs:
       platformName: 'Linux'
 
 - job: macOS
+  displayName: 'macOS - PowerShell Core'
   pool:
     vmImage: 'macOS-latest'
+  dependsOn: waitForRunningBuilds
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml

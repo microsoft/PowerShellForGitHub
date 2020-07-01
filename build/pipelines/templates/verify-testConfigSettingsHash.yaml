@@ -4,6 +4,11 @@
 # the same in order to ensure the correct warning messages are presented to developers running UTs.
 #
 
+parameters:
+- name: 'usePowerShellCore'
+  default: true
+  type: boolean
+
 steps:
   - powershell: |
       . ./Helpers.ps1
@@ -34,5 +39,6 @@ steps:
           "the default hash value is set within the Import-GitHubConfiguration function.")
         throw ($message -join [Environment]::NewLine)
       }
-    displayName: 'Set GitHubConfiguration.ps1 testConfigSettingsHash value.' 
+    displayName: 'Set GitHubConfiguration.ps1 testConfigSettingsHash value.'
+    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
 
