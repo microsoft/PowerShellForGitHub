@@ -48,10 +48,10 @@ steps:
       script: |
         $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
         Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
-      env:
-        ciAccessToken: ${{ parameters.gitHubAccessToken }}
-        ciOwnerName: ${{ parameters.gitHubOwnerName }}
-        ciOrganizationName: ${{ parameters.gitHubOrganizationName }}
+    env:
+      ciAccessToken: ${{ parameters.gitHubAccessToken }}
+      ciOwnerName: ${{ parameters.gitHubOwnerName }}
+      ciOrganizationName: ${{ parameters.gitHubOrganizationName }}
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'

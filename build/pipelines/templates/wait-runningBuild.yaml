@@ -35,5 +35,5 @@ steps:
         }
 
         ./build/scripts/Wait-RunningBuild.ps1 @params
-      env:
-        buildReadAccessToken: ${{ parameters.buildQueryPersonalAccessToken }}
+    env:
+      buildReadAccessToken: ${{ parameters.buildQueryPersonalAccessToken }}
