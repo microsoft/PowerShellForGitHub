@@ -66,6 +66,10 @@ param(
 
 Write-Host '[Wait-RunningBuilds] - Starting'
 
+$elapsedTimeFormat = '{0:hh\:mm\:ss}'
+$stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
+$stopwatch.Start()
+
 $url = "https://dev.azure.com/$OrganizationName/$ProjectName/_apis/build/builds?api-version=5.1&definitions=$BuildDefinitionId"
 $headers = @{
     'Authorization' = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$PersonalAccessToken"))
@@ -90,18 +94,47 @@ do
 
         $thisBuild = $builds.value | Where-Object { $_.id -eq $BuildId }
         $runningBuilds = @($builds.value | Where-Object { $_.status -eq 'inProgress' })
-        $currentRunningBuild = ($runningBuilds | Sort-Object -Property 'Id')[0]
-        $buildsAheadInQueue = @($runningBuilds | Where-Object { $_.id -lt $BuildId })
+        $currentRunningBuild = $runningBuilds | Sort-Object -Property 'Id' | Select-Object -First 1
 
-        if ($BuildId -ne $currentRunningBuild.id)
+        if ($null -eq $currentRunningBuild)
         {
+            Write-Host 'Failed to identify the currently running build.  To prevent an indefinite wait, allowing this build to start.'
+            break
+        }
+        elseif ($BuildId -ne $currentRunningBuild.id)
+        {
+            $buildsAheadInQueue = @($runningBuilds | Where-Object { $_.id -lt $BuildId })
+
+            # We want to display how long the current build has been running for _actively_,
+            # so we need to take into account if it had been queued while the previous build was
+            # running and thus subtract that extra time.
+            $currentRunningBuildStartTime = Get-Date -Date $currentRunningBuild.startTime
+            $lastCompletedBuild = $builds.value |
+                Where-Object { $_.status -ne 'inProgress' } |
+                Select-Object -First 1
+            if ($null -ne $lastCompletedBuild)
+            {
+                $lastCompletedBuildTime = Get-Date -Date $lastCompletedBuild.finishTime
+                if ($lastCompletedBuildTime -gt $currentRunningBuildStartTime)
+                {
+                    $waitedDuration = $lastCompletedBuildTime - $currentRunningBuildStartTime
+                    $currentRunningBuildStartTime.AddMilliseconds($waitedDuration.TotalMilliseconds)
+                }
+            }
+
+            $currentRunningBuildElapsedTime = New-TimeSpan -Start $currentRunningBuildStartTime -End (Get-Date)
+            $currentRunningBuildElapsedTimeFormatted = $elapsedTimeFormat -f $currentRunningBuildElapsedTime
+
+            $timeWaited = New-TimeSpan -Start $thisBuild.startTime -End (Get-Date)
+            $timeWaitedFormatted = $elapsedTimeFormat -f $timeWaited
+
             $message = @(
-                (Get-Date -Format 'o'),
-                "This build: [$BuildId ($($thisBuild.buildNumber))]",
-                "Currently running build: [$($currentRunningBuild.id) ($($currentRunningBuild.buildNumber))]",
-                "Total queued builds: [$($runningBuilds.Count - 1)]",
-                "Builds ahead in queue: [$($buildsAheadInQueue.buildNumber -join ', ')]",
-                "Waiting $NumSecondsSleepBetweenPolling seconds before polling build status for this pipeline again...",
+                "* Time: $(Get-Date -Format 'o')",
+                "  This build: $($thisBuild.id) ($($thisBuild.buildNumber)) [Waiting for $timeWaitedFormatted]",
+                "  Builds ahead in queue: $($buildsAheadInQueue.buildNumber -join ', ')",
+                "  Total queued builds: $($runningBuilds.Count - 1)",
+                "  Currently running build: $($currentRunningBuild.id) ($($currentRunningBuild.buildNumber)) [Running for $currentRunningBuildElapsedTimeFormatted]",
+                "  Waiting $NumSecondsSleepBetweenPolling seconds before polling build status for this pipeline again...",
                 '--------------------------')
             Write-Host ($message -join [Environment]::NewLine)
         }
@@ -109,7 +142,6 @@ do
         {
             break
         }
-
     }
     catch
     {
@@ -129,5 +161,8 @@ do
 }
 while ($true)
 
-Write-Host 'Waiting Complete.  Starting this build.'
+$stopwatch.Stop()
+$timeWaitedFormatted = $elapsedTimeFormat -f $stopwatch.Elapsed
+Write-Host "Waiting completed after $timeWaitedFormatted.  Starting this build."
+
 Write-Host '[Wait-RunningBuilds] - Exiting'

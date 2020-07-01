@@ -23,7 +23,7 @@ jobs:
   displayName: 'Wait for Running Builds'
   pool:
     vmImage: 'windows-latest'
-  timeoutInMinutes: 240
+  timeoutInMinutes: 360
   continueOnError: true
   steps:
   - template: ./templates/wait-runningBuild.yaml
