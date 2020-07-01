@@ -30,8 +30,8 @@ jobs:
     parameters:
       buildQueryPersonalAccessToken: $(BuildQueryPersonalAccessToken)
 
-- job: WindowsPS5
-  displayName: 'Windows - PowerShell 5'
+- job: windowsWPS
+  displayName: 'Windows [Windows PowerShell]'
   pool:
     vmImage: 'windows-latest'
   dependsOn: waitForRunningBuilds
@@ -50,8 +50,8 @@ jobs:
       platformName: 'Windows'
       usePowerShellCore: false
 
-- job: Windows
-  displayName: 'Windows - PowerShell Core'
+- job: windows
+  displayName: 'Windows [PowerShell Core]'
   pool:
     vmImage: 'windows-latest'
   dependsOn: waitForRunningBuilds
@@ -65,8 +65,8 @@ jobs:
       gitHubOrganizationName: $(WindowsCIGitHubOrganizationName)
       platformName: 'Windows'
 
-- job: Linux
-  displayName: 'Linux - PowerShell Core'
+- job: linux
+  displayName: 'Linux [PowerShell Core]'
   pool:
     vmImage: 'ubuntu-latest'
   dependsOn: waitForRunningBuilds
@@ -81,7 +81,7 @@ jobs:
       platformName: 'Linux'
 
 - job: macOS
-  displayName: 'macOS - PowerShell Core'
+  displayName: 'macOS [PowerShell Core]'
   pool:
     vmImage: 'macOS-latest'
   dependsOn: waitForRunningBuilds
