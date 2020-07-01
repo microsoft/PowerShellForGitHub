@@ -10,35 +10,39 @@ parameters:
   type: boolean
 
 steps:
-  - powershell@2: |
-      . ./Helpers.ps1
-      $content = Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding UTF8
-      $hash = Get-SHA512Hash -PlainText $content
-      $configurationFile = Get-Content -Path ./GitHubConfiguration.ps1 -Raw -Encoding Utf8
-      if($configurationFile -match "'testConfigSettingsHash' = '([^']+)'")
-      {
-        if($hash -ne $Matches[1])
+  - task: PowerShell@2
+    displayName: 'Set GitHubConfiguration.ps1 testConfigSettingsHash value.'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        . ./Helpers.ps1
+        $content = Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding UTF8
+        $hash = Get-SHA512Hash -PlainText $content
+        $configurationFile = Get-Content -Path ./GitHubConfiguration.ps1 -Raw -Encoding Utf8
+        if($configurationFile -match "'testConfigSettingsHash' = '([^']+)'")
         {
-          $configHash = $Matches[1]
+          if($hash -ne $Matches[1])
+          {
+            $configHash = $Matches[1]
+            $message = @(
+              "`$testConfigSettingsHash value does not match the Get-SHA512Hash of file ./Tests/Config/Settings.ps1. If the contents of ",
+              "Settings.ps1 has been updated, please update the `$testConfigSettingsHash value in ./GitHubConfiguration.ps1's ",
+              "Import-GitHubConfiguration function. You can generate the new hash value using the commands:",
+              "",
+              "`t. ./Helpers.ps1",
+              "`tGet-SHA512Hash -PlainText (Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding Utf8)",
+              "",
+              "`$testConfigSettingsHash = $configHash",
+              "Get-SHA512Hash(Settings.ps1) = $hash")
+            throw ($message -join [Environment]::NewLine)
+          }
+        } else
+        {
           $message = @(
-            "`$testConfigSettingsHash value does not match the Get-SHA512Hash of file ./Tests/Config/Settings.ps1. If the contents of ",
-            "Settings.ps1 has been updated, please update the `$testConfigSettingsHash value in ./GitHubConfiguration.ps1's ",
-            "Import-GitHubConfiguration function. You can generate the new hash value using the commands:",
-            "",
-            "`t. ./Helpers.ps1",
-            "`tGet-SHA512Hash -PlainText (Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding Utf8)",
-            "",
-            "`$testConfigSettingsHash = $configHash",
-            "Get-SHA512Hash(Settings.ps1) = $hash")
+            "`$testConfigSettingsHash value not found in ./GitHubConfiguration.ps1. Please ensure ",
+            "the default hash value is set within the Import-GitHubConfiguration function.")
           throw ($message -join [Environment]::NewLine)
         }
-      } else
-      {
-        $message = @(
-          "`$testConfigSettingsHash value not found in ./GitHubConfiguration.ps1. Please ensure ",
-          "the default hash value is set within the Import-GitHubConfiguration function.")
-        throw ($message -join [Environment]::NewLine)
-      }
-    displayName: 'Set GitHubConfiguration.ps1 testConfigSettingsHash value.'
-    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
-

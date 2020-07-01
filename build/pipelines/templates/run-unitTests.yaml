@@ -28,21 +28,30 @@ parameters:
   type: boolean
 
 steps:
-  - powershell@2: |
-      Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
+  - task: PowerShell@2
     displayName: 'Install Pester'
-    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
 
-  - powershell@2: |
-       $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
-       Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: PowerShell@2
     displayName: 'Run Unit Tests via Pester'
-    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
-    env:
-      ciAccessToken: ${{ parameters.gitHubAccessToken }}
-      ciOwnerName: ${{ parameters.gitHubOwnerName }}
-      ciOrganizationName: ${{ parameters.gitHubOrganizationName }}
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
+        Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
+      env:
+        ciAccessToken: ${{ parameters.gitHubAccessToken }}
+        ciOwnerName: ${{ parameters.gitHubOwnerName }}
+        ciOrganizationName: ${{ parameters.gitHubOrganizationName }}
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results'

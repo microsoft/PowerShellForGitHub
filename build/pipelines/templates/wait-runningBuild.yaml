@@ -18,18 +18,22 @@ parameters:
   type: boolean
 
 steps:
-  - powershell@2: |
-       $params = @{
-          PersonalAccessToken = $env:buildReadAccessToken
-          OrganizationName = 'ms'
-          ProjectName = 'PowerShellForGitHub'
-          BuildDefinitionId = $(System.DefinitionId)
-          BuildId = $(Build.BuildId)
-       }
-
-       ./build/scripts/Wait-RunningBuild.ps1 @params
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: PowerShell@2
     displayName: 'Wait for previously queued builds'
-    pwsh: eq('${{ parameters.usePowerShellCore }}', true)
-    env:
-      buildReadAccessToken: ${{ parameters.buildQueryPersonalAccessToken }}
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        $params = @{
+           PersonalAccessToken = $env:buildReadAccessToken
+           OrganizationName = 'ms'
+           ProjectName = 'PowerShellForGitHub'
+           BuildDefinitionId = $(System.DefinitionId)
+           BuildId = $(Build.BuildId)
+        }
+
+        ./build/scripts/Wait-RunningBuild.ps1 @params
+      env:
+        buildReadAccessToken: ${{ parameters.buildQueryPersonalAccessToken }}
