@@ -9,12 +9,12 @@ parameters:
   type: boolean
 
 steps:
-  - powershell: |
+  - powershell@2: |
       Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Force -Verbose
     displayName: 'Install PSScriptAnalyzer'
     pwsh: eq('${{ parameters.usePowerShellCore }}', true)
 
-  - powershell: |
+  - powershell@2: |
        $results = try { Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ –Recurse -ErrorAction Stop } catch { 'Unexpected Error'; $_.Exception.StackTrace; if ($IsCoreCLR) { Get-Error }; throw }
        $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
 

@@ -18,7 +18,7 @@ parameters:
   type: boolean
 
 steps:
-  - powershell: |
+  - powershell@2: |
        $params = @{
           PersonalAccessToken = $env:buildReadAccessToken
           OrganizationName = 'ms'

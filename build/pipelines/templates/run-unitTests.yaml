@@ -28,12 +28,12 @@ parameters:
   type: boolean
 
 steps:
-  - powershell: |
+  - powershell@2: |
       Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
     displayName: 'Install Pester'
     pwsh: eq('${{ parameters.usePowerShellCore }}', true)
 
-  - powershell: |
+  - powershell@2: |
        $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
        Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
     workingDirectory: '$(System.DefaultWorkingDirectory)'

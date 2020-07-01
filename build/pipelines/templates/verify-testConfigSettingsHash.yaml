@@ -10,7 +10,7 @@ parameters:
   type: boolean
 
 steps:
-  - powershell: |
+  - powershell@2: |
       . ./Helpers.ps1
       $content = Get-Content -Path ./Tests/Config/Settings.ps1 -Raw -Encoding UTF8
       $hash = Get-SHA512Hash -PlainText $content
