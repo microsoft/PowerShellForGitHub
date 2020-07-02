@@ -358,7 +358,6 @@ try
                     CommitterEmail = $committerEmail
                     authorName = $authorName
                     authorEmail = $authorEmail
-                    NoStatus = $true
                 }
 
                 $result = Set-GitHubContent @setGitHubContentParms
