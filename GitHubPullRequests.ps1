@@ -395,7 +395,7 @@ filter New-GitHubPullRequest
     if ($PSBoundParameters.ContainsKey('Title'))
     {
         $description = "Creating pull request $Title in $RepositoryName"
-        $shouldProcessAction = "Create GitHub Pull Request $Title"
+        $shouldProcessAction = "Create GitHub Pull Request: $Title"
         $postBody['title'] = $Title
 
         # Body may be whitespace, although this might not be useful

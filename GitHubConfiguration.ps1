@@ -265,7 +265,7 @@ function Set-GitHubConfiguration
         }
     }
 
-    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration','Save'))
+    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration', 'Save'))
     {
         return
     }
@@ -537,12 +537,12 @@ function Reset-GitHubConfiguration
         [switch] $SessionOnly
     )
 
-    Set-TelemetryEvent -EventName Reset-GitHubConfiguration
-
     if (-not $PSCmdlet.ShouldProcess('GitHub Configuration', 'Reset'))
     {
         return
     }
+
+    Set-TelemetryEvent -EventName Reset-GitHubConfiguration
 
     if (-not $SessionOnly)
     {
@@ -928,6 +928,11 @@ function Set-GitHubAuthentication
         [switch] $SessionOnly
     )
 
+    if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Set'))
+    {
+        return
+    }
+
     if (-not $PSBoundParameters.ContainsKey('Credential'))
     {
         $message = 'Please provide your GitHub API Token in the Password field.  You can enter anything in the username field (it will be ignored).'
@@ -948,11 +953,6 @@ function Set-GitHubAuthentication
     }
 
     $script:accessTokenCredential = $Credential
-
-    if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Set'))
-    {
-        return
-    }
 
     Write-InvocationLog
 
@@ -996,12 +996,12 @@ function Clear-GitHubAuthentication
         [switch] $SessionOnly
     )
 
-    Set-TelemetryEvent -EventName Clear-GitHubAuthentication
-
     if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Clear'))
     {
         return
     }
+
+    Set-TelemetryEvent -EventName Clear-GitHubAuthentication
 
     Write-InvocationLog
 
