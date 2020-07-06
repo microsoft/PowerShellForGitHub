@@ -109,53 +109,97 @@ try
     }
 
     Describe 'GitHubBranches\New-GitHubRepositoryBranch' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $originBranchName = 'master'
+            $newGitHubRepositoryParms = @{
+                RepositoryName = $repoName
+                AutoInit = $true
+            }
+
+            $repo = New-GitHubRepository @newGitHubRepositoryParms
+        }
+
         Context 'When creating a new GitHub repository branch' {
-            BeforeAll {
-                $repoName = [Guid]::NewGuid().Guid
-                $originBranchName = 'master'
-                $newBranchName = 'develop'
-                $newGitHubRepositoryParms = @{
-                    RepositoryName = $repoName
-                    AutoInit = $true
+            Context 'When using non-pipelined parameters' {
+                BeforeAll {
+                    $newBranchName = 'develop1'
+                    $newGitHubRepositoryBranchParms = @{
+                        OwnerName = $script:ownerName
+                        RepositoryName = $repoName
+                        BranchName = $originBranchName
+                        TargetBranchName = $newBranchName
+                    }
+
+                    $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
                 }
 
-                $repo = New-GitHubRepository @newGitHubRepositoryParms
-
-                $newGitHubRepositoryBranchParms = @{
-                    OwnerName = $script:ownerName
-                    RepositoryName = $repoName
-                    BranchName = $newBranchName
-                    OriginBranchName = $originBranchName
+                It 'Should have the expected type and addititional properties' {
+                    $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                    $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                    $branch.BranchName | Should -Be $newBranchName
                 }
 
-                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+                It 'Should have created the branch' {
+                    $getGitHubRepositoryBranchParms = @{
+                        OwnerName = $script:ownerName
+                        RepositoryName = $repoName
+                        BranchName = $newBranchName
+                    }
+
+                    { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                        Should -Not -Throw
+                }
             }
 
-            It 'Should support pipeline input for the uri parameter' {
-                { $repo | New-GitHubRepositoryBranch -BranchName $newBranchName -WhatIf } |
-                    Should -Not -Throw
-            }
+            Context 'When using pipelined parameters' {
+                Context 'When providing pipeline input for the "Uri" parameter' {
+                    BeforeAll {
+                        $newBranchName = 'develop2'
+                        $branch = $repo | New-GitHubRepositoryBranch -TargetBranchName $newBranchName
+                    }
 
-            It 'Should support pipeline input for the BranchName parameter' {
-                { $newBranchName | New-GitHubRepositoryBranch -Uri $repo.html_url -WhatIf } |
-                    Should -Not -Throw
-            }
+                    It 'Should have the expected type and addititional properties' {
+                        $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                        $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                        $branch.BranchName | Should -Be $newBranchName
+                    }
 
-            It 'Should have the expected type and addititional properties' {
-                $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
-                $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
-                $branch.BranchName | Should -Be $newBranchName
-            }
+                    It 'Should have created the branch' {
+                        $getGitHubRepositoryBranchParms = @{
+                            OwnerName = $script:ownerName
+                            RepositoryName = $repoName
+                            BranchName = $newBranchName
+                        }
 
-            It 'Should have created the branch' {
-                $getGitHubRepositoryBranchParms = @{
-                    OwnerName = $script:ownerName
-                    RepositoryName = $repoName
-                    BranchName = $newBranchName
+                        { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                            Should -Not -Throw
+                    }
                 }
 
-                { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
-                    Should -Not -Throw
+                Context 'When providing pipeline input for the "TargetBranchName" parameter' {
+                    BeforeAll {
+                        $newBranchName = 'develop3'
+                        $branch = $newBranchName | New-GitHubRepositoryBranch -Uri $repo.html_url
+                    }
+
+                    It 'Should have the expected type and addititional properties' {
+                        $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                        $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                        $branch.BranchName | Should -Be $newBranchName
+                    }
+
+                    It 'Should have created the branch' {
+                        $getGitHubRepositoryBranchParms = @{
+                            OwnerName = $script:ownerName
+                            RepositoryName = $repoName
+                            BranchName = $newBranchName
+                        }
+
+                        { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                            Should -Not -Throw
+                    }
+                }
             }
 
             Context 'When the origin branch cannot be found' {
@@ -169,8 +213,8 @@ try
                     $newGitHubRepositoryBranchParms = @{
                         OwnerName = $script:ownerName
                         RepositoryName = $repoName
-                        BranchName = $newBranchName
-                        OriginBranchName = $missingOriginBranchName
+                        BranchName = $missingOriginBranchName
+                        TargetBranchName = $newBranchName
                     }
 
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
@@ -184,19 +228,19 @@ try
                         OwnerName = $script:ownerName
                         RepositoryName = 'test'
                         BranchName = 'test'
-                        OriginBranchName = 'test'
+                        TargetBranchName = 'test'
                     }
 
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
                         Should -Throw 'Not Found'
                 }
             }
+        }
 
-            AfterAll -ScriptBlock {
-                if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
-                {
-                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-                }
+        AfterAll -ScriptBlock {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
@@ -205,49 +249,78 @@ try
         BeforeAll -Scriptblock {
             $repoName = [Guid]::NewGuid().Guid
             $originBranchName = 'master'
-            $newBranchName = 'develop'
             $newGitHubRepositoryParms = @{
                 RepositoryName = $repoName
                 AutoInit = $true
             }
 
             $repo = New-GitHubRepository @newGitHubRepositoryParms
-
-            $newGitHubRepositoryBranchParms = @{
-                OwnerName = $script:ownerName
-                RepositoryName = $repoName
-                BranchName = $newBranchName
-                OriginBranchName = $originBranchName
-            }
-
-            $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
         }
 
-        It 'Should support pipeline input for the BranchName and Uri parameters' {
-            { $branch | Remove-GitHubRepositoryBranch -WhatIf } | Should -Not -Throw
-        }
+        Context 'When using non-pipelined parameters' {
+            BeforeAll {
+                $newBranchName = 'develop1'
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    BranchName = $originBranchName
+                    TargetBranchName = $newBranchName
+                }
 
-        It 'Should not throw an exception' {
-            $removeGitHubRepositoryBranchParms = @{
-                OwnerName = $script:ownerName
-                RepositoryName = $repoName
-                BranchName = $newBranchName
-                Confirm = $false
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
             }
 
-            { Remove-GitHubRepositoryBranch @removeGitHubRepositoryBranchParms } |
-                Should -Not -Throw
-        }
+            It 'Should not throw an exception' {
+                $removeGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    BranchName = $newBranchName
+                    Confirm = $false
+                }
 
-        It 'Should have removed the branch' {
-            $getGitHubRepositoryBranchParms = @{
-                OwnerName = $script:ownerName
-                RepositoryName = $repoName
-                BranchName = $newBranchName
+                { Remove-GitHubRepositoryBranch @removeGitHubRepositoryBranchParms } |
+                    Should -Not -Throw
             }
 
-            { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
-                Should -Throw
+            It 'Should have removed the branch' {
+                $getGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    BranchName = $newBranchName
+                }
+
+                { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                    Should -Throw
+            }
+        }
+
+        Context 'When using pipelined parameters' {
+            BeforeAll {
+                $newBranchName = 'develop2'
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    BranchName = $originBranchName
+                    TargetBranchName = $newBranchName
+                }
+
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+            }
+
+            It 'Should not throw an exception' {
+                { $branch | Remove-GitHubRepositoryBranch -Force } | Should -Not -Throw
+            }
+
+            It 'Should have removed the branch' {
+                $getGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:ownerName
+                    RepositoryName = $repoName
+                    BranchName = $newBranchName
+                }
+
+                { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                    Should -Throw
+            }
         }
 
         AfterAll -ScriptBlock {

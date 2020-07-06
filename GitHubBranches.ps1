@@ -299,7 +299,6 @@ filter New-GitHubRepositoryBranch
         }
 
         Write-Log -Level Verbose "Getting $TargetBranchName branch for sha reference"
-
         $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
     }
     catch
@@ -412,7 +411,7 @@ filter Remove-GitHubRepositoryBranch
         Removes the 'develop' branch from the specified repository.
 
     .EXAMPLE
-        Remove-GitHubRepositoryBranch  -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop -Force
+        Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop -Force
 
         Removes the 'develop' branch from the specified repository without prompting for confirmation.
 
@@ -426,7 +425,7 @@ filter Remove-GitHubRepositoryBranch
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements',
         PositionalBinding = $false,
-        ConfirmImpact="High")]
+        ConfirmImpact = 'High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
         Justification = "Methods called within here make use of PSShouldProcess, and the switch is
         passed on to them inherently.")]
