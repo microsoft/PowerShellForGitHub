@@ -108,11 +108,8 @@ filter Get-GitHubRelease
         Information about published releases are available to everyone. Only users with push
         access will receive listings for draft releases.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+    [CmdletBinding(DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubReleaseTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [Parameter(ParameterSetName="Elements-ReleaseId")]
@@ -313,7 +310,6 @@ filter New-GitHubRelease
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubReleaseTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -382,6 +378,11 @@ filter New-GitHubRelease
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($TagName, "Create release for $RepositoryName at tag"))
+    {
+        return
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
@@ -473,7 +474,6 @@ filter Set-GitHubRelease
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubReleaseTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -546,6 +546,11 @@ filter Set-GitHubRelease
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($Release, "Update GitHub Release"))
+    {
+        return
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
@@ -667,10 +672,12 @@ filter Remove-GitHubRelease
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    if ($PSCmdlet.ShouldProcess($Release, "Deleting release"))
+    if (-not $PSCmdlet.ShouldProcess($Release, "Remove GitHub Release"))
     {
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Get-GitHubReleaseAsset
@@ -749,11 +756,8 @@ filter Get-GitHubReleaseAsset
         Downloads the asset 1234567890 to 'c:\users\PowerShellForGitHub\downloads\asset.zip' and
         overwrites the file that may already be there.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Elements-List')]
+    [CmdletBinding(DefaultParameterSetName='Elements-List')]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements-List')]
@@ -972,7 +976,6 @@ filter New-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1066,6 +1069,11 @@ filter New-GitHubReleaseAsset
     $labelEncoded = [Uri]::EscapeDataString($Label)
     if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
 
+    if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
+    {
+        return
+    }
+
     $params = @{
         'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
         'Method' = 'Post'
@@ -1155,7 +1163,6 @@ filter Set-GitHubReleaseAsset
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1202,6 +1209,11 @@ filter Set-GitHubReleaseAsset
     $hashBody = @{}
     if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
     if (-not [String]::IsNullOrWhiteSpace($Label)) { $hashBody['label'] = $Label }
+
+    if (-not $PSCmdlet.ShouldProcess($Asset, "Update GitHub Release Asset"))
+    {
+        return
+    }
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/assets/$Asset"
@@ -1330,10 +1342,12 @@ filter Remove-GitHubReleaseAsset
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    if ($PSCmdlet.ShouldProcess($Asset, "Deleting asset"))
+    if (-not $PSCmdlet.ShouldProcess($Asset, "Delete GitHub Release Asset"))
     {
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Add-GitHubReleaseAdditionalProperties
