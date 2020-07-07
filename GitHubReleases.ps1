@@ -892,7 +892,7 @@ filter Get-GitHubReleaseAsset
     }
 }
 
-filter New-GitHubReleaseAsset
+function New-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -988,6 +988,9 @@ filter New-GitHubReleaseAsset
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='UploadUrl')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -1004,6 +1007,7 @@ filter New-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             ParameterSetName='UploadUrl')]
         [string] $UploadUrl,
 
@@ -1024,69 +1028,77 @@ filter New-GitHubReleaseAsset
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
+    begin
+    {
+        Write-InvocationLog
 
-    $telemetryProperties = @{
-        'ProvidedUploadUrl' = (-not [String]::IsNullOrWhiteSpace($UploadUrl))
-        'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
-        'ProvidedContentType' = (-not [String]::IsNullOrWhiteSpace($ContentType))
+        $telemetryProperties = @{
+            'ProvidedUploadUrl' = (-not [String]::IsNullOrWhiteSpace($UploadUrl))
+            'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
+            'ProvidedContentType' = (-not [String]::IsNullOrWhiteSpace($ContentType))
+        }
+
+        # If UploadUrl wasn't provided, we'll need to query for it first.
+        if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
+        {
+            $elements = Resolve-RepositoryElements
+            $OwnerName = $elements.ownerName
+            $RepositoryName = $elements.repositoryName
+
+            $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
+            $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
+
+            $params = @{
+                'OwnerName' = $OwnerName
+                'RepositoryName' = $RepositoryName
+                'Release' = $Release
+                'AccessToken' = $AccessToken
+                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+            }
+
+            $releaseInfo = Get-GitHubRelease @params
+            $UploadUrl = $releaseInfo.upload_url
+        }
+
+        # Remove the '{name,label}' from the Url if it's there
+        if ($UploadUrl -match '(.*){')
+        {
+            $UploadUrl = $Matches[1]
+        }
     }
 
-    # If UploadUrl wasn't provided, we'll need to query for it first.
-    if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
+    process
     {
-        $elements = Resolve-RepositoryElements
-        $OwnerName = $elements.ownerName
-        $RepositoryName = $elements.repositoryName
+        $Path = Resolve-UnverifiedPath -Path $Path
+        $file = Get-Item -Path $Path
+        $fileName = $file.Name
+        $fileNameEncoded = [Uri]::EscapeDataString($fileName)
+        $queryParams = @("name=$fileNameEncoded")
 
-        $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
-        $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
+        $labelEncoded = [Uri]::EscapeDataString($Label)
+        if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
+
+        if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
+        {
+            return
+        }
 
         $params = @{
-            'OwnerName' = $OwnerName
-            'RepositoryName' = $RepositoryName
-            'Release' = $Release
+            'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
+            'Method' = 'Post'
+            'Description' = "Uploading $fileName as a release asset"
+            'InFile' = $Path
+            'ContentType' = $ContentType
             'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        $releaseInfo = Get-GitHubRelease @params
-        $UploadUrl = $releaseInfo.upload_url
+        return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
     }
 
-    # Remove the '{name,label}' from the Url if it's there
-    if ($UploadUrl -match '(.*){')
-    {
-        $UploadUrl = $Matches[1]
-    }
-
-    $Path = Resolve-UnverifiedPath -Path $Path
-    $file = Get-Item -Path $Path
-    $fileName = $file.Name
-    $fileNameEncoded = [Uri]::EscapeDataString($fileName)
-    $queryParams = @("name=$fileNameEncoded")
-
-    $labelEncoded = [Uri]::EscapeDataString($Label)
-    if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
-
-    if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
-    {
-        return
-    }
-
-    $params = @{
-        'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
-        'Method' = 'Post'
-        'Description' = "Uploading $fileName as a release asset"
-        'InFile' = $Path
-        'ContentType' = $ContentType
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
-
-    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
+    end {}
 }
 
 filter Set-GitHubReleaseAsset
@@ -1396,6 +1408,7 @@ filter Add-GitHubReleaseAdditionalProperties
             }
 
             Add-Member -InputObject $item -Name 'ReleaseId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'UploadUrl' -Value $item.upload_url -MemberType NoteProperty -Force
 
             if ($null -ne $item.author)
             {
