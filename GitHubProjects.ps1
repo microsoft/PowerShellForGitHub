@@ -347,8 +347,6 @@ filter New-GitHubProject
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $telemetryProperties = @{}
     $telemetryProperties['ProjectName'] = Get-PiiSafeString -PlainText $ProjectName
 

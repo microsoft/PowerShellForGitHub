@@ -369,8 +369,6 @@ function Set-GitHubProfile
         [switch] $NoStatus
     )
 
-    Write-InvocationLog
-
     $hashBody = @{}
     if ($PSBoundParameters.ContainsKey('Name')) { $hashBody['name'] = $Name }
     if ($PSBoundParameters.ContainsKey('Email')) { $hashBody['email'] = $Email }
