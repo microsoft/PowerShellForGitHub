@@ -280,6 +280,8 @@ filter New-GitHubRepositoryBranch
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $originBranch = $null
+
     try
     {
         $getGitHubRepositoryBranchParms = @{
@@ -298,7 +300,7 @@ filter New-GitHubRepositoryBranch
             $getGitHubRepositoryBranchParms['NoStatus'] = $NoStatus
         }
 
-        Write-Log -Level Verbose "Getting $TargetBranchName branch for sha reference"
+        Write-Log -Level Verbose "Getting $BranchName branch for sha reference"
         $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
     }
     catch
@@ -536,11 +538,8 @@ filter Add-GitHubBranchAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ($null -ne $item.url)
-            {
-                $elements = Split-GitHubUri -Uri $item.url
-            }
-            else
+            $elements = Split-GitHubUri -Uri $item.url
+            if ($null -eq $item.url)
             {
                 $elements = Split-GitHubUri -Uri $item.commit.url
             }
@@ -548,11 +547,8 @@ filter Add-GitHubBranchAdditionalProperties
 
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
-            if ($null -ne $item.name)
-            {
-                $branchName = $item.name
-            }
-            else
+            $branchName = $item.name
+            if ($null -eq $branchName)
             {
                 $branchName = $item.ref -replace ('refs/heads/', '')
             }
