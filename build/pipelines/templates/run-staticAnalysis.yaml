@@ -3,19 +3,34 @@
 # report the results.
 #
 
+parameters:
+- name: 'usePowerShellCore'
+  default: true
+  type: boolean
+
 steps:
-  - powershell: |
-      Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Force -Verbose
+  - task: PowerShell@2
     displayName: 'Install PSScriptAnalyzer'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      targetType: 'inline'
+      script: |
+        Install-Module -Name PSScriptAnalyzer -Repository PSGallery -Scope CurrentUser -Force -Verbose
 
-  - powershell: |
-       $results = try { Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ –Recurse -ErrorAction Stop } catch { 'Unexpected Error'; $_.Exception.StackTrace; if ($IsCoreCLR) { Get-Error }; throw }
-       $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
-
-       $null = New-Item -Path ..\ -Name ScriptAnalyzer -ItemType Directory -Force
-       ./build/scripts/ConvertTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -Path ../ScriptAnalyzer/test-results.xml
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: PowerShell@2
     displayName: 'Run Static Code Analysis (PSScriptAnalyzer)'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        $results = try { Invoke-ScriptAnalyzer -Settings ./PSScriptAnalyzerSettings.psd1 -Path ./ –Recurse -ErrorAction Stop } catch { 'Unexpected Error'; $_.Exception.StackTrace; if ($IsCoreCLR) { Get-Error }; throw }
+        $results | ForEach-Object { Write-Host "##vso[task.logissue type=$($_.Severity);sourcepath=$($_.ScriptPath);linenumber=$($_.Line);columnnumber=$($_.Column);]$($_.Message)" }
+
+        $null = New-Item -Path ..\ -Name ScriptAnalyzer -ItemType Directory -Force
+        ./build/scripts/ConvertTo-NUnitXml.ps1 -ScriptAnalyzerResult $results -Path ../ScriptAnalyzer/test-results.xml
 
   - task: PublishTestResults@2
     displayName: 'Publish ScriptAnalyzer Test Results'

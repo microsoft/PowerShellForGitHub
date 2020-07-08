@@ -364,6 +364,7 @@ filter New-GitHubRepositoryFromTemplate
 
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
 
     $telemetryProperties = @{
         RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
