@@ -328,6 +328,8 @@ filter New-GitHubRelease
         [Parameter(Mandatory)]
         [string] $TagName,
 
+        [Alias('Sha')]
+        [Alias('BranchName')]
         [Alias('Commitish')] # git documentation says "committish", but GitHub uses "commitish"
         [string] $Committish,
 
@@ -354,9 +356,9 @@ filter New-GitHubRelease
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedCommittish' = (-not [String]::IsNullOrWhiteSpace($Committish))
-        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
-        'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
+        'ProvidedCommittish' = ($PSBoundParameters.ContainsKey('Committish'))
+        'ProvidedName' = ($PSBoundParameters.ContainsKey('Name'))
+        'ProvidedBody' = ($PSBoundParameters.ContainsKey('Body'))
         'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
         'ProvidedPreRelease' = ($PSBoundParameters.ContainsKey('PreRelease'))
     }
@@ -365,9 +367,9 @@ filter New-GitHubRelease
         'tag_name' = $TagName
     }
 
-    if (-not [String]::IsNullOrWhiteSpace($Committish)) { $hashBody['target_commitish'] = $Committish }
-    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
-    if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
+    if ($PSBoundParameters.ContainsKey('Committish')) { $hashBody['target_commitish'] = $Committish }
+    if ($PSBoundParameters.ContainsKey('Name')) { $hashBody['name'] = $Name }
+    if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
     if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
 
@@ -498,6 +500,8 @@ filter Set-GitHubRelease
 
         [string] $TagName,
 
+        [Alias('Sha')]
+        [Alias('BranchName')]
         [Alias('Commitish')] # git documentation says "committish", but GitHub uses "commitish"
         [string] $Committish,
 
@@ -524,19 +528,19 @@ filter Set-GitHubRelease
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedTagName' = (-not [String]::IsNullOrWhiteSpace($TagName))
-        'ProvidedCommittish' = (-not [String]::IsNullOrWhiteSpace($Committish))
-        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
-        'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
+        'ProvidedTagName' = ($PSBoundParameters.ContainsKey('TagName'))
+        'ProvidedCommittish' = ($PSBoundParameters.ContainsKey('Committish'))
+        'ProvidedName' = ($PSBoundParameters.ContainsKey('Name'))
+        'ProvidedBody' = ($PSBoundParameters.ContainsKey('Body'))
         'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
         'ProvidedPreRelease' = ($PSBoundParameters.ContainsKey('PreRelease'))
     }
 
     $hashBody = @{}
-    if (-not [String]::IsNullOrWhiteSpace($TagName)) { $hashBody['tag_name'] = $TagName }
-    if (-not [String]::IsNullOrWhiteSpace($Committish)) { $hashBody['target_commitish'] = $Committish }
-    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
-    if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
+    if ($PSBoundParameters.ContainsKey('TagName')) { $hashBody['tag_name'] = $TagName }
+    if ($PSBoundParameters.ContainsKey('Committish')) { $hashBody['target_commitish'] = $Committish }
+    if ($PSBoundParameters.ContainsKey('Name')) { $hashBody['name'] = $Name }
+    if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
     if ($PSBoundParameters.ContainsKey('PreRelease')) { $hashBody['prerelease'] = $PreRelease.ToBool() }
 
@@ -1036,9 +1040,9 @@ function New-GitHubReleaseAsset
         Write-InvocationLog
 
         $telemetryProperties = @{
-            'ProvidedUploadUrl' = (-not [String]::IsNullOrWhiteSpace($UploadUrl))
-            'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
-            'ProvidedContentType' = (-not [String]::IsNullOrWhiteSpace($ContentType))
+            'ProvidedUploadUrl' = ($PSBoundParameters.ContainsKey('UploadUrl'))
+            'ProvidedLabel' = ($PSBoundParameters.ContainsKey('Label'))
+            'ProvidedContentType' = ($PSBoundParameters.ContainsKey('ContentType'))
         }
 
         # If UploadUrl wasn't provided, we'll need to query for it first.
@@ -1078,8 +1082,11 @@ function New-GitHubReleaseAsset
         $fileNameEncoded = [Uri]::EscapeDataString($fileName)
         $queryParams = @("name=$fileNameEncoded")
 
-        $labelEncoded = [Uri]::EscapeDataString($Label)
-        if (-not [String]::IsNullOrWhiteSpace($Label)) { $queryParams += "label=$labelEncoded" }
+        if ($PSBoundParameters.ContainsKey('Label'))
+        {
+            $labelEncoded = [Uri]::EscapeDataString($Label)
+            $queryParams += "label=$labelEncoded"
+        }
 
         if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
         {
@@ -1217,13 +1224,13 @@ filter Set-GitHubReleaseAsset
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
-        'ProvidedLabel' = (-not [String]::IsNullOrWhiteSpace($Label))
+        'ProvidedName' = ($PSBoundParameters.ContainsKey('Name'))
+        'ProvidedLabel' = ($PSBoundParameters.ContainsKey('Label'))
     }
 
     $hashBody = @{}
-    if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
-    if (-not [String]::IsNullOrWhiteSpace($Label)) { $hashBody['label'] = $Label }
+    if ($PSBoundParameters.ContainsKey('Name')) { $hashBody['name'] = $Name }
+    if ($PSBoundParameters.ContainsKey('Label')) { $hashBody['label'] = $Label }
 
     if (-not $PSCmdlet.ShouldProcess($Asset, "Update GitHub Release Asset"))
     {
