@@ -249,10 +249,11 @@ filter New-GitHubRelease
         them individually.
 
     .PARAMETER TagName
-        The name of the tag.
+        The name of the tag.  The tag will be created around the committish if it doesn't exist
+        in the remote, and will need to be synced back to the local repository afterwards.
 
-    .PARAMETER Commitish
-        The commitsh value that determines where the Git tag is created from.
+    .PARAMETER Committish
+        The committish value that determines where the Git tag is created from.
         Can be any branch or commit SHA.  Unused if the Git tag already exists.
         Will default to the repository's default branch (usually 'master').
 
@@ -327,7 +328,8 @@ filter New-GitHubRelease
         [Parameter(Mandatory)]
         [string] $TagName,
 
-        [string] $Commitish,
+        [Alias('Commitish')] # git documentation says "committish", but GitHub uses "commitish"
+        [string] $Committish,
 
         [string] $Name,
 
@@ -352,7 +354,7 @@ filter New-GitHubRelease
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedCommitish' = (-not [String]::IsNullOrWhiteSpace($Commitish))
+        'ProvidedCommittish' = (-not [String]::IsNullOrWhiteSpace($Committish))
         'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
         'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
         'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
@@ -363,7 +365,7 @@ filter New-GitHubRelease
         'tag_name' = $TagName
     }
 
-    if (-not [String]::IsNullOrWhiteSpace($Commitish)) { $hashBody['target_commitish'] = $Commitish }
+    if (-not [String]::IsNullOrWhiteSpace($Committish)) { $hashBody['target_commitish'] = $Committish }
     if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
     if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
@@ -418,8 +420,8 @@ filter Set-GitHubRelease
     .PARAMETER TagName
         The name of the tag.
 
-    .PARAMETER Commitish
-        The commitsh value that determines where the Git tag is created from.
+    .PARAMETER Committish
+        The committish value that determines where the Git tag is created from.
         Can be any branch or commit SHA.  Unused if the Git tag already exists.
         Will default to the repository's default branch (usually 'master').
 
@@ -496,7 +498,8 @@ filter Set-GitHubRelease
 
         [string] $TagName,
 
-        [string] $Commitish,
+        [Alias('Commitish')] # git documentation says "committish", but GitHub uses "commitish"
+        [string] $Committish,
 
         [string] $Name,
 
@@ -522,7 +525,7 @@ filter Set-GitHubRelease
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
         'ProvidedTagName' = (-not [String]::IsNullOrWhiteSpace($TagName))
-        'ProvidedCommitish' = (-not [String]::IsNullOrWhiteSpace($Commitish))
+        'ProvidedCommittish' = (-not [String]::IsNullOrWhiteSpace($Committish))
         'ProvidedName' = (-not [String]::IsNullOrWhiteSpace($Name))
         'ProvidedBody' = (-not [String]::IsNullOrWhiteSpace($Body))
         'ProvidedDraft' = ($PSBoundParameters.ContainsKey('Draft'))
@@ -531,7 +534,7 @@ filter Set-GitHubRelease
 
     $hashBody = @{}
     if (-not [String]::IsNullOrWhiteSpace($TagName)) { $hashBody['tag_name'] = $TagName }
-    if (-not [String]::IsNullOrWhiteSpace($Commitish)) { $hashBody['target_commitish'] = $Commitish }
+    if (-not [String]::IsNullOrWhiteSpace($Committish)) { $hashBody['target_commitish'] = $Committish }
     if (-not [String]::IsNullOrWhiteSpace($Name)) { $hashBody['name'] = $Name }
     if (-not [String]::IsNullOrWhiteSpace($Body)) { $hashBody['body'] = $Body }
     if ($PSBoundParameters.ContainsKey('Draft')) { $hashBody['draft'] = $Draft.ToBool() }
