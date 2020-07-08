@@ -4,13 +4,13 @@
 @{
     GitHubBranchTypeName = 'GitHub.Branch'
     GitHubBranchProtectionRuleName = 'GitHub.BranchProtectionRule'
- }.GetEnumerator() | ForEach-Object {
-     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
- }
+}.GetEnumerator() | ForEach-Object {
+    Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+}
 
 filter Get-GitHubRepositoryBranch
 {
-<#
+    <#
     .SYNOPSIS
         Retrieve branches for a given GitHub repository.
 
@@ -99,22 +99,22 @@ filter Get-GitHubRepositoryBranch
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubBranchTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+        DefaultParameterSetName = 'Elements')]
+    [OutputType( { $script:GitHubBranchTypeName })]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Get-GitHubBranch')]
     param(
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='Elements')]
+        [Parameter(ParameterSetName = 'Elements')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName = 'Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -506,7 +506,7 @@ filter Remove-GitHubRepositoryBranch
 chProtectionRule
 filter Get-GitHubRepositoryBranchProtectionRule
 {
-<#
+    <#
     .SYNOPSIS
         Retrieve branch protection rules for a given GitHub repository.
 
@@ -515,14 +515,6 @@ filter Get-GitHubRepositoryBranchProtectionRule
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Name
-        Name of the specific branch to be retrieved.  If not supplied, all branches will be retrieved.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
     .PARAMETER OwnerName
         Owner of the repository.
         If not supplied here, the DefaultOwnerName configuration property value will be used.
@@ -530,6 +522,14 @@ filter Get-GitHubRepositoryBranchProtectionRule
     .PARAMETER RepositoryName
         Name of the repository.
         If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchName
+        Name of the specific branch to be retrieved.  If not supplied, all branches will be retrieved.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -542,8 +542,19 @@ filter Get-GitHubRepositoryBranchProtectionRule
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        GitHub.Repository
         GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
 
     .OUTPUTS
         GitHub.BranchProtectionRule
@@ -560,15 +571,21 @@ filter Get-GitHubRepositoryBranchProtectionRule
 #>
     [CmdletBinding(
         PositionalBinding = $false,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName = 'Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification='One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
     param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
         [Parameter(
             Mandatory,
             Position = 1,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName = 'Uri')]
         [string] $Uri,
 
         [Parameter(
@@ -576,12 +593,6 @@ filter Get-GitHubRepositoryBranchProtectionRule
             ValueFromPipelineByPropertyName,
             Position = 2)]
         [string] $BranchName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $RepositoryName,
 
         [string] $AccessToken,
 
@@ -615,7 +626,7 @@ filter Get-GitHubRepositoryBranchProtectionRule
 
 filter Set-GitHubRepositoryBranchProtectionRule
 {
-<#
+    <#
     .SYNOPSIS
         Set branch protection rules for a given GitHub repository.
 
@@ -624,14 +635,6 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Name
-        Name of the specific branch to be retrieved.  If not supplied, all branches will be retrieved.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
     .PARAMETER OwnerName
         Owner of the repository.
         If not supplied here, the DefaultOwnerName configuration property value will be used.
@@ -639,6 +642,14 @@ filter Set-GitHubRepositoryBranchProtectionRule
     .PARAMETER RepositoryName
         Name of the repository.
         If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchName
+        Name of the specific branch to set the protection rule on.
 
     .PARAMETER StatusChecks
         The list of status checks to require in order to merge into the branch.
@@ -724,15 +735,21 @@ filter Set-GitHubRepositoryBranchProtectionRule
     [CmdletBinding(
         PositionalBinding = $false,
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName = 'Elements')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification='One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
     param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1,
-            ParameterSetName='Uri')]
+            ParameterSetName = 'Uri')]
         [string] $Uri,
 
         [Parameter(
@@ -740,12 +757,6 @@ filter Set-GitHubRepositoryBranchProtectionRule
             ValueFromPipelineByPropertyName,
             Position = 2)]
         [string] $BranchName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $RepositoryName,
 
         [string[]] $StatusChecks,
 
@@ -761,7 +772,7 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
         [switch] $RequireCodeOwnerReviews,
 
-        [ValidateRange(1, 6)]
+        [ValidateRange(0, 6)]
         [int] $RequiredApprovingReviewCount,
 
         [string[]] $RestrictPushUsers,
@@ -790,6 +801,52 @@ filter Set-GitHubRepositoryBranchProtectionRule
         RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $getGitHubRepositoryBranchProtectRuleParms = @{
+        OwnerName = $OwnerName
+        RepositoryName = $RepositoryName
+        BranchName = $BranchName
+        ErrorAction = 'SilentlyContinue'
+    }
+
+    $currentRule = Get-GitHubRepositoryBranchProtectionRule @getGitHubRepositoryBranchProtectRuleParms
+
+    $requiredStatusChecks = $null
+    $dismissalRestrictions = @{}
+    $requiredPullRequestReviews = @{}
+    $restrictions = $null
+    $hashBody = @{}
+
+    if ($currentRule)
+    {
+        $requiredStatusChecks = $currentRule.required_status_checks
+        if ($currentRule.required_pull_request_reviews)
+        {
+            $requiredPullRequestReviews['dismiss_stale_reviews'] = $currentRule.required_pull_request_reviews.dismiss_stale_reviews
+            $requiredPullRequestReviews['require_code_owner_reviews'] = $currentRule.required_pull_request_reviews.require_code_owner_reviews
+            $requiredPullRequestReviews['required_approving_review_count'] = $currentRule.required_pull_request_reviews.required_approving_review_count
+
+            if ($currentRule.required_pull_request_reviews.dismissal_restrictions)
+            {
+                $dismissalRestrictions['users'] = $currentRule.required_pull_request_reviews.dismissal_restrictions.users
+                $dismissalRestrictions['Teams'] = $currentRule.required_pull_request_reviews.dismissal_restrictions.teams
+            }
+        }
+
+        if ($currentRule.restrictions)
+        {
+            $restrictions = @{
+                Users = $currentRule.restrictions.users
+                Teams = $currentRule.restrictions.Teams
+                Apps = $currentRule.restrictions.apps
+            }
+        }
+
+        $hashBody['enforce_admins'] = $currentRule.enforce_admins.enabled
+        $hashBody['required_linear_history'] = $currentRule.enforce_admins.enabled
+        $hashBody['allow_force_pushes'] = $currentRule.allow_force_pushes.enabled
+        $hashBody['allow_deletions'] = $currentRule.allow_deletions.enabled
+    }
+
     if ($PSBoundParameters.ContainsKey('StatusChecks'))
     {
         $requiredStatusChecks = @{
@@ -797,25 +854,17 @@ filter Set-GitHubRepositoryBranchProtectionRule
             contexts = $StatusChecks
         }
     }
-    else
-    {
-        $requiredStatusChecks = $null
-    }
-
-    $dismissalRestrictions = @{}
 
     if ($PSBoundParameters.ContainsKey('DismissalUsers'))
     {
-       $dismissalRestrictions['users'] = $DismissalUsers
+        $dismissalRestrictions['users'] = $DismissalUsers
     }
     if ($PSBoundParameters.ContainsKey('DismissalTeams'))
     {
         $teams = Get-GitHubTeam -OwnerName $OwnerName -RepositoryName $RepositoryName |
-            Where-Object -FilterScript { $DismissalTeams -contains $_.name }
+        Where-Object -FilterScript { $DismissalTeams -contains $_.name }
         $dismissalRestrictions['teams'] = @($teams.slug)
     }
-
-    $requiredPullRequestReviews = @{}
 
     if ($PSBoundParameters.ContainsKey('DismissStaleReviews'))
     {
@@ -825,14 +874,20 @@ filter Set-GitHubRepositoryBranchProtectionRule
     {
         $requiredPullRequestReviews['require_code_owner_reviews'] = $RequireCodeOwnerReviews.ToBool()
     }
-    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
-    {
-        $requiredPullRequestReviews['required_approving_review_count'] = $RequiredApprovingReviewCount
-    }
-
     if ($dismissalRestrictions.count -gt 0)
     {
         $requiredPullRequestReviews['dismissal_restrictions'] = $dismissalRestrictions
+    }
+    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
+    {
+        if ($RequiredApprovingReviewCount -gt 0)
+        {
+            $requiredPullRequestReviews['required_approving_review_count'] = $RequiredApprovingReviewCount
+        }
+        else
+        {
+            $requiredPullRequestReviews = @{}
+        }
     }
 
     if ($requiredPullRequestReviews.count -eq 0)
@@ -849,14 +904,11 @@ filter Set-GitHubRepositoryBranchProtectionRule
             $RestrictPushUsers = @()
         }
 
-        if ($null -eq $RestrictPushTeams)
-        {
-            $restrictPushTeamSlugs = @()
-        }
-        else
+        $restrictPushTeamSlugs = @()
+        if ($null -ne $RestrictPushTeams)
         {
             $teams = Get-GitHubTeam -OwnerName $OwnerName -RepositoryName $RepositoryName |
-                Where-Object -FilterScript { $RestrictPushTeams -contains $_.name }
+            Where-Object -FilterScript { $RestrictPushTeams -contains $_.name }
             $restrictPushTeamSlugs['teams'] = @($teams.slug)
         }
 
@@ -865,20 +917,20 @@ filter Set-GitHubRepositoryBranchProtectionRule
             teams = $restrictPushTeamSlugs
         }
 
-        if ($PSBoundParameters.ContainsKey('RestrictPushApps')) {
-            $restrictions['apps'] = $RestrictPushApps }
+        if ($PSBoundParameters.ContainsKey('RestrictPushApps'))
+        {
+            $restrictions['apps'] = $RestrictPushApps
+        }
     }
     else
     {
         $restrictions = $null
     }
 
-    $hashBody = @{
-        required_status_checks = $requiredStatusChecks
-        enforce_admins = $EnforceAdmins.ToBool()
-        required_pull_request_reviews = $requiredPullRequestReviews
-        restrictions = $restrictions
-    }
+    $hashBody['required_status_checks'] = $requiredStatusChecks
+    $hashBody['enforce_admins'] = $EnforceAdmins.ToBool()
+    $hashBody['required_pull_request_reviews'] = $requiredPullRequestReviews
+    $hashBody['restrictions'] = $restrictions
 
     if ($PSBoundParameters.ContainsKey('RequireLinearHistory'))
     {
@@ -894,8 +946,8 @@ filter Set-GitHubRepositoryBranchProtectionRule
     }
 
     if ($PSCmdlet.ShouldProcess(
-        "'$BranchName' branch of repository '$RepositoryName'",
-        'Set GitHub Repository Branch Protection'))
+            "'$BranchName' branch of repository '$RepositoryName'",
+            'Set GitHub Repository Branch Protection'))
     {
         Write-InvocationLog
 
@@ -904,14 +956,14 @@ filter Set-GitHubRepositoryBranchProtectionRule
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
             Body = (ConvertTo-Json -InputObject $hashBody -Depth $jsonConversionDepth)
-            Description =  "Setting $BranchName branch protection status for $RepositoryName"
+            Description = "Setting $BranchName branch protection status for $RepositoryName"
             Method = 'Put'
             AcceptHeader = $script:lukeCageAcceptHeader
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
             TelemetryProperties = $telemetryProperties
             NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-                -ConfigValueName DefaultNoStatus)
+                    -ConfigValueName DefaultNoStatus)
         }
 
         return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
@@ -920,7 +972,7 @@ filter Set-GitHubRepositoryBranchProtectionRule
 
 filter Remove-GitHubRepositoryBranchProtectionRule
 {
-<#
+    <#
     .SYNOPSIS
         Remove branch protection rules from a given GitHub repository.
 
@@ -929,14 +981,6 @@ filter Remove-GitHubRepositoryBranchProtectionRule
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Name
-        Name of the specific branch to be removed.
-
-    .PARAMETER Uri
-        Uri for the repository.
-        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
-        them individually.
-
     .PARAMETER OwnerName
         Owner of the repository.
         If not supplied here, the DefaultOwnerName configuration property value will be used.
@@ -944,6 +988,14 @@ filter Remove-GitHubRepositoryBranchProtectionRule
     .PARAMETER RepositoryName
         Name of the repository.
         If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchName
+        Name of the specific branch to be removed.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -981,17 +1033,23 @@ filter Remove-GitHubRepositoryBranchProtectionRule
     [CmdletBinding(
         PositionalBinding = $false,
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
-        ConfirmImpact="High")]
+        DefaultParameterSetName = 'Elements',
+        ConfirmImpact = "High")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification='One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [Alias('Delete-GitHubRepositoryBranchProtectionRule')]
     param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
         [Parameter(
             Mandatory,
             Position = 1,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName = 'Uri')]
         [string] $Uri,
 
         [Parameter(
@@ -999,12 +1057,6 @@ filter Remove-GitHubRepositoryBranchProtectionRule
             ValueFromPipelineByPropertyName,
             Position = 2)]
         [string] $BranchName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $OwnerName,
-
-        [Parameter(ParameterSetName='Elements')]
-        [string] $RepositoryName,
 
         [switch] $Force,
 
@@ -1028,20 +1080,20 @@ filter Remove-GitHubRepositoryBranchProtectionRule
     }
 
     if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
-        'Remove GitHub Repository Branch Protection Rule'))
+            'Remove GitHub Repository Branch Protection Rule'))
     {
         Write-InvocationLog
 
         $params = @{
             UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
-            Description =  "Removing $BranchName branch protection rule for $RepositoryName"
+            Description = "Removing $BranchName branch protection rule for $RepositoryName"
             Method = 'Delete'
             AcceptHeader = $script:lukeCageAcceptHeader
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
             TelemetryProperties = $telemetryProperties
             NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-                -ConfigValueName DefaultNoStatus)
+                    -ConfigValueName DefaultNoStatus)
         }
 
         return Invoke-GHRestMethod @params | Out-Null
@@ -1050,7 +1102,7 @@ filter Remove-GitHubRepositoryBranchProtectionRule
 
 filter Add-GitHubBranchAdditionalProperties
 {
-<#
+    <#
     .SYNOPSIS
         Adds type name and additional properties to ease pipelining to GitHub Branch objects.
 
@@ -1067,7 +1119,7 @@ filter Add-GitHubBranchAdditionalProperties
         GitHub.Branch
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
             Mandatory,
@@ -1113,7 +1165,7 @@ filter Add-GitHubBranchAdditionalProperties
 
 filter Add-GitHubBranchProtectionRuleAdditionalProperties
 {
-<#
+    <#
     .SYNOPSIS
         Adds type name and additional properties to ease pipelining to GitHub Branch Protection Rule objects.
 
@@ -1131,7 +1183,7 @@ filter Add-GitHubBranchProtectionRuleAdditionalProperties
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
-        Justification='Internal helper that is definitely adding more than one property.')]
+        Justification = 'Internal helper that is definitely adding more than one property.')]
     param(
         [Parameter(
             Mandatory,
@@ -1158,14 +1210,8 @@ filter Add-GitHubBranchProtectionRuleAdditionalProperties
 
             if ($item.html_url -match "^https?://(?:www\.|api\.|)$hostName/repos/(?:[^/]+)/(?:[^/]+)/branches/([^/]+)/.*$")
             {
-                $branchName = $Matches[1]
+                Add-Member -InputObject $item -Name 'BranchName' -Value $Matches[1] -MemberType NoteProperty -Force
             }
-            else
-            {
-                $branchName = ''
-            }
-
-            Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
         }
 
         Write-Output $item

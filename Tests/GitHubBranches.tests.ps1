@@ -335,18 +335,21 @@ try
             BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
+                $protectionUrl = "https://api.github.com/repos/$script:organizationName/" +
+                    "$repoName/branches/$branchName/protection"
                 $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
                 Set-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
                 $protection = Get-GitHubRepositoryBranchProtectionRule -uri $repo.svn_url -BranchName $branchName
             }
 
-            It 'Should return an object of the correct type' {
-                $protection | Should -BeOfType PSCustomObject
-            }
-
-            It 'Should return the correct properties' {
-                $protection.url |
-                    Should -Be "https://api.github.com/repos/$script:ownerName/$repoName/branches/$branchName/protection"
+            It 'Should have the exected type and addititional properties' {
+                $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $protection.url | Should -Be $protectionUrl
+                $protection.enforce_admins.enabled | Should -BeFalse
+                $protection.required_linear_history.enabled | Should -BeFalse
+                $protection.allow_force_pushes.enabled | Should -BeFalse
+                $protection.allow_deletions.enabled | Should -BeFalse
+                $protection.RepositoryUrl | Should -Be $repo.RepositoryUrl
             }
 
             AfterAll -ScriptBlock {
@@ -359,7 +362,6 @@ try
     }
 
     Describe 'GitHubBranches\Set-GitHubRepositoryBranchProtectionRule' {
-
         Context 'When setting GitHub repository branch protection' {
             BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
@@ -389,16 +391,14 @@ try
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
-                It 'Should return an object of the correct type' {
-                    $protection | Should -BeOfType PSCustomObject
-                }
-
-                It 'Should return the correct properties' {
+                It 'Should have the exected type and addititional properties' {
+                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
                     $protection.url | Should -Be $protectionUrl
                     $protection.enforce_admins.enabled | Should -BeTrue
                     $protection.required_linear_history.enabled | Should -BeTrue
-                    $protection.allow_force_pushes | Should -BeTrue
-                    $protection.allow_deletions | Should -BeTrue
+                    $protection.allow_force_pushes.enabled | Should -BeTrue
+                    $protection.allow_deletions.enabled | Should -BeTrue
+                    $protection.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 }
             }
 
@@ -415,11 +415,8 @@ try
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
-                It 'Should return an object of the correct type' {
-                    $protection | Should -BeOfType PSCustomObject
-                }
-
-                It 'Should return the correct properties' {
+                It 'Should have the exected type and addititional properties' {
+                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
                     $protection.url | Should -Be $protectionUrl
                     $protection.required_status_checks.strict | Should -BeTrue
                     $protection.required_status_checks.contexts | Should -Be $statusChecks
@@ -431,7 +428,7 @@ try
                     $setGitHubRepositoryBranchProtectionParms = @{
                         Uri = $repo.svn_url
                         BranchName = $branchName
-                        DismissalUsers = $script:OwnerName
+                        DismissalUsers = $script:ownerName
                         DismissStaleReviews = $true
                         RequireCodeOwnerReviews = $true
                         RequiredApprovingReviewCount = 1
@@ -440,11 +437,8 @@ try
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
-                It 'Should return an object of the correct type' {
-                    $protection | Should -BeOfType PSCustomObject
-                }
-
-                It 'Should return the correct properties' {
+                It 'Should have the exected type and addititional properties' {
+                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
                     $protection.url | Should -Be $protectionUrl
                     $protection.required_pull_request_reviews.dismissal_restrictions.users.login |
                         Should -Contain $script:OwnerName
@@ -462,11 +456,8 @@ try
                     $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
                 }
 
-                It 'Should return an object of the correct type' {
-                    $protection | Should -BeOfType PSCustomObject
-                }
-
-                It 'Should return the correct properties' {
+                It 'Should have the exected type and addititional properties' {
+                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
                     $protection.url | Should -Be $protectionUrl
                     $protection.restrictions.users.login | Should -Contain $script:OwnerName
                 }
