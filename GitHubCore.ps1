@@ -326,11 +326,6 @@ function Invoke-GHRestMethod
             else
             {
                 $finalResult = $finalResult | ConvertFrom-Json
-
-                if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
-                {
-                    $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
-                }
             }
         }
         catch [ArgumentException]
