@@ -86,6 +86,17 @@
         *   [Add an existing issue as a card to a column](#add-an-existing-issue-as-a-card-to-a-column)
         *   [Move a card to be after a certain card in the same column](Move-a-card-to-be-after-a-certain-card-in-the-same-column)
         *   [Move a card to the bottom of another column](Move-a-card-to-the-bottom-of-another-column)
+    *   [Releases](#Releases)
+        *   [Get releases for a repository](#get-releases-for-a-repository)
+        *   [Get an individual release for a repository](#get-an-individual-release-for-a-repository)
+        *   [Create a new release](#create-a-new-release)
+        *   [Update a release](#update-a-release)
+        *   [Remove a release](#remove-a-release)
+        *   [List assets for a release](#list-assets-for-a-release)
+        *   [Download a release asset](#download-a-release-asset)
+        *   [Create a release asset](#create-a-release-asset)
+        *   [Update a release asset](#update-a-release-asset)
+        *   [Remove a release asset](#remove-a-release-asset)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -724,6 +735,140 @@ Move-GitHubProjectCard -Card 4 -After 5
 #### Move a card to the bottom of another column
 ```powershell
 Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
+```
+
+----------
+
+### Releases
+
+#### Get releases for a repository
+```powershell
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell
+```
+
+or with pipelining...
+
+```powershell
+Get-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShell |
+    Get-GitHubRelease
+```
+
+#### Get an individual release for a repository
+```powershell
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell |
+    Select-Object -First 1 |
+    Get-GitHubRelease
+```
+
+#### Create a new release
+```powershell
+New-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Tag 11.0
+```
+
+or with pipelining...
+
+```powershell
+Get-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShell |
+    New-GitHubRelease -Tag 11.0
+```
+
+#### Update a release
+```powershell
+Set-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Body 'Updated body'
+```
+
+or with pipelining...
+
+```powershell
+$repo | Set-GitHubRelease -Release 123456 -Body 'Updated body'
+
+# or
+
+$release | Set-GitHubRelease -Body 'Updated body'
+```
+
+#### Remove a release
+```powershell
+Remove-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Force
+```
+
+or with pipelining...
+
+```powershell
+$repo | Remove-GitHubRelease -Release 123456 -Force
+
+# or
+
+$release | Remove-GitHubRelease -Force
+```
+
+#### List assets for a release
+```powershell
+Get-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456
+```
+
+or with pipelining...
+
+```powershell
+$repo | Get-GitHubReleaseAsset -Release 123456
+
+# or
+
+$release | Get-GitHubReleaseAsset
+```
+
+#### Download a release asset
+```powershell
+Get-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Path 'c:\downloads\asset'
+```
+
+or with pipelining...
+
+```powershell
+# Downloads the first asset of the latest release from PowerShell\PowerShell to the file located
+# at c:\downloads\asset
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Latest |
+    Get-GitHubReleaseAsset |
+    Select-Object -First 1 |
+    Get-GitHubReleaseAsset -Path 'c:\downloads\asset'
+```
+
+#### Create a release asset
+```powershell
+New-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Path 'c:\foo.zip'
+```
+
+or with pipelining...
+
+```powershell
+$release | New-GitHubReleaseAsset -Path 'c:\foo.zip'
+
+# or
+
+@('c:\foo.zip', 'c:\bar.txt') |
+    New-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456
+```
+
+#### Update a release asset
+```powershell
+Set-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Name 'newFileName.zip'
+```
+
+or with pipelining...
+
+```powershell
+$asset | Set-GitHubReleaseAsset -Name 'newFileName.zip'
+```
+
+#### Remove a release asset
+```powershell
+Remove-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Force
+```
+
+or with pipelining...
+
+```powershell
+$asset | Remove-GitHubReleaseAsset -force
 ```
 
 ----------

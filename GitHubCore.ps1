@@ -102,6 +102,7 @@ function Invoke-GHRestMethod
 
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
+        [FileInfo] - The temporary file created for the downloaded file if -Save was specified.
 
     .EXAMPLE
         Invoke-GHRestMethod -UriFragment "users/octocat" -Method Get -Description "Get information on the octocat user"
