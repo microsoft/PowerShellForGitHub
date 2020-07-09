@@ -309,7 +309,8 @@ filter New-GitHubRelease
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseTypeName})]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -321,11 +322,14 @@ filter New-GitHubRelease
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            Position = 2)]
         [string] $Tag,
 
         [Alias('Sha')]
@@ -476,7 +480,8 @@ filter Set-GitHubRelease
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseTypeName})]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -488,13 +493,15 @@ filter Set-GitHubRelease
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [Alias('ReleaseId')]
         [int64] $Release,
 
@@ -633,6 +640,7 @@ filter Remove-GitHubRelease
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
+        PositionalBinding = $false,
         ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubRelease')]
@@ -646,13 +654,15 @@ filter Remove-GitHubRelease
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [Alias('ReleaseId')]
         [int64] $Release,
 
@@ -773,7 +783,9 @@ filter Get-GitHubReleaseAsset
         Downloads the asset 1234567890 to 'c:\users\PowerShellForGitHub\downloads\asset.zip' and
         overwrites the file that may already be there.
 #>
-    [CmdletBinding(DefaultParameterSetName='Elements-List')]
+    [CmdletBinding(
+        DefaultParameterSetName='Elements-List',
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -790,54 +802,65 @@ filter Get-GitHubReleaseAsset
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Info')]
+            ParameterSetName='Uri-Info',
+            Position = 1)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Download')]
+            ParameterSetName='Uri-Download',
+            Position = 1)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-List')]
+            ParameterSetName='Uri-List',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Elements-List')]
+            ParameterSetName='Elements-List',
+            Position = 1)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-List')]
+            ParameterSetName='Uri-List',
+            Position = 2)]
         [Alias('ReleaseId')]
         [int64] $Release,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Elements-Info')]
+            ParameterSetName='Elements-Info',
+            Position = 1)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Elements-Download')]
+            ParameterSetName='Elements-Download',
+            Position = 1)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Info')]
+            ParameterSetName='Uri-Info',
+            Position = 2)]
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri-Download')]
+            ParameterSetName='Uri-Download',
+            Position = 2)]
         [Alias('AssetId')]
         [int64] $Asset,
 
         [Parameter(
             Mandatory,
-            ParameterSetName='Elements-Download')]
+            ParameterSetName='Elements-Download',
+            Position = 2)]
         [Parameter(
             Mandatory,
-            ParameterSetName='Uri-Download')]
+            ParameterSetName='Uri-Download',
+            Position = 3)]
         [string] $Path,
 
         [Parameter(ParameterSetName='Elements-Download')]
@@ -1000,7 +1023,8 @@ filter New-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1013,7 +1037,8 @@ filter New-GitHubReleaseAsset
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Parameter(
             ValueFromPipelineByPropertyName,
             ParameterSetName='UploadUrl')]
@@ -1022,14 +1047,25 @@ filter New-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Elements',
+            Position = 1)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri',
+            Position = 2)]
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='UploadUrl')]
         [Alias('ReleaseId')]
         [int64] $Release,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='UploadUrl')]
+            ParameterSetName='UploadUrl',
+            Position = 1)]
         [string] $UploadUrl,
 
         [Parameter(
@@ -1189,7 +1225,8 @@ filter Set-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements')]
+        DefaultParameterSetName='Elements',
+        PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1202,13 +1239,15 @@ filter Set-GitHubReleaseAsset
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [Alias('AssetId')]
         [int64] $Asset,
 
@@ -1324,6 +1363,7 @@ filter Remove-GitHubReleaseAsset
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
+        PositionalBinding = $false,
         ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubReleaseAsset')]
@@ -1337,13 +1377,15 @@ filter Remove-GitHubReleaseAsset
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ParameterSetName='Uri',
+            Position = 1)]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
         [Alias('AssetId')]
         [int64] $Asset,
 

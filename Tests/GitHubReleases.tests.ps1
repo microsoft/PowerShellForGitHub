@@ -725,7 +725,7 @@ try
                 Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue -Force
             }
 
-            $asset = $release | New-GitHubReleaseAsset -Path $zipFile
+            $asset = $release | New-GitHubReleaseAsset -Path $zipFile -ContentType 'application/zip'
             It "Has the expected content inside" {
                 $result = $asset | Get-GitHubReleaseAsset -Path $downloadedZipFile -Force
                 Expand-Archive -Path $downloadedZipFile -DestinationPath $tempPath
