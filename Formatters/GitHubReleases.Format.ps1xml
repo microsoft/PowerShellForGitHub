@@ -22,16 +22,16 @@
             <Label>Committish</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Is Draft</Label>
+            <Label>Draft</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Is PreRelease</Label>
+            <Label>PreRelease</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Creation Date</Label>
+            <Label>Created</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Published Date</Label>
+            <Label>Published</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
@@ -90,13 +90,13 @@
             <Label>Content Type</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Download Count</Label>
+            <Label>Downloads</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Creation Date</Label>
+            <Label>Created</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Updated Date</Label>
+            <Label>Updated</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
