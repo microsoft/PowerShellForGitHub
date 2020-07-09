@@ -248,7 +248,7 @@ filter New-GitHubRelease
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER TagName
+    .PARAMETER Tag
         The name of the tag.  The tag will be created around the committish if it doesn't exist
         in the remote, and will need to be synced back to the local repository afterwards.
 
@@ -299,7 +299,7 @@ filter New-GitHubRelease
         GitHub.Release
 
     .EXAMPLE
-        New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
+        New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag 0.12.0
 
     .NOTES
         Requires push access to the repository.
@@ -326,7 +326,7 @@ filter New-GitHubRelease
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [string] $TagName,
+        [string] $Tag,
 
         [Alias('Sha')]
         [Alias('BranchName')]
@@ -364,7 +364,7 @@ filter New-GitHubRelease
     }
 
     $hashBody = @{
-        'tag_name' = $TagName
+        'tag_name' = $Tag
     }
 
     if ($PSBoundParameters.ContainsKey('Committish')) { $hashBody['target_commitish'] = $Committish }
@@ -377,14 +377,14 @@ filter New-GitHubRelease
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' = "Creating release at $TagName"
+        'Description' = "Creating release at $Tag"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    if (-not $PSCmdlet.ShouldProcess($TagName, "Create release for $RepositoryName at tag"))
+    if (-not $PSCmdlet.ShouldProcess($Tag, "Create release for $RepositoryName at tag"))
     {
         return
     }
@@ -419,7 +419,7 @@ filter Set-GitHubRelease
     .PARAMETER Release
         The ID of the release to edit.
 
-    .PARAMETER TagName
+    .PARAMETER Tag
         The name of the tag.
 
     .PARAMETER Committish
@@ -469,7 +469,7 @@ filter Set-GitHubRelease
         GitHub.Release
 
     .EXAMPLE
-        Set-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0 -Body 'Adds core support for Projects'
+        Set-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag 0.12.0 -Body 'Adds core support for Projects'
 
     .NOTES
         Requires push access to the repository.
@@ -498,7 +498,7 @@ filter Set-GitHubRelease
         [Alias('ReleaseId')]
         [int64] $Release,
 
-        [string] $TagName,
+        [string] $Tag,
 
         [Alias('Sha')]
         [Alias('BranchName')]
@@ -528,7 +528,7 @@ filter Set-GitHubRelease
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'ProvidedTagName' = ($PSBoundParameters.ContainsKey('TagName'))
+        'ProvidedTag' = ($PSBoundParameters.ContainsKey('Tag'))
         'ProvidedCommittish' = ($PSBoundParameters.ContainsKey('Committish'))
         'ProvidedName' = ($PSBoundParameters.ContainsKey('Name'))
         'ProvidedBody' = ($PSBoundParameters.ContainsKey('Body'))
@@ -537,7 +537,7 @@ filter Set-GitHubRelease
     }
 
     $hashBody = @{}
-    if ($PSBoundParameters.ContainsKey('TagName')) { $hashBody['tag_name'] = $TagName }
+    if ($PSBoundParameters.ContainsKey('Tag')) { $hashBody['tag_name'] = $Tag }
     if ($PSBoundParameters.ContainsKey('Committish')) { $hashBody['target_commitish'] = $Committish }
     if ($PSBoundParameters.ContainsKey('Name')) { $hashBody['name'] = $Name }
     if ($PSBoundParameters.ContainsKey('Body')) { $hashBody['body'] = $Body }
@@ -548,7 +548,7 @@ filter Set-GitHubRelease
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/releases/$Release"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' = "Creating release at $TagName"
+        'Description' = "Creating release at $Tag"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -589,6 +589,9 @@ filter Remove-GitHubRelease
 
     .PARAMETER Release
         The ID of the release to remove.
+
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -653,6 +656,8 @@ filter Remove-GitHubRelease
         [Alias('ReleaseId')]
         [int64] $Release,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -677,6 +682,11 @@ filter Remove-GitHubRelease
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
     }
 
     if (-not $PSCmdlet.ShouldProcess($Release, "Remove GitHub Release"))
@@ -891,7 +901,7 @@ filter Get-GitHubReleaseAsset
     if ($PSCmdlet.ParameterSetName -in ('Elements-Download', 'Uri-Download'))
     {
         Write-Log -Message "Moving [$($result.FullName)] to [$Path]" -Level Verbose
-        return (Move-Item -Path $result -Destination $Path -Force:$Force -PassThru)
+        return (Move-Item -Path $result -Destination $Path -Force:$Force -ErrorAction Stop -PassThru)
     }
     else
     {
@@ -899,7 +909,7 @@ filter Get-GitHubReleaseAsset
     }
 }
 
-function New-GitHubReleaseAsset
+filter New-GitHubReleaseAsset
 {
 <#
     .SYNOPSIS
@@ -970,7 +980,16 @@ function New-GitHubReleaseAsset
         GitHub.ReleaseAsset
 
     .EXAMPLE
-        New-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -TagName 0.12.0
+        New-GitHubReleaseAsset -OwnerName microsoft -RepositoryName PowerShellForGitHub -Release 123456 -Path 'c:\foo.zip'
+
+        Uploads the file located at 'c:\foo.zip' to the 123456 release in microsoft/PowerShellForGitHub
+
+    .EXAMPLE
+        $release = New-GitHubRelease -OwnerName microsoft -RepositoryName PowerShellForGitHub -Tag 'stable'
+        $release | New-GitHubReleaseAsset -Path 'c:\bar.txt'
+
+        Creates a new release tagged as 'stable' and then uploads 'c:\bar.txt' as an asset for
+        that release.
 
     .NOTES
         GitHub renames asset filenames that have special characters, non-alphanumeric characters,
@@ -1003,12 +1022,7 @@ function New-GitHubReleaseAsset
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Elements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
+            ValueFromPipelineByPropertyName)]
         [Alias('ReleaseId')]
         [int64] $Release,
 
@@ -1022,7 +1036,7 @@ function New-GitHubReleaseAsset
             Mandatory,
             ValueFromPipeline)]
         [ValidateScript(
-            {if (Test-Path -Path $_ -PathType Leaf) { $true}
+            {if (Test-Path -Path $_ -PathType Leaf) { $true }
             else { throw "$_ does not exist or is inaccessible." }})]
         [string] $Path,
 
@@ -1035,80 +1049,72 @@ function New-GitHubReleaseAsset
         [switch] $NoStatus
     )
 
-    begin
-    {
-        Write-InvocationLog
+    Write-InvocationLog
 
-        $telemetryProperties = @{
-            'ProvidedUploadUrl' = ($PSBoundParameters.ContainsKey('UploadUrl'))
-            'ProvidedLabel' = ($PSBoundParameters.ContainsKey('Label'))
-            'ProvidedContentType' = ($PSBoundParameters.ContainsKey('ContentType'))
-        }
-
-        # If UploadUrl wasn't provided, we'll need to query for it first.
-        if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
-        {
-            $elements = Resolve-RepositoryElements
-            $OwnerName = $elements.ownerName
-            $RepositoryName = $elements.repositoryName
-
-            $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
-            $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
-
-            $params = @{
-                'OwnerName' = $OwnerName
-                'RepositoryName' = $RepositoryName
-                'Release' = $Release
-                'AccessToken' = $AccessToken
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-            }
-
-            $releaseInfo = Get-GitHubRelease @params
-            $UploadUrl = $releaseInfo.upload_url
-        }
-
-        # Remove the '{name,label}' from the Url if it's there
-        if ($UploadUrl -match '(.*){')
-        {
-            $UploadUrl = $Matches[1]
-        }
+    $telemetryProperties = @{
+        'ProvidedUploadUrl' = ($PSBoundParameters.ContainsKey('UploadUrl'))
+        'ProvidedLabel' = ($PSBoundParameters.ContainsKey('Label'))
+        'ProvidedContentType' = ($PSBoundParameters.ContainsKey('ContentType'))
     }
 
-    process
+    # If UploadUrl wasn't provided, we'll need to query for it first.
+    if ([String]::IsNullOrEmpty($UploadUrl))
     {
-        $Path = Resolve-UnverifiedPath -Path $Path
-        $file = Get-Item -Path $Path
-        $fileName = $file.Name
-        $fileNameEncoded = [Uri]::EscapeDataString($fileName)
-        $queryParams = @("name=$fileNameEncoded")
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
 
-        if ($PSBoundParameters.ContainsKey('Label'))
-        {
-            $labelEncoded = [Uri]::EscapeDataString($Label)
-            $queryParams += "label=$labelEncoded"
-        }
-
-        if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
-        {
-            return
-        }
+        $telemetryProperties['OwnerName'] = (Get-PiiSafeString -PlainText $OwnerName)
+        $telemetryProperties['RepositoryName'] = (Get-PiiSafeString -PlainText $RepositoryName)
 
         $params = @{
-            'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
-            'Method' = 'Post'
-            'Description' = "Uploading $fileName as a release asset"
-            'InFile' = $Path
-            'ContentType' = $ContentType
+            'OwnerName' = $OwnerName
+            'RepositoryName' = $RepositoryName
+            'Release' = $Release
             'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
+        $releaseInfo = Get-GitHubRelease @params
+        $UploadUrl = $releaseInfo.upload_url
     }
 
-    end {}
+    # Remove the '{name,label}' from the Url if it's there
+    if ($UploadUrl -match '(.*){')
+    {
+        $UploadUrl = $Matches[1]
+    }
+
+    $Path = Resolve-UnverifiedPath -Path $Path
+    $file = Get-Item -Path $Path
+    $fileName = $file.Name
+    $fileNameEncoded = [Uri]::EscapeDataString($fileName)
+    $queryParams = @("name=$fileNameEncoded")
+
+    if ($PSBoundParameters.ContainsKey('Label'))
+    {
+        $labelEncoded = [Uri]::EscapeDataString($Label)
+        $queryParams += "label=$labelEncoded"
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($Path, "Create new GitHub Release Asset"))
+    {
+        return
+    }
+
+    $params = @{
+        'UriFragment' = $UploadUrl + '?' + ($queryParams -join '&')
+        'Method' = 'Post'
+        'Description' = "Uploading release asset: $fileName"
+        'InFile' = $Path
+        'ContentType' = $ContentType
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
 }
 
 filter Set-GitHubReleaseAsset
@@ -1278,6 +1284,9 @@ filter Remove-GitHubReleaseAsset
     .PARAMETER Asset
         The ID of the asset to remove.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1338,6 +1347,8 @@ filter Remove-GitHubReleaseAsset
         [Alias('AssetId')]
         [int64] $Asset,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -1362,6 +1373,11 @@ filter Remove-GitHubReleaseAsset
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
     }
 
     if (-not $PSCmdlet.ShouldProcess($Asset, "Delete GitHub Release Asset"))

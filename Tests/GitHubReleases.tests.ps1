@@ -32,9 +32,12 @@ try
                 }
 
                 It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $releases[0].html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
                     $releases[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
-                    $releases[0].html_url.StartsWith($releases[0].RepositoryUrl) | Should -BeTrue
-                    $releases[0].id | Should -Be $releases[0].ReleaseId
+                    $releases[0].RepositoryUrl | Should -Be $repositoryUrl
+                    $releases[0].ReleaseId | Should -Be $releases[0].id
                 }
             }
 
@@ -51,9 +54,12 @@ try
                 }
 
                 It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $latest[0].html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
                     $latest[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
-                    $latest[0].html_url.StartsWith($latest[0].RepositoryUrl) | Should -BeTrue
-                    $latest[0].id | Should -Be $latest[0].ReleaseId
+                    $latest[0].RepositoryUrl | Should -Be $repositoryUrl
+                    $latest[0].ReleaseId | Should -Be $latest[0].id
                 }
             }
 
@@ -71,9 +77,12 @@ try
                 }
 
                 It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $latest[0].html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
                     $latest[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
-                    $latest[0].html_url.StartsWith($latest[0].RepositoryUrl) | Should -BeTrue
-                    $latest[0].id | Should -Be $latest[0].ReleaseId
+                    $latest[0].RepositoryUrl | Should -Be $repositoryUrl
+                    $latest[0].ReleaseId | Should -Be $latest[0].id
                 }
 
                 $latestAgain = @($latest | Get-GitHubRelease)
@@ -95,8 +104,11 @@ try
                 }
 
                 It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $specific[0].html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
                     $specific[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
-                    $specific[0].html_url.StartsWith($specific[0].RepositoryUrl) | Should -BeTrue
+                    $specific[0].RepositoryUrl | Should -Be $repositoryUrl
                     $specific[0].id | Should -Be $specific[0].ReleaseId
                 }
             }
@@ -114,9 +126,12 @@ try
                 }
 
                 It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $tagged[0].html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
                     $tagged[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
-                    $tagged[0].html_url.StartsWith($tagged[0].RepositoryUrl) | Should -BeTrue
-                    $tagged[0].id | Should -Be $tagged[0].ReleaseId
+                    $tagged[0].RepositoryUrl | Should -Be $repositoryUrl
+                    $tagged[0].ReleaseId | Should -Be $tagged[0].id
                 }
             }
         }
@@ -154,11 +169,8 @@ try
                 $defaultReleaseName = 'Release Name'
                 $defaultReleaseBody = 'Releasey Body'
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
-                $release = New-GitHubRelease -Uri $repo.svn_url -TagName $defaultTagName
+                $release = New-GitHubRelease -Uri $repo.svn_url -Tag $defaultTagName
                 $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
-
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $queried = $queried
             }
 
             AfterAll {
@@ -166,6 +178,15 @@ try
             }
 
             Context 'When creating a simple new release' {
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $release.html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $release.PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
+                    $release.RepositoryUrl | Should -Be $repositoryUrl
+                    $release.ReleaseId | Should -Be $release.id
+                }
+
                 It 'Should be queryable' {
                     $queried.id | Should -Be $release.id
                     $queried.tag_name | Should -Be $defaultTagName
@@ -195,18 +216,76 @@ try
         }
     }
 
-    Describe 'Creating, changing and deleting releases with non-defaults' {
+    Describe 'Creating, changing and deleting releases with defaults using the pipeline' {
         Context 'Common test state' {
             BeforeAll {
                 $defaultTagName = '0.2.0'
                 $defaultReleaseName = 'Release Name'
                 $defaultReleaseBody = 'Releasey Body'
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
-                $release = New-GitHubRelease -Uri $repo.svn_url -TagName $defaultTagName -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
-                $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+                $release = $repo | New-GitHubRelease -Tag $defaultTagName
+                $queried = $release | Get-GitHubRelease
+            }
 
-                # Avoid PSScriptAnalyzer PSUseDeclaredVarsMoreThanAssignments
-                $queried = $queried
+            AfterAll {
+                $repo | Remove-GitHubRepository -Force
+            }
+
+            Context 'When creating a simple new release' {
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $release.html_url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $release.PSObject.TypeNames[0] | Should -Be 'GitHub.Release'
+                    $release.RepositoryUrl | Should -Be $repositoryUrl
+                    $release.ReleaseId | Should -Be $release.id
+                }
+
+                It 'Should be queryable' {
+                    $queried.id | Should -Be $release.id
+                    $queried.tag_name | Should -Be $defaultTagName
+                }
+
+                It 'Should have the expected default property values' {
+                    $queried.name | Should -BeNullOrEmpty
+                    $queried.body | Should -BeNullOrEmpty
+                    $queried.draft | Should -BeFalse
+                    $queried.prerelease | Should -BeFalse
+                }
+
+                It 'Should be modifiable with the release on the pipeline' {
+                    $null = $release | Set-GitHubRelease -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
+                    $queried = $release | Get-GitHubRelease
+                    $queried.name | Should -Be $defaultReleaseName
+                    $queried.body | Should -Be $defaultReleaseBody
+                    $queried.draft | Should -BeTrue
+                    $queried.prerelease | Should -BeTrue
+                }
+
+                It 'Should be modifiable with the URI on the pipeline' {
+                    $null = $repo | Set-GitHubRelease -Release $release.id -Draft:$false
+                    $queried = $repo | Get-GitHubRelease -Release $release.id
+                    $queried.name | Should -Be $defaultReleaseName
+                    $queried.body | Should -Be $defaultReleaseBody
+                    $queried.draft | Should -BeFalse
+                    $queried.prerelease | Should -BeTrue
+                }
+
+                It 'Should be removable' {
+                    $release | Remove-GitHubRelease -Force
+                    { $release | Get-GitHubRelease } | Should -Throw
+                }
+            }
+        }
+    }
+
+    Describe 'Creating and changing releases with non-defaults' {
+        Context 'Common test state' {
+            BeforeAll {
+                $defaultTagName = '0.2.0'
+                $defaultReleaseName = 'Release Name'
+                $defaultReleaseBody = 'Releasey Body'
+                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
             }
 
             AfterAll {
@@ -214,6 +293,35 @@ try
             }
 
             Context 'When creating a simple new release' {
+                BeforeAll {
+                    $release = New-GitHubRelease -Uri $repo.svn_url -Tag $defaultTagName -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
+                    $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+                }
+
+                AfterAll {
+                    $release | Remove-GitHubRelease -Force
+                }
+
+                It 'Should be creatable with non-default property values' {
+                    $queried.id | Should -Be $release.id
+                    $queried.tag_name | Should -Be $defaultTagName
+                    $queried.name | Should -Be $defaultReleaseName
+                    $queried.body | Should -Be $defaultReleaseBody
+                    $queried.draft | Should -BeTrue
+                    $queried.prerelease | Should -BeTrue
+                }
+            }
+
+            Context 'When creating a simple new release with the repo on the pipeline' {
+                BeforeAll {
+                    $release = $repo | New-GitHubRelease -Tag $defaultTagName -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
+                    $queried = Get-GitHubRelease -Uri $repo.svn_url -Release $release.id
+                }
+
+                AfterAll {
+                    $release | Remove-GitHubRelease -Force
+                }
+
                 It 'Should be creatable with non-default property values' {
                     $queried.id | Should -Be $release.id
                     $queried.tag_name | Should -Be $defaultTagName
@@ -226,99 +334,756 @@ try
         }
     }
 
-    Describe 'Creating, changing and deleting release assets' {
-        Context 'Validating release assets' {
+    Describe 'Get-GitHubReleaseAsset' {
+        BeforeAll {
+            $defaultTagName = '0.2.0'
+
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
+
+            $tempFile = New-TemporaryFile
+            $zipFile = "$($tempFile.FullName).zip"
+            Move-Item -Path $tempFile -Destination $zipFile
+
+            $tempFile = New-TemporaryFile
+            $txtFile = "$($tempFile.FullName).txt"
+            Move-Item -Path $tempFile -Destination $txtFile
+            Out-File -FilePath $txtFile -InputObject "txt file content" -Encoding utf8
+
+            # The file we'll save the downloaded contents to
+            $saveFile = New-TemporaryFile
+
+            # Disable Progress Bar in function scope during Compress-Archive
+            $ProgressPreference = 'SilentlyContinue'
+            Compress-Archive -Path $txtFile -DestinationPath $zipFile -Force
+
+            $labelBase = 'mylabel'
+        }
+
+        AfterAll {
+            @($zipFile, $txtFile, $saveFile) | Remove-Item -ErrorAction SilentlyContinue | Out-Null
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+
+        Context 'Using parameters' {
             BeforeAll {
-                # To get access to New-TemporaryDirectory
-                $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-                . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
+                $release = New-GitHubRelease -Uri $repo.svn_url -Tag $defaultTagName
 
-                $defaultTagName = '0.2.0'
-
-                $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
-                $release = New-GitHubRelease -Uri $repo.svn_url -TagName $defaultTagName
-
-                $tempFile = New-TemporaryFile
-                $zipFile = "$($tempFile.FullName).zip"
-                Move-Item -Path $tempFile -Destination $zipFile
-
-                $tempFile = New-TemporaryFile
-                $txtFile = "$($tempFile.FullName).txt"
-                Move-Item -Path $tempFile -Destination $txtFile
-                Out-File -FilePath $txtFile -InputObject "txt file content" -Encoding utf8
-
-                # Disable Progress Bar in function scope during Compress-Archive
-                $ProgressPreference = 'SilentlyContinue'
-                Compress-Archive -Path $txtFile -DestinationPath $zipFile -Force
-
-                $label = 'mylabel'
+                # We want to make sure we start out without the file being there.
+                Remove-Item -Path $saveFile -ErrorAction SilentlyContinue | Out-Null
             }
 
             AfterAll {
-                @($zipFile, $txtFile) | Remove-Item | Out-Null
-                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                $release | Remove-GitHubRelease -Force
             }
 
-            It "Can add a release asset" {
-                $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $zipFile -Label $label
-                $zipFileName = (Get-Item -Path $zipFile).Name
-                $assetId = $asset.id
+            $assets = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
+            It 'Should have no assets so far' {
+                $assets.Count | Should -Be 0
+            }
 
-                $asset.name | Should -BeExactly $zipFileName
+            @($zipFile, $txtFile) | ForEach-Object {
+                $fileName = (Get-Item -Path $_).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $_ -Label $finalLabel
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $assets = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
+            It 'Should have both assets now' {
+                $assets.Count | Should -Be 2
+            }
+
+            It 'Should have expected type and additional properties' {
+                foreach ($asset in $assets)
+                {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $txtFileName = (Get-Item -Path $txtFile).Name
+            $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
+            $asset = Get-GitHubReleaseAsset -Uri $repo.svn_url -Asset $txtFileAsset.id
+            It 'Should be able to query for a single asset' {
+                $asset.id | Should -Be $txtFileAsset.id
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $asset.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $asset.RepositoryUrl | Should -Be $repositoryUrl
+                $asset.AssetId | Should -Be $asset.id
+                $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should not have the downloaded file yet' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
+            }
+
+            $downloadParams = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $txtFileAsset.id
+                Path = $saveFile
+            }
+
+            $null = Get-GitHubReleaseAsset @downloadParams
+            It 'Should be able to download the asset file' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
+            }
+
+            It 'Should be able the same file' {
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+
+            It 'Should fail if the download location already exists' {
+                { Get-GitHubReleaseAsset @downloadParams } | Should -Throw
+            }
+
+            It 'Should work if the download location already exists and -Force is used' {
+                $null = Get-GitHubReleaseAsset @downloadParams -Force
+
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'Using the repo on the pipeline' {
+            BeforeAll {
+                $release = $repo | New-GitHubRelease -Tag $defaultTagName
+
+                # We want to make sure we start out without the file being there.
+                Remove-Item -Path $saveFile -ErrorAction SilentlyContinue | Out-Null
+            }
+
+            AfterAll {
+                $release | Remove-GitHubRelease -Force
+            }
+
+            $assets = @($repo | Get-GitHubReleaseAsset -Release $release.id)
+            It 'Should have no assets so far' {
+                $assets.Count | Should -Be 0
+            }
+
+            @($zipFile, $txtFile) | ForEach-Object {
+                $fileName = (Get-Item -Path $_).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $_ -Label $finalLabel
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $assets = @($repo | Get-GitHubReleaseAsset -Release $release.id)
+            It 'Should have both assets now' {
+                $assets.Count | Should -Be 2
+            }
+
+            It 'Should have expected type and additional properties' {
+                foreach ($asset in $assets)
+                {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $txtFileName = (Get-Item -Path $txtFile).Name
+            $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
+            $asset = $repo | Get-GitHubReleaseAsset -Asset $txtFileAsset.id
+            It 'Should be able to query for a single asset' {
+                $asset.id | Should -Be $txtFileAsset.id
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $asset.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $asset.RepositoryUrl | Should -Be $repositoryUrl
+                $asset.AssetId | Should -Be $asset.id
+                $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should not have the downloaded file yet' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
+            }
+
+            $downloadParams = @{
+                Asset = $txtFileAsset.id
+                Path = $saveFile
+            }
+
+            $null = $repo | Get-GitHubReleaseAsset @downloadParams
+            It 'Should be able to download the asset file' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
+            }
+
+            It 'Should be able the same file' {
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+
+            It 'Should fail if the download location already exists' {
+                { $repo | Get-GitHubReleaseAsset @downloadParams } | Should -Throw
+            }
+
+            It 'Should work if the download location already exists and -Force is used' {
+                $null = $repo | Get-GitHubReleaseAsset @downloadParams -Force
+
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'Using the release on the pipeline' {
+            BeforeAll {
+                $release = $repo | New-GitHubRelease -Tag $defaultTagName
+
+                # We want to make sure we start out without the file being there.
+                Remove-Item -Path $saveFile -ErrorAction SilentlyContinue | Out-Null
+            }
+
+            AfterAll {
+                $release | Remove-GitHubRelease -Force
+            }
+
+            $assets = @($release | Get-GitHubReleaseAsset)
+            It 'Should have no assets so far' {
+                $assets.Count | Should -Be 0
+            }
+
+            @($zipFile, $txtFile) | ForEach-Object {
+                $fileName = (Get-Item -Path $_).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = $release | New-GitHubReleaseAsset -Path $_ -Label $finalLabel
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $assets = @($release | Get-GitHubReleaseAsset)
+            It 'Should have both assets now' {
+                $assets.Count | Should -Be 2
+            }
+
+            It 'Should have expected type and additional properties' {
+                foreach ($asset in $assets)
+                {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            $txtFileName = (Get-Item -Path $txtFile).Name
+            $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
+            $asset = $release | Get-GitHubReleaseAsset -Asset $txtFileAsset.id
+            It 'Should be able to query for a single asset' {
+                $asset.id | Should -Be $txtFileAsset.id
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $asset.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $asset.RepositoryUrl | Should -Be $repositoryUrl
+                $asset.AssetId | Should -Be $asset.id
+                $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should not have the downloaded file yet' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
+            }
+
+            $downloadParams = @{
+                Asset = $txtFileAsset.id
+                Path = $saveFile
+            }
+
+            $null = $release | Get-GitHubReleaseAsset @downloadParams
+            It 'Should be able to download the asset file' {
+                Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
+            }
+
+            It 'Should be able the same file' {
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+
+            It 'Should fail if the download location already exists' {
+                { $release | Get-GitHubReleaseAsset @downloadParams } | Should -Throw
+            }
+
+            It 'Should work if the download location already exists and -Force is used' {
+                $null = $release | Get-GitHubReleaseAsset @downloadParams -Force
+
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $saveFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'Verifying a zip file' {
+            BeforeAll {
+                $release = $repo | New-GitHubRelease -Tag $defaultTagName
+
+                # To get access to New-TemporaryDirectory
+                $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+                . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
+                $tempPath = New-TemporaryDirectory
+
+                $tempFile = New-TemporaryFile
+                $downloadedZipFile = "$($tempFile.FullName).zip"
+                Move-Item -Path $tempFile -Destination $downloadedZipFile
+            }
+
+            AfterAll {
+                $release | Remove-GitHubRelease -Force
+                Remove-Item -Path $downloadedZipFile -ErrorAction SilentlyContinue
+                Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue -Force
+            }
+
+            $asset = $release | New-GitHubReleaseAsset -Path $zipFile
+            It "Has the expected content inside" {
+                $result = $asset | Get-GitHubReleaseAsset -Path $downloadedZipFile -Force
+                Expand-Archive -Path $downloadedZipFile -DestinationPath $tempPath
+
+                $result.FullName | Should -BeExactly $downloadedZipFile
+
+                $txtFileName = (Get-Item -Path $txtFile).Name
+                $downloadedTxtFile = (Get-ChildItem -Path $tempPath -Filter $txtFileName).FullName
+
+                $compareParams = @{
+                    ReferenceObject = (Get-Content -Path $txtFile)
+                    DifferenceObject = (Get-Content -Path $downloadedTxtFile)
+                }
+
+                Compare-Object @compareParams | Should -BeNullOrEmpty
+            }
+        }
+    }
+
+    Describe 'Set-GitHubReleaseAsset' {
+        BeforeAll {
+            $defaultTagName = '0.2.0'
+
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
+            $release = New-GitHubRelease -Uri $repo.svn_url -Tag $defaultTagName
+
+            $tempFile = New-TemporaryFile
+            $txtFile = "$($tempFile.FullName).txt"
+            Move-Item -Path $tempFile -Destination $txtFile
+            Out-File -FilePath $txtFile -InputObject "txt file content" -Encoding utf8
+
+            $label = 'mylabel'
+        }
+
+        AfterAll {
+            $txtFile | Remove-Item | Out-Null
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+
+        Context 'Using parameters' {
+            $fileName = (Get-Item -Path $txtFile).Name
+            $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile -Label $label
+
+            It 'Has the expected initial property values' {
+                $asset.name | Should -BeExactly $fileName
                 $asset.label | Should -BeExactly $label
             }
 
-            It "Can list release assets" {
-                $result = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
-                $zipFileName = (Get-Item -Path $zipFile).Name
-
-                $result.count | Should -Be 1
-                $result[0].name | Should -BeExactly $zipFileName
-                $result[0].label | Should -BeExactly $label
+            $setParams = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $asset.id
             }
 
-            It "Can download release assets" {
-                $tempPath = New-TemporaryDirectory
-
-                try
-                {
-                    $tempFile = New-TemporaryFile
-                    $downloadedZipFile = "$($tempFile.FullName).zip"
-                    Move-Item -Path $tempFile -Destination $downloadedZipFile
-
-                    $assetId = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)[0].id
-                    $result = Get-GitHubReleaseAsset -Uri $repo.svn_url -Asset $assetId -Path $downloadedZipFile -Force
-                    Expand-Archive -Path $downloadedZipFile -DestinationPath $tempPath
-
-                    $result.FullName | Should -BeExactly $downloadedZipFile
-
-                    $txtFileName = (Get-Item -Path $txtFile).Name
-                    $downloadedTxtFile = (Get-ChildItem -Path $tempPath -Filter $txtFileName).FullName
-                    (Get-Content -Path $txtFile -Raw) | Should -BeExactly (Get-Content -Path $downloadedTxtFile -Raw)
-                }
-                finally
-                {
-                    Remove-Item -Path $downloadedZipFile
-                    Remove-Item -Path $tempPath -Recurse -Force
-                }
+            $updated = Set-GitHubReleaseAsset @setParams
+            It 'Should have the original property values' {
+                $updated.name | Should -BeExactly $fileName
+                $updated.label | Should -BeExactly $label
             }
 
-            It "Can update a release asset" {
-                $newFileName = 'newFileName.zip'
-                $newLabel = 'my new label'
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $updated.url
+                $repositoryUrl = Join-GitHubUri @elements
 
-                $assetId = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)[0].id
-                $null = Set-GitHubReleaseAsset -Uri $repo.svn_url -Asset $assetId -Name $newFileName -Label $newLabel
-                $result = Get-GitHubReleaseAsset -Uri $repo.svn_url -Asset $assetId
-
-                $result.name | Should -BeExactly $newFileName
-                $result.label | Should -BeExactly $newLabel
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $updated.RepositoryUrl | Should -Be $repositoryUrl
+                $updated.AssetId | Should -Be $updated.id
+                $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            It "Can remove a release asset" {
-                $assetId = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)[0].id
-                Remove-GitHubReleaseAsset -Uri $repo.svn_url -Asset $assetId -Confirm:$false
-                { Get-GitHubReleaseAsset -Uri $repo.svn_url -Asset $assetId } | Should -Throw
+            $updatedFileName = 'updated1.txt'
+            $setParams = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $asset.id
+                Name = $updatedFileName
+            }
+
+            $updated = Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and the original label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            $updatedLabel = 'updatedLabel2'
+            $setParams = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $asset.id
+                Label = $updatedLabel
+            }
+
+            $updated = Set-GitHubReleaseAsset @setParams
+            It 'Should have the current name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+
+            $updatedFileName = 'updated3parameter.txt'
+            $updatedLabel = 'updatedLabel3parameter'
+            $setParams = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $asset.id
+                Name = $updatedFileName
+                Label = $updatedLabel
+            }
+
+            $updated = Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+        }
+
+        Context 'Using the repo on the pipeline' {
+            $fileName = (Get-Item -Path $txtFile).Name
+            $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $txtFile -Label $label
+
+            It 'Has the expected initial property values' {
+                $asset.name | Should -BeExactly $fileName
+                $asset.label | Should -BeExactly $label
+            }
+
+            $setParams = @{
+                Asset = $asset.id
+            }
+
+            $updated = $repo | Set-GitHubReleaseAsset @setParams
+            It 'Should have the original property values' {
+                $updated.name | Should -BeExactly $fileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $updated.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $updated.RepositoryUrl | Should -Be $repositoryUrl
+                $updated.AssetId | Should -Be $updated.id
+                $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $updatedFileName = 'updated1.txt'
+            $setParams = @{
+                Asset = $asset.id
+                Name = $updatedFileName
+            }
+
+            $updated = $repo | Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and the original label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            $updatedLabel = 'updatedLabel2'
+            $setParams = @{
+                Asset = $asset.id
+                Label = $updatedLabel
+            }
+
+            $updated = $repo | Set-GitHubReleaseAsset @setParams
+            It 'Should have the current name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+
+            $updatedFileName = 'updated3repo.txt'
+            $updatedLabel = 'updatedLabel3repo'
+            $setParams = @{
+                Asset = $asset.id
+                Name = $updatedFileName
+                Label = $updatedLabel
+            }
+
+            $updated = $repo | Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+        }
+
+        Context 'Using the release on the pipeline' {
+            $fileName = (Get-Item -Path $txtFile).Name
+            $asset = $release | New-GitHubReleaseAsset -Path $txtFile -Label $label
+
+            It 'Has the expected initial property values' {
+                $asset.name | Should -BeExactly $fileName
+                $asset.label | Should -BeExactly $label
+            }
+
+            $setParams = @{
+                Asset = $asset.id
+            }
+
+            $updated = $release | Set-GitHubReleaseAsset @setParams
+            It 'Should have the original property values' {
+                $updated.name | Should -BeExactly $fileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $updated.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $updated.RepositoryUrl | Should -Be $repositoryUrl
+                $updated.AssetId | Should -Be $updated.id
+                $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $updatedFileName = 'updated1.txt'
+            $setParams = @{
+                Asset = $asset.id
+                Name = $updatedFileName
+            }
+
+            $updated = $release | Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and the original label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            $updatedLabel = 'updatedLabel2'
+            $setParams = @{
+                Asset = $asset.id
+                Label = $updatedLabel
+            }
+
+            $updated = $release | Set-GitHubReleaseAsset @setParams
+            It 'Should have the current name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+
+            $updatedFileName = 'updated3release.txt'
+            $updatedLabel = 'updatedLabel3release'
+            $setParams = @{
+                Asset = $asset.id
+                Name = $updatedFileName
+                Label = $updatedLabel
+            }
+
+            $updated = $release | Set-GitHubReleaseAsset @setParams
+            It 'Should have a new name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+        }
+
+        Context 'Using the asset on the pipeline' {
+            $fileName = (Get-Item -Path $txtFile).Name
+            $asset = $release | New-GitHubReleaseAsset -Path $txtFile -Label $label
+
+            It 'Has the expected initial property values' {
+                $asset.name | Should -BeExactly $fileName
+                $asset.label | Should -BeExactly $label
+            }
+
+            $updated = $asset | Set-GitHubReleaseAsset
+            It 'Should have the original property values' {
+                $updated.name | Should -BeExactly $fileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            It 'Should have expected type and additional properties' {
+                $elements = Split-GitHubUri -Uri $updated.url
+                $repositoryUrl = Join-GitHubUri @elements
+
+                $updated.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                $updated.RepositoryUrl | Should -Be $repositoryUrl
+                $updated.AssetId | Should -Be $updated.id
+                $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            $updatedFileName = 'updated1.txt'
+            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName
+            It 'Should have a new name and the original label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $label
+            }
+
+            $updatedLabel = 'updatedLabel2'
+            $updated = $asset | Set-GitHubReleaseAsset -Label $updatedLabel
+            It 'Should have the current name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+
+            $updatedFileName = 'updated3asset.txt'
+            $updatedLabel = 'updatedLabel3asset'
+            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -Label $updatedLabel
+            It 'Should have a new name and a new label' {
+                $updated.name | Should -BeExactly $updatedFileName
+                $updated.label | Should -BeExactly $updatedLabel
+            }
+        }
+    }
+
+    Describe 'Remove-GitHubReleaseAsset' {
+        BeforeAll {
+            $defaultTagName = '0.2.0'
+
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit -Private
+            $release = New-GitHubRelease -Uri $repo.svn_url -Tag $defaultTagName
+
+            $tempFile = New-TemporaryFile
+            $txtFile = "$($tempFile.FullName).txt"
+            Move-Item -Path $tempFile -Destination $txtFile
+            Out-File -FilePath $txtFile -InputObject "txt file content" -Encoding utf8
+        }
+
+        AfterAll {
+            $txtFile | Remove-Item | Out-Null
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+
+        Context 'Using parameters' {
+            $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
+
+            $params = @{
+                OwnerName = $script:ownerName
+                RepositoryName = $repo.name
+                Asset = $asset.id
+                Force = $true
+            }
+
+            Remove-GitHubReleaseAsset @params
+            It 'Should be successfully deleted' {
+                { Remove-GitHubReleaseAsset @params } | Should -Throw
+            }
+        }
+
+        Context 'Using the repo on the pipeline' {
+            $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
+
+            $repo | Remove-GitHubReleaseAsset -Asset $asset.id -Force
+            It 'Should be successfully deleted' {
+                { $repo | Remove-GitHubReleaseAsset -Asset $asset.id -Force } | Should -Throw
+            }
+        }
+
+        Context 'Using the release on the pipeline' {
+            $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
+
+            $release | Remove-GitHubReleaseAsset -Asset $asset.id -Force
+            It 'Should be successfully deleted' {
+                { $release | Remove-GitHubReleaseAsset -Asset $asset.id -Force } | Should -Throw
+            }
+        }
+
+        Context 'Using the asset on the pipeline' {
+            $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
+
+            $asset | Remove-GitHubReleaseAsset -Force
+            It 'Should be successfully deleted' {
+                { $asset | Remove-GitHubReleaseAsset -Force } | Should -Throw
             }
         }
     }
