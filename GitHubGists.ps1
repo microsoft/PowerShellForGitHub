@@ -80,6 +80,7 @@ filter Get-GitHubGist
     [CmdletBinding(
         DefaultParameterSetName='Current',
         PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistTypeName})]
     param(
         [Parameter(
             Mandatory,
@@ -282,13 +283,14 @@ filter Remove-GitHubGist
 #>
     [CmdletBinding(
         SupportsShouldProcess,
+        PositionalBinding = $false,
         ConfirmImpact = 'High')]
     [Alias('Delete-GitHubGist')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName)]
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
@@ -300,21 +302,23 @@ filter Remove-GitHubGist
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    if ($PSCmdlet.ShouldProcess($Id, "Delete gist"))
+    if (-not $PSCmdlet.ShouldProcess($Id, "Delete gist"))
     {
-        $telemetryProperties = @{}
-        $params = @{
-            'UriFragment' = "gists/$Id"
-            'Method' = 'Delete'
-            'Description' =  "Removing gist $Id"
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    $telemetryProperties = @{}
+    $params = @{
+        'UriFragment' = "gists/$Id"
+        'Method' = 'Delete'
+        'Description' =  "Removing gist $Id"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Copy-GitHubGist
@@ -341,6 +345,12 @@ filter Copy-GitHubGist
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
+    .OUTPUTS
+        GitHub.Gist
+
     .EXAMPLE
         Copy-GitHubGist -Id 6cad326836d38bd3a7ae
 
@@ -352,11 +362,17 @@ filter Copy-GitHubGist
         Forks octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Copy-GitHubGist or Fork-GitHubGist.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistTypeName})]
     [Alias('Fork-GitHubGist')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
@@ -366,6 +382,11 @@ filter Copy-GitHubGist
     )
 
     Write-InvocationLog -Invocation $MyInvocation
+
+    if (-not $PSCmdlet.ShouldProcess($Id, "Forking gist"))
+    {
+        return
+    }
 
     $telemetryProperties = @{}
     $params = @{
@@ -378,10 +399,10 @@ filter Copy-GitHubGist
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return Invoke-GHRestMethod @params
+    return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
 }
 
-function Add-GitHubGistStar
+filter Add-GitHubGistStar
 {
 <#
     .SYNOPSIS
@@ -405,6 +426,9 @@ function Add-GitHubGistStar
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
     .EXAMPLE
         Add-GitHubGistStar -Id 6cad326836d38bd3a7ae
 
@@ -416,11 +440,16 @@ function Add-GitHubGistStar
         Stars octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Add-GitHubGistStar or Star-GitHubGist.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
     [Alias('Star-GitHubGist')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
@@ -430,6 +459,11 @@ function Add-GitHubGistStar
     )
 
     Write-InvocationLog -Invocation $MyInvocation
+
+    if (-not $PSCmdlet.ShouldProcess($Id, "Starring gist"))
+    {
+        return
+    }
 
     $telemetryProperties = @{}
     $params = @{
@@ -445,7 +479,7 @@ function Add-GitHubGistStar
     return Invoke-GHRestMethod @params
 }
 
-function Remove-GitHubGistStar
+filter Remove-GitHubGistStar
 {
 <#
     .SYNOPSIS
@@ -469,6 +503,9 @@ function Remove-GitHubGistStar
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
     .EXAMPLE
         Remove-GitHubGistStar -Id 6cad326836d38bd3a7ae
 
@@ -480,11 +517,16 @@ function Remove-GitHubGistStar
         Unstars octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Remove-GitHubGistStar or Unstar-GitHubGist.
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
     [Alias('Unstar-GitHubGist')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
@@ -494,6 +536,11 @@ function Remove-GitHubGistStar
     )
 
     Write-InvocationLog -Invocation $MyInvocation
+
+    if (-not $PSCmdlet.ShouldProcess($Id, "Unstarring gist"))
+    {
+        return
+    }
 
     $telemetryProperties = @{}
     $params = @{
@@ -509,7 +556,7 @@ function Remove-GitHubGistStar
     return Invoke-GHRestMethod @params
 }
 
-function Test-GitHubGistStar
+filter Test-GitHubGistStar
 {
 <#
     .SYNOPSIS
@@ -535,8 +582,11 @@ function Test-GitHubGistStar
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
     .OUTPUTS
-        [bool] If the gist was both found and determined to be starred.
+        Boolean indicating if the gist was both found and determined to be starred.
 
     .EXAMPLE
         Test-GitHubGistStar -Id 6cad326836d38bd3a7ae
@@ -548,11 +598,14 @@ function Test-GitHubGistStar
         For some reason, this does not currently seem to be working correctly
         (even though it matches the spec: https://developer.github.com/v3/gists/#check-if-a-gist-is-starred).
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(PositionalBinding = $false)]
     [OutputType([bool])]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
@@ -586,7 +639,7 @@ function Test-GitHubGistStar
     }
 }
 
-function New-GitHubGist
+filter New-GitHubGist
 {
 <#
     .SYNOPSIS
@@ -643,23 +696,28 @@ function New-GitHubGist
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Content')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='FileRef',
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistTypeName})]
     param(
         [Parameter(
             Mandatory,
-            ParameterSetName='FileRef')]
+            ValueFromPipeline,
+            ParameterSetName='FileRef',
+            Position = 1)]
         [string[]] $File,
 
         [Parameter(
             Mandatory,
-            ParameterSetName='Content')]
+            ParameterSetName='Content',
+            Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $Content,
 
         [Parameter(
             Mandatory,
-            ParameterSetName='Content')]
+            ParameterSetName='Content',
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $FileName,
 
@@ -672,16 +730,12 @@ function New-GitHubGist
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
-
-    $telemetryProperties = @{}
-
-    $files = @{}
-    if ($PSCmdlet.ParameterSetName -eq 'Content')
+    begin
     {
-        $files[$FileName] = @{ 'content' = $Content }
+        $files = @{}
     }
-    else
+
+    process
     {
         foreach ($path in $File)
         {
@@ -707,27 +761,44 @@ function New-GitHubGist
         }
     }
 
-    $hashBody = @{
-        'description' = $Description
-        'public' = $Public.ToBool()
-        'files' = $files
-    }
+    end
+    {
+        Write-InvocationLog -Invocation $MyInvocation
 
-    $params = @{
-        'UriFragment' = "gists"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Post'
-        'Description' =  "Creating a new gist"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
-    }
+        $telemetryProperties = @{}
 
-    return Invoke-GHRestMethod @params
+        if ($PSCmdlet.ParameterSetName -eq 'Content')
+        {
+            $files[$FileName] = @{ 'content' = $Content }
+        }
+
+        $hashBody = @{
+            'description' = $Description
+            'public' = $Public.ToBool()
+            'files' = $files
+        }
+
+        if (-not $PSCmdlet.ShouldProcess('Create new gist'))
+        {
+            return
+        }
+
+        $params = @{
+            'UriFragment' = "gists"
+            'Body' = (ConvertTo-Json -InputObject $hashBody)
+            'Method' = 'Post'
+            'Description' =  "Creating a new gist"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
+    }
 }
 
-function Set-GitHubGist
+filter Set-GitHubGist
 {
 <#
     .SYNOPSIS
@@ -748,7 +819,7 @@ function Set-GitHubGist
             fileName - Specify a new name here if you want to rename the file.
             filePath - Specify a path to a file on disk if you wish to update the contents of the
                        file in the gist with the contents of the specified file.
-                       Should not be  specified if you use 'content' (below)
+                       Should not be specified if you use 'content' (below)
             content  - Directly specify the raw content that the file in the gist should be updated with.
                        Should not be used if you use 'filePath' (above).
 
@@ -795,10 +866,15 @@ function Set-GitHubGist
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Content')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Content',
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistTypeName})]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
         [string] $Id,
 
         [hashtable] $Update,
@@ -873,6 +949,11 @@ function Set-GitHubGist
     if (-not [String]::IsNullOrWhiteSpace($Description)) { $hashBody['description'] = $Description }
     if ($files.Keys.count -gt 0) { $hashBody['files'] = $files }
 
+    if (-not $PSCmdlet.ShouldProcess($Id, 'Update gist'))
+    {
+        return
+    }
+
     $params = @{
         'UriFragment' = "gists/$Id"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
@@ -886,7 +967,7 @@ function Set-GitHubGist
 
     try
     {
-        return Invoke-GHRestMethod @params
+        return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
     }
     catch
     {
@@ -899,7 +980,6 @@ function Set-GitHubGist
         throw
     }
 }
-
 
 filter Add-GitHubGistAdditionalProperties
 {
