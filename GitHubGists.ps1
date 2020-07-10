@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-function Get-GitHubGist
+@{
+    GitHubGistTypeName = 'GitHub.Gist'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
+
+filter Get-GitHubGist
 {
 <#
     .SYNOPSIS
@@ -50,6 +56,12 @@ function Get-GitHubGist
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
+    .OUTPUTS
+        GitHub.Gist
+
     .EXAMPLE
         Get-GitHubGist -Starred
 
@@ -66,14 +78,16 @@ function Get-GitHubGist
         Gets octocat's "hello_world.rb" gist.
 #>
     [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='Current')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+        DefaultParameterSetName='Current',
+        PositionalBinding = $false)]
     param(
         [Parameter(
             Mandatory,
-            ParameterSetName='Id')]
-        [string] $Id,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Id',
+            Position = 1)]
+        [Alias('GistId')]
+        [int64] $Id,
 
         [Parameter(ParameterSetName='Id')]
         [string] $Sha,
@@ -225,10 +239,10 @@ than 10 Mb, you''ll need to clone the gist via the URL provided by git_pull_url.
         Write-Log -Message $message -Level Warning
     }
 
-    return $result
+    return ($result | Add-GitHubGistAdditionalProperties)
 }
 
-function Remove-GitHubGist
+filter Remove-GitHubGist
 {
 <#
     .SYNOPSIS
@@ -252,6 +266,9 @@ function Remove-GitHubGist
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+
     .EXAMPLE
         Remove-GitHubGist -Id 6cad326836d38bd3a7ae
 
@@ -265,11 +282,14 @@ function Remove-GitHubGist
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        ConfirmImpact="High")]
+        ConfirmImpact = 'High')]
     [Alias('Delete-GitHubGist')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
@@ -297,7 +317,7 @@ function Remove-GitHubGist
     }
 }
 
-function Copy-GitHubGist
+filter Copy-GitHubGist
 {
 <#
     .SYNOPSIS
@@ -877,5 +897,57 @@ function Set-GitHubGist
         }
 
         throw
+    }
+}
+
+
+filter Add-GitHubGistAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Gist objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Gist
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubGistTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'GistId' -Value $item.id -MemberType NoteProperty -Force
+            $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
+            foreach ($fork in $item.forks)
+            {
+                Add-Member -InputObject $fork -Name 'GistId' -Value $fork.id -MemberType NoteProperty -Force
+                $null = Add-GitHubUserAdditionalProperties -InputObject $fork.user
+            }
+        }
+
+        Write-Output $item
     }
 }
