@@ -309,7 +309,6 @@ filter New-GitHubRelease
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseTypeName})]
     param(
@@ -480,7 +479,6 @@ filter Set-GitHubRelease
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseTypeName})]
     param(
@@ -639,7 +637,6 @@ filter Remove-GitHubRelease
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false,
         ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -783,9 +780,7 @@ filter Get-GitHubReleaseAsset
         Downloads the asset 1234567890 to 'c:\users\PowerShellForGitHub\downloads\asset.zip' and
         overwrites the file that may already be there.
 #>
-    [CmdletBinding(
-        DefaultParameterSetName='Elements-List',
-        PositionalBinding = $false)]
+    [CmdletBinding(PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1023,7 +1018,6 @@ filter New-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -1225,7 +1219,6 @@ filter Set-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubReleaseAssetTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -1362,7 +1355,6 @@ filter Remove-GitHubReleaseAsset
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName='Elements',
         PositionalBinding = $false,
         ConfirmImpact='High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
