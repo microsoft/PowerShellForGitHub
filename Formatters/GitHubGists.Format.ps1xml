@@ -1,11 +1,119 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
   <ViewDefinitions>
-    <!--================== GitHub.Repository Type View =================-->
+    <!--================== GitHub.Gist Type View =================-->
     <View>
       <Name>GitHub.Gist</Name>
       <ViewSelectedBy>
         <TypeName>GitHub.Gist</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>ID</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>User</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Description</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Public</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Files</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Created</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Updated</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  $_.owner.login
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>description</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>public</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  ($_.files |
+                    Get-Member -MemberType NoteProperty |
+                    Select-Object -ExpandProperty Name) -join ', '
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>created_at</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>updated_at</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--=============== GitHub.GistCommit Type View ===============-->
+    <View>
+      <Name>GitHub.GistCommit</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.GistCommit</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>ID</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Sha</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>User</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Committed</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>GistId</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>version</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  ($_.user.login)
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>committed_at</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--================== GitHub.GistDetail Type View =================-->
+    <View>
+      <Name>GitHub.GistDetail</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.GistDetail</TypeName>
       </ViewSelectedBy>
       <TableControl>
         <TableHeaders>
@@ -20,6 +128,9 @@
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Files</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Forks</Label>
           </TableColumnHeader>
           <TableColumnHeader>
             <Label>Created</Label>
@@ -45,6 +156,54 @@
                   ($_.files |
                     Get-Member -MemberType NoteProperty |
                     Select-Object -ExpandProperty Name) -join ', '
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  ($_.forks.Count)
+                </ScriptBlock>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>created_at</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>updated_at</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+    <!--=============== GitHub.GistFork Type View ===============-->
+    <View>
+      <Name>GitHub.GistFork</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.GistFork</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>ID</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>User</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Created</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Updated</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  ($_.owner.login)
                 </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>

@@ -3,6 +3,9 @@
 
 @{
     GitHubGistTypeName = 'GitHub.Gist'
+    GitHubGistCommitTypeName = 'GitHub.GistCommit'
+    GitHubGistDetailTypeName = 'GitHub.GistDetail'
+    GitHubGistForkTypeName = 'GitHub.GistFork'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -58,9 +61,15 @@ filter Get-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .OUTPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .EXAMPLE
         Get-GitHubGist -Starred
@@ -81,6 +90,9 @@ filter Get-GitHubGist
         DefaultParameterSetName='Current',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistTypeName})]
+    [OutputType({$script:GitHubGistCommitTypeName})]
+    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistForkTypeName})]
     param(
         [Parameter(
             Mandatory,
@@ -88,9 +100,11 @@ filter Get-GitHubGist
             ParameterSetName='Id',
             Position = 1)]
         [Alias('GistId')]
-        [int64] $Id,
+        [ValidateNotNullOrEmpty()]
+        [string] $Id,
 
         [Parameter(ParameterSetName='Id')]
+        [ValidateNotNullOrEmpty()]
         [string] $Sha,
 
         [Parameter(ParameterSetName='Id')]
@@ -100,6 +114,7 @@ filter Get-GitHubGist
         [switch] $Commits,
 
         [Parameter(ParameterSetName='User')]
+        [ValidateNotNullOrEmpty()]
         [string] $UserName,
 
         [Parameter(ParameterSetName='Current')]
@@ -127,30 +142,13 @@ filter Get-GitHubGist
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
+    $outputType = $script:GitHubGistTypeName
 
     if ($PSCmdlet.ParameterSetName -eq 'Id')
     {
         $telemetryProperties['ById'] = $true
 
-        if ([String]::IsNullOrWhiteSpace($Sha))
-        {
-            if ($Forks)
-            {
-                $uriFragment = "gists/$Id/forks"
-                $description = "Getting forks of gist $Id"
-            }
-            elseif ($Commits)
-            {
-                $uriFragment = "gists/$Id/commits"
-                $description = "Getting commits of gist $Id"
-            }
-            else
-            {
-                $uriFragment = "gists/$Id"
-                $description = "Getting gist $Id"
-            }
-        }
-        else
+        if ($PSBoundParameters.ContainsKey('Sha'))
         {
             if ($Forks -or $Commits)
             {
@@ -163,6 +161,25 @@ filter Get-GitHubGist
 
             $uriFragment = "gists/$Id/$Sha"
             $description = "Getting gist $Id with specified Sha"
+            $outputType = $script:GitHubGistDetailTypeName
+        }
+        elseif ($Forks)
+        {
+            $uriFragment = "gists/$Id/forks"
+            $description = "Getting forks of gist $Id"
+            $outputType = $script:GitHubGistForkTypeName
+        }
+        elseif ($Commits)
+        {
+            $uriFragment = "gists/$Id/commits"
+            $description = "Getting commits of gist $Id"
+            $outputType = $script:GitHubGistCommitTypeName
+        }
+        else
+        {
+            $uriFragment = "gists/$Id"
+            $description = "Getting gist $Id"
+            $outputType = $script:GitHubGistDetailTypeName
         }
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'User')
@@ -171,10 +188,12 @@ filter Get-GitHubGist
 
         $uriFragment = "users/$UserName/gists"
         $description = "Getting public gists for $UserName"
+        $outputType = $script:GitHubGistTypeName
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'Current')
     {
         $telemetryProperties['CurrentUser'] = $true
+        $outputType = $script:GitHubGistTypeName
 
         if (Test-GitHubAuthenticationConfigured)
         {
@@ -204,6 +223,7 @@ filter Get-GitHubGist
     elseif ($PSCmdlet.ParameterSetName -eq 'Public')
     {
         $telemetryProperties['Public'] = $true
+        $outputType = $script:GitHubGistTypeName
 
         $uriFragment = "gists/public"
         $description = 'Getting public gists'
@@ -240,7 +260,7 @@ than 10 Mb, you''ll need to clone the gist via the URL provided by git_pull_url.
         Write-Log -Message $message -Level Warning
     }
 
-    return ($result | Add-GitHubGistAdditionalProperties)
+    return ($result | Add-GitHubGistAdditionalProperties -TypeName $outputType)
 }
 
 filter Remove-GitHubGist
@@ -269,6 +289,9 @@ filter Remove-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .EXAMPLE
         Remove-GitHubGist -Id 6cad326836d38bd3a7ae
@@ -347,6 +370,9 @@ filter Copy-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .OUTPUTS
         GitHub.Gist
@@ -428,6 +454,9 @@ filter Add-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .EXAMPLE
         Add-GitHubGistStar -Id 6cad326836d38bd3a7ae
@@ -505,6 +534,9 @@ filter Remove-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .EXAMPLE
         Remove-GitHubGistStar -Id 6cad326836d38bd3a7ae
@@ -584,6 +616,9 @@ filter Test-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 
     .OUTPUTS
         Boolean indicating if the gist was both found and determined to be starred.
@@ -677,6 +712,12 @@ filter New-GitHubGist
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        String - Filename(s) of file(s) that should be the content of the gist.
+
+    .OUTPUTS
+        GitHub.GitDetail
+
     .EXAMPLE
         New-GitHubGist -Content 'Body of my file.' -FileName 'sample.txt' -Description 'This is my gist!' -Public
 
@@ -698,13 +739,14 @@ filter New-GitHubGist
         SupportsShouldProcess,
         DefaultParameterSetName='FileRef',
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistTypeName})]
+    [OutputType({$script:GitHubGistDetailTypeName})]
     param(
         [Parameter(
             Mandatory,
             ValueFromPipeline,
             ParameterSetName='FileRef',
             Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string[]] $File,
 
         [Parameter(
@@ -794,7 +836,8 @@ filter New-GitHubGist
             'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
-        return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
+        return (Invoke-GHRestMethod @params |
+            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistDetailTypeName)
     }
 }
 
@@ -839,6 +882,15 @@ filter Set-GitHubGist
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
+    .INPUTS
+        GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
+
+    .OUTPUTS
+        GitHub.GistDetail
+
     .EXAMPLE
         Set-GitHubGist -Id 6cad326836d38bd3a7ae -Description 'This is my newer description'
 
@@ -868,13 +920,14 @@ filter Set-GitHubGist
         SupportsShouldProcess,
         DefaultParameterSetName='Content',
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistTypeName})]
+    [OutputType({$script:GitHubGistDetailTypeName})]
     param(
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1)]
         [Alias('GistId')]
+        [ValidateNotNullOrEmpty()]
         [string] $Id,
 
         [hashtable] $Update,
@@ -967,7 +1020,8 @@ filter Set-GitHubGist
 
     try
     {
-        return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
+        return (Invoke-GHRestMethod @params |
+            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistDetailTypeName)
     }
     catch
     {
@@ -998,8 +1052,14 @@ filter Add-GitHubGistAdditionalProperties
 
     .OUTPUTS
         GitHub.Gist
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
 #>
     [CmdletBinding()]
+    [OutputType({$script:GitHubGistypeName})]
+    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistFormTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
@@ -1013,6 +1073,11 @@ filter Add-GitHubGistAdditionalProperties
         [string] $TypeName = $script:GitHubGistTypeName
     )
 
+    if ($TypeName -eq $script:GitHubGistCommitTypeName)
+    {
+        return Add-GitHubGistCommitAdditionalProperties -InputObject $InputObject
+    }
+
     foreach ($item in $InputObject)
     {
         $item.PSObject.TypeNames.Insert(0, $TypeName)
@@ -1020,12 +1085,87 @@ filter Add-GitHubGistAdditionalProperties
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             Add-Member -InputObject $item -Name 'GistId' -Value $item.id -MemberType NoteProperty -Force
-            $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
+
+            @('user', 'owner') |
+                ForEach-Object {
+                    if ($null -ne $item.$_)
+                    {
+                        $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                    }
+                }
+
             foreach ($fork in $item.forks)
             {
                 Add-Member -InputObject $fork -Name 'GistId' -Value $fork.id -MemberType NoteProperty -Force
                 $null = Add-GitHubUserAdditionalProperties -InputObject $fork.user
             }
+
+            foreach ($entry in $item.history)
+            {
+                $null = Add-GitHubGistCommitAdditionalProperties -InputObject $entry
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubGistCommitAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub GistCommit objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.GistCommit
+#>
+    [CmdletBinding()]
+    [OutputType({$script:GitHubGistCommitTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubGistCommitTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
+            if ($item.uri -match "^https?://(?:www\.|api\.|)$hostName/gists/([^/]+)/(.+)$")
+            {
+                $id = $Matches[1]
+                $sha = $Matches[2]
+
+                if ($sha -ne $item.version)
+                {
+                    $message = "The gist commit url no longer follows the expected pattern.  Please contact the PowerShellForGitHubTeam: $item.uri"
+                    Write-Log -Message $message -Level Warning
+                }
+            }
+
+            Add-Member -InputObject $item -Name 'GistId' -Value $id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'Sha' -Value $item.version -MemberType NoteProperty -Force
+
+            $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
         }
 
         Write-Output $item

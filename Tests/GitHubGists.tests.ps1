@@ -18,7 +18,35 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 try
 {
     Describe 'New-GitHubGist' {
-        Context 'By files - with parameters' {
+        Context 'By files' {
+            BeforeAll {
+                $tempFile = New-TemporaryFile
+                $fileA = "$($tempFile.FullName).ps1"
+                Move-Item -Path $tempFile -Destination $fileA
+                Out-File -FilePath $fileA -InputObject "fileA content" -Encoding utf8
+
+                $tempFile = New-TemporaryFile
+                $fileB = "$($tempFile.FullName).txt"
+                Move-Item -Path $tempFile -Destination $fileB
+                Out-File -FilePath $fileB -InputObject "fileB content" -Encoding utf8
+
+                $description = 'my description'
+            }
+
+            AfterAll {
+                @($fileA, $fileB) | Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
+            }
+
+            $gist = New-GitHubGist -File $fileA -Description $description -Public
+            It 'Should have the expected result' {
+
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                $gist.GistId | Should -Be $gist.id
+                $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
         }
     }
 }
