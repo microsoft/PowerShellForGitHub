@@ -196,7 +196,7 @@ filter Get-GitHubGist
         $telemetryProperties['CurrentUser'] = $true
         $outputType = $script:GitHubGistTypeName
 
-        if (Test-GitHubAuthenticationConfigured)
+        if (Test-GitHubAuthenticationConfigured -or (-not [String]::IsNullOrEmpty($AccessToken)))
         {
             if ($Starred)
             {
@@ -218,7 +218,9 @@ filter Get-GitHubGist
                 throw $message
             }
 
-            $description = 'Getting public gists'
+            $message = 'Specified -Current, but not currently authenticated.  Either call Set-GitHubAuthentication first, or provide a value for the AccessToken parameter.'
+            Write-Log -Message $message -Level Error
+            throw $message
         }
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'Public')
@@ -256,7 +258,7 @@ Response has been truncated.  The API will only return the first 3000 gist resul
 the first 300 files within an individual gist, and the first 1 Mb of an individual file.
 If the file has been truncated, you can call (Invoke-WebRequest -UseBasicParsing -Method Get -Uri <raw_url>).Content)
 where <raw_url> is the value of raw_url for the file in question.  Be aware that for files larger
-than 10 Mb, you''ll need to clone the gist via the URL provided by git_pull_url.
+than 10 Mb, you'll need to clone the gist via the URL provided by git_pull_url.
 "@
         Write-Log -Message $message -Level Warning
     }

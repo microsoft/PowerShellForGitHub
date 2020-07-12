@@ -17,7 +17,41 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
-    Describe 'New-GitHubGist' {
+    Describe 'Get-GitHubGist' {
+        Context 'Specific Gist' {
+        }
+
+        Context 'Specific Gist with Sha' {
+        }
+
+        Context 'Forks' {
+            # Make sure you check for error when Sha specified
+        }
+
+        Context 'Commits' {
+            # Make sure you check for error when Sha specified
+        }
+
+        Context 'All gists for a specific user' {
+        }
+
+        Context 'All starred gists for a specific user' {
+        }
+
+        Context 'All gists for the current authenticated user' {
+        }
+
+        Context 'All gists for the current authenticated user, but not authenticated' {
+        }
+
+        Context 'All starred gists for the current authenticated user, but not authenticated' {
+        }
+
+        Context 'All public gists' {
+        }
+    }
+
+    Describe 'Get-GitHubGist' {
         Context 'By files' {
             BeforeAll {
                 $tempFile = New-TemporaryFile
@@ -46,6 +80,106 @@ try
                 $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+    }
+
+    Describe 'Remove-GitHubGist' {
+        Context 'By files' {
+            BeforeAll {
+            }
+
+            AfterAll {
+            }
+        }
+    }
+
+    Describe 'Copy-GitHubGist' {
+        Context 'By files' {
+            BeforeAll {
+            }
+
+            AfterAll {
+            }
+        }
+    }
+
+    Describe 'Add/Remove/Test-GitHubGistStar' {
+        Context 'By files' {
+            BeforeAll {
+                $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+            }
+
+            AfterAll {
+                $gist | Remove-GitHubGist -Force
+            }
+
+            Context 'With parameters' {
+                $starred = Test-GitHubGistStar -Gist $gist.id
+                It 'Should not be starred yet' {
+                    $starred | Should -BeFalse
+                }
+
+                Add-GitHubGistStar -Gist $gist.id
+                $starred = Test-GitHubGistStar -Gist $gist.id
+                It 'Should now be starred yet' {
+                    $starred | Should -BeTrue
+                }
+
+                $starred = Test-GitHubGistStar -Gist $gist.id
+                It 'Should not be starred yet' {
+                    $starred | Should -BeTrue
+                }
+
+                Remove-GitHubGistStar -Gist $gist.id
+                $starred = Test-GitHubGistStar -Gist $gist.id
+                It 'Should no longer be starred yet' {
+                    $starred | Should -BeFalse
+                }
+            }
+
+            Context 'With the gist on the pipeline' {
+                $starred = $gist | Test-GitHubGistStar
+                It 'Should not be starred yet' {
+                    $starred | Should -BeFalse
+                }
+
+                $gist | Add-GitHubGistStar
+                $starred = $gist | Test-GitHubGistStar
+                It 'Should now be starred yet' {
+                    $starred | Should -BeTrue
+                }
+
+                $starred = $gist | Test-GitHubGistStar
+                It 'Should not be starred yet' {
+                    $starred | Should -BeTrue
+                }
+
+                $gist | Remove-GitHubGistStar
+                $starred = $gist | Test-GitHubGistStar
+                It 'Should no longer be starred yet' {
+                    $starred | Should -BeFalse
+                }
+            }
+        }
+    }
+
+    Describe 'New-GitHubGist' {
+        Context 'By files' {
+            BeforeAll {
+            }
+
+            AfterAll {
+            }
+        }
+    }
+
+    Describe 'Set-GitHubGist' {
+        Context 'By files' {
+            BeforeAll {
+            }
+
+            AfterAll {
             }
         }
     }
