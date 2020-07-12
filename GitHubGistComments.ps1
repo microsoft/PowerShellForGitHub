@@ -111,8 +111,7 @@ filter Get-GitHubGistComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubGistCommentAdditionalProperties)
 }
 
 filter Remove-GitHubGistComment
@@ -308,7 +307,7 @@ filter New-GitHubGistComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
+    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties)
 }
 
 filter Set-GitHubGistComment
@@ -408,7 +407,7 @@ filter Set-GitHubGistComment
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
+    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties)
 }
 
 filter Add-GitHubGistCommentAdditionalProperties
@@ -444,10 +443,7 @@ filter Add-GitHubGistCommentAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubGistCommentTypeName,
-
-        [ValidateNotNullOrEmpty()]
-        [string] $GistId
+        [string] $TypeName = $script:GitHubGistCommentTypeName
     )
 
     foreach ($item in $InputObject)
@@ -456,12 +452,21 @@ filter Add-GitHubGistCommentAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            Add-Member -InputObject $item -Name 'GistCommentId' -Value $item.id -MemberType NoteProperty -Force
-
-            if ($PSBoundParameters.ContainsKey('GistId'))
+            $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
+            if ($item.url -match "^https?://(?:www\.|api\.|)$hostName/gists/([^/]+)/comments/(.+)$")
             {
-                Add-Member -InputObject $item -Name 'GistId' -Value $GistId -MemberType NoteProperty -Force
+                $gistId = $Matches[1]
+                $commentId = $Matches[2]
+
+                if ($commentId -ne $item.id)
+                {
+                    $message = "The gist comment url no longer follows the expected pattern.  Please contact the PowerShellForGitHubTeam: $item.url"
+                    Write-Log -Message $message -Level Warning
+                }
             }
+
+            Add-Member -InputObject $item -Name 'GistCommentId' -Value $item.id -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'GistId' -Value $gistId -MemberType NoteProperty -Force
 
             if ($null -ne $item.user)
             {

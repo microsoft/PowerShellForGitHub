@@ -124,6 +124,7 @@
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
         'New-GitHubGist',
+        'New-GitHubGistComment',
         'New-GitHubIssue',
         'New-GitHubIssueComment',
         'New-GitHubLabel',
