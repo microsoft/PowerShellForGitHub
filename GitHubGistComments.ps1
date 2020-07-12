@@ -18,10 +18,10 @@ filter Get-GitHubGistComment
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER GistId
+    .PARAMETER Gist
         The ID of the specific gist that you wish to retrieve the comments for.
 
-    .PARAMETER CommentId
+    .PARAMETER Comment
         The ID of the specific comment on the gist that you wish to retrieve.
 
     .PARAMETER MediaType
@@ -49,12 +49,12 @@ filter Get-GitHubGistComment
         GitHub.GistComment
 
     .EXAMPLE
-        Get-GitHubGistComment -GistId 6cad326836d38bd3a7ae
+        Get-GitHubGistComment -Gist 6cad326836d38bd3a7ae
 
         Gets all comments on octocat's "hello_world.rb" gist.
 
     .EXAMPLE
-        Get-GitHubGistComment -GistId 6cad326836d38bd3a7ae -CommentId 1507813
+        Get-GitHubGistComment -Gist 6cad326836d38bd3a7ae -Comment 1507813
 
         Gets comment 1507813 from octocat's "hello_world.rb" gist.
 #>
@@ -65,12 +65,13 @@ filter Get-GitHubGistComment
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1)]
-        [string] $GistId,
+        [Alias('GistId')]
+        [string] $Gist,
 
         [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $CommentId,
+        [string] $Comment,
 
         [ValidateSet('Raw', 'Text', 'Html', 'Full')]
         [string] $MediaType = 'Raw',
@@ -87,17 +88,17 @@ filter Get-GitHubGistComment
     $uriFragment = [String]::Empty
     $description = [String]::Empty
 
-    if ([String]::IsNullOrWhiteSpace($CommentId))
+    if ($PSBoundParameters.ContainsKey('Comment'))
     {
-        $uriFragment = "gists/$GistId/comments"
-        $description = "Getting comments for gist $GistId"
+        $telemetryProperties['SpecifiedComment'] = $true
+
+        $uriFragment = "gists/$Gist/comments/$Comment"
+        $description = "Getting comment $Comment for gist $Gist"
     }
     else
     {
-        $telemetryProperties['SpecifiedCommentId'] = $true
-
-        $uriFragment = "gists/$GistId/comments/$CommentId"
-        $description = "Getting comment $CommentId for gist $GistId"
+        $uriFragment = "gists/$Gist/comments"
+        $description = "Getting comments for gist $Gist"
     }
 
     $params = @{
@@ -111,7 +112,7 @@ filter Get-GitHubGistComment
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubGistCommentAdditionalProperties -GistId $GistId)
+        Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
 }
 
 filter Remove-GitHubGistComment
@@ -125,10 +126,10 @@ filter Remove-GitHubGistComment
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER GistId
+    .PARAMETER Gist
         The ID of the specific gist that you wish to remove the comment from.
 
-    .PARAMETER CommentId
+    .PARAMETER Comment
         The ID of the comment to remove from the gist.
 
     .PARAMETER Force
@@ -148,20 +149,20 @@ filter Remove-GitHubGistComment
         GitHub.GistComment
 
     .EXAMPLE
-        Remove-GitHubGist -GistId 6cad326836d38bd3a7ae -CommentId 12324567
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Comment 12324567
 
         Removes the specified comment from octocat's "hello_world.rb" gist
         (assuming you have permission).
 
     .EXAMPLE
-        Remove-GitHubGist -GistId 6cad326836d38bd3a7ae -CommentId 12324567 -Confirm:$false
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Comment 12324567 -Confirm:$false
 
         Removes the specified comment from octocat's "hello_world.rb" gist
         (assuming you have permission).
         Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
-        Remove-GitHubGist -GistId 6cad326836d38bd3a7ae -CommentId 12324567 -Force
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Comment 12324567 -Force
 
         Removes the specified comment from octocat's "hello_world.rb" gist
         (assuming you have permission).
@@ -177,8 +178,9 @@ filter Remove-GitHubGistComment
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $GistId,
+        [string] $Gist,
 
         [Parameter(
             Mandatory,
@@ -186,7 +188,7 @@ filter Remove-GitHubGistComment
             Position = 2)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $CommentId,
+        [string] $Comment,
 
         [switch] $Force,
 
@@ -202,16 +204,16 @@ filter Remove-GitHubGistComment
         $ConfirmPreference = 'None'
     }
 
-    if (-not $PSCmdlet.ShouldProcess($CommentId, "Delete comment from gist $GistId"))
+    if (-not $PSCmdlet.ShouldProcess($Comment, "Delete comment from gist $Gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$GistId/comments/$CommentId"
+        'UriFragment' = "gists/$Gist/comments/$Comment"
         'Method' = 'Delete'
-        'Description' =  "Removing comment $CommentId from gist $GistId"
+        'Description' =  "Removing comment $Comment from gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -232,11 +234,11 @@ filter New-GitHubGistComment
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER GistId
+    .PARAMETER Gist
         The ID of the specific gist that you wish to add the comment to.
 
-    .PARAMETER Comment
-        The text of the comment that you wish to leave on the gist.
+    .PARAMETER Body
+        The body of the comment that you wish to leave on the gist.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -255,7 +257,7 @@ filter New-GitHubGistComment
         GitHub.GistComment
 
     .EXAMPLE
-        New-GitHubGistComment -GistId 6cad326836d38bd3a7ae -Comment 'Hello World'
+        New-GitHubGistComment -Gist 6cad326836d38bd3a7ae -Body 'Hello World'
 
         Adds a new comment of "Hello World" to octocat's "hello_world.rb" gist.
 #>
@@ -268,14 +270,15 @@ filter New-GitHubGistComment
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $GistId,
+        [string] $Gist,
 
         [Parameter(
             Mandatory,
             Position = 2)]
         [ValidateNotNullOrEmpty()]
-        [string] $Comment,
+        [string] $Body,
 
         [string] $AccessToken,
 
@@ -285,27 +288,27 @@ filter New-GitHubGistComment
     Write-InvocationLog -Invocation $MyInvocation
 
     $hashBody = @{
-        'body' = $Comment
+        'body' = $Body
     }
 
-    if (-not $PSCmdlet.ShouldProcess($GistId, "Create new comment for gist"))
+    if (-not $PSCmdlet.ShouldProcess($Gist, "Create new comment for gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$GistId/comments"
+        'UriFragment' = "gists/$Gist/comments"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' =  "Creating new comment on gist $GistId"
+        'Description' =  "Creating new comment on gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $GistId)
+    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
 }
 
 filter Set-GitHubGistComment
@@ -319,13 +322,13 @@ filter Set-GitHubGistComment
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER GistId
+    .PARAMETER Gist
         The ID of the gist that the comment is on.
 
-    .PARAMETER CommentId
+    .PARAMETER Comment
         The ID of the comment that you wish to edit.
 
-    .PARAMETER Comment
+    .PARAMETER Body
         The new text of the comment that you wish to leave on the gist.
 
     .PARAMETER AccessToken
@@ -345,9 +348,10 @@ filter Set-GitHubGistComment
         GitHub.GistComment
 
     .EXAMPLE
-        New-GitHubGistComment -Id 6cad326836d38bd3a7ae -Comment 'Hello World'
+        New-GitHubGistComment -Gist 6cad326836d38bd3a7ae -Comment 1232456 -Body 'Hello World'
 
-        Adds a new comment of "Hello World" to octocat's "hello_world.rb" gist.
+        Updates the body of the comment with ID 1232456 octocat's "hello_world.rb" gist to be
+        "Hello World".
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -358,8 +362,9 @@ filter Set-GitHubGistComment
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1)]
+        [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $GistId,
+        [string] $Gist,
 
         [Parameter(
             Mandatory,
@@ -367,13 +372,13 @@ filter Set-GitHubGistComment
             Position = 2)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $CommentId,
+        [string] $Comment,
 
         [Parameter(
             Mandatory,
             Position = 3)]
         [ValidateNotNullOrEmpty()]
-        [string] $Comment,
+        [string] $Body,
 
         [string] $AccessToken,
 
@@ -383,27 +388,27 @@ filter Set-GitHubGistComment
     Write-InvocationLog -Invocation $MyInvocation
 
     $hashBody = @{
-        'body' = $Comment
+        'body' = $Body
     }
 
-    if (-not $PSCmdlet.ShouldProcess($CommentId, "Update gist comment on gist $GistId"))
+    if (-not $PSCmdlet.ShouldProcess($Comment, "Update gist comment on gist $Gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$GistId/comments/$CommentId"
+        'UriFragment' = "gists/$Gist/comments/$Comment"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' = "Creating new comment on gist $GistId"
+        'Description' = "Creating new comment on gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $GistId)
+    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties -GistId $Gist)
 }
 
 filter Add-GitHubGistCommentAdditionalProperties

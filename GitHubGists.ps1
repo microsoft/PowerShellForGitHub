@@ -21,7 +21,7 @@ filter Get-GitHubGist
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific gist that you wish to retrieve.
 
     .PARAMETER Sha
@@ -83,7 +83,7 @@ filter Get-GitHubGist
         Gets all public gists that have been updated within the past two days.
 
     .EXAMPLE
-        Get-GitHubGist -Id 6cad326836d38bd3a7ae
+        Get-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Gets octocat's "hello_world.rb" gist.
 #>
@@ -102,7 +102,7 @@ filter Get-GitHubGist
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [Parameter(ParameterSetName='Id')]
         [ValidateNotNullOrEmpty()]
@@ -160,26 +160,26 @@ filter Get-GitHubGist
 
             $telemetryProperties['SpecifiedSha'] = $true
 
-            $uriFragment = "gists/$Id/$Sha"
-            $description = "Getting gist $Id with specified Sha"
+            $uriFragment = "gists/$Gist/$Sha"
+            $description = "Getting gist $Gist with specified Sha"
             $outputType = $script:GitHubGistDetailTypeName
         }
         elseif ($Forks)
         {
-            $uriFragment = "gists/$Id/forks"
-            $description = "Getting forks of gist $Id"
+            $uriFragment = "gists/$Gist/forks"
+            $description = "Getting forks of gist $Gist"
             $outputType = $script:GitHubGistForkTypeName
         }
         elseif ($Commits)
         {
-            $uriFragment = "gists/$Id/commits"
-            $description = "Getting commits of gist $Id"
+            $uriFragment = "gists/$Gist/commits"
+            $description = "Getting commits of gist $Gist"
             $outputType = $script:GitHubGistCommitTypeName
         }
         else
         {
-            $uriFragment = "gists/$Id"
-            $description = "Getting gist $Id"
+            $uriFragment = "gists/$Gist"
+            $description = "Getting gist $Gist"
             $outputType = $script:GitHubGistDetailTypeName
         }
     }
@@ -275,7 +275,7 @@ filter Remove-GitHubGist
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific gist that you wish to retrieve.
 
     .PARAMETER Force
@@ -299,18 +299,18 @@ filter Remove-GitHubGist
         GitHub.GistFork
 
     .EXAMPLE
-        Remove-GitHubGist -Id 6cad326836d38bd3a7ae
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Removes octocat's "hello_world.rb" gist (assuming you have permission).
 
     .EXAMPLE
-        Remove-GitHubGist -Id 6cad326836d38bd3a7ae -Confirm:$false
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Confirm:$false
 
         Removes octocat's "hello_world.rb" gist (assuming you have permission).
         Will not prompt for confirmation, as -Confirm:$false was specified.
 
     .EXAMPLE
-        Remove-GitHubGist -Id 6cad326836d38bd3a7ae -Force
+        Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Force
 
         Removes octocat's "hello_world.rb" gist (assuming you have permission).
         Will not prompt for confirmation, as -Force was specified.
@@ -327,7 +327,7 @@ filter Remove-GitHubGist
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [switch] $Force,
 
@@ -343,16 +343,16 @@ filter Remove-GitHubGist
         $ConfirmPreference = 'None'
     }
 
-    if (-not $PSCmdlet.ShouldProcess($Id, "Delete gist"))
+    if (-not $PSCmdlet.ShouldProcess($Gist, "Delete gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$Id"
+        'UriFragment' = "gists/$Gist"
         'Method' = 'Delete'
-        'Description' =  "Removing gist $Id"
+        'Description' =  "Removing gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -373,7 +373,7 @@ filter Copy-GitHubGist
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific gist that you wish to fork.
 
     .PARAMETER AccessToken
@@ -397,12 +397,12 @@ filter Copy-GitHubGist
         GitHub.Gist
 
     .EXAMPLE
-        Copy-GitHubGist -Id 6cad326836d38bd3a7ae
+        Copy-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Forks octocat's "hello_world.rb" gist.
 
     .EXAMPLE
-        Fork-GitHubGist -Id 6cad326836d38bd3a7ae
+        Fork-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Forks octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Copy-GitHubGist or Fork-GitHubGist.
@@ -419,7 +419,7 @@ filter Copy-GitHubGist
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [string] $AccessToken,
 
@@ -428,16 +428,16 @@ filter Copy-GitHubGist
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    if (-not $PSCmdlet.ShouldProcess($Id, "Forking gist"))
+    if (-not $PSCmdlet.ShouldProcess($Gist, "Forking gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$Id/forks"
+        'UriFragment' = "gists/$Gist/forks"
         'Method' = 'Post'
-        'Description' =  "Forking gist $Id"
+        'Description' =  "Forking gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -458,7 +458,7 @@ filter Add-GitHubGistStar
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific Gist that you wish to star.
 
     .PARAMETER AccessToken
@@ -479,12 +479,12 @@ filter Add-GitHubGistStar
         GitHub.GistFork
 
     .EXAMPLE
-        Add-GitHubGistStar -Id 6cad326836d38bd3a7ae
+        Add-GitHubGistStar -Gist 6cad326836d38bd3a7ae
 
         STars octocat's "hello_world.rb" gist.
 
     .EXAMPLE
-        Star-GitHubGist -Id 6cad326836d38bd3a7ae
+        Star-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Stars octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Add-GitHubGistStar or Star-GitHubGist.
@@ -500,7 +500,7 @@ filter Add-GitHubGistStar
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [string] $AccessToken,
 
@@ -509,16 +509,16 @@ filter Add-GitHubGistStar
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    if (-not $PSCmdlet.ShouldProcess($Id, "Starring gist"))
+    if (-not $PSCmdlet.ShouldProcess($Gist, "Starring gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$Id/star"
+        'UriFragment' = "gists/$Gist/star"
         'Method' = 'Put'
-        'Description' =  "Starring gist $Id"
+        'Description' =  "Starring gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -539,7 +539,7 @@ filter Remove-GitHubGistStar
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific gist that you wish to unstar.
 
     .PARAMETER AccessToken
@@ -560,12 +560,12 @@ filter Remove-GitHubGistStar
         GitHub.GistFork
 
     .EXAMPLE
-        Remove-GitHubGistStar -Id 6cad326836d38bd3a7ae
+        Remove-GitHubGistStar -Gist 6cad326836d38bd3a7ae
 
         Unstars octocat's "hello_world.rb" gist.
 
     .EXAMPLE
-        Unstar-GitHubGist -Id 6cad326836d38bd3a7ae
+        Unstar-GitHubGist -Gist 6cad326836d38bd3a7ae
 
         Unstars octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Remove-GitHubGistStar or Unstar-GitHubGist.
@@ -581,7 +581,7 @@ filter Remove-GitHubGistStar
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [string] $AccessToken,
 
@@ -590,16 +590,16 @@ filter Remove-GitHubGistStar
 
     Write-InvocationLog -Invocation $MyInvocation
 
-    if (-not $PSCmdlet.ShouldProcess($Id, "Unstarring gist"))
+    if (-not $PSCmdlet.ShouldProcess($Gist, "Unstarring gist"))
     {
         return
     }
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$Id/star"
+        'UriFragment' = "gists/$Gist/star"
         'Method' = 'Delete'
-        'Description' =  "Unstarring gist $Id"
+        'Description' =  "Unstarring gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -622,7 +622,7 @@ filter Test-GitHubGistStar
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID of the specific gist that you wish to check.
 
     .PARAMETER AccessToken
@@ -646,7 +646,7 @@ filter Test-GitHubGistStar
         Boolean indicating if the gist was both found and determined to be starred.
 
     .EXAMPLE
-        Test-GitHubGistStar -Id 6cad326836d38bd3a7ae
+        Test-GitHubGistStar -Gist 6cad326836d38bd3a7ae
 
         Returns $true if the gist is starred, or $false if isn't starred or couldn't be checked
         (due to permissions or non-existence).
@@ -664,7 +664,7 @@ filter Test-GitHubGistStar
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [string] $AccessToken,
 
@@ -675,9 +675,9 @@ filter Test-GitHubGistStar
 
     $telemetryProperties = @{}
     $params = @{
-        'UriFragment' = "gists/$Id/star"
+        'UriFragment' = "gists/$Gist/star"
         'Method' = 'Get'
-        'Description' =  "Checking if gist $Id is starred"
+        'Description' =  "Checking if gist $Gist is starred"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
@@ -874,7 +874,7 @@ filter Set-GitHubGist
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER Id
+    .PARAMETER Gist
         The ID for the gist to update.
 
     .PARAMETER Update
@@ -915,27 +915,27 @@ filter Set-GitHubGist
         GitHub.GistDetail
 
     .EXAMPLE
-        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Description 'This is my newer description'
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Description 'This is my newer description'
 
         Updates the description for the specified gist.
 
     .EXAMPLE
-        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Delete 'hello_world.rb'
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Delete 'hello_world.rb'
 
         Deletes the 'hello_world.rb' file from the specified gist.
 
     .EXAMPLE
-        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Delete 'hello_world.rb' -Description 'This is my newer description'
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Delete 'hello_world.rb' -Description 'This is my newer description'
 
         Deletes the 'hello_world.rb' file from the specified gist and updates the description.
 
     .EXAMPLE
-        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
 
         Renames the 'hello_world.rb' file in the specified gist to be 'hello_universe.rb'.
 
     .EXAMPLE
-        Set-GitHubGist -Id 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Update @{'hello_world.rb' = @{ 'fileName' = 'hello_universe.rb' }}
 
         Renames the 'hello_world.rb' file in the specified gist to be 'hello_universe.rb'.
 #>
@@ -951,7 +951,7 @@ filter Set-GitHubGist
             Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Id,
+        [string] $Gist,
 
         [hashtable] $Update,
 
@@ -1025,16 +1025,16 @@ filter Set-GitHubGist
     if (-not [String]::IsNullOrWhiteSpace($Description)) { $hashBody['description'] = $Description }
     if ($files.Keys.count -gt 0) { $hashBody['files'] = $files }
 
-    if (-not $PSCmdlet.ShouldProcess($Id, 'Update gist'))
+    if (-not $PSCmdlet.ShouldProcess($Gist, 'Update gist'))
     {
         return
     }
 
     $params = @{
-        'UriFragment' = "gists/$Id"
+        'UriFragment' = "gists/$Gist"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'Description' =  "Updating gist $Id"
+        'Description' =  "Updating gist $Gist"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
