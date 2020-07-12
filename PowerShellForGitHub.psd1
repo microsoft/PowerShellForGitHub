@@ -15,6 +15,7 @@
 
     # Format files (.ps1xml) to be loaded when importing this module
     FormatsToProcess = @(
+        'Formatters/GitHubGistComments.Format.ps1xml',
         'Formatters/GitHubGists.Format.ps1xml',
         'Formatters/GitHubReleases.Format.ps1xml'
         'Formatters/GitHubRepositories.Format.ps1xml'

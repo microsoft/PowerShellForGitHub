@@ -61,6 +61,7 @@ filter Get-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -277,6 +278,9 @@ filter Remove-GitHubGist
     .PARAMETER Id
         The ID of the specific gist that you wish to retrieve.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -289,6 +293,7 @@ filter Remove-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -303,6 +308,12 @@ filter Remove-GitHubGist
 
         Removes octocat's "hello_world.rb" gist (assuming you have permission).
         Will not prompt for confirmation, as -Confirm:$false was specified.
+
+    .EXAMPLE
+        Remove-GitHubGist -Id 6cad326836d38bd3a7ae -Force
+
+        Removes octocat's "hello_world.rb" gist (assuming you have permission).
+        Will not prompt for confirmation, as -Force was specified.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -318,12 +329,19 @@ filter Remove-GitHubGist
         [ValidateNotNullOrEmpty()]
         [string] $Id,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
     )
 
     Write-InvocationLog -Invocation $MyInvocation
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
 
     if (-not $PSCmdlet.ShouldProcess($Id, "Delete gist"))
     {
@@ -370,6 +388,7 @@ filter Copy-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -454,6 +473,7 @@ filter Add-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -534,6 +554,7 @@ filter Remove-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -616,6 +637,7 @@ filter Test-GitHubGistStar
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -884,6 +906,7 @@ filter Set-GitHubGist
 
     .INPUTS
         GitHub.Gist
+        GitHub.GistComment
         GitHub.GistCommit
         GitHub.GistDetail
         GitHub.GistFork
@@ -1057,7 +1080,7 @@ filter Add-GitHubGistAdditionalProperties
         GitHub.GistFork
 #>
     [CmdletBinding()]
-    [OutputType({$script:GitHubGistypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     [OutputType({$script:GitHubGistDetailTypeName})]
     [OutputType({$script:GitHubGistFormTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
