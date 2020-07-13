@@ -95,71 +95,113 @@ try
     }
 
     Describe 'Copy-GitHubGist' {
-        Context 'By files' {
-            BeforeAll {
+        BeforeAll {
+            $originalGist = Get-GitHubGist -Gist '1169852' # octocat/test.cs
+        }
+
+        Context 'By parameters' {
+            $gist = Copy-GitHubGist -Gist $originalGist.id
+            It 'Should have been forked' {
+                $gist.files.Count | Should -Be $originalGist.files.Count
+                foreach ($file in $gist.files)
+                {
+                    $originalFile = $originalGist.files |
+                        Where-Object { $_.filename -eq $file.filename }
+                    $file.filename | Should -Be $originalFile.filename
+                    $file.size | Should -Be $originalFile.size
+                }
             }
 
-            AfterAll {
+            It 'Should have the expected additional type and properties' {
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                $gist.GistId | Should -Be $gist.id
+                $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should be removed' {
+                { Remove-GitHubGist -Gist $gist.id -Force } | Should -Not -Throw
+            }
+        }
+
+        Context 'Gist on the pipeline' {
+            $gist = $originalGist | Copy-GitHubGist
+            It 'Should have been forked' {
+                $gist.files.Count | Should -Be $originalGist.files.Count
+                foreach ($file in $gist.files)
+                {
+                    $originalFile = $originalGist.files |
+                        Where-Object { $_.filename -eq $file.filename }
+                    $file.filename | Should -Be $originalFile.filename
+                    $file.size | Should -Be $originalFile.size
+                }
+            }
+
+            It 'Should have the expected additional type and properties' {
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                $gist.GistId | Should -Be $gist.id
+                $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+
+            It 'Should be removed' {
+                { $gist | Remove-GitHubGist -Force } | Should -Not -Throw
             }
         }
     }
 
     Describe 'Add/Remove/Test-GitHubGistStar' {
-        Context 'By files' {
-            BeforeAll {
-                $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+        BeforeAll {
+            $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+        }
+
+        AfterAll {
+            $gist | Remove-GitHubGist -Force
+        }
+
+        Context 'With parameters' {
+            $starred = Test-GitHubGistStar -Gist $gist.id
+            It 'Should not be starred yet' {
+                $starred | Should -BeFalse
             }
 
-            AfterAll {
-                $gist | Remove-GitHubGist -Force
+            Add-GitHubGistStar -Gist $gist.id
+            $starred = Test-GitHubGistStar -Gist $gist.id
+            It 'Should now be starred yet' {
+                $starred | Should -BeTrue
             }
 
-            Context 'With parameters' {
-                $starred = Test-GitHubGistStar -Gist $gist.id
-                It 'Should not be starred yet' {
-                    $starred | Should -BeFalse
-                }
-
-                Add-GitHubGistStar -Gist $gist.id
-                $starred = Test-GitHubGistStar -Gist $gist.id
-                It 'Should now be starred yet' {
-                    $starred | Should -BeTrue
-                }
-
-                $starred = Test-GitHubGistStar -Gist $gist.id
-                It 'Should not be starred yet' {
-                    $starred | Should -BeTrue
-                }
-
-                Remove-GitHubGistStar -Gist $gist.id
-                $starred = Test-GitHubGistStar -Gist $gist.id
-                It 'Should no longer be starred yet' {
-                    $starred | Should -BeFalse
-                }
+            $starred = Test-GitHubGistStar -Gist $gist.id
+            It 'Should not be starred yet' {
+                $starred | Should -BeTrue
             }
 
-            Context 'With the gist on the pipeline' {
-                $starred = $gist | Test-GitHubGistStar
-                It 'Should not be starred yet' {
-                    $starred | Should -BeFalse
-                }
+            Remove-GitHubGistStar -Gist $gist.id
+            $starred = Test-GitHubGistStar -Gist $gist.id
+            It 'Should no longer be starred yet' {
+                $starred | Should -BeFalse
+            }
+        }
 
-                $gist | Add-GitHubGistStar
-                $starred = $gist | Test-GitHubGistStar
-                It 'Should now be starred yet' {
-                    $starred | Should -BeTrue
-                }
+        Context 'With the gist on the pipeline' {
+            $starred = $gist | Test-GitHubGistStar
+            It 'Should not be starred yet' {
+                $starred | Should -BeFalse
+            }
 
-                $starred = $gist | Test-GitHubGistStar
-                It 'Should not be starred yet' {
-                    $starred | Should -BeTrue
-                }
+            $gist | Add-GitHubGistStar
+            $starred = $gist | Test-GitHubGistStar
+            It 'Should now be starred yet' {
+                $starred | Should -BeTrue
+            }
 
-                $gist | Remove-GitHubGistStar
-                $starred = $gist | Test-GitHubGistStar
-                It 'Should no longer be starred yet' {
-                    $starred | Should -BeFalse
-                }
+            $starred = $gist | Test-GitHubGistStar
+            It 'Should not be starred yet' {
+                $starred | Should -BeTrue
+            }
+
+            $gist | Remove-GitHubGistStar
+            $starred = $gist | Test-GitHubGistStar
+            It 'Should no longer be starred yet' {
+                $starred | Should -BeFalse
             }
         }
     }
