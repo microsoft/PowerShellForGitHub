@@ -143,6 +143,7 @@
         'Remove-GitHubComment',
         'Remove-GitHubGist',
         'Remove-GitHubGistComment',
+        'Remove-GitHubGistFile',
         'Remove-GitHubGistStar',
         'Remove-GitHubIssueComment',
         'Remove-GitHubIssueLabel',
@@ -156,6 +157,7 @@
         'Remove-GitHubReleaseAsset',
         'Remove-GitHubRepository',
         'Remove-GitHubRepositoryBranch'
+        'Rename-GitHubGistFile',
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
@@ -164,6 +166,8 @@
         'Set-GitHubContent',
         'Set-GitHubGist',
         'Set-GitHubGistComment',
+        'Set-GitHubGistFile',
+        'Set-GitHubGistStar',
         'Set-GitHubIssue',
         'Set-GitHubIssueComment',
         'Set-GitHubIssueLabel',
@@ -188,11 +192,13 @@
     )
 
     AliasesToExport = @(
+        'Add-GitHubGistFile',
         'Delete-GitHubAsset',
         'Delete-GitHubBranch',
         'Delete-GitHubComment',
         'Delete-GitHubGist',
         'Delete-GitHubGistComment',
+        'Delete-GitHubGistFile',
         'Delete-GitHubIssueComment',
         'Delete-GitHubLabel',
         'Delete-GitHubMilestone',

@@ -24,7 +24,7 @@ try
 
         Context 'By parameters' {
             BeforeAll {
-                $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+                $gist = New-GitHubGist -FileName 'sample.txt' -Content 'Sample text'
                 $body = 'Comment body'
             }
 
@@ -94,7 +94,7 @@ try
 
         Context 'Gist on the pipeline' {
             BeforeAll {
-                $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+                $gist = New-GitHubGist -FileName 'sample.txt' -Content 'Sample text'
                 $body = 'Comment body'
             }
 
@@ -180,7 +180,7 @@ try
 
     Describe 'New-GitHubGistComment' {
         BeforeAll {
-            $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+            $gist = New-GitHubGist -FileName 'sample.txt' -Content 'Sample text'
             $body = 'Comment body'
         }
 
@@ -219,7 +219,7 @@ try
 
     Describe 'New-GitHubGistComment' {
         BeforeAll {
-            $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+            $gist = New-GitHubGist -Filename 'sample.txt' -Content 'Sample text'
             $body = 'Comment body'
             $updatedBody = 'Updated comment body'
         }
@@ -288,7 +288,7 @@ try
 
     Describe 'Remove-GitHubGistComment' {
         BeforeAll {
-            $gist = New-GitHubGist -Content 'Sample text' -Filename 'sample.txt'
+            $gist = New-GitHubGist -FileName 'sample.txt' -Content 'Sample text'
             $body = 'Comment body'
         }
 

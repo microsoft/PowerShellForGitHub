@@ -36,6 +36,12 @@ filter Get-GitHubGist
     .PARAMETER UserName
         Gets public gists for the specified user.
 
+    .PARAMETER Path
+        Download the files that are part of the specified gist to this path.
+
+    .PARAMETER Force
+        If downloading files, this will overwrite any files with the same name in the provided path.
+
     .PARAMETER Current
         Gets the authenticated user's gists.
 
@@ -100,11 +106,17 @@ filter Get-GitHubGist
             ValueFromPipelineByPropertyName,
             ParameterSetName='Id',
             Position = 1)]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Download',
+            Position = 1)]
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Gist,
 
         [Parameter(ParameterSetName='Id')]
+        [Parameter(ParameterSetName='Download')]
         [ValidateNotNullOrEmpty()]
         [string] $Sha,
 
@@ -114,9 +126,21 @@ filter Get-GitHubGist
         [Parameter(ParameterSetName='Id')]
         [switch] $Commits,
 
-        [Parameter(ParameterSetName='User')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='User')]
         [ValidateNotNullOrEmpty()]
         [string] $UserName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Download',
+            Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Path,
+
+        [Parameter(ParameterSetName='Download')]
+        [switch] $Force,
 
         [Parameter(ParameterSetName='Current')]
         [switch] $Current,
@@ -145,7 +169,7 @@ filter Get-GitHubGist
     $description = [String]::Empty
     $outputType = $script:GitHubGistTypeName
 
-    if ($PSCmdlet.ParameterSetName -eq 'Id')
+    if ($PSCmdlet.ParameterSetName -in ('Id', 'Download'))
     {
         $telemetryProperties['ById'] = $true
 
@@ -196,7 +220,7 @@ filter Get-GitHubGist
         $telemetryProperties['CurrentUser'] = $true
         $outputType = $script:GitHubGistTypeName
 
-        if (Test-GitHubAuthenticationConfigured -or (-not [String]::IsNullOrEmpty($AccessToken)))
+        if ((Test-GitHubAuthenticationConfigured) -or (-not [String]::IsNullOrEmpty($AccessToken)))
         {
             if ($Starred)
             {
@@ -249,21 +273,156 @@ filter Get-GitHubGist
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethodMultipleResult @params
+    $result = (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubGistAdditionalProperties -TypeName $outputType)
 
-    if ($result.truncated -eq $true)
+    if ($PSCmdlet.ParameterSetName -eq 'Download')
     {
-        $message = @"
-Response has been truncated.  The API will only return the first 3000 gist results,
-the first 300 files within an individual gist, and the first 1 Mb of an individual file.
-If the file has been truncated, you can call (Invoke-WebRequest -UseBasicParsing -Method Get -Uri <raw_url>).Content)
-where <raw_url> is the value of raw_url for the file in question.  Be aware that for files larger
-than 10 Mb, you'll need to clone the gist via the URL provided by git_pull_url.
-"@
-        Write-Log -Message $message -Level Warning
+        Save-GitHubGist -GistObject $result -Path $Path -Force:$Force
+    }
+    else
+    {
+        if ($result.truncated -eq $true)
+        {
+            $message = @(
+                'Response has been truncated.  The API will only return the first 3000 gist results',
+                'the first 300 files within the gist, and the first 1 Mb of an individual',
+                'file.  If the file has been truncated, you can call',
+                '(Invoke-WebRequest -UseBasicParsing -Method Get -Uri <raw_url>).Content)',
+                'where <raw_url> is the value of raw_url for the file in question.  Be aware that',
+                'for files larger than 10 Mb, you''ll need to clone the gist via the URL provided',
+                'by git_pull_url.')
+
+            Write-Log -Message ($message -join ' ') -Level Warning
+        }
+
+        return $result
+    }
+}
+
+function Save-GitHubGist
+{
+<#
+    .SYNOPSIS
+        Downloads the contents of a gist to the specified file path.
+
+    .DESCRIPTION
+        Downloads the contents of a gist to the specified file path.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER GistObject
+        The Gist PSCustomObject
+
+    .PARAMETER Path
+        Download the files that are part of the specified gist to this path.
+
+    .PARAMETER Force
+        If downloading files, this will overwrite any files with the same name in the provided path.
+
+    .NOTES
+        Internal-only helper
+#>
+    [CmdletBinding(PositionalBinding = $false)]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject] $GistObject,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Path,
+
+        [switch] $Force
+    )
+
+    # First, check to see if the response is missing files.
+    if ($GistObject.truncated)
+    {
+        $message = @(
+            'Gist response has been truncated.  The API will only return information on',
+            'the first 300 files within a gist. To download this entire gist,',
+            'you''ll need to clone it via the URL provided by git_pull_url',
+            "[$($GistObject.git_pull_url)].")
+
+        Write-Log -Message ($message -join ' ') -Level Error
+        throw $message
     }
 
-    return ($result | Add-GitHubGistAdditionalProperties -TypeName $outputType)
+    # Then check to see if there are files we won't be able to download
+    $files = $GistObject.files | Get-Member -Type NoteProperty | Select-Object -ExpandProperty Name
+    foreach ($fileName in $files)
+    {
+        if ($GistObject.files.$fileName.truncated -and
+            ($GistObject.files.$fileName.size -gt 10mb))
+        {
+            $message = @(
+                "At least one file ($fileName) in this gist is larger than 10mb.",
+                'In order to download this gist, you''ll need to clone it via the URL',
+                "provided by git_pull_url [$($GistObject.git_pull_url)].")
+
+            Write-Log -Message ($message -join ' ') -Level Error
+            throw $message
+        }
+    }
+
+    # Finally, we're ready to directly save the non-truncated files,
+    # and download the ones that are between 1 - 10mb.
+    $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+    try
+    {
+        $headers = @{}
+        $AccessToken = Get-AccessToken -AccessToken $AccessToken
+        if (-not [String]::IsNullOrEmpty($AccessToken))
+        {
+            $headers['Authorization'] = "token $AccessToken"
+        }
+
+        $Path = Resolve-UnverifiedPath -Path $Path
+        $null = New-Item -Path $Path -ItemType Directory -Force
+        foreach ($fileName in $files)
+        {
+            $filePath = Join-Path -Path $Path -ChildPath $fileName
+            if ((Test-Path -Path $filePath -PathType Leaf) -and (-not $Force))
+            {
+                $message = "File already exists at path [$filePath].  Choose a different path or specify -Force"
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            if ($GistObject.files.$fileName.truncated)
+            {
+                # Disable Progress Bar in function scope during Invoke-WebRequest
+                $ProgressPreference = 'SilentlyContinue'
+
+                $webRequestParams = @{
+                    UseBasicParsing = $true
+                    Method = 'Get'
+                    Headers = $headers
+                    Uri = $GistObject.files.$fileName.raw_url
+                    OutFile = $filePath
+                }
+
+                Invoke-WebRequest @webRequestParams
+            }
+            else
+            {
+                $stream = New-Object -TypeName System.IO.StreamWriter -ArgumentList ($filePath)
+                try
+                {
+                    $stream.Write($GistObject.files.$fileName.content)
+                }
+                finally
+                {
+                    $stream.Close()
+                }
+            }
+        }
+    }
+    finally
+    {
+        [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+    }
 }
 
 filter Remove-GitHubGist
@@ -449,6 +608,90 @@ filter Copy-GitHubGist
     return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
 }
 
+filter Set-GitHubGistStar
+{
+<#
+    .SYNOPSIS
+        Changes the starred state of a gist on GitHub for the current authenticated user.
+
+    .DESCRIPTION
+        Changes the starred state of a gist on GitHub for the current authenticated user.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Gist
+        The ID of the specific Gist that you wish to change the starred state for.
+
+    .PARAMETER Star
+        Include this switch to star the gist.  Exclude the switch (or use -Star:$false) to
+        remove the star.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Gist
+        GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
+
+    .EXAMPLE
+        Set-GitHubGistStar -Gist 6cad326836d38bd3a7ae -Star
+
+        Stars octocat's "hello_world.rb" gist.
+
+    .EXAMPLE
+        Set-GitHubGistStar -Gist 6cad326836d38bd3a7ae
+
+        Unstars octocat's "hello_world.rb" gist.
+
+    .EXAMPLE
+        Get-GitHubGist -Gist 6cad326836d38bd3a7ae | Set-GitHubGistStar -Star:$false
+
+        Unstars octocat's "hello_world.rb" gist.
+
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Gist,
+
+        [switch] $Star,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+    Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
+
+    $PSBoundParameters.Remove('Star')
+    if ($Star)
+    {
+        return Add-GitHubGistStar @PSBoundParameters
+    }
+    else
+    {
+        return Remove-GitHubGistStar @PSBoundParameters
+    }
+}
+
 filter Add-GitHubGistStar
 {
 <#
@@ -483,7 +726,7 @@ filter Add-GitHubGistStar
     .EXAMPLE
         Add-GitHubGistStar -Gist 6cad326836d38bd3a7ae
 
-        STars octocat's "hello_world.rb" gist.
+        Stars octocat's "hello_world.rb" gist.
 
     .EXAMPLE
         Star-GitHubGist -Gist 6cad326836d38bd3a7ae
@@ -652,10 +895,6 @@ filter Test-GitHubGistStar
 
         Returns $true if the gist is starred, or $false if isn't starred or couldn't be checked
         (due to permissions or non-existence).
-
-    .NOTES
-        For some reason, this does not currently seem to be working correctly
-        (even though it matches the spec: https://developer.github.com/v3/gists/#check-if-a-gist-is-starred).
 #>
     [CmdletBinding(PositionalBinding = $false)]
     [OutputType([bool])]
@@ -714,11 +953,11 @@ filter New-GitHubGist
         Use this when you have multiple files that should be part of a gist, or when you simply
         want to reference an existing file on disk.
 
-    .PARAMETER Content
-        The content of a single file that should be part of the gist.
-
     .PARAMETER FileName
         The name of the file that Content should be stored in within the newly created gist.
+
+    .PARAMETER Content
+        The content of a single file that should be part of the gist.
 
     .PARAMETER Description
         A descriptive name for this gist.
@@ -743,7 +982,7 @@ filter New-GitHubGist
         GitHub.GitDetail
 
     .EXAMPLE
-        New-GitHubGist -Content 'Body of my file.' -FileName 'sample.txt' -Description 'This is my gist!' -Public
+        New-GitHubGist -FileName 'sample.txt' -Content 'Body of my file.' -Description 'This is my gist!' -Public
 
         Creates a new public gist with a single file named 'sample.txt' that has the body of "Body of my file."
 
@@ -778,14 +1017,14 @@ filter New-GitHubGist
             ParameterSetName='Content',
             Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [string] $Content,
+        [string] $FileName,
 
         [Parameter(
             Mandatory,
             ParameterSetName='Content',
             Position = 2)]
         [ValidateNotNullOrEmpty()]
-        [string] $FileName,
+        [string] $Content,
 
         [string] $Description,
 
@@ -806,14 +1045,14 @@ filter New-GitHubGist
         foreach ($path in $File)
         {
             $path = Resolve-UnverifiedPath -Path $path
-            if (-not (Test-Path -Path $path))
+            if (-not (Test-Path -Path $path -PathType Leaf))
             {
                 $message = "Specified file [$path] could not be found or was inaccessible."
                 Write-Log -Message $message -Level Error
                 throw $message
             }
 
-            $content = Get-Content -Path $path -Raw -Encoding UTF8
+            $content = [System.IO.File]::ReadAllText($path)
             $fileName = (Get-Item -Path $path).Name
 
             if ($files.ContainsKey($fileName))
@@ -836,6 +1075,13 @@ filter New-GitHubGist
         if ($PSCmdlet.ParameterSetName -eq 'Content')
         {
             $files[$FileName] = @{ 'content' = $Content }
+        }
+
+        if (($files.Keys.StartsWith('gistfile') | Where-Object { $_ -eq $true }).Count -gt 0)
+        {
+            $message = "Don't name your files starting with 'gistfile'. This is the format of the automatic naming scheme that Gist uses internally."
+            Write-Log -Message $message -Level Error
+            throw $message
         }
 
         $hashBody = @{
@@ -896,6 +1142,9 @@ filter Set-GitHubGist
     .PARAMETER Description
         New description for this gist.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -922,9 +1171,9 @@ filter Set-GitHubGist
         Updates the description for the specified gist.
 
     .EXAMPLE
-        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Delete 'hello_world.rb'
+        Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Delete 'hello_world.rb' -Force
 
-        Deletes the 'hello_world.rb' file from the specified gist.
+        Deletes the 'hello_world.rb' file from the specified gist without prompting for confirmation.
 
     .EXAMPLE
         Set-GitHubGist -Gist 6cad326836d38bd3a7ae -Delete 'hello_world.rb' -Description 'This is my newer description'
@@ -961,6 +1210,8 @@ filter Set-GitHubGist
 
         [string] $Description,
 
+        [switch] $Force,
+
         [string] $AccessToken,
 
         [switch] $NoStatus
@@ -972,10 +1223,18 @@ filter Set-GitHubGist
 
     $files = @{}
 
+    $shouldProcessMessage = 'Update gist'
+
     # Mark the files that should be deleted.
-    foreach ($toDelete in $Delete)
+    if ($Delete.Count -gt 0)
     {
-        $files[$toDelete] = $null
+        $ConfirmPreference = 'Low'
+        $shouldProcessMessage = 'Update gist (and remove files)'
+
+        foreach ($toDelete in $Delete)
+        {
+            $files[$toDelete] = $null
+        }
     }
 
     # Then figure out which ones need content updates and/or file renames
@@ -998,20 +1257,20 @@ filter Set-GitHubGist
             {
                 if (-not [String]::IsNullOrWhiteSpace($providedContent))
                 {
-                    $message = "When updating a file [$currentFileName], you cannot provide both a path to a file [$providedPath] and the raw content."
+                    $message = "When updating a file [$currentFileName], you cannot provide both a path to a file [$providedFilePath] and the raw content."
                     Write-Log -Message $message -Level Error
                     throw $message
                 }
 
-                $providedPath = Resolve-Path -Path $providedPath
-                if (-not (Test-Path -Path $providedPath))
+                $providedFilePath = Resolve-Path -Path $providedFilePath
+                if (-not (Test-Path -Path $providedFilePath -PathType Leaf))
                 {
-                    $message = "Specified file [$providedPath] could not be found or was inaccessible."
+                    $message = "Specified file [$providedFilePath] could not be found or was inaccessible."
                     Write-Log -Message $message -Level Error
                     throw $message
                 }
 
-                $newContent = Get-Content -Path $providedFilePath -Raw -Encoding UTF8
+                $newContent = [System.IO.File]::ReadAllText($providedFilePath)
                 $files[$currentFileName] = @{ 'content' = $newContent }
             }
 
@@ -1027,11 +1286,17 @@ filter Set-GitHubGist
     if (-not [String]::IsNullOrWhiteSpace($Description)) { $hashBody['description'] = $Description }
     if ($files.Keys.count -gt 0) { $hashBody['files'] = $files }
 
-    if (-not $PSCmdlet.ShouldProcess($Gist, 'Update gist'))
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($Gist, $shouldProcessMessage))
     {
         return
     }
 
+    $ConfirmPreference = 'None'
     $params = @{
         'UriFragment' = "gists/$Gist"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
@@ -1058,6 +1323,367 @@ filter Set-GitHubGist
 
         throw
     }
+}
+
+function Set-GitHubGistFile
+{
+<#
+    .SYNOPSIS
+        Updates content of file(s) in an existing gist on GitHub,
+        or adds them if they aren't already part of the gist.
+
+    .DESCRIPTION
+        Updates content of file(s) in an existing gist on GitHub,
+        or adds them if they aren't already part of the gist.
+
+        This is a helper function built on top of Set-GitHubGist.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Gist
+        The ID for the gist to update.
+
+    .PARAMETER File
+        An array of filepaths that should be part of this gist.
+        Use this when you have multiple files that should be part of a gist, or when you simply
+        want to reference an existing file on disk.
+
+    .PARAMETER FileName
+        The name of the file that Content should be stored in within the newly created gist.
+
+    .PARAMETER Content
+        The content of a single file that should be part of the gist.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Gist
+        GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
+
+    .OUTPUTS
+        GitHub.GistDetail
+
+    .EXAMPLE
+        Set-GitHubGistFile -Gist 1234567 -Content 'Body of my file.' -FileName 'sample.txt'
+
+        Adds a file named 'sample.txt' that has the body of "Body of my file." to the existing
+        specified gist, or updates the contents of 'sample.txt' in the gist if is already there.
+
+    .EXAMPLE
+        Set-GitHubGistFile -Gist 1234567 -File 'c:\files\foo.txt'
+
+        Adds the file 'foo.txt' to the existing specified gist, or updates its content if it
+        is already there.
+
+    .EXAMPLE
+        Set-GitHubGistFile -Gist 1234567 -File ('c:\files\foo.txt', 'c:\other\bar.txt', 'c:\octocat.ps1')
+
+        Adds all three files to the existing specified gist, or updates the contents of the files
+        in the gist if they are already there.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName='Content',
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistDetailTypeName})]
+    [Alias('Add-GitHubGistFile')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Gist,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ParameterSetName='FileRef',
+            Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $File,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Content',
+            Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string] $FileName,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName='Content',
+            Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Content,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    begin
+    {
+        $files = @{}
+    }
+
+    process
+    {
+        foreach ($path in $File)
+        {
+            $path = Resolve-UnverifiedPath -Path $path
+            if (-not (Test-Path -Path $path -PathType Leaf))
+            {
+                $message = "Specified file [$path] could not be found or was inaccessible."
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $fileName = (Get-Item -Path $path).Name
+            $files[$fileName] = @{ 'filePath' = $path }
+        }
+    }
+
+    end
+    {
+        Write-InvocationLog -Invocation $MyInvocation
+        Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
+
+        if ($PSCmdlet.ParameterSetName -eq 'Content')
+        {
+            $files[$FileName] = @{ 'content' = $Content }
+        }
+
+        $params = @{
+            'Gist' = $Gist
+            'Update' = $files
+            'AccessToken' = $AccessToken
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Set-GitHubGist @params)
+    }
+}
+
+function Remove-GitHubGistFile
+{
+<#
+    .SYNOPSIS
+        Removes one or more files from an existing gist on GitHub.
+
+    .DESCRIPTION
+        Removes one or more files from an existing gist on GitHub.
+
+        This is a helper function built on top of Set-GitHubGist.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Gist
+        The ID for the gist to update.
+
+    .PARAMETER FileName
+        An array of filenames (no paths, just names) to remove from the gist.
+
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Gist
+        GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
+
+    .OUTPUTS
+        GitHub.GistDetail
+
+    .EXAMPLE
+        Remove-GitHubGistFile -Gist 1234567 -FileName ('foo.txt')
+
+        Removes the file 'foo.txt' from the specified gist.
+
+    .EXAMPLE
+        Remove-GitHubGistFile -Gist 1234567 -FileName ('foo.txt') -Force
+
+        Removes the file 'foo.txt' from the specified gist without prompting for confirmation.
+
+    .EXAMPLE
+        @('foo.txt', 'bar.txt') | Remove-GitHubGistFile -Gist 1234567
+
+        Removes the files 'foo.txt' and 'bar.txt' from the specified gist.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistDetailTypeName})]
+    [Alias('Delete-GitHubGistFile')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Gist,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string[]] $FileName,
+
+        [switch] $Force,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    begin
+    {
+        $files = @()
+    }
+
+    process
+    {
+        foreach ($name in $FileName)
+        {
+            $files += $name
+        }
+    }
+
+    end
+    {
+        Write-InvocationLog -Invocation $MyInvocation
+        Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
+
+        $params = @{
+            'Gist' = $Gist
+            'Delete' = $files
+            'Force' = $Force
+            'Confirm' = ($Confirm -eq $true)
+            'AccessToken' = $AccessToken
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        return (Set-GitHubGist @params)
+    }
+}
+
+filter Rename-GitHubGistFile
+{
+<#
+    .SYNOPSIS
+        Renames a file in a gist on GitHub.
+
+    .DESCRIPTION
+        Renames a file in a gist on GitHub.
+
+        This is a helper function built on top of Set-GitHubGist.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Gist
+        The ID for the gist to update.
+
+    .PARAMETER FileName
+        The current file in the gist to be renamed.
+
+    .PARAMETER NewName
+        The new name of the file for the gist.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Gist
+        GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistDetail
+        GitHub.GistFork
+
+    .OUTPUTS
+        GitHub.GistDetail
+
+    .EXAMPLE
+        Rename-GitHubGistFile -Gist 1234567 -FileName 'foo.txt' -NewName 'bar.txt'
+
+        Renames the file 'foo.txt' to 'bar.txt' in the specified gist.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubGistDetailTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [Alias('GistId')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Gist,
+
+        [Parameter(
+            Mandatory,
+            Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string] $FileName,
+
+        [Parameter(
+            Mandatory,
+            Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string] $NewName,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog -Invocation $MyInvocation
+    Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
+
+    $params = @{
+        'Gist' = $Gist
+        'Update' = @{$FileName = @{ 'fileName' = $NewName }}
+        'AccessToken' = $AccessToken
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return (Set-GitHubGist @params)
 }
 
 filter Add-GitHubGistAdditionalProperties
@@ -1102,6 +1728,10 @@ filter Add-GitHubGistAdditionalProperties
     {
         return Add-GitHubGistCommitAdditionalProperties -InputObject $InputObject
     }
+    elseif ($TypeName -eq $script:GitHubGistForkTypeName)
+    {
+        return Add-GitHubGistForkAdditionalProperties -InputObject $InputObject
+    }
 
     foreach ($item in $InputObject)
     {
@@ -1119,15 +1749,14 @@ filter Add-GitHubGistAdditionalProperties
                     }
                 }
 
-            foreach ($fork in $item.forks)
+            if ($null -ne $item.forks)
             {
-                Add-Member -InputObject $fork -Name 'GistId' -Value $fork.id -MemberType NoteProperty -Force
-                $null = Add-GitHubUserAdditionalProperties -InputObject $fork.user
+                $item.forks = Add-GitHubGistForkAdditionalProperties -InputObject $item.forks
             }
 
-            foreach ($entry in $item.history)
+            if ($null -ne $item.history)
             {
-                $null = Add-GitHubGistCommitAdditionalProperties -InputObject $entry
+                $item.history = Add-GitHubGistCommitAdditionalProperties -InputObject $item.history
             }
         }
 
@@ -1175,7 +1804,7 @@ filter Add-GitHubGistCommitAdditionalProperties
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
             $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
-            if ($item.uri -match "^https?://(?:www\.|api\.|)$hostName/gists/([^/]+)/(.+)$")
+            if ($item.url -match "^https?://(?:www\.|api\.|)$hostName/gists/([^/]+)/(.+)$")
             {
                 $id = $Matches[1]
                 $sha = $Matches[2]
@@ -1191,6 +1820,62 @@ filter Add-GitHubGistCommitAdditionalProperties
             Add-Member -InputObject $item -Name 'Sha' -Value $item.version -MemberType NoteProperty -Force
 
             $null = Add-GitHubUserAdditionalProperties -InputObject $item.user
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubGistForkAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Gist Fork objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.GistFork
+#>
+    [CmdletBinding()]
+    [OutputType({$script:GitHubGistForkTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubGistForkTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            Add-Member -InputObject $item -Name 'GistId' -Value $item.id -MemberType NoteProperty -Force
+
+            # See here for why we need to work with both 'user' _and_ 'owner':
+            # https://github.community/t/gist-api-v3-documentation-incorrect-for-forks/122545
+            @('user', 'owner') |
+            ForEach-Object {
+                if ($null -ne $item.$_)
+                {
+                    $null = Add-GitHubUserAdditionalProperties -InputObject $item.$_
+                }
+            }
         }
 
         Write-Output $item

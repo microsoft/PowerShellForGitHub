@@ -121,6 +121,9 @@
             <Label>ID</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>owner</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
             <Label>Description</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -144,6 +147,11 @@
             <TableColumnItems>
               <TableColumnItem>
                 <PropertyName>id</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>
+                  ($_.owner.login)
+                </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>description</PropertyName>
@@ -203,7 +211,19 @@
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-                  ($_.owner.login)
+                  # There appears to be a bug in the GitHub API.
+                  # Documentation says that the property should alway be "user",
+                  # but it switches between "owner" and "user" depending on if it's a property
+                  # of a gist, or the direct result from a gist forks query.
+                  # https://github.community/t/gist-api-v3-documentation-incorrect-for-forks/122545
+                  if ($null -eq $_.user)
+                  {
+                     $_.owner.login
+                  }
+                  else
+                  {
+                     $_.user.login
+                  }
                 </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
