@@ -386,9 +386,10 @@ try
                 $files | Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
             }
 
-            # Marking this test to skip.  It works just fine, but takes 26 second to execute.
-            # Not worth it for the moderate improvement to code coverage.
-            It 'Should throw an exception because there are too many files' -Skip:(-not ([string]::IsNullOrEmpty($env:ciAccessToken))) {
+            # May want to consider skipping this test.
+            # It works just fine, but takes 26 second to execute.
+            # (May not be worth it for the moderate improvement to code coverage.)
+            It 'Should throw an exception because there are too many files' {
                 $gist = $files | New-GitHubGist
                 { $gist | Get-GitHubGist -Path $tempPath -Force } | Should -Throw
                 $gist | Remove-GitHubGist -Force
@@ -409,9 +410,10 @@ try
                     Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
             }
 
-            # Marking this test to skip.  It works just fine, but takes 82 second to execute.
-            # Not worth it for the moderate improvement to code coverage.
-            It 'Should throw an exception because the file is too large to download' -Skip:(-not ([string]::IsNullOrEmpty($env:ciAccessToken))) {
+            # May want to consider skipping this test.
+            # It works just fine, but takes 26 second to execute.
+            # (May not be worth it for the moderate improvement to code coverage.)
+            It 'Should throw an exception because the file is too large to download' {
                 $gist = $tenMegFile | New-GitHubGist
                 { $gist | Get-GitHubGist -Path $tempPath -Force } | Should -Throw
                 $gist | Remove-GitHubGist -Force

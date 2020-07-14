@@ -71,10 +71,10 @@ filter Get-GitHubGistComment
         [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Comment,
+        [int64] $Comment,
 
         [ValidateSet('Raw', 'Text', 'Html', 'Full')]
-        [string] $MediaType = 'Raw',
+        [string] $MediaType = 'Full',
 
         [string] $AccessToken,
 
@@ -187,7 +187,7 @@ filter Remove-GitHubGistComment
             Position = 2)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Comment,
+        [int64] $Comment,
 
         [switch] $Force,
 
@@ -371,7 +371,7 @@ filter Set-GitHubGistComment
             Position = 2)]
         [Alias('GistCommentId')]
         [ValidateNotNullOrEmpty()]
-        [string] $Comment,
+        [int64] $Comment,
 
         [Parameter(
             Mandatory,
