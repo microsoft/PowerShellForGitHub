@@ -489,7 +489,7 @@ filter Remove-GitHubLabel
     }
 }
 
-filter Update-GitHubLabel
+filter Set-GitHubLabel
 {
 <#
     .SYNOPSIS
@@ -559,7 +559,7 @@ filter Update-GitHubLabel
         GitHub.Label
 
     .EXAMPLE
-        Update-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -NewName NewTestLabel -Color BBBB00
+        Set-GitHubLabel  -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label TestLabel -NewName NewTestLabel -Color BBBB00
 
         Updates the existing label called TestLabel in the PowerShellForGitHub project to be called
         'NewTestLabel' and be colored yellow.
@@ -568,6 +568,7 @@ filter Update-GitHubLabel
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubLabelTypeName})]
+    [Alias('Update-GitHubLabel')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -641,15 +642,15 @@ filter Update-GitHubLabel
     return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
 }
 
-filter Set-GitHubLabel
+filter Initialize-GitHubLabel
 {
 <#
     .SYNOPSIS
-        Sets the entire set of Labels on the given GitHub repository to match the provided list
+        Replaces the entire set of Labels on the given GitHub repository to match the provided list
         of Labels.
 
     .DESCRIPTION
-        Sets the entire set of Labels on the given GitHub repository to match the provided list
+        Replaces the entire set of Labels on the given GitHub repository to match the provided list
         of Labels.
 
         Will update the color/description for any Labels already in the repository that match the
@@ -702,7 +703,7 @@ filter Set-GitHubLabel
         GitHub.Repository
 
     .EXAMPLE
-        Set-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
+        Initialize-GitHubLabel -OwnerName microsoft -RepositoryName PowerShellForGitHub -Label @(@{'name' = 'TestLabel'; 'color' = 'EEEEEE'}, @{'name' = 'critical'; 'color' = 'FF000000'; 'description' = 'Needs immediate attention'})
 
         Removes any labels not in this Label array, ensure the current assigned color and descriptions
         match what's in the array for the labels that do already exist, and then creates new labels
@@ -774,7 +775,7 @@ filter Set-GitHubLabel
         else
         {
             # Update label's color if it already exists
-            $null = Update-GitHubLabel -Label $labelToConfigure.name -NewName $labelToConfigure.name -Color $labelToConfigure.color @commonParams
+            $null = Set-GitHubLabel -Label $labelToConfigure.name -NewName $labelToConfigure.name -Color $labelToConfigure.color @commonParams
         }
     }
 

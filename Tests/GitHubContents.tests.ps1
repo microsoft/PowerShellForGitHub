@@ -254,6 +254,193 @@ try
             }
         }
     }
+
+    Describe 'GitHubContents/Set-GitHubContent' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+
+            $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+        }
+
+        Context 'When setting new file content' {
+            BeforeAll {
+                $filePath = 'notes'
+                $fileName = 'hello.txt'
+                $commitMessage = 'Commit Message'
+                $content = 'This is the content for test.txt'
+                $branchName = 'master'
+                $committerName = 'John Doe'
+                $committerEmail = 'john.doe@testdomain.com'
+                $authorName = 'Jane Doe'
+                $authorEmail = 'jane.doe@testdomain.com'
+
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    CommitMessage = $commitMessage
+                    Branch = $branchName
+                    Content = $content
+                    Uri = $repo.svn_url
+                    CommitterName = $committerName
+                    CommitterEmail = $committerEmail
+                    authorName = $authorName
+                    authorEmail = $authorEmail
+                }
+
+                $result = Set-GitHubContent @setGitHubContentParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $result.content.name | Should -Be $fileName
+                $result.content.path | Should -Be "$filePath/$fileName"
+                $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +
+                    "/$repoName/contents/$filePath/$($fileName)?ref=$BranchName")
+                $result.commit.author.name | Should -Be $authorName
+                $result.commit.author.email | Should -Be $authorEmail
+                $result.commit.committer.name | Should -Be $committerName
+                $result.commit.committer.email | Should -Be $committerEmail
+                $result.commit.message | Should -Be $commitMessage
+            }
+
+            It 'Should have written the correct content' {
+                $getGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                    MediaType = 'Raw'
+                    ResultAsString = $true
+                }
+
+                $writtenContent = Get-GitHubContent @getGitHubContentParms
+
+                $content | Should -Be $writtenContent
+            }
+
+            It 'Should support pipeline input' {
+                $getGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                }
+
+                $writtenContent = Get-GitHubContent @getGitHubContentParms
+
+                $setGitHubContentParms = @{
+                    CommitMessage = $commitMessage
+                    Content = $content
+                    CommitterName = $committerName
+                    CommitterEmail = $committerEmail
+                    authorName = $authorName
+                    authorEmail = $authorEmail
+                }
+
+                { $writtenContent | Set-GitHubContent @setGitHubContentParms -WhatIf } | Should -Not -Throw
+            }
+        }
+
+        Context 'When overwriting file content' {
+            BeforeAll {
+                $filePath = 'notes'
+                $fileName = 'hello.txt'
+                $commitMessage = 'Commit Message 2'
+                $content = 'This is the new content for test.txt'
+                $branchName = 'master'
+                $committerName = 'John Doe'
+                $committerEmail = 'john.doe@testdomain.com'
+                $authorName = 'Jane Doe'
+                $authorEmail = 'jane.doe@testdomain.com'
+
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    CommitMessage = $commitMessage
+                    BranchName = $branchName
+                    Content = $content
+                    Uri = $repo.svn_url
+                    CommitterName = $committerName
+                    CommitterEmail = $committerEmail
+                    authorName = $authorName
+                    authorEmail = $authorEmail
+                }
+
+                $result = Set-GitHubContent @setGitHubContentParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $result.content.name | Should -Be $fileName
+                $result.content.path | Should -Be "$filePath/$fileName"
+                $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +
+                    "/$repoName/contents/$filePath/$($fileName)?ref=$BranchName")
+                $result.commit.author.name | Should -Be $authorName
+                $result.commit.author.email | Should -Be $authorEmail
+                $result.commit.committer.name | Should -Be $committerName
+                $result.commit.committer.email | Should -Be $committerEmail
+                $result.commit.message | Should -Be $commitMessage
+            }
+
+            It 'Should have written the correct content' {
+                $getGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                    MediaType = 'Raw'
+                    ResultAsString = $true
+                }
+
+                $writtenContent = Get-GitHubContent @getGitHubContentParms
+
+                $content | Should -Be $writtenContent
+            }
+        }
+
+        Context 'When Specifying only one Committer parameter' {
+            $setGitHubContentParms = @{
+                Path = "$filePath/$fileName"
+                CommitMessage = $commitMessage
+                BranchName = $branchName
+                Content = $content
+                Uri = $repo.svn_url
+                CommitterName = $committerName
+            }
+
+            It 'Shoud throw the correct exception' {
+                $errorMessage = 'Both CommiterName and CommitterEmail need to be specified.'
+                { Set-GitHubContent @setGitHubContentParms } | Should -Throw $errorMessage
+            }
+        }
+
+        Context 'When Specifying only one Author parameter' {
+            $setGitHubContentParms = @{
+                Path = "$filePath/$fileName"
+                Uri = $repo.svn_url
+                CommitMessage = $commitMessage
+                BranchName = $branchName
+                Content = $content
+                AuthorName = $authorName
+            }
+
+            It 'Shoud throw the correct exception' {
+                $errorMessage = 'Both AuthorName and AuthorEmail need to be specified.'
+                { Set-GitHubContent @setGitHubContentParms } | Should -Throw $errorMessage
+            }
+        }
+
+        Context 'When Invoke-GHRestMethod returns an unexpected error' {
+            It 'Should throw' {
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    OwnerName = $script:ownerName
+                    RepositoryName = 'IncorrectRepositoryName'
+                    BranchName = $branchName
+                    CommitMessage = $commitMessage
+                    Content = $content
+                }
+
+                { Set-GitHubContent @setGitHubContentParms } | Should -Throw
+            }
+        }
+
+        AfterAll {
+            Remove-GitHubRepository -Uri $repo.svn_url -Force
+        }
+    }
 }
 finally
 {

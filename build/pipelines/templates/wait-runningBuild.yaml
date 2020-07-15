@@ -1,0 +1,39 @@
+#
+# This template contains the necessary jobs to create a queue for this pipeline and ensure that
+# there is never more than one concurrent build actively running at any given time.
+#
+
+#--------------------------------------------------------------------------------------------------
+# This template is dependent on the following pipeline variables being configured within the pipeline.
+#
+#  1. buildQueryPersonalAccessToken - An Azure DevOps Personal Access Token with Build READ permission.
+#                                     It should be configured as a "secret".
+#--------------------------------------------------------------------------------------------------
+
+parameters:
+- name: 'buildQueryPersonalAccessToken'
+  type: string
+- name: 'usePowerShellCore'
+  default: true
+  type: boolean
+
+steps:
+  - task: PowerShell@2
+    displayName: 'Wait for previously queued builds'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        $params = @{
+           PersonalAccessToken = $env:buildReadAccessToken
+           OrganizationName = 'ms'
+           ProjectName = 'PowerShellForGitHub'
+           BuildDefinitionId = $(System.DefinitionId)
+           BuildId = $(Build.BuildId)
+        }
+
+        ./build/scripts/Wait-RunningBuild.ps1 @params
+    env:
+      buildReadAccessToken: ${{ parameters.buildQueryPersonalAccessToken }}

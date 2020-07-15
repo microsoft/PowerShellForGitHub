@@ -249,7 +249,7 @@ filter Test-GitHubAssignee
     }
 }
 
-function New-GitHubAssignee
+function Add-GitHubAssignee
 {
 <#
     .DESCRIPTION
@@ -311,7 +311,7 @@ function New-GitHubAssignee
 
     .EXAMPLE
         $assignees = @('octocat')
-        New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
+        Add-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1 -Assignee $assignee
 
         Additionally assigns the usernames in $assignee to Issue #1
         from the microsoft\PowerShellForGitHub project.
@@ -319,7 +319,7 @@ function New-GitHubAssignee
     .EXAMPLE
         $assignees = @('octocat')
         $repo = Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub
-        $repo | New-GitHubAssignee -Issue 1 -Assignee $assignee
+        $repo | Add-GitHubAssignee -Issue 1 -Assignee $assignee
 
         Additionally assigns the usernames in $assignee to Issue #1
         from the microsoft\PowerShellForGitHub project.
@@ -328,14 +328,14 @@ function New-GitHubAssignee
         $assignees = @('octocat')
         Get-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub |
             Get-GitHubIssue -Issue 1 |
-            New-GitHubAssignee -Assignee $assignee
+            Add-GitHubAssignee -Assignee $assignee
 
         Additionally assigns the usernames in $assignee to Issue #1
         from the microsoft\PowerShellForGitHub project.
 
     .EXAMPLE
         $octocat = Get-GitHubUser -UserName 'octocat'
-        $octocat | New-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
+        $octocat | Add-GitHubAssignee -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 1
 
         Additionally assigns the user 'octocat' to Issue #1
         from the microsoft\PowerShellForGitHub project.
@@ -344,6 +344,7 @@ function New-GitHubAssignee
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubIssueTypeName})]
+    [Alias('New-GitHubAssignee')] # Non-standard usage of the New verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(

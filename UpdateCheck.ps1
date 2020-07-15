@@ -26,13 +26,18 @@ function Invoke-UpdateCheck
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
+    .PARAMETER Force
+        For debugging purposes, using this switch will allow the check to occur more than the limit
+        of once per day.  This _will not_ bypass the DisableUpdateCheck configuration value however.
+
     .EXAMPLE
         Invoke-UpdateCheck
 
     .NOTES
         Internal-only helper method.
 #>
-    param()
+    [cmdletbinding()]
+    param([switch] $Force)
 
     if (Get-GitHubConfiguration -Name DisableUpdateCheck)
     {
@@ -43,6 +48,18 @@ function Invoke-UpdateCheck
     $moduleVersion = $MyInvocation.MyCommand.Module.Version
 
     $jobNameToday = "Invoke-UpdateCheck-" + (Get-Date -format 'yyyyMMdd')
+
+    if ($Force)
+    {
+        if ($null -ne $script:UpdateCheckJobName)
+        {
+            # We're going to clear out the existing job and try running it again.
+            $null = Receive-Job -Name $script:UpdateCheckJobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable errorInfo
+        }
+
+        $script:UpdateCheckJobName = $null
+        $script:HasLatestVersion = $null
+    }
 
     # We only check once per day
     if ($jobNameToday -eq $script:UpdateCheckJobName)
@@ -83,7 +100,7 @@ function Invoke-UpdateCheck
                 if ($script:HasLatestVersion)
                 {
                     $message = "[$moduleName] update check complete.  Running latest version: $latestVersion"
-                    Write-Log =Message $message -Level Verbose
+                    Write-Log -Message $message -Level Verbose
                 }
                 elseif ($moduleVersion -gt $latestVersion)
                 {
@@ -132,6 +149,9 @@ function Invoke-UpdateCheck
 
         try
         {
+            # Disable Progress Bar in function scope during Invoke-WebRequest
+            $ProgressPreference = 'SilentlyContinue'
+
             Invoke-WebRequest @params
         }
         catch

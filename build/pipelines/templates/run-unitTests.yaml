@@ -23,17 +23,31 @@ parameters:
 - name: 'platformName'
   default: 'Windows'
   type: string
+- name: 'usePowerShellCore'
+  default: false
+  type: boolean
 
 steps:
-  - powershell: |
-      Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
+  - task: PowerShell@2
     displayName: 'Install Pester'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
 
-  - powershell: |
-       $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
-       Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+  - task: PowerShell@2
     displayName: 'Run Unit Tests via Pester'
+    inputs:
+      pwsh: eq('${{ parameters.usePowerShellCore }}', true)
+      errorActionPreference: 'stop'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
+        Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
     env:
       ciAccessToken: ${{ parameters.gitHubAccessToken }}
       ciOwnerName: ${{ parameters.gitHubOwnerName }}

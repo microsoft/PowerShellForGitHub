@@ -130,11 +130,6 @@ function Invoke-SendTelemetryEvent
     .PARAMETER TelemetryEvent
         The raw object representing the event data to send to Application Insights.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
 
@@ -145,16 +140,10 @@ function Invoke-SendTelemetryEvent
         easier to share out with other PowerShell projects.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "", Justification="We use global variables sparingly and intentionally for module configuration, and employ a consistent naming convention.")]
     param(
         [Parameter(Mandatory)]
-        [PSCustomObject] $TelemetryEvent,
-
-        [switch] $NoStatus
+        [PSCustomObject] $TelemetryEvent
     )
-
-    # Temporarily forcing NoStatus to always be true to see if it improves user experience.
-    $NoStatus = $true
 
     $jsonConversionDepth = 20 # Seems like it should be more than sufficient
     $uri = 'https://dc.services.visualstudio.com/v2/track'
@@ -164,120 +153,31 @@ function Invoke-SendTelemetryEvent
     $body = ConvertTo-Json -InputObject $TelemetryEvent -Depth $jsonConversionDepth -Compress
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
 
+    if (-not $PSCmdlet.ShouldProcess($uri, "Invoke-WebRequest"))
+    {
+        return
+    }
+
     try
     {
         Write-Log -Message "Sending telemetry event data to $uri [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
 
-        if ($NoStatus)
-        {
-            if ($PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
-            {
-                $params = @{}
-                $params.Add("Uri", $uri)
-                $params.Add("Method", $method)
-                $params.Add("Headers", $headers)
-                $params.Add("UseDefaultCredentials", $true)
-                $params.Add("UseBasicParsing", $true)
-                $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
-                $params.Add("Body", $bodyAsBytes)
+        $params = @{}
+        $params.Add("Uri", $uri)
+        $params.Add("Method", $method)
+        $params.Add("Headers", $headers)
+        $params.Add("UseDefaultCredentials", $true)
+        $params.Add("UseBasicParsing", $true)
+        $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+        $params.Add("Body", $bodyAsBytes)
 
-                # Disable Progress Bar in function scope during Invoke-WebRequest
-                $ProgressPreference = 'SilentlyContinue'
+        # Disable Progress Bar in function scope during Invoke-WebRequest
+        $ProgressPreference = 'SilentlyContinue'
 
-                $result = Invoke-WebRequest @params
-            }
-        }
-        else
-        {
-            $jobName = "Invoke-SendTelemetryEvent-" + (Get-Date).ToFileTime().ToString()
-
-            if ($PSCmdlet.ShouldProcess($jobName, "Start-Job"))
-            {
-                [scriptblock]$scriptBlock = {
-                    param($Uri, $Method, $Headers, $BodyAsBytes, $TimeoutSec, $ScriptRootPath)
-
-                    # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
-                    # the context of this script block since we're running in a different
-                    # PowerShell process and need access to Get-HttpWebResponseContent and
-                    # config values referenced within Write-Log.
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
-                    . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
-
-                    $params = @{}
-                    $params.Add("Uri", $Uri)
-                    $params.Add("Method", $Method)
-                    $params.Add("Headers", $Headers)
-                    $params.Add("UseDefaultCredentials", $true)
-                    $params.Add("UseBasicParsing", $true)
-                    $params.Add("TimeoutSec", $TimeoutSec)
-                    $params.Add("Body", $BodyAsBytes)
-
-                    try
-                    {
-                        # Disable Progress Bar in function scope during Invoke-WebRequest
-                        $ProgressPreference = 'SilentlyContinue'
-
-                        Invoke-WebRequest @params
-                    }
-                    catch [System.Net.WebException]
-                    {
-                        # We need to access certain headers in the exception handling,
-                        # but the actual *values* of the headers of a WebException don't get serialized
-                        # when the RemoteException wraps it.  To work around that, we'll extract the
-                        # information that we actually care about *now*, and then we'll throw our own exception
-                        # that is just a JSON object with the data that we'll later extract for processing in
-                        # the main catch.
-                        $ex = @{}
-                        $ex.Message = $_.Exception.Message
-                        $ex.StatusCode = $_.Exception.Response.StatusCode
-                        $ex.StatusDescription = $_.Exception.Response.StatusDescription
-                        $ex.InnerMessage = $_.ErrorDetails.Message
-                        try
-                        {
-                            $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
-                        }
-                        catch
-                        {
-                            Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
-                        }
-
-                        $jsonConversionDepth = 20 # Seems like it should be more than sufficient
-                        throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
-                    }
-                }
-
-                $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
-                    $uri,
-                    $method,
-                    $headers,
-                    $bodyAsBytes,
-                    (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
-                    $PSScriptRoot)
-
-                if ($PSCmdlet.ShouldProcess($jobName, "Wait-JobWithAnimation"))
-                {
-                    $description = 'Sending telemetry data'
-                    Wait-JobWithAnimation -Name $jobName -Description $Description
-                }
-
-                if ($PSCmdlet.ShouldProcess($jobName, "Receive-Job"))
-                {
-                    $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
-                }
-            }
-
-            if ($remoteErrors.Count -gt 0)
-            {
-                throw $remoteErrors[0].Exception
-            }
-        }
-
-        return $result
+        return Invoke-WebRequest @params
     }
     catch
     {
-        # We only know how to handle WebExceptions, which will either come in "pure" when running with -NoStatus,
-        # or will come in as a RemoteException when running normally (since it's coming from the asynchronous Job).
         $ex = $null
         $message = $null
         $statusCode = $null
@@ -299,27 +199,6 @@ function Invoke-SendTelemetryEvent
             catch
             {
                 Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
-            }
-        }
-        elseif (($_.Exception -is [System.Management.Automation.RemoteException]) -and
-            ($_.Exception.SerializedRemoteException.PSObject.TypeNames[0] -eq 'Deserialized.System.Management.Automation.RuntimeException'))
-        {
-            $ex = $_.Exception
-            try
-            {
-                $deserialized = $ex.Message | ConvertFrom-Json
-                $message = $deserialized.Message
-                $statusCode = $deserialized.StatusCode
-                $statusDescription = $deserialized.StatusDescription
-                $innerMessage = $deserialized.InnerMessage
-                $rawContent = $deserialized.RawContent
-            }
-            catch [System.ArgumentException]
-            {
-                # Will be thrown if $ex.Message isn't the JSON content we prepared
-                # in the System.Net.WebException handler earlier in $scriptBlock.
-                Write-Log -Exception $_ -Level Error
-                throw
             }
         }
         else
@@ -402,32 +281,16 @@ function Set-TelemetryEvent
         A collection of name/value pair metrics (string/double) that should be associated with
         this event.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-
     .EXAMPLE
         Set-TelemetryEvent "zFooTest1"
 
-        Posts a "zFooTest1" event with the default set of properties and metrics.  If the telemetry
-        client needs to be created to accomplish this, and the required assemblies are not available
-        on the local machine, the download status will be presented at the command prompt.
+        Posts a "zFooTest1" event with the default set of properties and metrics.
 
     .EXAMPLE
         Set-TelemetryEvent "zFooTest1" @{"Prop1" = "Value1"}
 
         Posts a "zFooTest1" event with the default set of properties and metrics along with an
-        additional property named "Prop1" with a value of "Value1".  If the telemetry client
-        needs to be created to accomplish this, and the required assemblies are not available
-        on the local machine, the download status will be presented at the command prompt.
-
-    .EXAMPLE
-        Set-TelemetryEvent "zFooTest1" -NoStatus
-
-        Posts a "zFooTest1" event with the default set of properties and metrics.  If the telemetry
-        client needs to be created to accomplish this, and the required assemblies are not available
-        on the local machine, the command prompt will appear to hang while they are downloaded.
+        additional property named "Prop1" with a value of "Value1".
 
     .NOTES
         Because of the short-running nature of this module, we always "flush" the events as soon
@@ -441,9 +304,7 @@ function Set-TelemetryEvent
 
         [hashtable] $Properties = @{},
 
-        [hashtable] $Metrics = @{},
-
-        [switch] $NoStatus
+        [hashtable] $Metrics = @{}
     )
 
     if (Get-GitHubConfiguration -Name DisableTelemetry)
@@ -478,7 +339,7 @@ function Set-TelemetryEvent
             Add-Member -InputObject $telemetryEvent.data.baseData -Name 'measurements' -Value ([PSCustomObject] $measurements) -MemberType NoteProperty -Force
         }
 
-        $null = Invoke-SendTelemetryEvent -TelemetryEvent $telemetryEvent -NoStatus:$NoStatus
+        $null = Invoke-SendTelemetryEvent -TelemetryEvent $telemetryEvent
     }
     catch
     {
@@ -521,26 +382,11 @@ function Set-TelemetryException
         prevents that automatic flushing (helpful in the scenario where the exception occurred
         when trying to do the actual Flush).
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-
     .EXAMPLE
         Set-TelemetryException $_
 
         Used within the context of a catch statement, this will post the exception that just
-        occurred, along with a default set of properties.  If the telemetry client needs to be
-        created to accomplish this, and the required assemblies are not available on the local
-        machine, the download status will be presented at the command prompt.
-
-    .EXAMPLE
-        Set-TelemetryException $_ -NoStatus
-
-        Used within the context of a catch statement, this will post the exception that just
-        occurred, along with a default set of properties.  If the telemetry client needs to be
-        created to accomplish this, and the required assemblies are not available on the local
-        machine, the command prompt will appear to hang while they are downloaded.
+        occurred, along with a default set of properties.
 
     .NOTES
         Because of the short-running nature of this module, we always "flush" the events as soon
@@ -554,9 +400,7 @@ function Set-TelemetryException
 
         [string] $ErrorBucket,
 
-        [hashtable] $Properties = @{},
-
-        [switch] $NoStatus
+        [hashtable] $Properties = @{}
     )
 
     if (Get-GitHubConfiguration -Name DisableTelemetry)
@@ -627,7 +471,7 @@ function Set-TelemetryException
         }
 
         Add-Member -InputObject $telemetryEvent.data.baseData -Name 'exceptions' -Value @($exceptionData) -MemberType NoteProperty -Force
-        $null = Invoke-SendTelemetryEvent -TelemetryEvent $telemetryEvent -NoStatus:$NoStatus
+        $null = Invoke-SendTelemetryEvent -TelemetryEvent $telemetryEvent
     }
     catch
     {

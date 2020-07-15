@@ -84,23 +84,22 @@ function Invoke-GHRestMethod
         no bucket value will be used.
 
     .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
+        Deprecated switch after v0.14.0.  Kept here for the time being to reduce module churn.
+        Specifying it does nothing.  It used to control whether or not the web request would have
+        a corresponding progress UI.
 
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
 
     .EXAMPLE
-        Invoke-GHRestMethod -UriFragment "applications/" -Method Get -Description "Get first 10 applications"
+        Invoke-GHRestMethod -UriFragment "users/octocat" -Method Get -Description "Get information on the octocat user"
 
-        Gets the first 10 applications for the connected dev account.
+        Gets the user information for Octocat.
 
     .EXAMPLE
-        Invoke-GHRestMethod -UriFragment "applications/0ABCDEF12345/submissions/1234567890123456789/" -Method Delete -Description "Delete Submission" -NoStatus
+        Invoke-GHRestMethod -UriFragment "user" -Method Get -Description "Get current user"
 
-        Deletes the specified submission, but the request happens in the foreground and there is
-        no additional status shown to the user until a response is returned from the REST request.
+        Gets information about the current authenticated user.
 
     .NOTES
         This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
@@ -200,7 +199,6 @@ function Invoke-GHRestMethod
         return
     }
 
-    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     try
@@ -209,136 +207,34 @@ function Invoke-GHRestMethod
         Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
 
         $result = $null
-        if ($NoStatus)
+        $params = @{}
+        $params.Add("Uri", $url)
+        $params.Add("Method", $Method)
+        $params.Add("Headers", $headers)
+        $params.Add("UseDefaultCredentials", $true)
+        $params.Add("UseBasicParsing", $true)
+        $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+
+        if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
         {
-            $params = @{}
-            $params.Add("Uri", $url)
-            $params.Add("Method", $Method)
-            $params.Add("Headers", $headers)
-            $params.Add("UseDefaultCredentials", $true)
-            $params.Add("UseBasicParsing", $true)
-            $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
-
-            if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
+            $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
+            $params.Add("Body", $bodyAsBytes)
+            Write-Log -Message "Request includes a body." -Level Verbose
+            if (Get-GitHubConfiguration -Name LogRequestBody)
             {
-                $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
-                $params.Add("Body", $bodyAsBytes)
-                Write-Log -Message "Request includes a body." -Level Verbose
-                if (Get-GitHubConfiguration -Name LogRequestBody)
-                {
-                    Write-Log -Message $Body -Level Verbose
-                }
-            }
-
-            # Disable Progress Bar in function scope during Invoke-WebRequest
-            $ProgressPreference = 'SilentlyContinue'
-
-            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-            $result = Invoke-WebRequest @params
-
-            if ($Method -eq 'Delete')
-            {
-                Write-Log -Message "Successfully removed." -Level Verbose
+                Write-Log -Message $Body -Level Verbose
             }
         }
-        else
+
+        # Disable Progress Bar in function scope during Invoke-WebRequest
+        $ProgressPreference = 'SilentlyContinue'
+
+        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+        $result = Invoke-WebRequest @params
+
+        if ($Method -eq 'Delete')
         {
-            $jobName = "Invoke-GHRestMethod-" + (Get-Date).ToFileTime().ToString()
-
-            [scriptblock]$scriptBlock = {
-                param(
-                    $Url,
-                    $Method,
-                    $Headers,
-                    $Body,
-                    $ValidBodyContainingRequestMethods,
-                    $TimeoutSec,
-                    $LogRequestBody,
-                    $ScriptRootPath)
-
-                # We need to "dot invoke" Helpers.ps1 and GitHubConfiguration.ps1 within
-                # the context of this script block since we're running in a different
-                # PowerShell process and need access to Get-HttpWebResponseContent and
-                # config values referenced within Write-Log.
-                . (Join-Path -Path $ScriptRootPath -ChildPath 'Helpers.ps1')
-                . (Join-Path -Path $ScriptRootPath -ChildPath 'GitHubConfiguration.ps1')
-
-                $params = @{}
-                $params.Add("Uri", $Url)
-                $params.Add("Method", $Method)
-                $params.Add("Headers", $Headers)
-                $params.Add("UseDefaultCredentials", $true)
-                $params.Add("UseBasicParsing", $true)
-                $params.Add("TimeoutSec", $TimeoutSec)
-
-                if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
-                {
-                    $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
-                    $params.Add("Body", $bodyAsBytes)
-                    Write-Log -Message "Request includes a body." -Level Verbose
-                    if ($LogRequestBody)
-                    {
-                        Write-Log -Message $Body -Level Verbose
-                    }
-                }
-
-                try
-                {
-                    # Disable Progress Bar in function scope during Invoke-WebRequest
-                    $ProgressPreference = 'SilentlyContinue'
-
-                    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-                    Invoke-WebRequest @params
-                }
-                catch [System.Net.WebException]
-                {
-                    # We need to access certain headers in the exception handling,
-                    # but the actual *values* of the headers of a WebException don't get serialized
-                    # when the RemoteException wraps it.  To work around that, we'll extract the
-                    # information that we actually care about *now*, and then we'll throw our own exception
-                    # that is just a JSON object with the data that we'll later extract for processing in
-                    # the main catch.
-                    $ex = @{}
-                    $ex.Message = $_.Exception.Message
-                    $ex.StatusCode = $_.Exception.Response.StatusCode
-                    $ex.StatusDescription = $_.Exception.Response.StatusDescription
-                    $ex.InnerMessage = $_.ErrorDetails.Message
-                    try
-                    {
-                        $ex.RawContent = Get-HttpWebResponseContent -WebResponse $_.Exception.Response
-                    }
-                    catch
-                    {
-                        Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
-                    }
-
-                    $jsonConversionDepth = 20 # Seems like it should be more than sufficient
-                    throw (ConvertTo-Json -InputObject $ex -Depth $jsonConversionDepth)
-                }
-            }
-
-            $null = Start-Job -Name $jobName -ScriptBlock $scriptBlock -Arg @(
-                $url,
-                $Method,
-                $headers,
-                $Body,
-                $ValidBodyContainingRequestMethods,
-                (Get-GitHubConfiguration -Name WebRequestTimeoutSec),
-                (Get-GitHubConfiguration -Name LogRequestBody),
-                $PSScriptRoot)
-
-            Wait-JobWithAnimation -Name $jobName -Description $Description
-            $result = Receive-Job $jobName -AutoRemoveJob -Wait -ErrorAction SilentlyContinue -ErrorVariable remoteErrors
-
-            if ($remoteErrors.Count -gt 0)
-            {
-                throw $remoteErrors[0].Exception
-            }
-
-            if ($Method -eq 'Delete')
-            {
-                Write-Log -Message "Successfully removed." -Level Verbose
-            }
+            Write-Log -Message "Successfully removed." -Level Verbose
         }
 
         # Record the telemetry for this event.
@@ -346,7 +242,7 @@ function Invoke-GHRestMethod
         if (-not [String]::IsNullOrEmpty($TelemetryEventName))
         {
             $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
-            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics -NoStatus:$NoStatus
+            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
         }
 
         $finalResult = $result.Content
@@ -379,11 +275,26 @@ function Invoke-GHRestMethod
 
         $links = $result.Headers['Link'] -split ','
         $nextLink = $null
+        $nextPageNumber = 1
+        $numPages = 1
+        $since = 0
         foreach ($link in $links)
         {
-            if ($link -match '<(.*)>; rel="next"')
+            if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
             {
-                $nextLink = $matches[1]
+                $nextLink = $Matches[1]
+                $nextPageNumber = [int]$Matches[2]
+            }
+            elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
+            {
+                # Special case scenario for the users endpoint.
+                $nextLink = $Matches[1]
+                $since = [int]$Matches[2]
+                $numPages = 0 # Signifies an unknown number of pages.
+            }
+            elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
+            {
+                $numPages = [int]$Matches[1]
             }
         }
 
@@ -417,6 +328,9 @@ function Invoke-GHRestMethod
                 'statusCode' = $result.StatusCode
                 'requestId' = $result.Headers['X-GitHub-Request-Id']
                 'nextLink' = $nextLink
+                'nextPageNumber' = $nextPageNumber
+                'numPages' = $numPages
+                'since' = $since
                 'link' = $result.Headers['Link']
                 'lastModified' = $result.Headers['Last-Modified']
                 'ifNoneMatch' = $result.Headers['If-None-Match']
@@ -436,9 +350,6 @@ function Invoke-GHRestMethod
     }
     catch
     {
-        # We only know how to handle WebExceptions, which will either come in "pure"
-        # when running with -NoStatus, or will come in as a RemoteException when running
-        # normally (since it's coming from the asynchronous Job).
         $ex = $null
         $message = $null
         $statusCode = $null
@@ -468,32 +379,10 @@ function Invoke-GHRestMethod
                 $requestId = $ex.Response.Headers['X-GitHub-Request-Id']
             }
         }
-        elseif (($_.Exception -is [System.Management.Automation.RemoteException]) -and
-            ($_.Exception.SerializedRemoteException.PSObject.TypeNames[0] -eq 'Deserialized.System.Management.Automation.RuntimeException'))
-        {
-            $ex = $_.Exception
-            try
-            {
-                $deserialized = $ex.Message | ConvertFrom-Json
-                $message = $deserialized.Message
-                $statusCode = $deserialized.StatusCode
-                $statusDescription = $deserialized.StatusDescription
-                $innerMessage = $deserialized.InnerMessage
-                $requestId = $deserialized['X-GitHub-Request-Id']
-                $rawContent = $deserialized.RawContent
-            }
-            catch [System.ArgumentException]
-            {
-                # Will be thrown if $ex.Message isn't JSON content
-                Write-Log -Exception $_ -Level Error
-                Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
-                throw
-            }
-        }
         else
         {
             Write-Log -Exception $_ -Level Error
-            Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
+            Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties
             throw
         }
 
@@ -558,7 +447,7 @@ function Invoke-GHRestMethod
 
         $newLineOutput = ($output -join [Environment]::NewLine)
         Write-Log -Message $newLineOutput -Level Error
-        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties -NoStatus:$NoStatus
+        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
         throw $newLineOutput
     }
     finally
@@ -644,7 +533,6 @@ function Invoke-GHRestMethodMultipleResult
         shown to the user until a response is returned from the REST request.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [OutputType([Object[]])]
     param(
@@ -669,6 +557,11 @@ function Invoke-GHRestMethodMultipleResult
         [switch] $NoStatus
     )
 
+    if (-not $PSCmdlet.ShouldProcess($UriFragment, "Invoke-GHRestMethod"))
+    {
+        return
+    }
+
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -683,10 +576,14 @@ function Invoke-GHRestMethodMultipleResult
     $currentDescription = $Description
     $nextLink = $UriFragment
 
+    $multiRequestProgressThreshold = Get-GitHubConfiguration -Name 'MultiRequestProgressThreshold'
+    $iteration = 0
+    $progressId = $null
     try
     {
         do
         {
+            $iteration++
             $params = @{
                 'UriFragment' = $nextLink
                 'Method' = 'Get'
@@ -706,7 +603,35 @@ function Invoke-GHRestMethodMultipleResult
             }
 
             $nextLink = $result.nextLink
-            $currentDescription = "$Description (getting additional results)"
+            $status = [String]::Empty
+            $percentComplete = 0
+            if ($result.numPages -eq 0)
+            {
+                # numPages == 0 is a special case for when the total number of pages is simply unknown.
+                # This can happen with getting all GitHub users.
+                $status = "Getting additional results [page $iteration of (unknown)]"
+                $percentComplete = 10 # No idea what percentage to use in this scenario
+            }
+            else
+            {
+                $status = "Getting additional results [page $($result.nextPageNumber)/$($result.numPages)])"
+                $percentComplete = (($result.nextPageNumber / $result.numPages) * 100)
+            }
+
+            $currentDescription = "$Description ($status)"
+            if (($multiRequestProgressThreshold -gt 0) -and
+                (($result.numPages -ge $multiRequestProgressThreshold) -or ($result.numPages -eq 0)))
+            {
+                $progressId = 1
+                $progressParams = @{
+                    'Activity' = $Description
+                    'Status' = $status
+                    'PercentComplete' = $percentComplete
+                    'Id' = $progressId
+                }
+
+                Write-Progress @progressParams
+            }
         }
         until ($SinglePage -or ([String]::IsNullOrWhiteSpace($nextLink)))
 
@@ -723,6 +648,14 @@ function Invoke-GHRestMethodMultipleResult
     catch
     {
         throw
+    }
+    finally
+    {
+        # Ensure that we complete the progress bar once the command is done, regardless of outcome.
+        if ($null -ne $progressId)
+        {
+            Write-Progress -Activity $Description -Id $progressId -Completed
+        }
     }
 }
 

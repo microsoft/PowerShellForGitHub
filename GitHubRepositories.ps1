@@ -4,6 +4,8 @@
 @{
     GitHubRepositoryTypeName = 'GitHub.Repository'
     GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
+    GitHubRepositoryContributorTypeName = 'GitHub.RepositoryContributor'
+    GitHubRepositoryCollaboratorTypeName = 'GitHub.RepositoryCollaborator'
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
@@ -222,6 +224,176 @@ filter New-GitHubRepository
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+}
+
+filter New-GitHubRepositoryFromTemplate
+{
+<#
+    .SYNOPSIS
+        Creates a new repository on GitHub from a template repository.
+
+    .DESCRIPTION
+        Creates a new repository on GitHub from a template repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the template repository.
+        If no value is specified, the DefaultOwnerName configuration property value will be used,
+        and if there is no configuration value defined, the current authenticated user will be used.
+
+    .PARAMETER RepositoryName
+        Name of the template repository.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER TargetOwnerName
+        The organization or person who will own the new repository.
+        To create a new repository in an organization, the authenticated user must be a member
+        of the specified organization.
+
+    .PARAMETER TargetRepositoryName
+        Name of the repository to be created.
+
+    .PARAMETER Description
+        A short description of the repository.
+
+    .PARAMETER Private
+        By default, this repository will created Public.  Specify this to create a private
+        repository.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Repository
+
+    .NOTES
+        The authenticated user must own or be a member of an organization that owns the repository.
+
+        To check if a repository is available to use as a template, call `Get-GitHubRepository` on the
+        repository in question and check that the is_template property is $true.
+
+    .EXAMPLE
+        New-GitHubRepositoryFromTemplate -OwnerName MyOrg -RepositoryName MyTemplateRepo -TargetRepositoryName MyNewRepo -TargetOwnerName Me
+
+        Creates a new GitHub repository from the specified template repository.
+
+    .EXAMPLE
+        $repo = Get-GitHubRepository -OwnerName MyOrg -RepositoryName MyTemplateRepo
+        $repo | New-GitHubRepositoryFromTemplate -TargetRepositoryName MyNewRepo -TargetOwnerName Me
+
+        You can also pipe in a repo that was returned from a previous command.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false)]
+    [OutputType({$script:GitHubRepositoryTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification="Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.")]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ParameterSetName = 'Elements')]
+        [ValidateNotNullOrEmpty()]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 2,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetOwnerName,
+
+        [Parameter(
+            Mandatory,
+            Position = 4)]
+        [ValidateNotNullOrEmpty()]
+        [string] $TargetRepositoryName,
+
+        [string] $Description,
+
+        [switch] $Private,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
+        OwnerName = (Get-PiiSafeString -PlainText $OwnerName)
+        TargetRepositoryName = (Get-PiiSafeString -PlainText $TargetRepositoryName)
+        TargetOwnerName = (Get-PiiSafeString -PlainText $TargetOwnerName)
+    }
+
+    $uriFragment = "repos/$OwnerName/$RepositoryName/generate"
+
+    $hashBody = @{
+        owner = $TargetOwnerName
+        name = $TargetRepositoryName
+    }
+
+    if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
+    if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Post'
+        'Description' = "Creating $TargetRepositoryName from Template"
+        'AcceptHeader' = $script:baptisteAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+            -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -489,8 +661,10 @@ filter Get-GitHubRepository
         SupportsShouldProcess,
         DefaultParameterSetName='AuthenticatedUser')]
     [OutputType({$script:GitHubRepositoryTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             ValueFromPipelineByPropertyName,
@@ -518,6 +692,7 @@ filter Get-GitHubRepository
         [string] $Visibility,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
+        [ValidateSet('Owner', 'Collaborator', 'OrganizationMember')]
         [string[]] $Affiliation,
 
         [Parameter(ParameterSetName='AuthenticatedUser')]
@@ -567,11 +742,11 @@ filter Get-GitHubRepository
     $description = [String]::Empty
     switch ($PSCmdlet.ParameterSetName)
     {
-        { ('ElementsOrUser', 'Uri') -contains $_ } {
+        'ElementsOrUser' {
             # This is a little tricky.  Ideally we'd have two separate ParameterSets (Elements, User),
             # however PowerShell would be unable to disambiguate between the two, so unfortunately
             # we need to do some additional work here.  And because fallthru doesn't appear to be
-            # working right, we're combining both of those, along with Uri.
+            # working right, we're combining both of those.
 
             if ([String]::IsNullOrWhiteSpace($OwnerName))
             {
@@ -581,37 +756,24 @@ filter Get-GitHubRepository
             }
             elseif ([String]::IsNullOrWhiteSpace($RepositoryName))
             {
-                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
-                {
-                    $telemetryProperties['UsageType'] = 'User'
-                    $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+                $telemetryProperties['UsageType'] = 'User'
+                $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
 
-                    $uriFragment = "users/$OwnerName/repos"
-                    $description = "Getting repos for $OwnerName"
-                }
-                else
-                {
-                    $message = 'RepositoryName could not be determined.'
-                    Write-Log -Message $message -Level Error
-                    throw $message
-                }
+                $uriFragment = "users/$OwnerName/repos"
+                $description = "Getting repos for $OwnerName"
             }
             else
             {
-                if ($PSCmdlet.ParameterSetName -eq 'ElementsOrUser')
+                if ($PSBoundParameters.ContainsKey('Type') -or
+                    $PSBoundParameters.ContainsKey('Sort') -or
+                    $PSBoundParameters.ContainsKey('Direction'))
                 {
-                    $telemetryProperties['UsageType'] = 'Elements'
-
-                    if ($PSBoundParameters.ContainsKey('Type') -or
-                        $PSBoundParameters.ContainsKey('Sort') -or
-                        $PSBoundParameters.ContainsKey('Direction'))
-                    {
-                        $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
-                        Write-Log -Message $message -Level Error
-                        throw $message
-                    }
+                    $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                    Write-Log -Message $message -Level Error
+                    throw $message
                 }
 
+                $telemetryProperties['UsageType'] = 'Elements'
                 $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
                 $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
 
@@ -622,20 +784,30 @@ filter Get-GitHubRepository
             break
         }
 
+        'Uri' {
+            if ($PSBoundParameters.ContainsKey('Type') -or
+                $PSBoundParameters.ContainsKey('Sort') -or
+                $PSBoundParameters.ContainsKey('Direction'))
+            {
+                $message = 'Unable to specify -Type, -Sort and/or -Direction when retrieving a specific repository.'
+                Write-Log -Message $message -Level Error
+                throw $message
+            }
+
+            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+            $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+
+            $uriFragment = "repos/$OwnerName/$RepositoryName"
+            $description = "Getting $OwnerName/$RepositoryName"
+
+            break
+        }
+
         'Organization' {
             $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
 
             $uriFragment = "orgs/$OrganizationName/repos"
             $description = "Getting repos for $OrganizationName"
-
-            break
-        }
-
-        'User' {
-            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
-
-            $uriFragment = "users/$OwnerName/repos"
-            $description = "Getting repos for $OwnerName"
 
             break
         }
@@ -688,7 +860,18 @@ filter Get-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Direction')) { $getParams += "direction=$($directionConverter[$Direction])" }
     if ($PSBoundParameters.ContainsKey('Affiliation') -and $Affiliation.Count -gt 0)
     {
-        $getParams += "affiliation=$($Affiliation -join ',')"
+        $affiliationMap = @{
+            Owner = 'owner'
+            Collaborator = 'collaborator'
+            OrganizationMember = 'organization_member'
+        }
+        $affiliationParam = @()
+
+        foreach ($member in $Affiliation)
+        {
+            $affiliationParam += $affiliationMap[$member]
+        }
+        $getParams += "affiliation=$($affiliationParam -join ',')"
     }
     if ($PSBoundParameters.ContainsKey('Since')) { $getParams += "since=$Since" }
 
@@ -836,11 +1019,11 @@ filter Rename-GitHubRepository
     )
 
     # This method was created by mistake and is now retained to avoid a breaking change.
-    # Update-GitHubRepository is able to handle this scenario just fine.
-    return Update-GitHubRepository @PSBoundParameters
+    # Set-GitHubRepository is able to handle this scenario just fine.
+    return Set-GitHubRepository @PSBoundParameters
 }
 
-filter Update-GitHubRepository
+filter Set-GitHubRepository
 {
 <#
     .SYNOPSIS
@@ -947,18 +1130,18 @@ filter Update-GitHubRepository
         GitHub.Repository
 
     .EXAMPLE
-        Update-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
+        Set-GitHubRepository -OwnerName microsoft -RepositoryName PowerShellForGitHub -Description 'The best way to automate your GitHub interactions'
 
         Changes the description of the specified repository.
 
     .EXAMPLE
-        Update-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
+        Set-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -Private:$false
 
         Changes the visibility of the specified repository to be public.
 
     .EXAMPLE
         Get-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub |
-            Update-GitHubRepository -NewName 'PoShForGitHub' -Force
+            Set-GitHubRepository -NewName 'PoShForGitHub' -Force
 
         Renames the repository without any user confirmation prompting.  This is identical to using
         Rename-GitHubRepository -Uri https://github.com/PowerShell/PowerShellForGitHub -NewName 'PoShForGitHub' -Confirm:$false
@@ -968,6 +1151,7 @@ filter Update-GitHubRepository
         DefaultParameterSetName='Elements',
         ConfirmImpact='High')]
     [OutputType({$script:GitHubRepositoryTypeName})]
+    [Alias('Update-GitHubRepository')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -1438,13 +1622,17 @@ filter Get-GitHubRepositoryContributor
     .EXAMPLE
         Get-GitHubRepositoryContributor -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
+        Gets a list of contributors for the PowerShellForGithub repository.
+
     .EXAMPLE
         Get-GitHubRepositoryContributor -Uri 'https://github.com/PowerShell/PowerShellForGitHub' -IncludeStatistics
+
+        Gets a list of contributors for the PowerShellForGithub repository including statistics.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryContributorTypeName})]
     [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -1517,7 +1705,7 @@ filter Get-GitHubRepositoryContributor
     }
     else
     {
-        $results = $results | Add-GitHubUserAdditionalProperties
+        $results = $results | Add-GitHubRepositoryContributorAdditionalProperties
     }
 
     return $results
@@ -1527,10 +1715,10 @@ filter Get-GitHubRepositoryCollaborator
 {
 <#
     .SYNOPSIS
-        Retrieve list of contributors for a given repository.
+        Retrieve list of collaborators for a given repository.
 
     .DESCRIPTION
-        Retrieve list of contributors for a given repository.
+        Retrieve list of collaborators for a given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -1586,13 +1774,17 @@ filter Get-GitHubRepositoryCollaborator
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
+        Gets a list of collaborators for the PowerShellForGithub repository.
+
     .EXAMPLE
         Get-GitHubRepositoryCollaborator -Uri 'https://github.com/PowerShell/PowerShellForGitHub'
+
+        Gets a list of collaborators for the PowerShellForGithub repository.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubUserTypeName})]
+    [OutputType({$script:GitHubRepositoryCollaboratorTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
@@ -1641,7 +1833,8 @@ filter Get-GitHubRepositoryCollaborator
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubRepositoryCollaboratorAdditionalProperties)
 }
 
 filter Get-GitHubRepositoryLanguage
@@ -1865,10 +2058,10 @@ filter Move-GitHubRepositoryOwnership
 {
 <#
     .SYNOPSIS
-        Creates a new repository on GitHub.
+        Changes the ownership of a repository on GitHub.
 
     .DESCRIPTION
-        Creates a new repository on GitHub.
+        Changes the ownership of a repository on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -2686,6 +2879,192 @@ filter Add-GitHubRepositoryAdditionalProperties
             if ($null -ne $item.organization)
             {
                 $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryContributorAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Contributor objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the Contributor.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the Contributor.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryContributor
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryContributorTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $UserName = $item.login
+            if ([String]::IsNullOrEmpty($UserName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $UserName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($UserName))
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserName'
+                    Value = $UserName
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+                Add-Member @addMemberParms
+            }
+
+            $UserId = $item.id
+            if (($UserId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $UserId = $Id
+            }
+
+            if ($UserId -ne 0)
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserId'
+                    Value = $UserId
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
+            }
+        }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryCollaboratorAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Collaborator objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER Name
+        The name of the Collaborator.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER Id
+        The ID of the Collaborator.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryCollaborator
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryCollaboratorTypeName,
+
+        [string] $Name,
+
+        [int64] $Id
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $userName = $item.login
+            if ([String]::IsNullOrEmpty($userName) -and $PSBoundParameters.ContainsKey('Name'))
+            {
+                $userName = $Name
+            }
+
+            if (-not [String]::IsNullOrEmpty($userName))
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserName'
+                    Value = $userName
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
+            }
+
+            $userId = $item.id
+            if (($userId -eq 0) -and $PSBoundParameters.ContainsKey('Id'))
+            {
+                $userId = $Id
+            }
+
+            if ($userId -ne 0)
+            {
+                $addMemberParms = @{
+                    InputObject = $item
+                    Name = 'UserId'
+                    Value = $userId
+                    MemberType = 'NoteProperty'
+                    Force = $true
+                }
+
+                Add-Member @addMemberParms
             }
         }
 
