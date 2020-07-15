@@ -97,6 +97,18 @@
         *   [Create a release asset](#create-a-release-asset)
         *   [Update a release asset](#update-a-release-asset)
         *   [Remove a release asset](#remove-a-release-asset)
+    *   [Gists](#gists)
+        *   [Getting gists](#getting-gists)
+        *   [Download a gist](#download-a-gist)
+        *   [Fork a gist](#fork-a-gist)
+        *   [Creating a gist](#creating-a-gist)
+        *   [Removing a gist](#removing-a-gist)
+        *   [Updating a gist](#updating-a-gist)
+        *   [Starring a gist](#starring-a-gist)
+        *   [Getting gist comments](#getting-gist-comments)
+        *   [Adding a gist comment](#adding-a-gist-comment)
+        *   [Changing a gist comment](#changing-a-gist-comment)
+        *   [Removing a gist comment](#removing-a-gist-comment)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -869,6 +881,169 @@ or with pipelining...
 
 ```powershell
 $asset | Remove-GitHubReleaseAsset -force
+
+----------
+
+### Gists
+
+#### Getting gists
+```powershell
+# There are many options here:
+
+# 1. Getting all gists for the current authenticated user:
+Get-GitHubGist
+
+# 1b. Getting all gists for the current authenticated user that were updated in the past 6 days.
+Get-GitHubGist -Since ((Get-Date).AddDays(-6))
+
+# 2. Get all starred gists for the current authenticated user
+Get-GitHubGist -Starred
+
+# 3. Get all public gists for a specific user
+Get-GitHubGist -UserName 'octocat'
+
+# 4. Get all public gists (well, the first 3000):
+Get-GitHubGist -Public
+
+# 5. Get a specific gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae'
+
+# 5a. List all commits for a specific gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Commits
+
+# 5b. Get a gist at a specific commit (Sha)
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Sha 'de5b9b59d1f28206e8d646c7c8025e9809d0ed73'
+
+# 5c. Get all of the forks for a gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Forks
+```
+
+#### Download a gist
+```powershell
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Path 'c:\users\octocat\downloads\gist\'
+```
+
+#### Fork a gist
+```powershell
+Fork-GitHubGist -Gist '6cad326836d38bd3a7ae'
+```
+
+#### Creating a gist
+```powershell
+# You can create a gist by specifying a single file's content in-line...
+New-GitHubGist -FileName 'foo.txt' -Content 'foo content'
+
+# or by providing one or more files that should be part of the gist
+New-GitHubGist -File @('c:\files\foo.txt', 'c:\files\bar.txt')
+@('c:\files\foo.txt', 'c:\files\bar.txt') | New-GitHubGist
+```
+
+#### Removing a gist
+```powershell
+Remove-GitHubGist -Gist '6cad326836d38bd3a7ae'
+```
+
+#### Updating a gist
+```powershell
+$gist = New-GitHubGist -FileName 'foo.txt' -Content 'content'
+
+# The main method to use is Set-GitHubGist, however it is quite complicated.
+$params = @{
+    Description = 'new description' # modifies the description of the gist
+    Update = @{
+        'foo.txt' = @{
+            fileName = 'alpha.txt' # Will rename foo.txt -> alpha.txt
+            content = 'updated content' # and will also update its content
+        }
+        'bar.txt' = @{
+            filePath = 'c:\files\bar.txt' # Will upload the content of bar.txt to the gist.
+        }
+    }
+    Delete = @('bar.txt')
+    Force = $true # avoid confirmation prompting due to the deletion
+}
+
+Set-GitHubGist -Gist $gist.id @params
+
+# Therefore, you can use simpler helper methods to accomplish atomic tasks
+Set-GistHubGistFile -Gist $gist.id -FileName 'foo.txt' -Content 'updated content'
+
+# This will update the text in the existing file 'foo.txt' and add the file 'bar.txt'
+$gist | Set-GitHubGistFile -File ('c:\files\foo.txt', 'c:\files\bar.txt')
+
+Rename-GistHubGistFile -Gist $gist.id -FileName 'foo.txt' -NewName 'bar.txt'
+
+$gist | Remove-GitHubGistFile -FileName 'bar.txt' -Force
+
+```
+
+#### Starring a gist
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+
+# All of these options will star the same gist
+Star-GitHubGist -Gist $gistId
+Add-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId -Star
+Get-GitHubGist -Gist $gistId | Star-GitHubGist
+
+# All of these options will unstar the same gist
+Unstar-GitHubGist -Gist $gistId
+Remove-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId -Star:$false
+Get-GitHubGist -Gist $gistId | Unstar-GitHubGist
+
+# All of these options will tell you if you have starred a gist
+Test-GitHubGistStar -Gist $gistId
+Get-GitHubGist -Gist $gistId | Test-GitHubGistStar
+```
+
+#### Getting gist comments
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+# You can get all comments for a gist with any of these options:
+Get-GitHubGistComment -Gist $gistId
+Get-GitHubGist -Gist $gistId | Get-GitHubGistComment
+
+# You can retrieve an individual comment like this:
+Get-GitHubGistComment -Gist $gistId -Comment $commentId
+```
+
+#### Adding a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+
+New-GitHubGistComment -Gist $gistId -Body 'Hello World'
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId | New-GitHubGistComment -Body 'Hello World'
+```
+
+#### Changing a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+Set-GitHubGistComment -Gist $gistId -Comment $commentId -Body 'Updated comment'
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId -Comment $commentId | Set-GitHubGistComment -Body 'Updated comment'
+```
+
+#### Removing a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+# If you don't specify -Force, it will prompt for confirmation before it will delete the comment
+
+Remove-GitHubGistComment -Gist $gistId -Comment $commentId -Force
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId -Comment $commentId | Remove-GitHubGistComment -Force
 ```
 
 ----------
