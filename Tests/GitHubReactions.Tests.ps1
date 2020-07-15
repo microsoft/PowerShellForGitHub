@@ -27,7 +27,7 @@ try
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
 
-    Describe 'Creating, modifying and deleting comments' {
+    Describe 'Creating, modifying and deleting reactions' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
             $issue = New-GitHubIssue -Uri $repo.svn_url -Title $defaultIssueTitle
@@ -80,26 +80,6 @@ try
                 $specificReactions.content | Should -Be $otherReactionType
                 $specificReactions.RepositoryUrl | Should -Be $url
                 $specificReactions.PullRequestNumber | Should -Be $pr.PullRequestNumber
-                $specificReactions.ReactionId | Should -Be $specificReactions.id
-                $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
-            }
-        }
-
-        Context 'For getting reactions from an issue comment' {
-            Set-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId -ReactionType $defaultReactionType
-            $issueComment | Set-GitHubReaction -ReactionType $otherReactionType
-            $allReactions = Get-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId
-            $specificReactions = Get-GitHubReaction -Uri $repo.svn_url -Comment $issueComment.CommentId -ReactionType $otherReactionType
-
-            It 'Should have the expected number of reactions' {
-                $allReactions.Count | Should -Be 2
-                $specificReactions | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 1
-            }
-
-            It 'Should have the expected reaction content' {
-                $specificReactions.content | Should -Be $otherReactionType
-                $specificReactions.RepositoryUrl | Should -Be $repo.RepositoryUrl
-                $specificReactions.CommentId | Should -Be $issueComment.CommentId
                 $specificReactions.ReactionId | Should -Be $specificReactions.id
                 $specificReactions.PSObject.TypeNames[0] | Should -Be 'GitHub.Reaction'
             }

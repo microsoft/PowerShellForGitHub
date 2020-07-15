@@ -37,9 +37,6 @@ filter Get-GitHubReaction
     .PARAMETER PullRequest
         The pull request number.
 
-    .PARAMETER Comment
-        The comment ID.
-
     .PARAMETER ReactionType
         The type of reaction you want to retrieve. This is also called the 'content' in
         the GitHub API. Valid options are based off:
@@ -99,14 +96,8 @@ filter Get-GitHubReaction
         Gets a GitHub pull request and pipes it into Get-GitHubReaction
         to get all the reactions for that pull request.
 
-    .EXAMPLE
-        Get-GitHubIssueComment -Uri https://github.com/microsoft/PowerShellForGitHub -Comment 638276748 | Get-GitHubReaction
-
-        Gets a GitHub issue comment and pipes it into Get-GitHubReaction
-        to get all the reactions for that issue comment.
-
     .NOTES
-        Currently, commit comments are not supported.
+        Currently, issue comments, pull request comments and commit comments are not supported.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -120,9 +111,6 @@ filter Get-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $OwnerName,
 
         [Parameter(
@@ -131,9 +119,6 @@ filter Get-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -144,10 +129,6 @@ filter Get-GitHubReaction
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='UriPullRequest')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -172,17 +153,6 @@ filter Get-GitHubReaction
             ParameterSetName='UriPullRequest')]
         [Alias('PullRequestNumber')]
         [int64] $PullRequest,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='ElementsComment')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
-        [Alias('CommentId')]
-        [int64] $Comment,
 
         [ValidateSet('+1', '-1', 'Laugh', 'Confused', 'Heart', 'Hooray', 'Rocket', 'Eyes')]
         [string] $ReactionType,
@@ -215,22 +185,13 @@ filter Get-GitHubReaction
         $targetObjectTypeName = 'Issue'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions"
     }
-    elseif ($PullRequest)
+    else
     {
+        # Pull Request
         $splatForAddedProperties.PullRequest = $PullRequest
         $targetObjectNumber = $PullRequest
         $targetObjectTypeName = 'Pull Request'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions"
-    }
-    else
-    {
-        # Comments
-        $splatForAddedProperties.Comment = $Comment
-        $targetObjectNumber = $Comment
-        $targetObjectTypeName = 'Comment'
-
-        # Even for PR comments, you can use the same endpoint as issue comments.
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions"
     }
 
     if ($PSBoundParameters.ContainsKey('ReactionType'))
@@ -284,9 +245,6 @@ filter Set-GitHubReaction
     .PARAMETER PullRequest
         The pull request number.
 
-    .PARAMETER Comment
-        The comment ID.
-
     .PARAMETER ReactionType
         The type of reaction you want to set. This is aslo called the 'content' in the GitHub API.
         Valid options are based off: https://developer.github.com/v3/reactions/#reaction-types
@@ -331,14 +289,8 @@ filter Set-GitHubReaction
         Gets a GitHub pull request and pipes it into Set-GitHubReaction to set the
         'heart' reaction for that pull request.
 
-    .EXAMPLE
-        Get-GitHubIssueComment -Uri https://github.com/microsoft/PowerShellForGitHub -Comment 638276748 | Set-GitHubReaction -Reaction Eyes
-
-        Gets a GitHub issue comment and pipes it into Set-GitHubReaction to set the
-        'eyes' reaction for that issue comment.
-
     .NOTES
-        Currently, commit comments are not supported.
+        Currently, issue comments, pull request comments and commit comments are not supported.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -352,9 +304,6 @@ filter Set-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $OwnerName,
 
         [Parameter(
@@ -363,9 +312,6 @@ filter Set-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -376,10 +322,6 @@ filter Set-GitHubReaction
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='UriPullRequest')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -404,17 +346,6 @@ filter Set-GitHubReaction
             ParameterSetName='UriPullRequest')]
         [Alias('PullRequestNumber')]
         [int64] $PullRequest,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='ElementsComment')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
-        [Alias('CommentId')]
-        [int64] $Comment,
 
         [ValidateSet('+1', '-1', 'Laugh', 'Confused', 'Heart', 'Hooray', 'Rocket', 'Eyes')]
         [Parameter(Mandatory)]
@@ -448,22 +379,13 @@ filter Set-GitHubReaction
         $targetObjectTypeName = 'Issue'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions"
     }
-    elseif ($PullRequest)
+    else
     {
+        # Pull request
         $splatForAddedProperties.PullRequest = $PullRequest
         $targetObjectNumber = $PullRequest
         $targetObjectTypeName = 'Pull Request'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions"
-    }
-    else
-    {
-        # Comments
-        $splatForAddedProperties.Comment = $Comment
-        $targetObjectNumber = $Comment
-        $targetObjectTypeName = 'Comment'
-
-        # Even for PR comments, you can use the same endpoint as issue comments.
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions"
     }
 
     $description = "Setting reaction $ReactionType for $targetObjectTypeName $targetObjectNumber in $RepositoryName"
@@ -514,9 +436,6 @@ filter Remove-GitHubReaction
 
     .PARAMETER PullRequest
         The pull request number.
-
-    .PARAMETER Comment
-        The comment ID.
 
     .PARAMETER ReactionId
         The Id of the reaction. You can get this from using Get-GitHubReaction.
@@ -572,7 +491,7 @@ filter Remove-GitHubReaction
         Gets a reaction using Get-GitHubReaction and pipes it into Remove-GitHubReaction.
 
     .NOTES
-        Currently, commit comments are not supported.
+        Currently, issue comments, pull request comments and commit comments are not supported.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -587,9 +506,6 @@ filter Remove-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $OwnerName,
 
         [Parameter(
@@ -598,9 +514,6 @@ filter Remove-GitHubReaction
         [Parameter(
             Mandatory,
             ParameterSetName='ElementsPullRequest')]
-        [Parameter(
-            Mandatory,
-            ParameterSetName='ElementsComment')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -611,10 +524,6 @@ filter Remove-GitHubReaction
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='UriPullRequest')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -639,17 +548,6 @@ filter Remove-GitHubReaction
             ParameterSetName='UriPullRequest')]
         [Alias('PullRequestNumber')]
         [int64] $PullRequest,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='ElementsComment')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='UriComment')]
-        [Alias('CommentId')]
-        [int64] $Comment,
 
         [Parameter(
             Mandatory,
@@ -682,20 +580,12 @@ filter Remove-GitHubReaction
         $targetObjectTypeName = 'Issue'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions/$ReactionId"
     }
-    elseif ($PullRequest)
+    else
     {
+        # Pull request
         $targetObjectNumber = $PullRequest
         $targetObjectTypeName = 'Pull Request'
         $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/$targetObjectNumber/reactions/$ReactionId"
-    }
-    else
-    {
-        # Comments
-        $targetObjectNumber = $Comment
-        $targetObjectTypeName = 'Comment'
-
-        # Even for PR comments, you can use the same endpoint as issue comments.
-        $uriFragment = "/repos/$OwnerName/$RepositoryName/issues/comments/$targetObjectNumber/reactions/$ReactionId"
     }
 
     $description = "Removing reaction $ReactionId for $targetObjectTypeName $targetObjectNumber in $RepositoryName"
@@ -748,9 +638,6 @@ filter Add-GitHubReactionAdditionalProperties
     .PARAMETER PullRequest
         The pull request number.
 
-    .PARAMETER Comment
-        The comment ID.
-
     .INPUTS
         [PSCustomObject]
 
@@ -786,13 +673,7 @@ filter Add-GitHubReactionAdditionalProperties
             Mandatory,
             ParameterSetName='PullRequest')]
         [Alias('PullRequestNumber')]
-        [int64] $PullRequest,
-
-        [Parameter(
-            Mandatory,
-            ParameterSetName='Comment')]
-        [Alias('CommentId')]
-        [int64] $Comment
+        [int64] $PullRequest
     )
 
     foreach ($item in $InputObject)
@@ -809,14 +690,10 @@ filter Add-GitHubReactionAdditionalProperties
             {
                 Add-Member -InputObject $item -Name 'PullRequestNumber' -Value $PullRequest -MemberType NoteProperty -Force
             }
-            elseif ($Issue)
-            {
-                Add-Member -InputObject $item -Name 'IssueNumber' -Value $Issue -MemberType NoteProperty -Force
-            }
             else
             {
-                # Comment
-                Add-Member -InputObject $item -Name 'CommentId' -Value $Comment -MemberType NoteProperty -Force
+                # Issue
+                Add-Member -InputObject $item -Name 'IssueNumber' -Value $Issue -MemberType NoteProperty -Force
             }
 
             @('assignee', 'assignees', 'user') |
