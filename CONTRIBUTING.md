@@ -24,6 +24,7 @@ Looking for information on how to use this module?  Head on over to [README.md](
 *   [Code Comments](#code-comments)
 *   [Debugging Tips](#debugging-tips)
 *   [Pipeline Support](#pipeline-support)
+*   [Formatters](#formatters)
 *   [Testing](#testing)
     *   [Installing Pester](#installing-pester)
     *   [Configuring Your Environment](#configuring-your-environment)
@@ -345,6 +346,28 @@ new functionality added to the module embraces this design.
  * To enable debugging issues involving pipeline support, there is an additional configuration
    property that you might use:  `Set-GitHubConfiguration -DisablePipelineSupport`.  That will
    prevent the module from adding _any_ additional properties to the objects.
+
+----------
+
+### Formatters
+
+[Our goal](https://github.com/microsoft/PowerShellForGitHub/issues/27) is to have automattic
+formatting for all `GitHub.*` types that this project defines.
+
+Formatting was first introduced to the project with [#205](https://github.com/microsoft/PowerShellForGitHub/pull/205),
+and succcesive PR's which introduce new types have added their additional formatters as well.
+Eventually we will get Formatters for all previously introduced types as well.
+
+Formatter files can be found in [/Formatters](https://github.com/microsoft/PowerShellForGitHub/tree/master/Formatters).
+
+When adding a new formatter file, keep the following in mind:
+
+* One formatter file per PowerShell module file, and name them similarly
+  (e.g. `GitHubRepositories.ps1` gets a `Formatters\GitHubRepositories.Format.ps1xml` file)
+* Be sure to add the formatter file to the manifest (common mistake to forget this).
+* Don't display all the type's properties ...just choose the most relevant pieces of information;
+  sometimes this might mean using a script block to grab an inner-property or to perform a
+  calculation.
 
 ----------
 
