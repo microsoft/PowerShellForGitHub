@@ -708,16 +708,31 @@ try
 
             It "Should have the expected new repository name - by URI" {
                 $renamedRepo = Rename-GitHubRepository -Uri ($repo.RepositoryUrl) -NewName $newRepoName -Force
+
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
                 $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should work via the pipeline" {
                 $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
+
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }

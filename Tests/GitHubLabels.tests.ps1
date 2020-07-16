@@ -331,6 +331,11 @@ try
 
         Context 'Removing a label with parameters' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Force
 
             It 'Should be gone after being removed by parameter' {
@@ -340,6 +345,11 @@ try
 
         Context 'Removing a label with the repo on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Remove-GitHubLabel -Label $label.name -Confirm:$false
 
             It 'Should be gone after being removed by parameter' {
@@ -349,6 +359,11 @@ try
 
         Context 'Removing a label with the name on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $label.name | Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Force
 
             It 'Should be gone after being removed by parameter' {
@@ -358,6 +373,11 @@ try
 
         Context 'Removing a label with the label object on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $label | Remove-GitHubLabel -Force
 
             It 'Should be gone after being removed by parameter' {
