@@ -659,11 +659,23 @@ try
 
             It 'Should get no content using -Confirm:$false' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
+
+                # The CI build has beeen unreliable with this test.  It's possible that GitHub
+                # needs a bit more time to update its databases after the removal before it will
+                # accurately return back a 404 on a Get-* immediately after a Remove-*.
+                Start-Sleep -Seconds 1
+
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
 
             It 'Should get no content using -Force' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Force
+
+                # The CI build has beeen unreliable with this test.  It's possible that GitHub
+                # needs a bit more time to update its databases after the removal before it will
+                # accurately return back a 404 on a Get-* immediately after a Remove-*.
+                Start-Sleep -Seconds 1
+
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
         }
@@ -676,6 +688,11 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
+
+                # The CI build has beeen unreliable with this test.  It's possible that GitHub
+                # needs a bit more time to update its databases after the creation of a repo
+                # before it will consistently succeed when trying to rename it.
+                Start-Sleep -Seconds 1
             }
 
             It "Should have the expected new repository name - by URI" {
