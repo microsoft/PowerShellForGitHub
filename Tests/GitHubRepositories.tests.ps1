@@ -125,6 +125,8 @@ try
                         IsTemplate = $true
                     }
                     $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+                    Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
                 }
 
                 It 'Should return an object of the correct type' {
@@ -306,6 +308,8 @@ try
             }
 
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
+
+            Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
         }
 
         Context 'When creating a public repository from a template' {
