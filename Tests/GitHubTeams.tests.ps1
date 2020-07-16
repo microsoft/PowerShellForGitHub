@@ -101,7 +101,7 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryFullName = $repo.full_name
+                    RepositoryName = $repoName
                     Privacy = $privacy
                 }
 
@@ -253,7 +253,7 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                     Description = $description
-                    RepositoryFullName = $repo.full_name
+                    RepositoryName = $repoName
                     Privacy = $privacy
                     MaintainerName = $maintainer.UserName
                 }

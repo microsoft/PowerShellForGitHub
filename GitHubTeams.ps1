@@ -333,10 +333,10 @@ function New-GitHubTeam
         The description for the team.
 
     .PARAMETER MaintainerName
-        A list of GitHub IDs for organization members who will become team maintainers.
+        A list of GitHub user names for organization members who will become team maintainers.
 
-    .PARAMETER RepositoryFullName
-        The full name (e.g., "organization-name/repository-name") of repositories to add the team to.
+    .PARAMETER RepositoryName
+        The name of repositories to add the team to.
 
     .PARAMETER Privacy
         The level of privacy this team should have.
@@ -410,7 +410,7 @@ function New-GitHubTeam
         [Alias('UserName')]
         [string[]] $MaintainerName,
 
-        [string[]] $RepositoryFullName,
+        [string[]] $RepositoryName,
 
         [ValidateSet('Secret', 'Closed')]
         [string] $Privacy,
@@ -451,7 +451,14 @@ function New-GitHubTeam
         }
 
         if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
-        if ($PSBoundParameters.ContainsKey('RepositoryFullName')) { $hashBody['repo_names'] = $RepositoryFullName }
+        if ($PSBoundParameters.ContainsKey('RepositoryFullName')) {
+            $repositoryFullName = @()
+            foreach ($repository in $RepositoryName)
+            {
+                $repositoryFullName += "$OrganizationName/$Repository"
+            }
+            $hashBody['repo_names'] = $repositoryFullName }
+        }
         if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
         if ($MaintainerName.Count -gt 0)
         {
