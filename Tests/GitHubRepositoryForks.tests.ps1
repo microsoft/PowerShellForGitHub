@@ -83,7 +83,9 @@ try
             }
 
             AfterAll {
-                Start-Sleep -Seconds 3 # Trying to avoid an issue with deleting the repo if it's still being created by GitHub
+                 # Trying to avoid an issue with deleting the repo if it's still being created by GitHub
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
                 $repo | Remove-GitHubRepository -Force
             }
 

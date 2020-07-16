@@ -81,6 +81,10 @@ try
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
 
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             Initialize-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
         }
 

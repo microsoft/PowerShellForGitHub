@@ -100,6 +100,10 @@ function Initialize-CommonTestSetup
     Set-GitHubConfiguration -LogRequestBody # Make it easier to debug UT failures
     Set-GitHubConfiguration -MultiRequestProgressThreshold 0 # Status corrupts the raw CI logs for Linux and Mac, and makes runs take slightly longer.
     Set-GitHubConfiguration -DisableUpdateCheck # The update check is unnecessary during tests.
+
+    # The number of seconds to sleep after performing some operations to ensure that successive
+    # API calls properly reflect previously updated state.
+    $script:defaultSleepSecondsForReliability = 1
 }
 
 Initialize-CommonTestSetup

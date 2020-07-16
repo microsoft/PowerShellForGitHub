@@ -126,7 +126,9 @@ try
                     }
                     $repo = New-GitHubRepository @newGitHubRepositoryParms
 
-                    Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
+                    # The CI build has beeen unreliable with this test.
+                    # Adding a short sleep to ensure successive queries reflect updated state.
+                    Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
                 }
 
                 It 'Should return an object of the correct type' {
@@ -309,7 +311,9 @@ try
 
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
 
-            Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When creating a public repository from a template' {
@@ -325,7 +329,10 @@ try
                 }
 
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
+
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -366,7 +373,10 @@ try
                 }
 
                 $repo = $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
+
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -664,10 +674,9 @@ try
             It 'Should get no content using -Confirm:$false' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
 
-                # The CI build has beeen unreliable with this test.  It's possible that GitHub
-                # needs a bit more time to update its databases after the removal before it will
-                # accurately return back a 404 on a Get-* immediately after a Remove-*.
-                Start-Sleep -Seconds 1
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
@@ -675,10 +684,9 @@ try
             It 'Should get no content using -Force' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Force
 
-                # The CI build has beeen unreliable with this test.  It's possible that GitHub
-                # needs a bit more time to update its databases after the removal before it will
-                # accurately return back a 404 on a Get-* immediately after a Remove-*.
-                Start-Sleep -Seconds 1
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
@@ -693,10 +701,9 @@ try
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
 
-                # The CI build has beeen unreliable with this test.  It's possible that GitHub
-                # needs a bit more time to update its databases after the creation of a repo
-                # before it will consistently succeed when trying to rename it.
-                Start-Sleep -Seconds 1
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It "Should have the expected new repository name - by URI" {
@@ -887,10 +894,9 @@ try
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
 
-                # The CI build has beeen unreliable with this test.  It's possible that GitHub
-                # needs a bit more time to update its databases after the removal before it will
-                # accurately return back a 404 on a Get-* immediately after a Remove-*.
-                Start-Sleep -Seconds 1
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
@@ -928,10 +934,9 @@ try
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
 
-                # The CI build has beeen unreliable with this test.  It's possible that GitHub
-                # needs a bit more time to update its databases after the removal before it will
-                # accurately return back a 404 on a Get-* immediately after a Remove-*.
-                Start-Sleep -Seconds 1
+                # The CI build has beeen unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
@@ -1003,6 +1008,11 @@ try
     Describe 'GitHubRepositories\Set-GitHubRepositoryTopic' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+
+            # The CI build has beeen unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
         }
 
