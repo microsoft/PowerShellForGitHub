@@ -882,6 +882,12 @@ try
 
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
+
+                # The CI build has beeen unreliable with this test.  It's possible that GitHub
+                # needs a bit more time to update its databases after the removal before it will
+                # accurately return back a 404 on a Get-* immediately after a Remove-*.
+                Start-Sleep -Seconds 1
+
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
         }
@@ -917,6 +923,12 @@ try
 
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
+
+                # The CI build has beeen unreliable with this test.  It's possible that GitHub
+                # needs a bit more time to update its databases after the removal before it will
+                # accurately return back a 404 on a Get-* immediately after a Remove-*.
+                Start-Sleep -Seconds 1
+
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
         }
