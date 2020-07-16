@@ -123,6 +123,7 @@
         'New-GitHubPullRequest',
         'New-GitHubRepository',
         'New-GitHubRepositoryFromTemplate',
+        'New-GitHubRepositoryBranch',
         'New-GitHubRepositoryFork',
         'Remove-GitHubAssignee',
         'Remove-GitHubIssueComment',
@@ -134,6 +135,7 @@
         'Remove-GitHubProjectColumn',
         'Remove-GitHubReaction',
         'Remove-GitHubRepository',
+        'Remove-GitHubRepositoryBranch'
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
@@ -161,6 +163,7 @@
     )
 
     AliasesToExport = @(
+        'Delete-GitHubBranch',
         'Delete-GitHubComment',
         'Delete-GitHubIssueComment',
         'Delete-GitHubLabel',
@@ -170,10 +173,13 @@
         'Delete-GitHubProjectColumn',
         'Delete-GitHubReaction',
         'Delete-GitHubRepository',
+        'Delete-GitHubRepositoryBranch',
         'Get-GitHubBranch',
         'Get-GitHubComment',
         'New-GitHubAssignee',
+        'New-GitHubBranch',
         'New-GitHubComment',
+        'Remove-GitHubBranch'
         'Remove-GitHubComment',
         'Set-GitHubComment',
         'Transfer-GitHubRepositoryOwnership'

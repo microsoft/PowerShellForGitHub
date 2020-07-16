@@ -155,6 +155,352 @@ filter Get-GitHubRepositoryBranch
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubBranchAdditionalProperties)
 }
 
+filter New-GitHubRepositoryBranch
+{
+    <#
+    .SYNOPSIS
+        Creates a new branch for a given GitHub repository.
+
+    .DESCRIPTION
+        Creates a new branch for a given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchName
+        The name of the origin branch to create the new branch from.
+
+    .PARAMETER TargetBranchName
+        Name of the branch to be created.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.Branch
+
+    .EXAMPLE
+        New-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -TargetBranchName new-branch
+
+        Creates a new branch in the specified repository from the master branch.
+
+    .EXAMPLE
+        New-GitHubRepositoryBranch -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName develop -TargetBranchName new-branch
+
+        Creates a new branch in the specified repository from the 'develop' origin branch.
+
+    .EXAMPLE
+        $repo = Get-GithubRepository -Uri https://github.com/You/YourRepo
+        $repo | New-GitHubRepositoryBranch -TargetBranchName new-branch
+
+        You can also pipe in a repo that was returned from a previous command.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'Elements',
+        PositionalBinding = $false
+    )]
+    [OutputType({$script:GitHubBranchTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
+        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
+        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.')]
+    [Alias('New-GitHubBranch')]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $BranchName = 'master',
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            Position = 2)]
+        [string] $TargetBranchName,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $originBranch = $null
+
+    try
+    {
+        $getGitHubRepositoryBranchParms = @{
+            OwnerName = $OwnerName
+            RepositoryName = $RepositoryName
+            BranchName = $BranchName
+            Whatif = $false
+            Confirm = $false
+        }
+        if ($PSBoundParameters.ContainsKey('AccessToken'))
+        {
+            $getGitHubRepositoryBranchParms['AccessToken'] = $AccessToken
+        }
+        if ($PSBoundParameters.ContainsKey('NoStatus'))
+        {
+            $getGitHubRepositoryBranchParms['NoStatus'] = $NoStatus
+        }
+
+        Write-Log -Level Verbose "Getting $BranchName branch for sha reference"
+        $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
+    }
+    catch
+    {
+        # Temporary code to handle current differences in exception object between PS5 and PS7
+        $throwObject = $_
+
+        if ($PSVersionTable.PSedition -eq 'Core')
+        {
+            if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
+            ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
+            {
+                $throwObject = "Origin branch $BranchName not found"
+            }
+        }
+        else
+        {
+            if ($_.Exception.Message -like '*Not Found*')
+            {
+                $throwObject = "Origin branch $BranchName not found"
+            }
+        }
+
+        Write-Log -Message $throwObject -Level Error
+        throw $throwObject
+    }
+
+    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
+
+    $hashBody = @{
+        ref = "refs/heads/$TargetBranchName"
+        sha = $originBranch.commit.sha
+    }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Body' = (ConvertTo-Json -InputObject $hashBody)
+        'Method' = 'Post'
+        'Description' = "Creating branch $TargetBranchName for $RepositoryName"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return (Invoke-GHRestMethod @params | Add-GitHubBranchAdditionalProperties)
+}
+
+filter Remove-GitHubRepositoryBranch
+{
+    <#
+    .SYNOPSIS
+        Removes a branch from a given GitHub repository.
+
+    .DESCRIPTION
+        Removes a branch from a given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchName
+        Name of the branch to be removed.
+
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .PARAMETER NoStatus
+        If this switch is specified, long-running commands will run on the main thread
+        with no commandline status update.  When not specified, those commands run in
+        the background, enabling the command prompt to provide status information.
+        If not supplied here, the DefaultNoStatus configuration property value will be used.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .EXAMPLE
+        Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop
+
+        Removes the 'develop' branch from the specified repository.
+
+    .EXAMPLE
+        Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName develop -Force
+
+        Removes the 'develop' branch from the specified repository without prompting for confirmation.
+
+    .EXAMPLE
+        $branch = Get-GitHubRepositoryBranch -Uri https://github.com/You/YourRepo -BranchName BranchToDelete
+        $branch | Remove-GitHubRepositoryBranch -Force
+
+        You can also pipe in a repo that was returned from a previous command.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'Elements',
+        PositionalBinding = $false,
+        ConfirmImpact = 'High')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
+        Justification = "Methods called within here make use of PSShouldProcess, and the switch is
+        passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification = "One or more parameters (like NoStatus) are only referenced by helper
+        methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Alias('Remove-GitHubBranch')]
+    [Alias('Delete-GitHubRepositoryBranch')]
+    [Alias('Delete-GitHubBranch')]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [string] $BranchName,
+
+        [switch] $Force,
+
+        [string] $AccessToken,
+
+        [switch] $NoStatus
+    )
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs/heads/$BranchName"
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdlet.ShouldProcess($BranchName, "Remove Repository Branch"))
+    {
+        Write-InvocationLog
+
+        $params = @{
+            'UriFragment' = $uriFragment
+            'Method' = 'Delete'
+            'Description' = "Deleting branch $BranchName from $RepositoryName"
+            'AccessToken' = $AccessToken
+            'TelemetryEventName' = $MyInvocation.MyCommand.Name
+            'TelemetryProperties' = $telemetryProperties
+            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+                -Name NoStatus -ConfigValueName DefaultNoStatus)
+        }
+
+        Invoke-GHRestMethod @params | Out-Null
+    }
+}
+
 filter Add-GitHubBranchAdditionalProperties
 {
 <#
@@ -193,11 +539,25 @@ filter Add-GitHubBranchAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.commit.url
+            if ($null -ne $item.url)
+            {
+                $elements = Split-GitHubUri -Uri $item.url
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.commit.url
+            }
             $repositoryUrl = Join-GitHubUri @elements
+
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
-            Add-Member -InputObject $item -Name 'BranchName' -Value $item.name -MemberType NoteProperty -Force
+            $branchName = $item.name
+            if ($null -eq $branchName)
+            {
+                $branchName = $item.ref -replace ('refs/heads/', '')
+            }
+
+            Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
         }
 
         Write-Output $item

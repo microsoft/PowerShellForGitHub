@@ -39,6 +39,9 @@
         *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
         *   [Enable repository automatic security fixes](#enable-repository-automatic-security-fixes)
         *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
+    *   [Branches](#branches)
+        *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
+        *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -433,6 +436,21 @@ Get-GitHubUser
 > Warning: This will take a while.  It's getting _every_ GitHub user.
 
 ----------
+### Repositories
+
+#### Adding a new Branch to a Repository
+
+```powershell
+New-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
+```
+
+#### Removing a Branch from a Repository
+
+```powershell
+Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
+```
+
+----------
 
 ### Repositories
 
@@ -459,7 +477,8 @@ New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $m
 
 ```powershell
 New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
-=======
+```
+
 #### Get repository vulnerability alert status
 
 ```powershell
