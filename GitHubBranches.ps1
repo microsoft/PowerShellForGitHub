@@ -538,8 +538,11 @@ filter Add-GitHubBranchAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.url
-            if ($null -eq $item.url)
+            if ($null -ne $item.url)
+            {
+                $elements = Split-GitHubUri -Uri $item.url
+            }
+            else
             {
                 $elements = Split-GitHubUri -Uri $item.commit.url
             }
