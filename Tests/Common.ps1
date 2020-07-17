@@ -103,7 +103,7 @@ function Initialize-CommonTestSetup
 
     # The number of seconds to sleep after performing some operations to ensure that successive
     # API calls properly reflect previously updated state.
-    $script:defaultSleepSecondsForReliability = 2
+    $script:defaultSleepSecondsForReliability = 3
 }
 
 Initialize-CommonTestSetup
