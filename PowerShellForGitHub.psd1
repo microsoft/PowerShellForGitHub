@@ -19,6 +19,7 @@
         'Formatters/GitHubGists.Format.ps1xml',
         'Formatters/GitHubReleases.Format.ps1xml'
         'Formatters/GitHubRepositories.Format.ps1xml'
+        'Formatters/GitHubTeams.Format.ps1xml'
     )
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
