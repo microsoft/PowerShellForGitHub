@@ -209,6 +209,10 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         AfterAll {
@@ -323,6 +327,10 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         AfterAll {
@@ -390,6 +398,10 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         AfterAll {
@@ -567,6 +579,10 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         AfterAll {
@@ -641,6 +657,11 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
@@ -869,6 +890,11 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
@@ -935,6 +961,11 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
@@ -1102,6 +1133,11 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Initialize-GitHubLabel -Label $defaultLabels
         }
 
@@ -1251,6 +1287,11 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
             $repo | Initialize-GitHubLabel -Label $defaultLabels
 
             $milestone = $repo | New-GitHubMilestone -Title 'test milestone'
