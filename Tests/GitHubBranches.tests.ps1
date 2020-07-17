@@ -335,21 +335,54 @@ try
             BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
-                $protectionUrl = "https://api.github.com/repos/$script:organizationName/" +
-                    "$repoName/branches/$branchName/protection"
+                $protectionUrl = ("https://api.github.com/repos/$script:ownerName/" +
+                    "$repoName/branches/$branchName/protection")
                 $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
-                Set-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
-                $protection = Get-GitHubRepositoryBranchProtectionRule -uri $repo.svn_url -BranchName $branchName
+                New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
+                $rule = Get-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName
             }
 
-            It 'Should have the exected type and addititional properties' {
-                $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
-                $protection.url | Should -Be $protectionUrl
-                $protection.enforce_admins.enabled | Should -BeFalse
-                $protection.required_linear_history.enabled | Should -BeFalse
-                $protection.allow_force_pushes.enabled | Should -BeFalse
-                $protection.allow_deletions.enabled | Should -BeFalse
-                $protection.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.enforce_admins.enabled | Should -BeFalse
+                $rule.required_linear_history.enabled | Should -BeFalse
+                $rule.allow_force_pushes.enabled | Should -BeFalse
+                $rule.allow_deletions.enabled | Should -BeFalse
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+
+            Context 'When specifying the "Uri" parameter through the pipeline' {
+                BeforeAll {
+                    $rule = $repo | Get-GitHubRepositoryBranchProtectionRule -BranchName $branchName
+                }
+
+                It 'Should have the expected type and addititional properties' {
+                    $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                    $rule.url | Should -Be $protectionUrl
+                    $rule.enforce_admins.enabled | Should -BeFalse
+                    $rule.required_linear_history.enabled | Should -BeFalse
+                    $rule.allow_force_pushes.enabled | Should -BeFalse
+                    $rule.allow_deletions.enabled | Should -BeFalse
+                    $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                }
+            }
+
+            Context 'When specifying the "BranchName" and "Uri" parameters through the pipeline' {
+                BeforeAll {
+                    $branch = Get-GitHubRepositoryBranch -Uri $repo.svn_url -BranchName $branchName
+                    $rule = $branch | Get-GitHubRepositoryBranchProtectionRule
+                }
+
+                It 'Should have the expected type and addititional properties' {
+                    $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                    $rule.url | Should -Be $protectionUrl
+                    $rule.enforce_admins.enabled | Should -BeFalse
+                    $rule.required_linear_history.enabled | Should -BeFalse
+                    $rule.allow_force_pushes.enabled | Should -BeFalse
+                    $rule.allow_deletions.enabled | Should -BeFalse
+                    $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                }
             }
 
             AfterAll -ScriptBlock {
@@ -361,113 +394,254 @@ try
         }
     }
 
-    Describe 'GitHubBranches\Set-GitHubRepositoryBranchProtectionRule' {
-        Context 'When setting GitHub repository branch protection' {
+    Describe 'GitHubBranches\New-GitHubRepositoryBranchProtectionRule' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $branchName = 'master'
+            $newGitHubRepositoryParms = @{
+                OrganizationName = $script:organizationName
+                RepositoryName = $repoName
+                AutoInit = $true
+            }
+
+            $repo = New-GitHubRepository @newGitHubRepositoryParms
+        }
+
+        Context 'When setting base protection options' {
             BeforeAll {
-                $repoName = [Guid]::NewGuid().Guid
-                $branchName = 'master'
-                $protectionUrl = "https://api.github.com/repos/$script:organizationName/" +
-                    "$repoName/branches/$branchName/protection"
-                $newGitHubRepositoryParms = @{
-                    OrganizationName = $script:organizationName
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                    "$repoName/branches/$targetBranchName/protection")
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
                     RepositoryName = $repoName
-                    AutoInit = $true
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
 
-                $repo = New-GitHubRepository @newGitHubRepositoryParms
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $newGitHubRepositoryBranchProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchName = $targetBranchName
+                    EnforceAdmins = $true
+                    RequireLinearHistory = $true
+                    AllowForcePushes = $true
+                    AllowDeletions = $true
+                }
+
+                $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
             }
 
-            Context 'When setting base protection options' {
-                BeforeAll {
-                    $setGitHubRepositoryBranchProtectionParms = @{
-                        Uri = $repo.svn_url
-                        BranchName = $branchName
-                        EnforceAdmins = $true
-                        RequireLinearHistory = $true
-                        AllowForcePushes = $true
-                        AllowDeletions = $true
-                    }
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.enforce_admins.enabled | Should -BeTrue
+                $rule.required_linear_history.enabled | Should -BeTrue
+                $rule.allow_force_pushes.enabled | Should -BeTrue
+                $rule.allow_deletions.enabled | Should -BeTrue
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
 
-                    $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
+        Context 'When setting required status checks' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                    "$repoName/branches/$targetBranchName/protection")
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
 
-                It 'Should have the exected type and addititional properties' {
-                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
-                    $protection.url | Should -Be $protectionUrl
-                    $protection.enforce_admins.enabled | Should -BeTrue
-                    $protection.required_linear_history.enabled | Should -BeTrue
-                    $protection.allow_force_pushes.enabled | Should -BeTrue
-                    $protection.allow_deletions.enabled | Should -BeTrue
-                    $protection.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $statusChecks = 'test'
+
+                $newGitHubRepositoryBranchProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchName = $targetBranchName
+                    RequireUpToDateBranches = $true
+                    StatusChecks = $statusChecks
                 }
+
+                $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
             }
 
-            Context 'When setting required status checks' {
-                BeforeAll {
-                    $statusChecks = 'test'
-                    $setGitHubRepositoryBranchProtectionParms = @{
-                        Uri = $repo.svn_url
-                        BranchName = $branchName
-                        RequireUpToDateBranches = $true
-                        StatusChecks = $statusChecks
-                    }
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.required_status_checks.strict | Should -BeTrue
+                $rule.required_status_checks.contexts | Should -Be $statusChecks
+            }
+        }
 
-                    $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
+        Context 'When setting required pull request reviews' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                    "$repoName/branches/$targetBranchName/protection")
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
 
-                It 'Should have the exected type and addititional properties' {
-                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
-                    $protection.url | Should -Be $protectionUrl
-                    $protection.required_status_checks.strict | Should -BeTrue
-                    $protection.required_status_checks.contexts | Should -Be $statusChecks
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $newGitHubRepositoryBranchProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchName = $targetBranchName
+                    DismissalUsers = $script:ownerName
+                    DismissStaleReviews = $true
+                    RequireCodeOwnerReviews = $true
+                    RequiredApprovingReviewCount = 1
                 }
+
+                $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
             }
 
-            Context 'When setting required pull request reviews' {
-                BeforeAll {
-                    $setGitHubRepositoryBranchProtectionParms = @{
-                        Uri = $repo.svn_url
-                        BranchName = $branchName
-                        DismissalUsers = $script:ownerName
-                        DismissStaleReviews = $true
-                        RequireCodeOwnerReviews = $true
-                        RequiredApprovingReviewCount = 1
-                    }
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.required_pull_request_reviews.dismissal_restrictions.users.login |
+                Should -Contain $script:OwnerName
+            }
+        }
 
-                    $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
+        Context 'When setting push restrictions' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                    "$repoName/branches/$targetBranchName/protection")
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
 
-                It 'Should have the exected type and addititional properties' {
-                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
-                    $protection.url | Should -Be $protectionUrl
-                    $protection.required_pull_request_reviews.dismissal_restrictions.users.login |
-                        Should -Contain $script:OwnerName
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $newGitHubRepositoryBranchProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchName = $targetBranchName
+                    RestrictPushUsers = $script:OwnerName
                 }
+
+                $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
             }
 
-            Context 'When setting push restrictions' {
-                BeforeAll {
-                    $setGitHubRepositoryBranchProtectionParms = @{
-                        Uri = $repo.svn_url
-                        BranchName = $branchName
-                        RestrictPushUsers = $script:OwnerName
-                    }
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.restrictions.users.login | Should -Contain $script:OwnerName
+            }
+        }
 
-                    $protection = Set-GitHubRepositoryBranchProtectionRule @setGitHubRepositoryBranchProtectionParms
+        Context 'When the branch rule already exists' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
 
-                It 'Should have the exected type and addititional properties' {
-                    $protection.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
-                    $protection.url | Should -Be $protectionUrl
-                    $protection.restrictions.users.login | Should -Contain $script:OwnerName
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $newGitHubRepositoryBranchProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchName = $targetBranchName
                 }
+
+                $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
             }
 
-            AfterAll -ScriptBlock {
-                if ($repo)
-                {
-                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+            It 'Should throw the correct exception' {
+                $errorMessage = "Branch protection rule for branch $targetBranchName already exists on Repository $repoName"
+                { New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms } |
+                    Should -Throw $errorMessage
+            }
+        }
+
+        Context 'When specifying the "Uri" parameter through the pipeline' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
                 }
+
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                "$repoName/branches/$targetBranchName/protection")
+
+                $rule = $repo | New-GitHubRepositoryBranchProtectionRule -BranchName $targetBranchName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.enforce_admins.enabled | Should -BeFalse
+                $rule.required_linear_history.enabled | Should -BeFalse
+                $rule.allow_force_pushes.enabled | Should -BeFalse
+                $rule.allow_deletions.enabled | Should -BeFalse
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
+
+        Context 'When specifying the "BranchName" and "Uri" parameters through the pipeline' {
+            BeforeAll {
+                $targetBranchName = [Guid]::NewGuid().Guid
+
+                $newGitHubRepositoryBranchParms = @{
+                    OwnerName = $script:organizationName
+                    RepositoryName = $repoName
+                    BranchName = $branchName
+                    TargetBranchName = $targetBranchName
+                }
+
+                $branch = New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms
+
+                $protectionUrl = ("https://api.github.com/repos/$script:organizationName/" +
+                "$repoName/branches/$targetBranchName/protection")
+
+                $rule = $branch | New-GitHubRepositoryBranchProtectionRule
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchProtectionRule'
+                $rule.url | Should -Be $protectionUrl
+                $rule.enforce_admins.enabled | Should -BeFalse
+                $rule.required_linear_history.enabled | Should -BeFalse
+                $rule.allow_force_pushes.enabled | Should -BeFalse
+                $rule.allow_deletions.enabled | Should -BeFalse
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            if ($repo)
+            {
+                Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
             }
         }
     }
@@ -478,12 +652,53 @@ try
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
                 $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
-                Set-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName | Out-Null
+
+                New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName |
+                    Out-Null
             }
 
             It 'Should not throw' {
                 { Remove-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName -Force } |
                     Should -Not -Throw
+            }
+
+            It 'Should have removed the protection rule' {
+                { Get-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName } |
+                    Should -Throw
+            }
+
+            Context 'When specifying the "Uri" parameter through the pipeline' {
+                BeforeAll {
+                    $rule = New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName
+
+                }
+
+                It 'Should not throw' {
+                    { $repo | Remove-GitHubRepositoryBranchProtectionRule -BranchName $branchName -Force} |
+                        Should -Not -Throw
+                }
+
+                It 'Should have removed the protection rule' {
+                    { Get-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName } |
+                        Should -Throw
+                }
+            }
+
+            Context 'When specifying the "Uri" and "BranchName" parameters through the pipeline' {
+                BeforeAll {
+                    $rule = New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName
+
+                }
+
+                It 'Should not throw' {
+                    { $rule | Remove-GitHubRepositoryBranchProtectionRule -Force } |
+                        Should -Not -Throw
+                }
+
+                It 'Should have removed the protection rule' {
+                    { Get-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName } |
+                        Should -Throw
+                }
             }
 
             AfterAll -ScriptBlock {
