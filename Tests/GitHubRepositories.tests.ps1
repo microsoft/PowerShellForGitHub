@@ -1318,6 +1318,10 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When Enabling GitHub Repository Vulnerability Alerts' {
@@ -1353,6 +1357,10 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+
+            # The CI build has been unreliable with this test.
+            # Adding a short sleep to ensure successive queries reflect updated state.
+            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When Enabling GitHub Repository Security Fixes' {
