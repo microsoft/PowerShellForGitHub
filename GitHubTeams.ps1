@@ -3,6 +3,7 @@
 
 @{
     GitHubTeamTypeName = 'GitHub.Team'
+    GitHubTeamSummaryTypeName = 'GitHub.TeamSummary'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -71,12 +72,15 @@ filter Get-GitHubTeam
 
     .OUTPUTS
         GitHub.Team
+        GitHub.TeamSummary
 
     .EXAMPLE
         Get-GitHubTeam -OrganizationName PowerShell
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
-    [OutputType({$script:GitHubTeamTypeName})]
+    [OutputType(
+        {$script:GitHubTeamTypeName},
+        {$script:GitHubTeamSummaryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param
     (
@@ -160,7 +164,8 @@ filter Get-GitHubTeam
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    $result = Invoke-GHRestMethodMultipleResult @params | Add-GitHubTeamAdditionalProperties
+    $result = Invoke-GHRestMethodMultipleResult @params |
+        Add-GitHubTeamAdditionalProperties -TypeName $script:GitHubTeamSummaryTypeName
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
@@ -452,13 +457,14 @@ function New-GitHubTeam
         }
 
         if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
-        if ($PSBoundParameters.ContainsKey('RepositoryFullName')) {
+        if ($PSBoundParameters.ContainsKey('RepositoryFullName'))
+        {
             $repositoryFullName = @()
             foreach ($repository in $RepositoryName)
             {
                 $repositoryFullName += "$OrganizationName/$Repository"
             }
-            $hashBody['repo_names'] = $repositoryFullName }
+            $hashBody['repo_names'] = $repositoryFullName
         }
         if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
         if ($MaintainerName.Count -gt 0)
