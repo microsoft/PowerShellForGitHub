@@ -550,7 +550,7 @@ try
 
             Lock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 

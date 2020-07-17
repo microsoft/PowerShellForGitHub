@@ -81,7 +81,7 @@ try
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -332,7 +332,7 @@ try
         Context 'Removing a label with parameters' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -346,7 +346,7 @@ try
         Context 'Removing a label with the repo on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -360,7 +360,7 @@ try
         Context 'Removing a label with the name on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -374,7 +374,7 @@ try
         Context 'Removing a label with the label object on the pipeline' {
             $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 

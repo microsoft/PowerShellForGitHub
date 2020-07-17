@@ -126,7 +126,7 @@ try
                     }
                     $repo = New-GitHubRepository @newGitHubRepositoryParms
 
-                    # The CI build has beeen unreliable with this test.
+                    # The CI build has been unreliable with this test.
                     # Adding a short sleep to ensure successive queries reflect updated state.
                     Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
                 }
@@ -311,7 +311,7 @@ try
 
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
@@ -330,7 +330,7 @@ try
 
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
@@ -374,7 +374,7 @@ try
 
                 $repo = $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
@@ -499,7 +499,8 @@ try
                 }
 
                 It "Should return the correct membership order" {
-                    for ($i = 1; $i -le $sortedRepos.count; $i++) {
+                    for ($i = 1; $i -le $sortedRepos.count; $i++)
+                    {
                         $sortedRepos[$i].full_name | Should -Be $sortedRepoFullNames[$i]
                         $sortedDescendingRepos[$i].full_name | Should -Be $sortedDescendingRepoFullNames[$i]
                     }
@@ -541,7 +542,8 @@ try
             }
 
             It 'Should return the correct properties' {
-                foreach ($repo in $repos) {
+                foreach ($repo in $repos)
+                {
                     $repo.owner.login | Should -Be $ownerName
                 }
             }
@@ -598,6 +600,10 @@ try
                 }
 
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context 'When specifiying the Uri parameter' {
@@ -674,7 +680,7 @@ try
             It 'Should get no content using -Confirm:$false' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -684,7 +690,7 @@ try
             It 'Should get no content using -Force' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Force
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -701,13 +707,13 @@ try
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It "Should have the expected new repository name - by URI" {
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -716,7 +722,7 @@ try
             }
 
             It "Should have the expected new repository name - by Elements" {
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -725,7 +731,7 @@ try
             }
 
             It "Should work via the pipeline" {
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -735,7 +741,7 @@ try
             }
 
             It "Should be possible to rename with Set-GitHubRepository too" {
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -910,7 +916,7 @@ try
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -950,7 +956,7 @@ try
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
 
-                # The CI build has beeen unreliable with this test.
+                # The CI build has been unreliable with this test.
                 # Adding a short sleep to ensure successive queries reflect updated state.
                 Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
@@ -1025,7 +1031,7 @@ try
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
 
-            # The CI build has beeen unreliable with this test.
+            # The CI build has been unreliable with this test.
             # Adding a short sleep to ensure successive queries reflect updated state.
             Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
