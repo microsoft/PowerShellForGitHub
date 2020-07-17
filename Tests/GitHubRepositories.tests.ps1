@@ -778,6 +778,10 @@ try
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName
+
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context -Name 'When updating a repository with all possible settings' {
@@ -797,6 +801,7 @@ try
                         DeleteBranchOnMerge = $true
                         IsTemplate = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -829,6 +834,7 @@ try
                         DisallowMergeCommit = $false
                         DisallowRebaseMerge = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -851,6 +857,7 @@ try
                         RepositoryName = $repoName
                         Archived = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -877,11 +884,16 @@ try
                 $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName -Private
 
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+
                 $updateGithubRepositoryParms = @{
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     Private = $false
                 }
+
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
             }
 
