@@ -419,6 +419,10 @@ try
             BeforeAll {
                 $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Private
+
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context 'When specify the visibility parameter' {
@@ -552,6 +556,10 @@ try
         Context 'When getting a repository for a specified organization' {
             BeforeAll {
                 $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid)
+
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It "Should have results for the organization" {
@@ -568,6 +576,10 @@ try
             BeforeAll {
                 $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+
+                # The CI build has been unreliable with this test.
+                # Adding a short sleep to ensure successive queries reflect updated state.
+                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
                 $repos = Get-GitHubRepository -GetAllPublicRepositories -Since $repo1.id
             }
