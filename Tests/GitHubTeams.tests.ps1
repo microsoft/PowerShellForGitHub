@@ -280,6 +280,7 @@ try
                     OrganizationName = $organizationName
                     TeamName = $teamName
                 }
+
                 { $maintainer | New-GitHubTeam @newGithubTeamParms -WhatIf } |
                     Should -Not -Throw
             }
@@ -300,7 +301,7 @@ try
         Context 'When creating a child GitHub team' {
             BeforeAll {
                 $parentTeamName = [Guid]::NewGuid().Guid
-                $privacy= 'Closed'
+                $privacy = 'Closed'
 
                 $newGithubTeamParms = @{
                     OrganizationName = $organizationName

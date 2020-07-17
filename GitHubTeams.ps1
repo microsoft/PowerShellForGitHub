@@ -393,6 +393,7 @@ function New-GitHubTeam
     (
         [Parameter(
             Mandatory,
+            ValueFromPipelineByPropertyName,
             Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
@@ -539,6 +540,7 @@ filter Set-GitHubTeam
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Organization
         GitHub.Team
 
     .OUTPUTS
@@ -693,8 +695,8 @@ filter Remove-GitHubTeam
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-
     .INPUTS
+        GitHub.Organization
         GitHub.Team
 
     .OUTPUTS
@@ -842,6 +844,7 @@ filter Add-GitHubTeamAdditionalProperties
             Add-Member -InputObject $item -Name 'TeamName' -Value $item.name -MemberType NoteProperty -Force
             Add-Member -InputObject $item -Name 'TeamId' -Value $item.id -MemberType NoteProperty -Force
 
+            $organizationName = [String]::Empty
             if ($item.organization)
             {
                 $organizationName = $item.organization.login
@@ -850,7 +853,6 @@ filter Add-GitHubTeamAdditionalProperties
             {
                 $hostName = $(Get-GitHubConfiguration -Name 'ApiHostName')
 
-                $organizationName = [String]::Empty
                 if ($item.html_url -match "^https?://$hostName/orgs/([^/]+)/.*$")
                 {
                     $organizationName = $Matches[1]

@@ -195,11 +195,6 @@
         'Test-GitHubOrganizationMember',
         'Test-GitHubRepositoryVulnerabilityAlert',
         'Unlock-GitHubIssue'
-        'Unlock-GitHubIssue',
-        'Update-GitHubCurrentUser',
-        'Update-GitHubIssue',
-        'Update-GitHubLabel',
-        'Update-GitHubRepository'
     )
 
     AliasesToExport = @(
