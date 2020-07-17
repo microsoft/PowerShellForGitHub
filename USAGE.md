@@ -548,7 +548,7 @@ Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName Po
 #### Creating a repository branch protection rule
 
 ```powershell
-Set-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -RequiredApprovingReviewCount 1
+New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -RequiredApprovingReviewCount 1
 ```
 
 #### Removing a repository branch protection rule

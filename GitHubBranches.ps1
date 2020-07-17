@@ -10,7 +10,7 @@
 
 filter Get-GitHubRepositoryBranch
 {
-    <#
+<#
     .SYNOPSIS
         Retrieve branches for a given GitHub repository.
 
@@ -99,22 +99,22 @@ filter Get-GitHubRepositoryBranch
 #>
     [CmdletBinding(
         SupportsShouldProcess,
-        DefaultParameterSetName = 'Elements')]
-    [OutputType( { $script:GitHubBranchTypeName })]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification = "Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+        DefaultParameterSetName='Elements')]
+    [OutputType({ $script:GitHubBranchTypeName })]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Get-GitHubBranch')]
     param(
-        [Parameter(ParameterSetName = 'Elements')]
+        [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName = 'Elements')]
+        [Parameter(ParameterSetName='Elements')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            ParameterSetName = 'Uri')]
+            ParameterSetName='Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -861,16 +861,13 @@ filter New-GitHubRepositoryBranchProtectionRule
         $teams = Get-GitHubTeam -OwnerName $OwnerName -RepositoryName $RepositoryName
     }
 
+    $requiredStatusChecks = $null
     if ($PSBoundParameters.ContainsKey('StatusChecks'))
     {
         $requiredStatusChecks = @{
             strict = $RequireUpToDateBranches.ToBool()
             contexts = $StatusChecks
         }
-    }
-    else
-    {
-        $requiredStatusChecks = $null
     }
 
     $dismissalRestrictions = @{}
@@ -1120,7 +1117,7 @@ filter Remove-GitHubRepositoryBranchProtectionRule
 
 filter Add-GitHubBranchAdditionalProperties
 {
-    <#
+<#
     .SYNOPSIS
         Adds type name and additional properties to ease pipelining to GitHub Branch objects.
 
@@ -1131,13 +1128,13 @@ filter Add-GitHubBranchAdditionalProperties
         The type that should be assigned to the object.
 
     .INPUTS
-        PSCustomObject
+        [PSCustomObject]
 
     .OUTPUTS
         GitHub.Branch
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Internal helper that is definitely adding more than one property.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
             Mandatory,
