@@ -128,7 +128,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
                 $gist.history[0].PSObject.TypeNames[0] | Should -Be 'GitHub.GistCommit'
@@ -169,7 +169,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $firstGistCommit.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $firstGistCommit.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $firstGistCommit.GistId | Should -Be $firstGistCommit.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
                 $gist.history[0].PSObject.TypeNames[0] | Should -Be 'GitHub.GistCommit'
@@ -232,7 +232,7 @@ try
             It 'Should have the expected type and additional properties' {
                 foreach ($gist in $gists)
                 {
-                    $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                    $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistSummary'
                     $gist.GistId | Should -Be $gist.id
                     $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
                 }
@@ -257,7 +257,7 @@ try
             It 'Should have the expected type and additional properties' {
                 foreach ($gist in $gists)
                 {
-                    $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                    $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistSummary'
                     $gist.GistId | Should -Be $gist.id
                     $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
                 }
@@ -472,7 +472,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistSummary'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -496,7 +496,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistSummary'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -595,7 +595,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -612,7 +612,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -659,7 +659,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -767,7 +767,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -829,7 +829,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -873,7 +873,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -885,7 +885,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -904,7 +904,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -916,7 +916,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -950,7 +950,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -964,7 +964,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -998,7 +998,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1012,7 +1012,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1046,7 +1046,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1060,7 +1060,7 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1093,7 +1093,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1117,7 +1117,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1146,7 +1146,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
@@ -1168,7 +1168,7 @@ try
             }
 
             It 'Should have the expected additional type and properties' {
-                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.GistDetail'
+                $gist.PSObject.TypeNames[0] | Should -Be 'GitHub.Gist'
                 $gist.GistId | Should -Be $gist.id
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }

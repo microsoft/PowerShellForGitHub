@@ -4,8 +4,8 @@
 @{
     GitHubGistTypeName = 'GitHub.Gist'
     GitHubGistCommitTypeName = 'GitHub.GistCommit'
-    GitHubGistDetailTypeName = 'GitHub.GistDetail'
     GitHubGistForkTypeName = 'GitHub.GistFork'
+    GitHubGistSummaryTypeName = 'GitHub.GistSummary'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -69,14 +69,14 @@ filter Get-GitHubGist
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         GitHub.Gist
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Get-GitHubGist -Starred
@@ -98,8 +98,8 @@ filter Get-GitHubGist
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistTypeName})]
     [OutputType({$script:GitHubGistCommitTypeName})]
-    [OutputType({$script:GitHubGistDetailTypeName})]
     [OutputType({$script:GitHubGistForkTypeName})]
+    [OutputType({$script:GitHubGistSummaryTypeName})]
     param(
         [Parameter(
             Mandatory,
@@ -167,7 +167,7 @@ filter Get-GitHubGist
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
-    $outputType = $script:GitHubGistTypeName
+    $outputType = $script:GitHubGistSummaryTypeName
 
     if ($PSCmdlet.ParameterSetName -in ('Id', 'Download'))
     {
@@ -186,7 +186,7 @@ filter Get-GitHubGist
 
             $uriFragment = "gists/$Gist/$Sha"
             $description = "Getting gist $Gist with specified Sha"
-            $outputType = $script:GitHubGistDetailTypeName
+            $outputType = $script:GitHubGistTypeName
         }
         elseif ($Forks)
         {
@@ -204,7 +204,7 @@ filter Get-GitHubGist
         {
             $uriFragment = "gists/$Gist"
             $description = "Getting gist $Gist"
-            $outputType = $script:GitHubGistDetailTypeName
+            $outputType = $script:GitHubGistTypeName
         }
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'User')
@@ -213,12 +213,12 @@ filter Get-GitHubGist
 
         $uriFragment = "users/$UserName/gists"
         $description = "Getting public gists for $UserName"
-        $outputType = $script:GitHubGistTypeName
+        $outputType = $script:GitHubGistSummaryTypeName
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'Current')
     {
         $telemetryProperties['CurrentUser'] = $true
-        $outputType = $script:GitHubGistTypeName
+        $outputType = $script:GitHubGistSummaryTypeName
 
         if ((Test-GitHubAuthenticationConfigured) -or (-not [String]::IsNullOrEmpty($AccessToken)))
         {
@@ -250,7 +250,7 @@ filter Get-GitHubGist
     elseif ($PSCmdlet.ParameterSetName -eq 'Public')
     {
         $telemetryProperties['Public'] = $true
-        $outputType = $script:GitHubGistTypeName
+        $outputType = $script:GitHubGistSummaryTypeName
 
         $uriFragment = "gists/public"
         $description = 'Getting public gists'
@@ -456,8 +456,8 @@ filter Remove-GitHubGist
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Remove-GitHubGist -Gist 6cad326836d38bd3a7ae
@@ -551,11 +551,11 @@ filter Copy-GitHubGist
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
-        GitHub.Gist
+        GitHub.GistSummary
 
     .EXAMPLE
         Copy-GitHubGist -Gist 6cad326836d38bd3a7ae
@@ -571,7 +571,7 @@ filter Copy-GitHubGist
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistTypeName})]
+    [OutputType({$script:GitHubGistSummaryTypeName})]
     [Alias('Fork-GitHubGist')]
     param(
         [Parameter(
@@ -605,7 +605,8 @@ filter Copy-GitHubGist
         'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistAdditionalProperties)
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistSummaryTypeName)
 }
 
 filter Set-GitHubGistStar
@@ -640,8 +641,8 @@ filter Set-GitHubGistStar
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Set-GitHubGistStar -Gist 6cad326836d38bd3a7ae -Star
@@ -720,8 +721,8 @@ filter Add-GitHubGistStar
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Add-GitHubGistStar -Gist 6cad326836d38bd3a7ae
@@ -801,8 +802,8 @@ filter Remove-GitHubGistStar
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Remove-GitHubGistStar -Gist 6cad326836d38bd3a7ae
@@ -884,8 +885,8 @@ filter Test-GitHubGistStar
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         Boolean indicating if the gist was both found and determined to be starred.
@@ -1002,7 +1003,7 @@ filter New-GitHubGist
         SupportsShouldProcess,
         DefaultParameterSetName='FileRef',
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     param(
         [Parameter(
             Mandatory,
@@ -1107,7 +1108,7 @@ filter New-GitHubGist
         }
 
         return (Invoke-GHRestMethod @params |
-            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistDetailTypeName)
+            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistTypeName)
     }
 }
 
@@ -1159,8 +1160,8 @@ filter Set-GitHubGist
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         GitHub.GistDetail
@@ -1194,7 +1195,7 @@ filter Set-GitHubGist
         SupportsShouldProcess,
         DefaultParameterSetName='Content',
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     param(
         [Parameter(
             Mandatory,
@@ -1311,7 +1312,7 @@ filter Set-GitHubGist
     try
     {
         return (Invoke-GHRestMethod @params |
-            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistDetailTypeName)
+            Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistTypeName)
     }
     catch
     {
@@ -1368,11 +1369,11 @@ function Set-GitHubGistFile
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
-        GitHub.GistDetail
+        GitHub.Gist
 
     .EXAMPLE
         Set-GitHubGistFile -Gist 1234567 -Content 'Body of my file.' -FileName 'sample.txt'
@@ -1396,7 +1397,7 @@ function Set-GitHubGistFile
         SupportsShouldProcess,
         DefaultParameterSetName='Content',
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     [Alias('Add-GitHubGistFile')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
     param(
@@ -1514,11 +1515,11 @@ function Remove-GitHubGistFile
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
-        GitHub.GistDetail
+        GitHub.Gist
 
     .EXAMPLE
         Remove-GitHubGistFile -Gist 1234567 -FileName ('foo.txt')
@@ -1538,7 +1539,7 @@ function Remove-GitHubGistFile
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     [Alias('Delete-GitHubGistFile')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
     param(
@@ -1631,11 +1632,11 @@ filter Rename-GitHubGistFile
         GitHub.Gist
         GitHub.GistComment
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
-        GitHub.GistDetail
+        GitHub.Gist
 
     .EXAMPLE
         Rename-GitHubGistFile -Gist 1234567 -FileName 'foo.txt' -NewName 'bar.txt'
@@ -1645,7 +1646,7 @@ filter Rename-GitHubGistFile
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false)]
-    [OutputType({$script:GitHubGistDetailTypeName})]
+    [OutputType({$script:GitHubGistTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
     param(
         [Parameter(
@@ -1704,13 +1705,13 @@ filter Add-GitHubGistAdditionalProperties
     .OUTPUTS
         GitHub.Gist
         GitHub.GistCommit
-        GitHub.GistDetail
         GitHub.GistFork
+        GitHub.GistSummary
 #>
     [CmdletBinding()]
     [OutputType({$script:GitHubGistTypeName})]
-    [OutputType({$script:GitHubGistDetailTypeName})]
     [OutputType({$script:GitHubGistFormTypeName})]
+    [OutputType({$script:GitHubGistSummaryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
     param(
         [Parameter(
@@ -1721,7 +1722,7 @@ filter Add-GitHubGistAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubGistTypeName
+        [string] $TypeName = $script:GitHubGistSummaryTypeName
     )
 
     if ($TypeName -eq $script:GitHubGistCommitTypeName)

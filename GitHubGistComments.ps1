@@ -43,7 +43,11 @@ filter Get-GitHubGistComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Gist
         GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         GitHub.GistComment
@@ -145,7 +149,11 @@ filter Remove-GitHubGistComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Gist
         GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistFork
+        GitHub.GistSummary
 
     .EXAMPLE
         Remove-GitHubGist -Gist 6cad326836d38bd3a7ae -Comment 12324567
@@ -250,7 +258,11 @@ filter New-GitHubGistComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Gist
         GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         GitHub.GistComment
@@ -341,7 +353,11 @@ filter Set-GitHubGistComment
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
+        GitHub.Gist
         GitHub.GistComment
+        GitHub.GistCommit
+        GitHub.GistFork
+        GitHub.GistSummary
 
     .OUTPUTS
         GitHub.GistComment
