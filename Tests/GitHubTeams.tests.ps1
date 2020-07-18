@@ -15,6 +15,8 @@ param()
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
+Set-StrictMode -Version 1.0
+
 try
 {
     # Define Script-scoped, readonly, hidden variables.
@@ -48,30 +50,59 @@ try
 
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
-                $getGitHubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName
-                }
+                $orgTeams = Get-GitHubTeam -OrganizationName $organizationName
 
-                $team = Get-GitHubTeam @getGitHubTeamParms
+                $team = $orgTeams | Where-Object -Property name -eq $teamName
             }
 
             It 'Should have the expected type and additional properties' {
-                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.TeamSummary'
                 $team.name | Should -Be $teamName
                 $team.description | Should -Be $description
-                $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
-                $team.members_count | Should -Be 1
-                $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
                 $team.TeamName | Should -Be $teamName
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
 
-            It 'Should support pipeline input for the organization parameter' {
-                { $team | Get-GitHubTeam -WhatIf } | Should -Not -Throw
+            Context 'When specifying the "TeamName" parameter' {
+                BeforeAll {
+                    $team = Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+                }
+
+                It 'Should have the expected type and additional properties' {
+                    $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                    $team.name | Should -Be $teamName
+                    $team.description | Should -Be $description
+                    $team.parent | Should -BeNullOrEmpty
+                    $team.privacy | Should -Be $privacy
+                    $team.created_at | Should -Not -BeNullOrEmpty
+                    $team.updated_at | Should -Not -BeNullOrEmpty
+                    $team.members_count | Should -Be 1
+                    $team.repos_count | Should -Be 0
+                    $team.TeamName | Should -Be $teamName
+                    $team.TeamId | Should -Be $team.id
+                    $team.OrganizationName | Should -Be $organizationName
+                }
+            }
+
+            Context 'When specifying the "OrganizationName" parameter through the pipeline' {
+                BeforeAll {
+                    $orgTeams = $team | Get-GitHubTeam
+                    $team = $orgTeams | Where-Object -Property name -eq $teamName
+                }
+
+                It 'Should have the expected type and additional properties' {
+                    $team.PSObject.TypeNames[0] | Should -Be 'GitHub.TeamSummary'
+                    $team.name | Should -Be $teamName
+                    $team.description | Should -Be $description
+                    $team.parent | Should -BeNullOrEmpty
+                    $team.privacy | Should -Be $privacy
+                    $team.TeamName | Should -Be $teamName
+                    $team.TeamId | Should -Be $team.id
+                    $team.OrganizationName | Should -Be $organizationName
+                }
             }
 
             AfterAll {
@@ -86,12 +117,7 @@ try
             BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
 
-                $newGithubRepositoryParms = @{
-                    RepositoryName = $repoName
-                    OrganizationName = $organizationName
-                }
-
-                $repo = New-GitHubRepository @newGitHubRepositoryParms
+                $repo = New-GitHubRepository -RepositoryName $repoName -OrganizationName $organizationName
 
                 $teamName = [Guid]::NewGuid().Guid
                 $description = 'Team Description'
@@ -107,16 +133,12 @@ try
 
                 New-GitHubTeam @newGithubTeamParms | Out-Null
 
-                $getGitHubTeamParms = @{
-                    OwnerName = $organizationName
-                    RepositoryName = $repoName
-                }
-
-                $team = Get-GitHubTeam @getGitHubTeamParms
+                $orgTeams = Get-GitHubTeam -OwnerName $organizationName -RepositoryName $repoName
+                $team = $orgTeams | Where-Object -Property name -eq $teamName
             }
 
             It 'Should have the expected type and additional properties' {
-                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.TeamSummary'
                 $team.name | Should -Be $teamName
                 $team.description | Should -Be $description
                 $team.parent | Should -BeNullOrEmpty
@@ -126,8 +148,54 @@ try
                 $team.OrganizationName | Should -Be $organizationName
             }
 
-            It 'Should support pipeline input for the uri parameter' {
-                { $repo | Get-GitHubTeam -WhatIf } | Should -Not -Throw
+            Context 'When specifying the "TeamName" parameter' {
+                BeforeAll {
+                    $getGitHubTeamParms = @{
+                        OwnerName = $organizationName
+                        RepositoryName = $repoName
+                        TeamName = $teamName
+                    }
+
+                    $team = Get-GitHubTeam @getGitHubTeamParms
+                }
+
+                It 'Should have the expected type and additional properties' {
+                    $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                    $team.name | Should -Be $teamName
+                    $team.description | Should -Be $description
+                    $team.parent | Should -BeNullOrEmpty
+                    $team.privacy | Should -Be $privacy
+                    $team.created_at | Should -Not -BeNullOrEmpty
+                    $team.updated_at | Should -Not -BeNullOrEmpty
+                    $team.members_count | Should -Be 1
+                    $team.repos_count | Should -Be 1
+                    $team.TeamName | Should -Be $teamName
+                    $team.TeamId | Should -Be $team.id
+                    $team.OrganizationName | Should -Be $organizationName
+                }
+            }
+
+            Context 'When specifying the "Uri" parameter through the pipeline' {
+                BeforeAll {
+                    $orgTeams = $repo | Get-GitHubTeam -TeamName $teamName
+                    $team = $orgTeams | Where-Object -Property name -eq $teamName
+                }
+
+                It 'Should have the expected type and additional properties' {
+                    $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                    $team.name | Should -Be $teamName
+                    $team.description | Should -Be $description
+                    $team.organization.login | Should -Be $organizationName
+                    $team.parent | Should -BeNullOrEmpty
+                    $team.created_at | Should -Not -BeNullOrEmpty
+                    $team.updated_at | Should -Not -BeNullOrEmpty
+                    $team.members_count | Should -Be 1
+                    $team.repos_count | Should -Be 1
+                    $team.privacy | Should -Be $privacy
+                    $team.TeamName | Should -Be $teamName
+                    $team.TeamId | Should -Be $team.id
+                    $team.OrganizationName | Should -Be $organizationName
+                }
             }
 
             AfterAll {
@@ -160,11 +228,7 @@ try
 
                 $newTeam = New-GitHubTeam @newGithubTeamParms
 
-                $getGitHubTeamParms = @{
-                    TeamId = $newTeam.id
-                }
-
-                $team = Get-GitHubTeam @getGitHubTeamParms
+                $team = Get-GitHubTeam -TeamId $newTeam.id
             }
 
             It 'Should have the expected type and additional properties' {
@@ -173,6 +237,8 @@ try
                 $team.description | Should -Be $description
                 $team.organization.login | Should -Be $organizationName
                 $team.parent | Should -BeNullOrEmpty
+                $team.created_at | Should -Not -BeNullOrEmpty
+                $team.updated_at | Should -Not -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
@@ -217,11 +283,6 @@ try
                 $team.TeamName | Should -Be $teamName
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
-            }
-
-            It 'Should support pipeline input for the TeamName parameter' {
-                { $teamName | New-GitHubTeam -OrganizationName $organizationName -WhatIf } |
-                    Should -Not -Throw
             }
 
             AfterAll {
@@ -273,16 +334,6 @@ try
                 $team.TeamName | Should -Be $teamName
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
-            }
-
-            It 'Should support pipeline input for the MaintainerName parameter' {
-                $newGithubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName
-                }
-
-                { $maintainer | New-GitHubTeam @newGithubTeamParms -WhatIf } |
-                    Should -Not -Throw
             }
 
             AfterAll {
@@ -346,6 +397,107 @@ try
                 }
             }
         }
+
+        Context 'When specifying the "Organization" parameter through the pipeline' {
+            BeforeAll {
+                $teamName1 = [Guid]::NewGuid().Guid
+                $teamName2 = [Guid]::NewGuid().Guid
+
+                $newGithubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName1
+                }
+
+                $team1 = New-GitHubTeam @newGithubTeamParms
+
+                $team2 = $team1 | New-GitHubTeam -TeamName $teamName2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $team2.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $team2.name | Should -Be $teamName2
+                $team2.organization.login | Should -Be $organizationName
+                $team2.parent | Should -BeNullOrEmpty
+                $team2.created_at | Should -Not -BeNullOrEmpty
+                $team2.updated_at | Should -Not -BeNullOrEmpty
+                $team2.members_count | Should -Be 1
+                $team2.repos_count | Should -Be 0
+                $team2.TeamName | Should -Be $teamName2
+                $team2.TeamId | Should -Be $team2.id
+                $team2.OrganizationName | Should -Be $organizationName
+            }
+
+            AfterAll {
+                if (Get-Variable -Name team1 -ErrorAction SilentlyContinue)
+                {
+                    $team1 | Remove-GitHubTeam -Force
+                }
+
+                if (Get-Variable -Name team2 -ErrorAction SilentlyContinue)
+                {
+                    $team2 | Remove-GitHubTeam -Force
+                }
+            }
+        }
+
+        Context 'When specifying the "TeamName" parameter through the pipeline' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+
+                $team = $teamName | New-GitHubTeam -OrganizationName $organizationName
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $team.name | Should -Be $teamName
+                $team.organization.login | Should -Be $organizationName
+                $team.parent | Should -BeNullOrEmpty
+                $team.created_at | Should -Not -BeNullOrEmpty
+                $team.updated_at | Should -Not -BeNullOrEmpty
+                $team.members_count | Should -Be 1
+                $team.repos_count | Should -Be 0
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
+            }
+
+            AfterAll {
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+                {
+                    $team | Remove-GitHubTeam -Force
+                }
+            }
+        }
+
+        Context 'When specifying the "MaintainerName" parameter through the pipeline' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+                $maintainer = Get-GitHubUser -UserName $script:ownerName
+
+                $team = $maintainer | New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $team.name | Should -Be $teamName
+                $team.organization.login | Should -Be $organizationName
+                $team.parent | Should -BeNullOrEmpty
+                $team.created_at | Should -Not -BeNullOrEmpty
+                $team.updated_at | Should -Not -BeNullOrEmpty
+                $team.members_count | Should -Be 1
+                $team.repos_count | Should -Be 0
+                $team.TeamName | Should -Be $teamName
+                $team.TeamId | Should -Be $team.id
+                $team.OrganizationName | Should -Be $organizationName
+            }
+
+            AfterAll {
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+                {
+                    $team | Remove-GitHubTeam -Force
+                }
+            }
+        }
     }
 
     Describe 'GitHubTeams\Set-GitHubTeam' {
@@ -399,11 +551,6 @@ try
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
 
-            It 'Should support pipeline input for the OrganizationName and TeamName parameters' {
-                { $team | Set-GitHubTeam -Description $description -WhatIf } |
-                    Should -Not -Throw
-            }
-
             AfterAll {
                 if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
@@ -448,8 +595,50 @@ try
                 $updatedTeam.description | Should -Be $description
                 $updatedTeam.parent.name | Should -BeNullOrEmpty
                 $updatedTeam.privacy | Should -Be $privacy
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
                 $updatedTeam.TeamName | Should -Be $teamName
                 $updatedTeam.TeamId | Should -Be $team.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            AfterAll {
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+                {
+                    $team | Remove-GitHubTeam -Force
+                }
+            }
+        }
+
+        Context 'When specifying the "Organization" and "TeamName" parameters through the pipeline' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+                $description = 'Team Description'
+
+                $newGithubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName
+                }
+
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+
+                $updatedTeam = $team | Set-GitHubTeam -Description $description
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $teamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -Be $description
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
 
@@ -470,16 +659,8 @@ try
         Context 'When removing a GitHub team' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
-                $newGithubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName
-                }
 
-                $team = New-GitHubTeam @newGithubTeamParms
-            }
-
-            It 'Should support pipeline input for the TeamName parameter' {
-                { $team | Remove-GitHubTeam -Force -WhatIf } | Should -Not -Throw
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
             }
 
             It 'Should not throw an exception' {
@@ -493,12 +674,26 @@ try
             }
 
             It 'Should have removed the team' {
-                $getGitHubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
+                    Should -Throw
+            }
+        }
+
+        Context 'When specifying the "Organization" and "TeamName" parameters through the pipeline' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+                $description = 'Team Description'
+
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+
+                It 'Should not throw an exception' {
+                    { $team |Remove-GitHubTeam -Force } | Should -Not -Throw
                 }
 
-                { Get-GitHubTeam @getGitHubTeamParms } | Should -Throw
+                It 'Should have removed the team' {
+                    { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
+                        Should -Throw
+                }
             }
         }
     }

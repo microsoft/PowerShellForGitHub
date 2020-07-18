@@ -127,6 +127,7 @@ filter Get-GitHubTeam
 
     $uriFragment = [String]::Empty
     $description = [String]::Empty
+    $teamType = [String]::Empty
     if ($PSCmdlet.ParameterSetName -in ('Elements', 'Uri'))
     {
         $elements = Resolve-RepositoryElements
@@ -138,6 +139,7 @@ filter Get-GitHubTeam
 
         $uriFragment = "/repos/$OwnerName/$RepositoryName/teams"
         $description = "Getting teams for $RepositoryName"
+        $teamType = $script:GitHubTeamSummaryTypeName
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'Organization')
     {
@@ -145,6 +147,7 @@ filter Get-GitHubTeam
 
         $uriFragment = "/orgs/$OrganizationName/teams"
         $description = "Getting teams in $OrganizationName"
+        $teamType = $script:GitHubTeamSummaryTypeName
     }
     else
     {
@@ -152,6 +155,7 @@ filter Get-GitHubTeam
 
         $uriFragment = "/teams/$TeamId"
         $description = "Getting team $TeamId"
+        $teamType = $script:GitHubTeamTypeName
     }
 
     $params = @{
@@ -165,7 +169,7 @@ filter Get-GitHubTeam
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params |
-        Add-GitHubTeamAdditionalProperties -TypeName $script:GitHubTeamSummaryTypeName
+        Add-GitHubTeamAdditionalProperties -TypeName $teamType
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
@@ -179,8 +183,8 @@ filter Get-GitHubTeam
         }
         else
         {
-            $uriFragment = "/teams/$($team.id)"
-            $description = "Getting team $($team.id)"
+            $uriFragment = "/orgs/$($team.OrganizationName)/teams/$($team.slug)"
+            $description = "Getting team $($team.slug)"
 
             $params = @{
                 UriFragment = $uriFragment
@@ -360,8 +364,9 @@ function New-GitHubTeam
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
-        System.String
+        GitHub.Team
         GitHub.User
+        System.String
 
     .OUTPUTS
         GitHub.Team
@@ -457,14 +462,14 @@ function New-GitHubTeam
         }
 
         if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
-        if ($PSBoundParameters.ContainsKey('RepositoryFullName'))
+        if ($PSBoundParameters.ContainsKey('RepositoryName'))
         {
-            $repositoryFullName = @()
+            $repositoryFullNames = @()
             foreach ($repository in $RepositoryName)
             {
-                $repositoryFullName += "$OrganizationName/$Repository"
+                $repositoryFullNames += "$OrganizationName/$repository"
             }
-            $hashBody['repo_names'] = $repositoryFullName
+            $hashBody['repo_names'] = $repositoryFullNames
         }
         if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
         if ($MaintainerName.Count -gt 0)
@@ -573,7 +578,7 @@ filter Set-GitHubTeam
         SupportsShouldProcess,
         PositionalBinding = $false
     )]
-    [OutputType({$script:GitHubTeamTypeName})]
+    [OutputType( { $script:GitHubTeamTypeName } )]
     param
     (
         [Parameter(
@@ -611,7 +616,6 @@ filter Set-GitHubTeam
 
     $getGitHubTeamParms = @{
         OrganizationName = $OrganizationName
-        TeamName = $teamName
         Whatif = $false
         Confirm = $false
     }
@@ -624,7 +628,9 @@ filter Set-GitHubTeam
         $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
 
-    $team = Get-GitHubTeam @getGitHubTeamParms
+    $orgTeams = Get-GitHubTeam @getGitHubTeamParms
+
+    $team = $orgTeams | Where-Object -Property name -eq $TeamName
 
     $uriFragment = "/orgs/$OrganizationName/teams/$($team.slug)"
 
@@ -636,24 +642,9 @@ filter Set-GitHubTeam
     if ($PSBoundParameters.ContainsKey('Privacy')) { $hashBody['privacy'] = $Privacy.ToLower() }
     if ($PSBoundParameters.ContainsKey('ParentTeamName'))
     {
-        $getGitHubTeamParms = @{
-            OrganizationName = $OrganizationName
-            TeamName = $ParentTeamName
-            Whatif = $false
-            Confirm = $false
-        }
-        if ($PSBoundParameters.ContainsKey('AccessToken'))
-        {
-            $getGitHubTeamParms['AccessToken'] = $AccessToken
-        }
-        if ($PSBoundParameters.ContainsKey('NoStatus'))
-        {
-            $getGitHubTeamParms['NoStatus'] = $NoStatus
-        }
+        $parentTeam = $orgTeams | Where-Object -Property name -eq $ParentTeamName
 
-        $team = Get-GitHubTeam @getGitHubTeamParms
-
-        $hashBody['parent_team_id'] = $team.id
+        $hashBody['parent_team_id'] = $parentTeam.id
     }
 
     $params = @{
