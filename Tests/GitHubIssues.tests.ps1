@@ -164,8 +164,8 @@ try
                 Start-Sleep -Seconds 1 # Needed to ensure that there is a unique creation timestamp between issues
             }
 
-            $newIssues[0] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
-            $newIssues[-1] = Update-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
+            $newIssues[0] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
+            $newIssues[-1] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
 
             $existingOpenIssues = @($existingIssues | Where-Object { $_.state -eq 'open' })
             $newOpenIssues = @($newIssues | Where-Object { $_.state -eq 'open' })
@@ -316,7 +316,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = Update-GitHubIssue @params
+            $updated = Set-GitHubIssue @params
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -364,7 +364,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = $repo | Update-GitHubIssue @params
+            $updated = $repo | Set-GitHubIssue @params
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -411,7 +411,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = $issue | Update-GitHubIssue @params
+            $updated = $issue | Set-GitHubIssue @params
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number

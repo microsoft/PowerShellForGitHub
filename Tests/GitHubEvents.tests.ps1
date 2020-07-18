@@ -45,7 +45,7 @@ try
 
         Context 'For getting Issue events from a repository' {
             $issue = $repo | New-GitHubIssue -Title 'New Issue'
-            $issue = $issue | Update-GitHubIssue -State Closed
+            $issue = $issue | Set-GitHubIssue -State Closed
             $events = @($repo | Get-GitHubEvent)
 
             It 'Should have an event from closing an issue' {
@@ -82,8 +82,8 @@ try
         }
 
         Context 'For getting events from an issue' {
-            $issue = $issue | Update-GitHubIssue -State Closed
-            $issue = $issue | Update-GitHubIssue -State Open
+            $issue = $issue | Set-GitHubIssue -State Closed
+            $issue = $issue | Set-GitHubIssue -State Open
             $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have two events from closing and opening the issue' {
@@ -98,8 +98,8 @@ try
             $repositoryName = [Guid]::NewGuid()
             $repo = New-GitHubRepository -RepositoryName $repositoryName
             $issue = $repo | New-GitHubIssue -Title 'New Issue'
-            $issue = $issue | Update-GitHubIssue -State Closed
-            $issue = $issue | Update-GitHubIssue -State Open
+            $issue = $issue | Set-GitHubIssue -State Closed
+            $issue = $issue | Set-GitHubIssue -State Open
             $events = @($repo | Get-GitHubEvent)
         }
 

@@ -13,6 +13,11 @@
     # Script module or binary module file associated with this manifest.
     RootModule = 'PowerShellForGitHub.psm1'
 
+    # Format files (.ps1xml) to be loaded when importing this module
+    FormatsToProcess = @(
+        'Formatters/GitHubRepositories.Format.ps1xml'
+    )
+
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules = @(
         # Ideally this list would be kept completely alphabetical, but other scripts (like
@@ -36,6 +41,7 @@
         'GitHubProjectCards.ps1',
         'GitHubProjectColumns.ps1',
         'GitHubPullRequests.ps1',
+        'GitHubReactions.ps1',
         'GitHubReleases.ps1',
         'GitHubReferences.ps1',
         'GitHubRepositories.ps1',
@@ -51,6 +57,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
+        'Add-GitHubAssignee',
         'Add-GitHubIssueLabel',
         'Backup-GitHubConfiguration',
         'Clear-GitHubAuthentication',
@@ -80,6 +87,7 @@
         'Get-GitHubProjectColumn',
         'Get-GitHubPullRequest',
         'Get-GitHubRateLimit',
+        'Get-GitHubReaction',
         'Get-GitHubReferrerTraffic',
         'Get-GitHubRelease',
         'Get-GitHubReference',
@@ -99,6 +107,7 @@
         'Get-GitHubViewTraffic',
         'Group-GitHubIssue',
         'Group-GitHubPullRequest',
+        'Initialize-GitHubLabel',
         'Invoke-GHRestMethod',
         'Invoke-GHRestMethodMultipleResult',
         'Join-GitHubUri',
@@ -106,7 +115,6 @@
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
-        'New-GitHubAssignee',
         'New-GitHubIssue',
         'New-GitHubIssueComment',
         'New-GitHubLabel',
@@ -117,6 +125,8 @@
         'New-GitHubPullRequest',
         'New-GitHubReference',
         'New-GitHubRepository',
+        'New-GitHubRepositoryFromTemplate',
+        'New-GitHubRepositoryBranch',
         'New-GitHubRepositoryFork',
         'Remove-GitHubAssignee',
         'Remove-GitHubIssueComment',
@@ -126,20 +136,27 @@
         'Remove-GitHubProject',
         'Remove-GitHubProjectCard',
         'Remove-GitHubProjectColumn',
+        'Remove-GitHubReaction',
         'Remove-GitHubReference',
         'Remove-GitHubRepository',
+        'Remove-GitHubRepositoryBranch'
         'Rename-GitHubRepository',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
         'Set-GitHubAuthentication',
         'Set-GitHubConfiguration',
+        'Set-GitHubContent',
+        'Set-GitHubIssue',
         'Set-GitHubIssueComment',
         'Set-GitHubIssueLabel',
         'Set-GitHubLabel',
         'Set-GitHubMilestone',
+        'Set-GitHubProfile',
         'Set-GitHubProject',
         'Set-GitHubProjectCard',
         'Set-GitHubProjectColumn',
+        'Set-GitHubReaction',
+        'Set-GitHubRepository',
         'Set-GitHubRepositoryTopic',
         'Split-GitHubUri',
         'Test-GitHubAssignee',
@@ -155,6 +172,7 @@
     )
 
     AliasesToExport = @(
+        'Delete-GitHubBranch',
         'Delete-GitHubComment',
         'Delete-GitHubIssueComment',
         'Delete-GitHubLabel',
@@ -162,14 +180,23 @@
         'Delete-GitHubProject',
         'Delete-GitHubProjectCard',
         'Delete-GitHubProjectColumn',
+        'Delete-GitHubReaction',
         'Delete-GitHubReference',
         'Delete-GitHubRepository',
+        'Delete-GitHubRepositoryBranch',
         'Get-GitHubBranch',
         'Get-GitHubComment',
+        'New-GitHubAssignee',
+        'New-GitHubBranch',
         'New-GitHubComment',
+        'Remove-GitHubBranch'
         'Remove-GitHubComment',
         'Set-GitHubComment',
         'Transfer-GitHubRepositoryOwnership'
+        'Update-GitHubIssue',
+        'Update-GitHubLabel',
+        'Update-GitHubCurrentUser',
+        'Update-GitHubRepository'
     )
 
     # Cmdlets to export from this module

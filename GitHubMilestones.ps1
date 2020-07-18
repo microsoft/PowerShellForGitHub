@@ -67,6 +67,7 @@ filter Get-GitHubMilestone
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -269,6 +270,7 @@ filter New-GitHubMilestone
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -450,6 +452,7 @@ filter Set-GitHubMilestone
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -630,6 +633,7 @@ filter Remove-GitHubMilestone
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 

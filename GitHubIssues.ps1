@@ -128,6 +128,7 @@ filter Get-GitHubIssue
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
         GitHub.User
@@ -431,6 +432,7 @@ filter Get-GitHubIssueTimeline
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -569,6 +571,7 @@ filter New-GitHubIssue
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -654,14 +657,14 @@ filter New-GitHubIssue
     return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
 }
 
-filter Update-GitHubIssue
+filter Set-GitHubIssue
 {
 <#
     .SYNOPSIS
-        Create a new Issue on GitHub.
+        Updates an Issue on GitHub.
 
     .DESCRIPTION
-        Create a new Issue on GitHub.
+        Updates an Issue on GitHub.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -737,6 +740,7 @@ filter Update-GitHubIssue
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -744,12 +748,13 @@ filter Update-GitHubIssue
         GitHub.Issue
 
     .EXAMPLE
-        Update-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
+        Set-GitHubIssue -OwnerName microsoft -RepositoryName PowerShellForGitHub -Issue 4 -Title 'Test Issue' -State Closed
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubIssueTypeName})]
+    [Alias('Update-GitHubIssue')] # Non-standard usage of the Update verb, but done to avoid a breaking change post 0.14.0
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -886,6 +891,7 @@ filter Lock-GitHubIssue
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 
@@ -1016,6 +1022,7 @@ filter Unlock-GitHubIssue
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
         GitHub.Repository
 

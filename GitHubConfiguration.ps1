@@ -78,6 +78,10 @@ function Set-GitHubConfiguration
 
     .PARAMETER DefaultNoStatus
         Control if the -NoStatus switch should be passed-in by default to all methods.
+        The -NoStatus switch has been deprecated.  Commands in this module no longer display status
+        on the console, thus passing in -NoStatus to a command no longer has any impact.
+        Therefore, the value of this configuration setting also no longer has any impact on
+        command execution.
 
     .PARAMETER DefaultOwnerName
         The owner name that should be used with a command that takes OwnerName as a parameter
@@ -131,6 +135,14 @@ function Set-GitHubConfiguration
 
     .PARAMETER LogTimeAsUtc
         If specified, all times logged will be logged as UTC instead of the local timezone.
+
+    .PARAMETER MultiRequestProgressThreshold
+        Some commands may require sending multiple requests to GitHub.  In some situations,
+        getting the entirety of the request might take 70+ requests occurring over 20+ seconds.
+        A progress bar will be shown (displaying which sub-request is being executed) if the number
+        of requests required to complete this command is greater than or equal to this configuration
+        value.
+        Set to 0 to disable this feature.
 
     .PARAMETER RetryDelaySeconds
         The number of seconds to wait before retrying a command again after receiving a 202 response.
@@ -211,6 +223,8 @@ function Set-GitHubConfiguration
         [switch] $LogRequestBody,
 
         [switch] $LogTimeAsUtc,
+
+        [int] $MultiRequestProgressThreshold,
 
         [int] $RetryDelaySeconds,
 
@@ -296,6 +310,7 @@ function Get-GitHubConfiguration
             'LogProcessId',
             'LogRequestBody',
             'LogTimeAsUtc',
+            'MultiRequestProgressThreshold',
             'RetryDelaySeconds',
             'SuppressNoTokenWarning',
             'SuppressTelemetryReminder',
@@ -451,16 +466,18 @@ function Resolve-PropertyValue
     if ($Type -eq 'Boolean') { $typeType = [Boolean] }
     if ($Type -eq 'Int32') { $typeType = [Int32] }
     if ($Type -eq 'Int64') { $typeType = [Int64] }
+    $numberEquivalents = @('Int32', 'Int64', 'long', 'int')
 
     if (Test-PropertyExists -InputObject $InputObject -Name $Name)
     {
-        if ($InputObject.$Name -is $typeType)
+        if (($InputObject.$Name -is $typeType) -or
+            (($Type -in $numberEquivalents) -and ($InputObject.$Name.GetType().Name -in $numberEquivalents)))
         {
             return $InputObject.$Name
         }
         else
         {
-            $message = "The locally cached $Name configuration was not of type $Type.  Reverting to default value."
+            $message = "The locally cached $Name configuration was not of type $Type (it was $($InputObject.$Name.GetType())).  Reverting to default value."
             Write-Log -Message $message -Level Warning
             return $DefaultValue
         }
@@ -640,6 +657,7 @@ function Import-GitHubConfiguration
         'logProcessId' = $false
         'logRequestBody' = $false
         'logTimeAsUtc' = $false
+        'multiRequestProgressThreshold' = 10
         'retryDelaySeconds' = 30
         'suppressNoTokenWarning' = $false
         'suppressTelemetryReminder' = $false
