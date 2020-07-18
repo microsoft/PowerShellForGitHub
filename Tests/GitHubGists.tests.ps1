@@ -309,7 +309,10 @@ try
         }
 
         AfterAll {
-            Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue -Force
+            if (Get-Variable -Name tempPath -ErrorAction SilentlyContinue)
+            {
+                Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue -Force
+            }
         }
 
         Context 'Download gist content' {
