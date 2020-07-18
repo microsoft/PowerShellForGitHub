@@ -721,8 +721,12 @@ try
 
             AfterAll {
                 $release | Remove-GitHubRelease -Force
-                Remove-Item -Path $downloadedZipFile -ErrorAction SilentlyContinue
+
                 Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue -Force
+                if (Get-Variable -Name downloadedZipFile -ErrorAction SilentlyContinue)
+                {
+                    Remove-Item -Path $downloadedZipFile -ErrorAction SilentlyContinue
+                }
             }
 
             $asset = $release | New-GitHubReleaseAsset -Path $zipFile -ContentType 'application/zip'
