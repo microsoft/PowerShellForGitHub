@@ -43,6 +43,7 @@
         'GitHubPullRequests.ps1',
         'GitHubReactions.ps1',
         'GitHubReleases.ps1',
+        'GitHubReferences.ps1',
         'GitHubRepositories.ps1',
         'GitHubRepositoryForks.ps1',
         'GitHubRepositoryTraffic.ps1',
@@ -89,6 +90,7 @@
         'Get-GitHubReaction',
         'Get-GitHubReferrerTraffic',
         'Get-GitHubRelease',
+        'Get-GitHubReference',
         'Get-GitHubRepository',
         'Get-GitHubRepositoryBranch',
         'Get-GitHubRepositoryCollaborator',
@@ -121,6 +123,7 @@
         'New-GitHubProjectCard',
         'New-GitHubProjectColumn',
         'New-GitHubPullRequest',
+        'New-GitHubReference',
         'New-GitHubRepository',
         'New-GitHubRepositoryFromTemplate',
         'New-GitHubRepositoryBranch',
@@ -134,6 +137,7 @@
         'Remove-GitHubProjectCard',
         'Remove-GitHubProjectColumn',
         'Remove-GitHubReaction',
+        'Remove-GitHubReference',
         'Remove-GitHubRepository',
         'Remove-GitHubRepositoryBranch'
         'Rename-GitHubRepository',
@@ -159,7 +163,12 @@
         'Test-GitHubAuthenticationConfigured',
         'Test-GitHubOrganizationMember',
         'Test-GitHubRepositoryVulnerabilityAlert',
-        'Unlock-GitHubIssue'
+        'Unlock-GitHubIssue',
+        'Update-GitHubCurrentUser',
+        'Update-GitHubIssue',
+        'Update-GitHubLabel',
+        'Set-GithubReference',
+        'Update-GitHubRepository'
     )
 
     AliasesToExport = @(
@@ -172,6 +181,7 @@
         'Delete-GitHubProjectCard',
         'Delete-GitHubProjectColumn',
         'Delete-GitHubReaction',
+        'Delete-GitHubReference',
         'Delete-GitHubRepository',
         'Delete-GitHubRepositoryBranch',
         'Get-GitHubBranch',
