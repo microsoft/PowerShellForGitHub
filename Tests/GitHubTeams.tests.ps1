@@ -250,10 +250,6 @@ try
             AfterAll {
                 if (Get-Variable -Name team -ErrorAction SilentlyContinue)
                 {
-                    # The CI build has been unreliable with this test.
-                    # Adding a short sleep to ensure successive queries reflect updated state.
-                    Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                     $team | Remove-GitHubTeam -Force
                 }
             }
@@ -589,10 +585,6 @@ try
                     Privacy = $privacy
                 }
 
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
             }
 
@@ -669,10 +661,6 @@ try
                 $teamName = [Guid]::NewGuid().Guid
 
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It 'Should not throw an exception' {

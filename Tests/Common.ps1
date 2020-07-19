@@ -104,7 +104,7 @@ function Initialize-CommonTestSetup
     # We execute so many successive state changing commands on the same object that sometimes
     # GitHub gets confused.  We'll add an intentional delay to slow down our execution in an effort
     # to increase the reliability of the tests.
-    Set-GitHubConfiguration -StateChangeDelaySeconds 3
+    Set-GitHubConfiguration -StateChangeDelaySeconds 1
 }
 
 Initialize-CommonTestSetup
