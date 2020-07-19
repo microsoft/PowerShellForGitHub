@@ -167,7 +167,7 @@
         'Update-GitHubCurrentUser',
         'Update-GitHubIssue',
         'Update-GitHubLabel',
-        'Update-GitHubReference',
+        'Set-GithubReference',
         'Update-GitHubRepository'
     )
 
