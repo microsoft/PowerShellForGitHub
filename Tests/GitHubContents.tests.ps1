@@ -37,10 +37,6 @@ try
         BeforeAll {
             # AutoInit will create a readme with the GUID of the repo name
             $repo = New-GitHubRepository -RepositoryName ($repoGuid) -AutoInit
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         AfterAll {
@@ -262,12 +258,7 @@ try
     Describe 'GitHubContents/Set-GitHubContent' {
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
-
             $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When setting new file content' {

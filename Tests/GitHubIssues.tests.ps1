@@ -161,9 +161,6 @@ try
             for ($i = 0; $i -lt 4; $i++)
             {
                 $newIssues += New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
-
-                 # Needed to ensure that there is a unique creation timestamp between issues
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             $newIssues[0] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
@@ -549,10 +546,6 @@ try
             }
 
             Lock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
 
             $timeline = @(Get-GitHubIssueTimeline -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number)
             It 'Should have an event now' {

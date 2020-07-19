@@ -124,11 +124,8 @@ try
                         LicenseTemplate = $testLicenseTemplate
                         IsTemplate = $true
                     }
-                    $repo = New-GitHubRepository @newGitHubRepositoryParms
 
-                    # The CI build has been unreliable with this test.
-                    # Adding a short sleep to ensure successive queries reflect updated state.
-                    Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
                 }
 
                 It 'Should return an object of the correct type' {
@@ -310,10 +307,6 @@ try
             }
 
             $templateRepo = New-GitHubRepository @newGitHubRepositoryParms
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When creating a public repository from a template' {
@@ -329,10 +322,6 @@ try
                 }
 
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -373,10 +362,6 @@ try
                 }
 
                 $repo = $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -419,10 +404,6 @@ try
             BeforeAll {
                 $publicRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $privateRepo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -Private
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context 'When specify the visibility parameter' {
@@ -556,10 +537,6 @@ try
         Context 'When getting a repository for a specified organization' {
             BeforeAll {
                 $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName ([Guid]::NewGuid().Guid)
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It "Should have results for the organization" {
@@ -576,11 +553,6 @@ try
             BeforeAll {
                 $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $repos = Get-GitHubRepository -GetAllPublicRepositories -Since $repo1.id
             }
 
@@ -612,10 +584,6 @@ try
                 }
 
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context 'When specifiying the Uri parameter' {
@@ -691,21 +659,11 @@ try
 
             It 'Should get no content using -Confirm:$false' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Confirm:$false
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
 
             It 'Should get no content using -Force' {
                 Remove-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -Force
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 { Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name } | Should -Throw
             }
         }
@@ -718,55 +676,31 @@ try
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
                 $suffixToAddToRepo = "_renamed"
                 $newRepoName = "$($repo.name)$suffixToAddToRepo"
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             It "Should have the expected new repository name - by URI" {
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $renamedRepo = Rename-GitHubRepository -Uri ($repo.RepositoryUrl) -NewName $newRepoName -Force
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should work via the pipeline" {
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
             It "Should be possible to rename with Set-GitHubRepository too" {
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $renamedRepo = $repo | Set-GitHubRepository -NewName $newRepoName -Confirm:$false
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
             AfterEach -Scriptblock {
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 Remove-GitHubRepository -Uri "$($repo.svn_url)$suffixToAddToRepo" -Confirm:$false
             }
         }
@@ -778,10 +712,6 @@ try
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
             }
 
             Context -Name 'When updating a repository with all possible settings' {
@@ -884,10 +814,6 @@ try
                 $repoName = ([Guid]::NewGuid().Guid)
                 $repo = New-GitHubRepository -RepositoryName $repoName -Private
 
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 $updateGithubRepositoryParms = @{
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
@@ -944,10 +870,6 @@ try
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
 
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
         }
@@ -983,11 +905,6 @@ try
 
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
-
-                # The CI build has been unreliable with this test.
-                # Adding a short sleep to ensure successive queries reflect updated state.
-                Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
         }
@@ -1058,11 +975,6 @@ try
     Describe 'GitHubRepositories\Set-GitHubRepositoryTopic' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
-
             $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
         }
 
@@ -1342,10 +1254,6 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When Enabling GitHub Repository Vulnerability Alerts' {
@@ -1381,10 +1289,6 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-
-            # The CI build has been unreliable with this test.
-            # Adding a short sleep to ensure successive queries reflect updated state.
-            Start-Sleep -Seconds $script:defaultSleepSecondsForReliability
         }
 
         Context 'When Enabling GitHub Repository Security Fixes' {

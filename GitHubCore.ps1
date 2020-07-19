@@ -321,6 +321,16 @@ function Invoke-GHRestMethod
             }
         }
 
+        # Allow for a delay after a command that may result in a state change in order to
+        #increase the reliability of the UT's which attempt multiple successive state change
+        # on the same object.
+        $stateChangeDelaySeconds = $(Get-GitHubConfiguration -Name 'StateChangeDelaySeconds')
+        $stateChangeMethods = @('Delete', 'Post', 'Patch', 'Put')
+        if (($stateChangeDelaySeconds -gt 0) -and ($Method -in $stateChangeMethods))
+        {
+            Start-Sleep -Seconds $stateChangeDelaySeconds
+        }
+
         if ($ExtendedResult)
         {
             $finalResultEx = @{
