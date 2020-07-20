@@ -428,13 +428,14 @@ function New-TemporaryDirectory
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     param()
 
-    $guid = [System.GUID]::NewGuid()
-    while (Test-Path -PathType Container (Join-Path -Path $env:TEMP -ChildPath $guid))
+    $parentTempPath = [System.IO.Path]::GetTempPath()
+    $tempFolderPath = [String]::Empty
+    do
     {
-        $guid = [System.GUID]::NewGuid()
+        $guid = [System.Guid]::NewGuid()
+        $tempFolderPath = Join-Path -Path $parentTempPath -ChildPath $guid
     }
-
-    $tempFolderPath = Join-Path -Path $env:TEMP -ChildPath $guid
+    while (Test-Path -Path $tempFolderPath -PathType Container)
 
     Write-Log -Message "Creating temporary directory: $tempFolderPath" -Level Verbose
     New-Item -ItemType Directory -Path $tempFolderPath
