@@ -998,12 +998,12 @@ function Clear-GitHubAuthentication
 
     Write-InvocationLog
 
+    Set-TelemetryEvent -EventName Clear-GitHubAuthentication
+
     if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Clear'))
     {
         return
     }
-
-    Set-TelemetryEvent -EventName Clear-GitHubAuthentication
 
     $script:accessTokenCredential = $null
 
