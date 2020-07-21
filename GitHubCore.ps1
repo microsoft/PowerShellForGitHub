@@ -653,11 +653,6 @@ function Invoke-GHRestMethodMultipleResult
         [switch] $NoStatus
     )
 
-    if (-not $PSCmdlet.ShouldProcess($UriFragment, "Invoke-GHRestMethod"))
-    {
-        return
-    }
-
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
