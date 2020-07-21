@@ -358,6 +358,8 @@ filter Set-GitHubContent
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements -DisableValidation
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -430,8 +432,6 @@ filter Set-GitHubContent
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = $uriFragment

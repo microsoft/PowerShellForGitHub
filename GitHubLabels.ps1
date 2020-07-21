@@ -299,6 +299,8 @@ filter New-GitHubLabel
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -325,8 +327,6 @@ filter New-GitHubLabel
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels"
@@ -460,6 +460,8 @@ filter Remove-GitHubLabel
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -478,8 +480,6 @@ filter Remove-GitHubLabel
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
@@ -610,6 +610,8 @@ filter Set-GitHubLabel
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -635,8 +637,6 @@ filter Set-GitHubLabel
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/labels/$Label"
@@ -754,6 +754,8 @@ filter Initialize-GitHubLabel
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     if (($null -eq $Label) -or ($Label.Count -eq 0))
     {
         $Label = $script:defaultGitHubLabels
@@ -780,8 +782,6 @@ filter Initialize-GitHubLabel
     {
         return
     }
-
-    Write-InvocationLog
 
     foreach ($labelToConfigure in $Label)
     {
@@ -954,6 +954,8 @@ function Add-GitHubIssueLabel
 
     end
     {
+        Write-InvocationLog
+
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -972,8 +974,6 @@ function Add-GitHubIssueLabel
         {
             return
         }
-
-        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"
@@ -1171,8 +1171,6 @@ function Set-GitHubIssueLabel
         {
             return
         }
-
-        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/labels"

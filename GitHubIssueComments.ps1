@@ -393,6 +393,8 @@ filter New-GitHubIssueComment
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -411,8 +413,6 @@ filter New-GitHubIssueComment
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/comments"
@@ -542,6 +542,8 @@ filter Set-GitHubIssueComment
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -560,8 +562,6 @@ filter Set-GitHubIssueComment
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"
@@ -684,6 +684,8 @@ filter Remove-GitHubIssueComment
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -703,8 +705,6 @@ filter Remove-GitHubIssueComment
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/comments/$Comment"

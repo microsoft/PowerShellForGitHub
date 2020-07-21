@@ -336,6 +336,8 @@ filter New-GitHubMilestone
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -378,8 +380,6 @@ filter New-GitHubMilestone
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones"
@@ -532,6 +532,8 @@ filter Set-GitHubMilestone
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -575,8 +577,6 @@ filter Set-GitHubMilestone
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/milestones/$Milestone"

@@ -174,7 +174,7 @@ filter Get-GitHubRelease
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName

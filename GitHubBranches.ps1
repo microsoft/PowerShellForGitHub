@@ -233,9 +233,6 @@ filter New-GitHubRepositoryBranch
         PositionalBinding = $false
     )]
     [OutputType({$script:GitHubBranchTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch is
-        passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
         Justification = 'One or more parameters (like NoStatus) are only referenced by helper
         methods which get access to it from the stack via Get-Variable -Scope 1.')]
@@ -334,6 +331,11 @@ filter New-GitHubRepositoryBranch
         sha = $originBranch.commit.sha
     }
 
+    if (-not $PSCmdlet.ShouldProcess($BranchName, 'Create Repository Branch'))
+    {
+        return
+    }
+
     $params = @{
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
@@ -427,9 +429,6 @@ filter Remove-GitHubRepositoryBranch
         DefaultParameterSetName = 'Elements',
         PositionalBinding = $false,
         ConfirmImpact = 'High')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "",
-        Justification = "Methods called within here make use of PSShouldProcess, and the switch is
-        passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
         Justification = "One or more parameters (like NoStatus) are only referenced by helper
         methods which get access to it from the stack via Get-Variable -Scope 1.")]
@@ -464,6 +463,8 @@ filter Remove-GitHubRepositoryBranch
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -480,23 +481,23 @@ filter Remove-GitHubRepositoryBranch
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($BranchName, "Remove Repository Branch"))
+    if (-not $PSCmdlet.ShouldProcess($BranchName, "Remove Repository Branch"))
     {
-        Write-InvocationLog
-
-        $params = @{
-            'UriFragment' = $uriFragment
-            'Method' = 'Delete'
-            'Description' = "Deleting branch $BranchName from $RepositoryName"
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
-                -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        Invoke-GHRestMethod @params | Out-Null
+        return
     }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Method' = 'Delete'
+        'Description' = "Deleting branch $BranchName from $RepositoryName"
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    Invoke-GHRestMethod @params | Out-Null
 }
 
 filter Add-GitHubBranchAdditionalProperties

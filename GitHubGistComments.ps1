@@ -85,7 +85,7 @@ filter Get-GitHubGistComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -204,7 +204,7 @@ filter Remove-GitHubGistComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if ($Force -and (-not $Confirm))
     {
@@ -296,7 +296,7 @@ filter New-GitHubGistComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $hashBody = @{
         'body' = $Body
@@ -400,7 +400,7 @@ filter Set-GitHubGistComment
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $hashBody = @{
         'body' = $Body

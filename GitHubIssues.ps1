@@ -618,6 +618,8 @@ filter New-GitHubIssue
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -640,8 +642,6 @@ filter New-GitHubIssue
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues"
@@ -798,6 +798,8 @@ filter Set-GitHubIssue
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -827,8 +829,6 @@ filter Set-GitHubIssue
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue"
@@ -936,6 +936,8 @@ filter Lock-GitHubIssue
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -966,8 +968,6 @@ filter Lock-GitHubIssue
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"
@@ -1070,6 +1070,8 @@ filter Unlock-GitHubIssue
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -1083,8 +1085,6 @@ filter Unlock-GitHubIssue
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "/repos/$OwnerName/$RepositoryName/issues/$Issue/lock"

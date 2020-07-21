@@ -222,6 +222,8 @@ filter New-GitHubProjectCard
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "/projects/columns/$Column/cards"
@@ -258,8 +260,6 @@ filter New-GitHubProjectCard
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -353,6 +353,8 @@ filter Set-GitHubProjectCard
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "/projects/columns/cards/$Card"
@@ -382,8 +384,6 @@ filter Set-GitHubProjectCard
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -614,8 +614,6 @@ filter Move-GitHubProjectCard
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment

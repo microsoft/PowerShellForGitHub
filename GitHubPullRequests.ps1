@@ -361,6 +361,8 @@ filter New-GitHubPullRequest
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     if (-not [string]::IsNullOrWhiteSpace($HeadOwner))
     {
         if ($Head.Contains(':'))
@@ -426,8 +428,6 @@ filter New-GitHubPullRequest
     {
         return
     }
-
-    Write-InvocationLog
 
     $restParams = @{
         'UriFragment' = $uriFragment

@@ -99,10 +99,7 @@ filter Get-GitHubReaction
     .NOTES
         Currently, issue comments, pull request comments and commit comments are not supported.
 #>
-    [CmdletBinding(
-        SupportsShouldProcess,
-        DefaultParameterSetName='ElementsIssue')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
+    [CmdletBinding(DefaultParameterSetName='ElementsIssue')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -295,7 +292,6 @@ filter Set-GitHubReaction
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='ElementsIssue')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="Methods called within here make use of PSShouldProcess, and the switch is passed on to them inherently.")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
@@ -389,6 +385,13 @@ filter Set-GitHubReaction
     }
 
     $description = "Setting reaction $ReactionType for $targetObjectTypeName $targetObjectNumber in $RepositoryName"
+
+    if (-not $PSCmdlet.ShouldProcess(
+        $ReactionId,
+        "Setting reaction for $targetObjectTypeName $targetObjectNumber in $RepositoryName"))
+    {
+        return
+    }
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -595,23 +598,25 @@ filter Remove-GitHubReaction
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess(
+    if (-not $PSCmdlet.ShouldProcess(
         $ReactionId,
         "Removing reaction for $targetObjectTypeName $targetObjectNumber in $RepositoryName"))
     {
-        $params = @{
-            'UriFragment' = $uriFragment
-            'Description' =  $description
-            'Method' = 'Delete'
-            'AcceptHeader' = $script:squirrelGirlAcceptHeader
-            'AccessToken' = $AccessToken
-            'TelemetryEventName' = $MyInvocation.MyCommand.Name
-            'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        return Invoke-GHRestMethod @params
+        return
     }
+
+    $params = @{
+        'UriFragment' = $uriFragment
+        'Description' =  $description
+        'Method' = 'Delete'
+        'AcceptHeader' = $script:squirrelGirlAcceptHeader
+        'AccessToken' = $AccessToken
+        'TelemetryEventName' = $MyInvocation.MyCommand.Name
+        'TelemetryProperties' = $telemetryProperties
+        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params
 }
 
 filter Add-GitHubReactionAdditionalProperties

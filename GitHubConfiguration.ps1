@@ -928,6 +928,8 @@ function Set-GitHubAuthentication
         [switch] $SessionOnly
     )
 
+    Write-InvocationLog
+
     if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Set'))
     {
         return
@@ -953,8 +955,6 @@ function Set-GitHubAuthentication
     }
 
     $script:accessTokenCredential = $Credential
-
-    Write-InvocationLog
 
     if (-not $SessionOnly)
     {
@@ -996,14 +996,14 @@ function Clear-GitHubAuthentication
         [switch] $SessionOnly
     )
 
+    Write-InvocationLog
+
     if (-not $PSCmdlet.ShouldProcess('GitHub Authentication', 'Clear'))
     {
         return
     }
 
     Set-TelemetryEvent -EventName Clear-GitHubAuthentication
-
-    Write-InvocationLog
 
     $script:accessTokenCredential = $null
 

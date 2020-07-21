@@ -168,6 +168,8 @@ filter New-GitHubProjectColumn
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
     $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
@@ -182,8 +184,6 @@ filter New-GitHubProjectColumn
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -255,6 +255,8 @@ filter Set-GitHubProjectColumn
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "/projects/columns/$Column"
@@ -268,8 +270,6 @@ filter Set-GitHubProjectColumn
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -348,6 +348,8 @@ filter Remove-GitHubProjectColumn
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "/projects/columns/$Column"
@@ -362,8 +364,6 @@ filter Remove-GitHubProjectColumn
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -449,6 +449,8 @@ filter Move-GitHubProjectColumn
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "/projects/columns/$Column/moves"
@@ -481,8 +483,6 @@ filter Move-GitHubProjectColumn
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment

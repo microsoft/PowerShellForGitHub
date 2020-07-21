@@ -347,6 +347,8 @@ filter New-GitHubProject
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
     $telemetryProperties['ProjectName'] = Get-PiiSafeString -PlainText $ProjectName
 
@@ -392,8 +394,6 @@ filter New-GitHubProject
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -503,6 +503,8 @@ filter Set-GitHubProject
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "projects/$Project"
@@ -538,8 +540,6 @@ filter Set-GitHubProject
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -637,6 +637,8 @@ filter Remove-GitHubProject
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{}
 
     $uriFragment = "projects/$Project"
@@ -651,8 +653,6 @@ filter Remove-GitHubProject
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment

@@ -161,7 +161,7 @@ filter Get-GitHubGist
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -497,7 +497,7 @@ filter Remove-GitHubGist
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if ($Force -and (-not $Confirm))
     {
@@ -587,7 +587,7 @@ filter Copy-GitHubGist
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if (-not $PSCmdlet.ShouldProcess($Gist, "Forking gist"))
     {
@@ -679,7 +679,7 @@ filter Set-GitHubGistStar
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
     Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
 
     $PSBoundParameters.Remove('Star')
@@ -753,7 +753,7 @@ filter Add-GitHubGistStar
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if (-not $PSCmdlet.ShouldProcess($Gist, "Starring gist"))
     {
@@ -834,7 +834,7 @@ filter Remove-GitHubGistStar
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     if (-not $PSCmdlet.ShouldProcess($Gist, "Unstarring gist"))
     {
@@ -913,7 +913,7 @@ filter Test-GitHubGistStar
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
     $params = @{
@@ -1069,7 +1069,7 @@ filter New-GitHubGist
 
     end
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
 
         $telemetryProperties = @{}
 
@@ -1218,7 +1218,7 @@ filter Set-GitHubGist
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $telemetryProperties = @{}
 
@@ -1460,7 +1460,7 @@ function Set-GitHubGistFile
 
     end
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
         Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
 
         if ($PSCmdlet.ParameterSetName -eq 'Content')
@@ -1580,7 +1580,7 @@ function Remove-GitHubGistFile
 
     end
     {
-        Write-InvocationLog -Invocation $MyInvocation
+        Write-InvocationLog
         Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
 
         $params = @{
@@ -1674,7 +1674,7 @@ filter Rename-GitHubGistFile
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
     Set-TelemetryEvent -EventName $MyInvocation.MyCommand.Name
 
     $params = @{

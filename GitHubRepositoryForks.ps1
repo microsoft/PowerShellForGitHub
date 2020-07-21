@@ -209,6 +209,8 @@ filter New-GitHubRepositoryFork
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -230,8 +232,6 @@ filter New-GitHubRepositoryFork
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/forks`?" +  ($getParams -join '&')

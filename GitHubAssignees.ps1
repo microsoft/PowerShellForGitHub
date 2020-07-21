@@ -390,6 +390,8 @@ function Add-GitHubAssignee
 
     end
     {
+        Write-InvocationLog
+
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -421,8 +423,6 @@ function Add-GitHubAssignee
         {
             return
         }
-
-        Write-InvocationLog
 
         return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
     }
@@ -582,6 +582,8 @@ function Remove-GitHubAssignee
 
     end
     {
+        Write-InvocationLog
+
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -606,8 +608,6 @@ function Remove-GitHubAssignee
         {
             return
         }
-
-        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/issues/$Issue/assignees"

@@ -173,6 +173,8 @@ filter New-GitHubRepository
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
@@ -216,8 +218,6 @@ filter New-GitHubRepository
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = $uriFragment
@@ -392,8 +392,6 @@ filter New-GitHubRepositoryFromTemplate
         return
     }
 
-    Write-InvocationLog
-
     $params = @{
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
@@ -513,6 +511,8 @@ filter Remove-GitHubRepository
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -531,8 +531,6 @@ filter Remove-GitHubRepository
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
@@ -735,7 +733,7 @@ filter Get-GitHubRepository
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     # We are explicitly disabling validation here because a valid parameter set for this function
     # allows the OwnerName to be passed in, but not the RepositoryName.  That would allow the caller
@@ -1213,6 +1211,8 @@ filter Set-GitHubRepository
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -1255,8 +1255,6 @@ filter Set-GitHubRepository
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
@@ -1355,7 +1353,7 @@ filter Get-GitHubRepositoryTopic
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -1520,6 +1518,8 @@ function Set-GitHubRepositoryTopic
 
     end
     {
+        Write-InvocationLog
+
         $elements = Resolve-RepositoryElements
         $OwnerName = $elements.ownerName
         $RepositoryName = $elements.repositoryName
@@ -1549,8 +1549,6 @@ function Set-GitHubRepositoryTopic
         {
             return
         }
-
-        Write-InvocationLog
 
         $params = @{
             'UriFragment' = "repos/$OwnerName/$RepositoryName/topics"
@@ -1674,7 +1672,7 @@ filter Get-GitHubRepositoryContributor
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -1822,7 +1820,7 @@ filter Get-GitHubRepositoryCollaborator
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -1933,7 +1931,7 @@ filter Get-GitHubRepositoryLanguage
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -2039,7 +2037,7 @@ filter Get-GitHubRepositoryTag
         [switch] $NoStatus
     )
 
-    Write-InvocationLog -Invocation $MyInvocation
+    Write-InvocationLog
 
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
@@ -2158,6 +2156,8 @@ filter Move-GitHubRepositoryOwnership
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -2179,8 +2179,6 @@ filter Move-GitHubRepositoryOwnership
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/transfer"
@@ -2433,6 +2431,8 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -2446,8 +2446,6 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
@@ -2552,6 +2550,8 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -2565,8 +2565,6 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/vulnerability-alerts"
@@ -2671,6 +2669,8 @@ filter Enable-GitHubRepositorySecurityFix
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -2684,8 +2684,6 @@ filter Enable-GitHubRepositorySecurityFix
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
@@ -2789,6 +2787,8 @@ filter Disable-GitHubRepositorySecurityFix
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
@@ -2802,8 +2802,6 @@ filter Disable-GitHubRepositorySecurityFix
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = "repos/$OwnerName/$RepositoryName/automated-security-fixes"
