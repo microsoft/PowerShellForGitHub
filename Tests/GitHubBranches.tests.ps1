@@ -15,6 +15,8 @@ param()
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
+Set-StrictMode -Version 1.0
+
 try
 {
     Describe 'Getting branches for repository' {
