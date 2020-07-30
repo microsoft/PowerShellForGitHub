@@ -27,6 +27,7 @@
         # GitHubConfiguration.ps1) depend on some of the code in Helpers being around at load time.
         'Helpers.ps1',
         'GitHubConfiguration.ps1',
+        'OnModuleLoad.ps1'
 
         'GitHubAnalytics.ps1',
         'GitHubAssignees.ps1',
