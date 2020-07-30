@@ -610,6 +610,11 @@ try
         Context 'Remove Repo projects' {
             $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
+
+            # Despite using StateChangeDelaySeconds during tests, we still appear to need more time
+            # for projects to be removed before testing that they were properly deleted.
+            Start-Sleep -Seconds 5
+
             It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
             }
@@ -618,6 +623,11 @@ try
         Context 'Remove Repo project via pipeline' {
             $project = $repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
             $project | Remove-GitHubProject -Force
+
+            # Despite using StateChangeDelaySeconds during tests, we still appear to need more time
+            # for projects to be removed before testing that they were properly deleted.
+            Start-Sleep -Seconds 5
+
             It 'Project should be removed' {
                 {$project | Get-GitHubProject} | Should -Throw
             }

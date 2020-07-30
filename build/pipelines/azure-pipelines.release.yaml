@@ -28,6 +28,7 @@ jobs:
 - job: Validate
   pool:
     vmImage: 'windows-latest'
+  timeoutInMinutes: 120
   steps:
   - template: ./templates/run-staticAnalysis.yaml
   - template: ./templates/run-unitTests.yaml

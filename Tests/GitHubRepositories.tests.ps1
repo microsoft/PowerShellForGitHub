@@ -124,6 +124,7 @@ try
                         LicenseTemplate = $testLicenseTemplate
                         IsTemplate = $true
                     }
+
                     $repo = New-GitHubRepository @newGitHubRepositoryParms
                 }
 
@@ -321,7 +322,6 @@ try
                 }
 
                 $repo = New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -362,7 +362,6 @@ try
                 }
 
                 $repo = $templateRepo | New-GitHubRepositoryFromTemplate @newGitHubRepositoryFromTemplateParms
-                Start-Sleep -Seconds 1 # To work around a delay that GitHub may have with generating the repo
             }
 
             It 'Should have the expected type and addititional properties' {
@@ -485,7 +484,8 @@ try
                 }
 
                 It "Should return the correct membership order" {
-                    for ($i = 1; $i -le $sortedRepos.count; $i++) {
+                    for ($i = 1; $i -le $sortedRepos.count; $i++)
+                    {
                         $sortedRepos[$i].full_name | Should -Be $sortedRepoFullNames[$i]
                         $sortedDescendingRepos[$i].full_name | Should -Be $sortedDescendingRepoFullNames[$i]
                     }
@@ -527,7 +527,8 @@ try
             }
 
             It 'Should return the correct properties' {
-                foreach ($repo in $repos) {
+                foreach ($repo in $repos)
+                {
                     $repo.owner.login | Should -Be $ownerName
                 }
             }
@@ -552,7 +553,6 @@ try
             BeforeAll {
                 $repo1 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
                 $repo2 = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-
                 $repos = Get-GitHubRepository -GetAllPublicRepositories -Since $repo1.id
             }
 
@@ -731,6 +731,7 @@ try
                         DeleteBranchOnMerge = $true
                         IsTemplate = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -763,6 +764,7 @@ try
                         DisallowMergeCommit = $false
                         DisallowRebaseMerge = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -785,6 +787,7 @@ try
                         RepositoryName = $repoName
                         Archived = $true
                     }
+
                     $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
                 }
 
@@ -816,6 +819,7 @@ try
                     RepositoryName = $repoName
                     Private = $false
                 }
+
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
             }
 
@@ -865,6 +869,7 @@ try
 
             It 'Should be removable by the pipeline' {
                 ($repo | Remove-GitHubRepository -Confirm:$false) | Should -BeNullOrEmpty
+
                 { $repo | Get-GitHubRepository } | Should -Throw
             }
         }

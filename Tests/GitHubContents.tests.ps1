@@ -258,7 +258,6 @@ try
     Describe 'GitHubContents/Set-GitHubContent' {
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
-
             $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
         }
 

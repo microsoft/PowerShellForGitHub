@@ -39,6 +39,9 @@
         *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
         *   [Enable repository automatic security fixes](#enable-repository-automatic-security-fixes)
         *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
+    *   [Branches](#branches)
+        *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
+        *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -83,6 +86,29 @@
         *   [Add an existing issue as a card to a column](#add-an-existing-issue-as-a-card-to-a-column)
         *   [Move a card to be after a certain card in the same column](Move-a-card-to-be-after-a-certain-card-in-the-same-column)
         *   [Move a card to the bottom of another column](Move-a-card-to-the-bottom-of-another-column)
+    *   [Releases](#Releases)
+        *   [Get releases for a repository](#get-releases-for-a-repository)
+        *   [Get an individual release for a repository](#get-an-individual-release-for-a-repository)
+        *   [Create a new release](#create-a-new-release)
+        *   [Update a release](#update-a-release)
+        *   [Remove a release](#remove-a-release)
+        *   [List assets for a release](#list-assets-for-a-release)
+        *   [Download a release asset](#download-a-release-asset)
+        *   [Create a release asset](#create-a-release-asset)
+        *   [Update a release asset](#update-a-release-asset)
+        *   [Remove a release asset](#remove-a-release-asset)
+    *   [Gists](#gists)
+        *   [Getting gists](#getting-gists)
+        *   [Download a gist](#download-a-gist)
+        *   [Fork a gist](#fork-a-gist)
+        *   [Creating a gist](#creating-a-gist)
+        *   [Removing a gist](#removing-a-gist)
+        *   [Updating a gist](#updating-a-gist)
+        *   [Starring a gist](#starring-a-gist)
+        *   [Getting gist comments](#getting-gist-comments)
+        *   [Adding a gist comment](#adding-a-gist-comment)
+        *   [Changing a gist comment](#changing-a-gist-comment)
+        *   [Removing a gist comment](#removing-a-gist-comment)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -433,6 +459,21 @@ Get-GitHubUser
 > Warning: This will take a while.  It's getting _every_ GitHub user.
 
 ----------
+### Repositories
+
+#### Adding a new Branch to a Repository
+
+```powershell
+New-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
+```
+
+#### Removing a Branch from a Repository
+
+```powershell
+Remove-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -Name develop
+```
+
+----------
 
 ### Repositories
 
@@ -459,7 +500,8 @@ New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $m
 
 ```powershell
 New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
-=======
+```
+
 #### Get repository vulnerability alert status
 
 ```powershell
@@ -705,6 +747,303 @@ Move-GitHubProjectCard -Card 4 -After 5
 #### Move a card to the bottom of another column
 ```powershell
 Move-GitHubProjectCard -Card 4 -ColumnId 6 -Bottom
+```
+
+----------
+
+### Releases
+
+#### Get releases for a repository
+```powershell
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell
+```
+
+or with pipelining...
+
+```powershell
+Get-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShell |
+    Get-GitHubRelease
+```
+
+#### Get an individual release for a repository
+```powershell
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell |
+    Select-Object -First 1 |
+    Get-GitHubRelease
+```
+
+#### Create a new release
+```powershell
+New-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Tag 11.0
+```
+
+or with pipelining...
+
+```powershell
+Get-GitHubRepository -OwnerName PowerShell -RepositoryName PowerShell |
+    New-GitHubRelease -Tag 11.0
+```
+
+#### Update a release
+```powershell
+Set-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Body 'Updated body'
+```
+
+or with pipelining...
+
+```powershell
+$repo | Set-GitHubRelease -Release 123456 -Body 'Updated body'
+
+# or
+
+$release | Set-GitHubRelease -Body 'Updated body'
+```
+
+#### Remove a release
+```powershell
+Remove-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Force
+```
+
+or with pipelining...
+
+```powershell
+$repo | Remove-GitHubRelease -Release 123456 -Force
+
+# or
+
+$release | Remove-GitHubRelease -Force
+```
+
+#### List assets for a release
+```powershell
+Get-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456
+```
+
+or with pipelining...
+
+```powershell
+$repo | Get-GitHubReleaseAsset -Release 123456
+
+# or
+
+$release | Get-GitHubReleaseAsset
+```
+
+#### Download a release asset
+```powershell
+Get-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Path 'c:\downloads\asset'
+```
+
+or with pipelining...
+
+```powershell
+# Downloads the first asset of the latest release from PowerShell\PowerShell to the file located
+# at c:\downloads\asset
+Get-GitHubRelease -OwnerName PowerShell -RepositoryName PowerShell -Latest |
+    Get-GitHubReleaseAsset |
+    Select-Object -First 1 |
+    Get-GitHubReleaseAsset -Path 'c:\downloads\asset'
+```
+
+#### Create a release asset
+```powershell
+New-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456 -Path 'c:\foo.zip'
+```
+
+or with pipelining...
+
+```powershell
+$release | New-GitHubReleaseAsset -Path 'c:\foo.zip'
+
+# or
+
+@('c:\foo.zip', 'c:\bar.txt') |
+    New-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Release 123456
+```
+
+#### Update a release asset
+```powershell
+Set-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Name 'newFileName.zip'
+```
+
+or with pipelining...
+
+```powershell
+$asset | Set-GitHubReleaseAsset -Name 'newFileName.zip'
+```
+
+#### Remove a release asset
+```powershell
+Remove-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asset 123456 -Force
+```
+
+or with pipelining...
+
+```powershell
+$asset | Remove-GitHubReleaseAsset -force
+
+----------
+
+### Gists
+
+#### Getting gists
+```powershell
+# There are many options here:
+
+# 1. Getting all gists for the current authenticated user:
+Get-GitHubGist
+
+# 1b. Getting all gists for the current authenticated user that were updated in the past 6 days.
+Get-GitHubGist -Since ((Get-Date).AddDays(-6))
+
+# 2. Get all starred gists for the current authenticated user
+Get-GitHubGist -Starred
+
+# 3. Get all public gists for a specific user
+Get-GitHubGist -UserName 'octocat'
+
+# 4. Get all public gists (well, the first 3000):
+Get-GitHubGist -Public
+
+# 5. Get a specific gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae'
+
+# 5a. List all commits for a specific gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Commits
+
+# 5b. Get a gist at a specific commit (Sha)
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Sha 'de5b9b59d1f28206e8d646c7c8025e9809d0ed73'
+
+# 5c. Get all of the forks for a gist
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Forks
+```
+
+#### Download a gist
+```powershell
+Get-GitHubGist -Gist '6cad326836d38bd3a7ae' -Path 'c:\users\octocat\downloads\gist\'
+```
+
+#### Fork a gist
+```powershell
+Fork-GitHubGist -Gist '6cad326836d38bd3a7ae'
+```
+
+#### Creating a gist
+```powershell
+# You can create a gist by specifying a single file's content in-line...
+New-GitHubGist -FileName 'foo.txt' -Content 'foo content'
+
+# or by providing one or more files that should be part of the gist
+New-GitHubGist -File @('c:\files\foo.txt', 'c:\files\bar.txt')
+@('c:\files\foo.txt', 'c:\files\bar.txt') | New-GitHubGist
+```
+
+#### Removing a gist
+```powershell
+Remove-GitHubGist -Gist '6cad326836d38bd3a7ae'
+```
+
+#### Updating a gist
+```powershell
+$gist = New-GitHubGist -FileName 'foo.txt' -Content 'content'
+
+# The main method to use is Set-GitHubGist, however it is quite complicated.
+$params = @{
+    Description = 'new description' # modifies the description of the gist
+    Update = @{
+        'foo.txt' = @{
+            fileName = 'alpha.txt' # Will rename foo.txt -> alpha.txt
+            content = 'updated content' # and will also update its content
+        }
+        'bar.txt' = @{
+            filePath = 'c:\files\bar.txt' # Will upload the content of bar.txt to the gist.
+        }
+    }
+    Delete = @('bar.txt')
+    Force = $true # avoid confirmation prompting due to the deletion
+}
+
+Set-GitHubGist -Gist $gist.id @params
+
+# Therefore, you can use simpler helper methods to accomplish atomic tasks
+Set-GistHubGistFile -Gist $gist.id -FileName 'foo.txt' -Content 'updated content'
+
+# This will update the text in the existing file 'foo.txt' and add the file 'bar.txt'
+$gist | Set-GitHubGistFile -File ('c:\files\foo.txt', 'c:\files\bar.txt')
+
+Rename-GistHubGistFile -Gist $gist.id -FileName 'foo.txt' -NewName 'bar.txt'
+
+$gist | Remove-GitHubGistFile -FileName 'bar.txt' -Force
+
+```
+
+#### Starring a gist
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+
+# All of these options will star the same gist
+Star-GitHubGist -Gist $gistId
+Add-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId -Star
+Get-GitHubGist -Gist $gistId | Star-GitHubGist
+
+# All of these options will unstar the same gist
+Unstar-GitHubGist -Gist $gistId
+Remove-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId
+Set-GitHubGistStar -Gist $gistId -Star:$false
+Get-GitHubGist -Gist $gistId | Unstar-GitHubGist
+
+# All of these options will tell you if you have starred a gist
+Test-GitHubGistStar -Gist $gistId
+Get-GitHubGist -Gist $gistId | Test-GitHubGistStar
+```
+
+#### Getting gist comments
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+# You can get all comments for a gist with any of these options:
+Get-GitHubGistComment -Gist $gistId
+Get-GitHubGist -Gist $gistId | Get-GitHubGistComment
+
+# You can retrieve an individual comment like this:
+Get-GitHubGistComment -Gist $gistId -Comment $commentId
+```
+
+#### Adding a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+
+New-GitHubGistComment -Gist $gistId -Body 'Hello World'
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId | New-GitHubGistComment -Body 'Hello World'
+```
+
+#### Changing a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+Set-GitHubGistComment -Gist $gistId -Comment $commentId -Body 'Updated comment'
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId -Comment $commentId | Set-GitHubGistComment -Body 'Updated comment'
+```
+
+#### Removing a gist comment
+```powershell
+$gistId = '6cad326836d38bd3a7ae'
+$commentId = 1507813
+
+# If you don't specify -Force, it will prompt for confirmation before it will delete the comment
+
+Remove-GitHubGistComment -Gist $gistId -Comment $commentId -Force
+
+# or with the pipeline
+Get-GitHubGist -Gist $gistId -Comment $commentId | Remove-GitHubGistComment -Force
 ```
 
 ----------

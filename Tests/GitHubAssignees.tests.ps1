@@ -107,12 +107,14 @@ try
 
         Context 'Adding and removing an assignee via parameters' {
             $issue = $repo | New-GitHubIssue -Title "Test issue"
+
             It 'Should have no assignees when created' {
                 $issue.assignee.login | Should -BeNullOrEmpty
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
             $updatedIssue = Add-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Assignee $owner.login
+
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -144,12 +146,14 @@ try
 
         Context 'Adding an assignee with the repo on the pipeline' {
             $issue = $repo | New-GitHubIssue -Title "Test issue"
+
             It 'Should have no assignees when created' {
                 $issue.assignee.login | Should -BeNullOrEmpty
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
             $updatedIssue = $repo | Add-GitHubAssignee -Issue $issue.number -Assignee $owner.login
+
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -181,12 +185,14 @@ try
 
         Context 'Adding an assignee with the issue on the pipeline' {
             $issue = $repo | New-GitHubIssue -Title "Test issue"
+
             It 'Should have no assignees when created' {
                 $issue.assignee.login | Should -BeNullOrEmpty
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
             $updatedIssue = $issue | Add-GitHubAssignee -Assignee $owner.login
+
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -218,12 +224,14 @@ try
 
         Context 'Adding an assignee with the assignee user object on the pipeline' {
             $issue = $repo | New-GitHubIssue -Title "Test issue"
+
             It 'Should have no assignees when created' {
                 $issue.assignee.login | Should -BeNullOrEmpty
                 $issue.assignees | Should -BeNullOrEmpty
             }
 
             $updatedIssue = $owner | Add-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number
+
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }
@@ -239,6 +247,7 @@ try
             }
 
             $updatedIssue = $owner | Remove-GitHubAssignee -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Force
+
             It 'Should have returned the same issue' {
                 $updatedIssue.number | Should -Be $issue.number
             }

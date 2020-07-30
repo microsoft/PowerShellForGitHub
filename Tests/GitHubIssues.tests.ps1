@@ -161,7 +161,6 @@ try
             for ($i = 0; $i -lt 4; $i++)
             {
                 $newIssues += New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
-                Start-Sleep -Seconds 1 # Needed to ensure that there is a unique creation timestamp between issues
             }
 
             $newIssues[0] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
@@ -547,6 +546,7 @@ try
             }
 
             Lock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
+
             $timeline = @(Get-GitHubIssueTimeline -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number)
             It 'Should have an event now' {
                 $timeline.Count | Should -Be 1

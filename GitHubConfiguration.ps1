@@ -147,6 +147,11 @@ function Set-GitHubConfiguration
     .PARAMETER RetryDelaySeconds
         The number of seconds to wait before retrying a command again after receiving a 202 response.
 
+    .PARAMETER StateChangeDelaySeconds
+        The number of seconds to wait before returning the result after executing a command that
+        may result in a state change on the server.  This is intended to only be used during test
+        execution in order to increase reliability.
+
     .PARAMETER SuppressNoTokenWarning
         If an Access Token has not been configured, this module will provide a warning to the user
         informing them of this, once per session.  If it is expected that this module will regularly
@@ -227,6 +232,8 @@ function Set-GitHubConfiguration
         [int] $MultiRequestProgressThreshold,
 
         [int] $RetryDelaySeconds,
+
+        [int] $StateChangeDelaySeconds,
 
         [switch] $SuppressNoTokenWarning,
 
@@ -312,6 +319,7 @@ function Get-GitHubConfiguration
             'LogTimeAsUtc',
             'MultiRequestProgressThreshold',
             'RetryDelaySeconds',
+            'StateChangeDelaySeconds',
             'SuppressNoTokenWarning',
             'SuppressTelemetryReminder',
             'TestConfigSettingsHash',
@@ -466,16 +474,18 @@ function Resolve-PropertyValue
     if ($Type -eq 'Boolean') { $typeType = [Boolean] }
     if ($Type -eq 'Int32') { $typeType = [Int32] }
     if ($Type -eq 'Int64') { $typeType = [Int64] }
+    $numberEquivalents = @('Int32', 'Int64', 'long', 'int')
 
     if (Test-PropertyExists -InputObject $InputObject -Name $Name)
     {
-        if ($InputObject.$Name -is $typeType)
+        if (($InputObject.$Name -is $typeType) -or
+            (($Type -in $numberEquivalents) -and ($InputObject.$Name.GetType().Name -in $numberEquivalents)))
         {
             return $InputObject.$Name
         }
         else
         {
-            $message = "The locally cached $Name configuration was not of type $Type.  Reverting to default value."
+            $message = "The locally cached $Name configuration was not of type $Type (it was $($InputObject.$Name.GetType())).  Reverting to default value."
             Write-Log -Message $message -Level Warning
             return $DefaultValue
         }
@@ -657,6 +667,7 @@ function Import-GitHubConfiguration
         'logTimeAsUtc' = $false
         'multiRequestProgressThreshold' = 10
         'retryDelaySeconds' = 30
+        'stateChangeDelaySeconds' = 0
         'suppressNoTokenWarning' = $false
         'suppressTelemetryReminder' = $false
         'webRequestTimeoutSec' = 0

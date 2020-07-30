@@ -235,7 +235,6 @@ filter Get-GitHubLicense
         the background, enabling the command prompt to provide status information.
         If not supplied here, the DefaultNoStatus configuration property value will be used.
 
-
     .INPUTS
         [String]
         GitHub.Branch
@@ -249,9 +248,10 @@ filter Get-GitHubLicense
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
-
 
     .OUTPUTS
         GitHub.License
@@ -487,9 +487,10 @@ filter Get-GitHubCodeOfConduct
         GitHub.Project
         GitHub.ProjectCard
         GitHub.ProjectColumn
+        GitHub.Reaction
         GitHub.Release
+        GitHub.ReleaseAsset
         GitHub.Repository
-
 
     .OUTPUTS
         GitHub.CodeOfConduct

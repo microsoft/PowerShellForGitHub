@@ -80,7 +80,6 @@ try
         BeforeAll {
             $repositoryName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repositoryName
-
             Initialize-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
         }
 

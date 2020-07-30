@@ -29,17 +29,17 @@ function Invoke-GHRestMethod
 {
 <#
     .SYNOPSIS
-        A wrapper around Invoke-WebRequest that understands the Store API.
+        A wrapper around Invoke-WebRequest that understands the GitHub API.
 
     .DESCRIPTION
-        A very heavy wrapper around Invoke-WebRequest that understands the Store API and
+        A very heavy wrapper around Invoke-WebRequest that understands the GitHub API and
         how to perform its operation with and without console status updates.  It also
         understands how to parse and handle errors from the REST calls.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER UriFragment
-        The unique, tail-end, of the REST URI that indicates what Store REST action will
+        The unique, tail-end, of the REST URI that indicates what GitHub REST action will
         be performed.  This should not start with a leading "/".
 
     .PARAMETER Method
@@ -58,9 +58,21 @@ function Invoke-GHRestMethod
         Specify the media type in the Accept header.  Different types of commands may require
         different media types.
 
+    .PARAMETER InFile
+        Gets the content of the web request from the specified file.  Only valid for POST requests.
+
+    .PARAMETER ContentType
+        Specifies the value for the MIME Content-Type header of the request.  This will usually
+        be configured correctly automatically.  You should only specify this under advanced
+        situations (like if the extension of InFile is of a type unknown to this module).
+
     .PARAMETER ExtendedResult
         If specified, the result will be a PSObject that contains the normal result, along with
         the response code and other relevant header detail content.
+
+    .PARAMETER Save
+        If specified, this will save the result to a temporary file and return the FileInfo of that
+        temporary file.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -90,6 +102,7 @@ function Invoke-GHRestMethod
 
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
+        [FileInfo] - The temporary file created for the downloaded file if -Save was specified.
 
     .EXAMPLE
         Invoke-GHRestMethod -UriFragment "users/octocat" -Method Get -Description "Get information on the octocat user"
@@ -120,7 +133,14 @@ function Invoke-GHRestMethod
 
         [string] $AcceptHeader = $script:defaultAcceptHeader,
 
+        [ValidateNotNullOrEmpty()]
+        [string] $InFile,
+
+        [string] $ContentType = $script:defaultJsonBodyContentType,
+
         [switch] $ExtendedResult,
+
+        [switch] $Save,
 
         [string] $AccessToken,
 
@@ -134,6 +154,32 @@ function Invoke-GHRestMethod
     )
 
     Invoke-UpdateCheck
+
+    # Minor error checking around $InFile
+    if ($PSBoundParameters.ContainsKey('InFile') -and ($Method -ne 'Post'))
+    {
+        $message = '-InFile may only be specified with Post requests.'
+        Write-Log -Message $message -Level Error
+        throw $message
+    }
+
+    if ($PSBoundParameters.ContainsKey('InFile') -and (-not [String]::IsNullOrWhiteSpace($Body)))
+    {
+        $message = 'Cannot specify BOTH InFile and Body'
+        Write-Log -Message $message -Level Error
+        throw $message
+    }
+
+    if ($PSBoundParameters.ContainsKey('InFile'))
+    {
+        $InFile = Resolve-UnverifiedPath -Path $InFile
+        if (-not (Test-Path -Path $InFile -PathType Leaf))
+        {
+            $message = "Specified file [$InFile] does not exist or is inaccessible."
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+    }
 
     # Normalize our Uri fragment.  It might be coming from a method implemented here, or it might
     # be coming from the Location header in a previous response.  Either way, we don't want there
@@ -191,7 +237,23 @@ function Invoke-GHRestMethod
 
     if ($Method -in $ValidBodyContainingRequestMethods)
     {
-        $headers.Add("Content-Type", "application/json; charset=UTF-8")
+        if ($PSBoundParameters.ContainsKey('InFile') -and [String]::IsNullOrWhiteSpace($ContentType))
+        {
+            $file = Get-Item -Path $InFile
+            $localTelemetryProperties['FileExtension'] = $file.Extension
+
+            if ($script:extensionToContentType.ContainsKey($file.Extension))
+            {
+                $ContentType = $script:extensionToContentType[$file.Extension]
+            }
+            else
+            {
+                $localTelemetryProperties['UnknownExtension'] = $file.Extension
+                $ContentType = $script:defaultInFileContentType
+            }
+        }
+
+        $headers.Add("Content-Type", $ContentType)
     }
 
     if (-not $PSCmdlet.ShouldProcess($url, "Invoke-WebRequest"))
@@ -200,6 +262,13 @@ function Invoke-GHRestMethod
     }
 
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+
+    # When $Save is in use, we need to remember what file we're saving the result to.
+    $outFile = [String]::Empty
+    if ($Save)
+    {
+        $outFile = New-TemporaryFile
+    }
 
     try
     {
@@ -214,8 +283,10 @@ function Invoke-GHRestMethod
         $params.Add("UseDefaultCredentials", $true)
         $params.Add("UseBasicParsing", $true)
         $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+        if ($PSBoundParameters.ContainsKey('InFile')) { $params.Add('InFile', $InFile) }
+        if (-not [String]::IsNullOrWhiteSpace($outFile)) { $params.Add('OutFile', $outFile) }
 
-        if ($Method -in $ValidBodyContainingRequestMethods -and (-not [String]::IsNullOrEmpty($Body)))
+        if (($Method -in $ValidBodyContainingRequestMethods) -and (-not [String]::IsNullOrEmpty($Body)))
         {
             $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
             $params.Add("Body", $bodyAsBytes)
@@ -230,6 +301,7 @@ function Invoke-GHRestMethod
         $ProgressPreference = 'SilentlyContinue'
 
         [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+
         $result = Invoke-WebRequest @params
 
         if ($Method -eq 'Delete')
@@ -248,7 +320,23 @@ function Invoke-GHRestMethod
         $finalResult = $result.Content
         try
         {
-            $finalResult = $finalResult | ConvertFrom-Json
+            if ($Save)
+            {
+                $finalResult = Get-Item -Path $outFile
+            }
+            else
+            {
+                $finalResult = $finalResult | ConvertFrom-Json
+            }
+        }
+        catch [InvalidOperationException]
+        {
+            # In some cases, the returned data might have two different keys of the same characters
+            # but different casing (this can happen with gists with two files named 'a.txt' and 'A.txt').
+            # PowerShell 6 introduced the -AsHashtable switch to work around this issue, but this
+            # module wants to be compatible down to PowerShell 4, so we're unable to use that feature.
+            Write-Log -Message 'The returned object likely contains keys that differ only in casing.  Unable to convert to an object.  Returning the raw JSON as a fallback.' -Level Warning
+            $finalResult = $finalResult
         }
         catch [ArgumentException]
         {
@@ -258,7 +346,7 @@ function Invoke-GHRestMethod
             $finalResult = $finalResult
         }
 
-        if (-not (Get-GitHubConfiguration -Name DisableSmarterObjects))
+        if ((-not $Save) -and (-not (Get-GitHubConfiguration -Name DisableSmarterObjects)))
         {
             # In the case of getting raw content from the repo, we'll end up with a large object/byte
             # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
@@ -273,28 +361,31 @@ function Invoke-GHRestMethod
             }
         }
 
-        $links = $result.Headers['Link'] -split ','
-        $nextLink = $null
-        $nextPageNumber = 1
-        $numPages = 1
-        $since = 0
-        foreach ($link in $links)
+        if ($result.Headers.Count -gt 0)
         {
-            if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
+            $links = $result.Headers['Link'] -split ','
+            $nextLink = $null
+            $nextPageNumber = 1
+            $numPages = 1
+            $since = 0
+            foreach ($link in $links)
             {
-                $nextLink = $Matches[1]
-                $nextPageNumber = [int]$Matches[2]
-            }
-            elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
-            {
-                # Special case scenario for the users endpoint.
-                $nextLink = $Matches[1]
-                $since = [int]$Matches[2]
-                $numPages = 0 # Signifies an unknown number of pages.
-            }
-            elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
-            {
-                $numPages = [int]$Matches[1]
+                if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
+                {
+                    $nextLink = $Matches[1]
+                    $nextPageNumber = [int]$Matches[2]
+                }
+                elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
+                {
+                    # Special case scenario for the users endpoint.
+                    $nextLink = $Matches[1]
+                    $since = [int]$Matches[2]
+                    $numPages = 0 # Signifies an unknown number of pages.
+                }
+                elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
+                {
+                    $numPages = [int]$Matches[1]
+                }
             }
         }
 
@@ -319,6 +410,16 @@ function Invoke-GHRestMethod
                 Start-Sleep -Seconds ($retryDelaySeconds)
                 return (Invoke-GHRestMethod @PSBoundParameters)
             }
+        }
+
+        # Allow for a delay after a command that may result in a state change in order to
+        #increase the reliability of the UT's which attempt multiple successive state change
+        # on the same object.
+        $stateChangeDelaySeconds = $(Get-GitHubConfiguration -Name 'StateChangeDelaySeconds')
+        $stateChangeMethods = @('Delete', 'Post', 'Patch', 'Put')
+        if (($stateChangeDelaySeconds -gt 0) -and ($Method -in $stateChangeMethods))
+        {
+            Start-Sleep -Seconds $stateChangeDelaySeconds
         }
 
         if ($ExtendedResult)
@@ -470,7 +571,7 @@ function Invoke-GHRestMethodMultipleResult
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
     .PARAMETER UriFragment
-        The unique, tail-end, of the REST URI that indicates what Store REST action will
+        The unique, tail-end, of the REST URI that indicates what GitHub REST action will
         be performed.  This should *not* include the 'top' and 'max' parameters.  These
         will be automatically added as needed.
 
@@ -1035,3 +1136,104 @@ function Get-MediaAcceptHeader
 
     return $resultHeaders
 }
+
+@{
+    defaultJsonBodyContentType = 'application/json; charset=UTF-8'
+    defaultInFileContentType = 'text/plain'
+
+    # Compiled mostly from https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+    extensionToContentType = @{
+        '.3gp'    = 'video/3gpp' # 3GPP audio/video container
+        '.3g2'    = 'video/3gpp2' # 3GPP2 audio/video container
+        '.7z'     = 'application/x-7z-compressed' # 7-zip archive
+        '.aac'    = 'audio/aac' # AAC audio
+        '.abw'    = 'application/x-abiword' # AbiWord document
+        '.arc'    = 'application/x-freearc' # Archive document (multiple files embedded)
+        '.avi'    = 'video/x-msvideo' # AVI: Audio Video Interleave
+        '.azw'    = 'application/vnd.amazon.ebook' # Amazon Kindle eBook format
+        '.bin'    = 'application/octet-stream' # Any kind of binary data
+        '.bmp'    = 'image/bmp' # Windows OS/2 Bitmap Graphics
+        '.bz'     = 'application/x-bzip' # BZip archive
+        '.bz2'    = 'application/x-bzip2' # BZip2 archive
+        '.csh'    = 'application/x-csh' # C-Shell script
+        '.css'    = 'text/css' # Cascading Style Sheets (CSS)
+        '.csv'    = 'text/csv' # Comma-separated values (CSV)
+        '.deb'    = 'application/octet-stream' # Standard Uix archive format
+        '.doc'    = 'application/msword' # Microsoft Word
+        '.docx'   = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' # Microsoft Word (OpenXML)
+        '.eot'    = 'application/vnd.ms-fontobject' # MS Embedded OpenType fonts
+        '.epub'   = 'application/epub+zip' # Electronic publication (EPUB)
+        '.exe'    = 'application/vnd.microsoft.portable-executable' # Microsoft application executable
+        '.gz'     = 'application/x-gzip' # GZip Compressed Archive
+        '.gif'    = 'image/gif' # Graphics Interchange Format (GIF)
+        '.htm'    = 'text/html' # HyperText Markup Language (HTML)
+        '.html'   = 'text/html' # HyperText Markup Language (HTML)
+        '.ico'    = 'image/vnd.microsoft.icon' # Icon format
+        '.ics'    = 'text/calendar' # iCalendar format
+        '.ini'    = 'text/plain' # Text-based configuration file
+        '.jar'    = 'application/java-archive' # Java Archive (JAR)
+        '.jpeg'   = 'image/jpeg' # JPEG images
+        '.jpg'    = 'image/jpeg' # JPEG images
+        '.js'     = 'text/javascript' # JavaScript
+        '.json'   = 'application/json' # JSON format
+        '.jsonld' = 'application/ld+json' # JSON-LD format
+        '.mid'    = 'audio/midi' # Musical Instrument Digital Interface (MIDI)
+        '.midi'   = 'audio/midi' # Musical Instrument Digital Interface (MIDI)
+        '.mjs'    = 'text/javascript' # JavaScript module
+        '.mp3'    = 'audio/mpeg' # MP3 audio
+        '.mp4'    = 'video/mp4' # MP3 video
+        '.mov'    = 'video/quicktime' # Quicktime video
+        '.mpeg'   = 'video/mpeg' # MPEG Video
+        '.mpg'    = 'video/mpeg' # MPEG Video
+        '.mpkg'   = 'application/vnd.apple.installer+xml' # Apple Installer Package
+        '.msi'    = 'application/octet-stream' # Windows Installer package
+        '.msix'   = 'application/octet-stream' # Windows Installer package
+        '.mkv'    = 'video/x-matroska' # Matroska Multimedia Container
+        '.odp'    = 'application/vnd.oasis.opendocument.presentation' # OpenDocument presentation document
+        '.ods'    = 'application/vnd.oasis.opendocument.spreadsheet' # OpenDocument spreadsheet document
+        '.odt'    = 'application/vnd.oasis.opendocument.text' # OpenDocument text document
+        '.oga'    = 'audio/ogg' # OGG audio
+        '.ogg'    = 'application/ogg' # OGG audio or video
+        '.ogv'    = 'video/ogg' # OGG video
+        '.ogx'    = 'application/ogg' # OGG
+        '.opus'   = 'audio/opus' # Opus audio
+        '.otf'    = 'font/otf' # OpenType font
+        '.png'    = 'image/png' # Portable Network Graphics
+        '.pdf'    = 'application/pdf' # Adobe Portable Document Format (PDF)
+        '.php'    = 'application/x-httpd-php' # Hypertext Preprocessor (Personal Home Page)
+        '.pkg'    = 'application/octet-stream' # mac OS X installer file
+        '.ps1'    = 'text/plain' # PowerShell script file
+        '.psd1'   = 'text/plain' # PowerShell module definition file
+        '.psm1'   = 'text/plain' # PowerShell module file
+        '.ppt'    = 'application/vnd.ms-powerpoint' # Microsoft PowerPoint
+        '.pptx'   = 'application/vnd.openxmlformats-officedocument.presentationml.presentation' # Microsoft PowerPoint (OpenXML)
+        '.rar'    = 'application/vnd.rar' # RAR archive
+        '.rtf'    = 'application/rtf' # Rich Text Format (RTF)
+        '.rpm'    = 'application/octet-stream' # Red Hat Linux package format
+        '.sh'     = 'application/x-sh' # Bourne shell script
+        '.svg'    = 'image/svg+xml' # Scalable Vector Graphics (SVG)
+        '.swf'    = 'application/x-shockwave-flash' # Small web format (SWF) or Adobe Flash document
+        '.tar'    = 'application/x-tar' # Tape Archive (TAR)
+        '.tif'    = 'image/tiff' # Tagged Image File Format (TIFF)
+        '.tiff'   = 'image/tiff' # Tagged Image File Format (TIFF)
+        '.ts'     = 'video/mp2t' # MPEG transport stream
+        '.ttf'    = 'font/ttf' # TrueType Font
+        '.txt'    = 'text/plain' # Text (generally ASCII or ISO 8859-n)
+        '.vsd'    = 'application/vnd.visio' # Microsoft Visio
+        '.vsix'   = 'application/zip' # Visual Studio application package archive
+        '.wav'    = 'audio/wav' # Waveform Audio Format
+        '.weba'   = 'audio/webm' # WEBM audio
+        '.webm'   = 'video/webm' # WEBM video
+        '.webp'   = 'image/webp' # WEBP image
+        '.woff'   = 'font/woff' # Web Open Font Format (WOFF)
+        '.woff2'  = 'font/woff2' # Web Open Font Format (WOFF)
+        '.xhtml'  = 'application/xhtml+xml' # XHTML
+        '.xls'    = 'application/vnd.ms-excel' # Microsoft Excel
+        '.xlsx'   = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' # Microsoft Excel (OpenXML)
+        '.xml'    = 'application/xml' # XML
+        '.xul'    = 'application/vnd.mozilla.xul+xml' # XUL
+        '.zip'    = 'application/zip' # ZIP archive
+    }
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
