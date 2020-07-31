@@ -927,7 +927,7 @@ filter New-GitHubRepositoryBranchProtectionRule
         {
             $restrictPushTeamList = $teams | Where-Object -FilterScript {
                 $RestrictPushTeams -contains $_.name }
-            $restrictPushTeamSlugs['teams'] = @($restrictPushTeamList.slug)
+            $restrictPushTeamSlugs = @($restrictPushTeamList.slug)
         }
 
         $restrictions = @{
