@@ -249,6 +249,11 @@ function Set-GitHubConfiguration
         $persistedConfig = Read-GitHubConfiguration -Path $script:configurationFilePath
     }
 
+    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration', 'Set'))
+    {
+        return
+    }
+
     $properties = Get-Member -InputObject $script:configuration -MemberType NoteProperty | Select-Object -ExpandProperty Name
     foreach ($name in $properties)
     {
@@ -263,11 +268,6 @@ function Set-GitHubConfiguration
                 Add-Member -InputObject $persistedConfig -Name $name -Value $value -MemberType NoteProperty -Force
             }
         }
-    }
-
-    if (-not $PSCmdlet.ShouldProcess('GitHubConfiguration', 'Save'))
-    {
-        return
     }
 
     if (-not $SessionOnly)

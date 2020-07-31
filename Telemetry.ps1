@@ -154,11 +154,6 @@ function Invoke-SendTelemetryEvent
     $body = ConvertTo-Json -InputObject $TelemetryEvent -Depth $jsonConversionDepth -Compress
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
 
-    if (-not $PSCmdlet.ShouldProcess($uri, "Invoke-WebRequest"))
-    {
-        return
-    }
-
     try
     {
         Write-Log -Message "Sending telemetry event data to $uri [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
