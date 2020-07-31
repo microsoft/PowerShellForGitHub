@@ -861,8 +861,13 @@ filter New-GitHubRepositoryBranchProtectionRule
     }
 
     $requiredStatusChecks = $null
-    if ($PSBoundParameters.ContainsKey('StatusChecks'))
+    if ($PSBoundParameters.ContainsKey('StatusChecks') -or
+        $PSBoundParameters.ContainsKey('RequireUpToDateBranches'))
     {
+        if ($null -eq $StatusChecks)
+        {
+            $StatusChecks = @()
+        }
         $requiredStatusChecks = @{
             strict = $RequireUpToDateBranches.ToBool()
             contexts = $StatusChecks

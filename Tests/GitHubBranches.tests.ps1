@@ -672,7 +672,6 @@ try
             Context 'When specifying the "Uri" parameter through the pipeline' {
                 BeforeAll {
                     $rule = New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName
-
                 }
 
                 It 'Should not throw' {
@@ -689,7 +688,6 @@ try
             Context 'When specifying the "Uri" and "BranchName" parameters through the pipeline' {
                 BeforeAll {
                     $rule = New-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName
-
                 }
 
                 It 'Should not throw' {
