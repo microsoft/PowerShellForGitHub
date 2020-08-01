@@ -961,27 +961,29 @@ filter New-GitHubRepositoryBranchProtectionRule
         $hashBody['allow_deletions'] = $AllowDeletions.ToBool()
     }
 
-    if ($PSCmdlet.ShouldProcess(
+    if (-not $PSCmdlet.ShouldProcess(
             "'$BranchName' branch of repository '$RepositoryName'",
             'Create GitHub Repository Branch Protection Rule'))
     {
-        $jsonConversionDepth = 3
-
-        $params = @{
-            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
-            Body = (ConvertTo-Json -InputObject $hashBody -Depth $jsonConversionDepth)
-            Description = "Setting $BranchName branch protection status for $RepositoryName"
-            Method = 'Put'
-            AcceptHeader = $script:lukeCageAcceptHeader
-            AccessToken = $AccessToken
-            TelemetryEventName = $MyInvocation.MyCommand.Name
-            TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-                    -ConfigValueName DefaultNoStatus)
-        }
-
-        return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
+        return
     }
+
+    $jsonConversionDepth = 3
+
+    $params = @{
+        UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
+        Body = (ConvertTo-Json -InputObject $hashBody -Depth $jsonConversionDepth)
+        Description = "Setting $BranchName branch protection status for $RepositoryName"
+        Method = 'Put'
+        AcceptHeader = $script:lukeCageAcceptHeader
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
+                -ConfigValueName DefaultNoStatus)
+    }
+
+    return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
 }
 
 filter Remove-GitHubRepositoryBranchProtectionRule
@@ -1096,23 +1098,25 @@ filter Remove-GitHubRepositoryBranchProtectionRule
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
+    if (-not $PSCmdlet.ShouldProcess("'$BranchName' branch of repository '$RepositoryName'",
             'Remove GitHub Repository Branch Protection Rule'))
     {
-        $params = @{
-            UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
-            Description = "Removing $BranchName branch protection rule for $RepositoryName"
-            Method = 'Delete'
-            AcceptHeader = $script:lukeCageAcceptHeader
-            AccessToken = $AccessToken
-            TelemetryEventName = $MyInvocation.MyCommand.Name
-            TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-                    -ConfigValueName DefaultNoStatus)
-        }
-
-        return Invoke-GHRestMethod @params | Out-Null
+        return
     }
+
+    $params = @{
+        UriFragment = "repos/$OwnerName/$RepositoryName/branches/$BranchName/protection"
+        Description = "Removing $BranchName branch protection rule for $RepositoryName"
+        Method = 'Delete'
+        AcceptHeader = $script:lukeCageAcceptHeader
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
+                -ConfigValueName DefaultNoStatus)
+    }
+
+    return Invoke-GHRestMethod @params | Out-Null
 }
 
 filter Add-GitHubBranchAdditionalProperties
