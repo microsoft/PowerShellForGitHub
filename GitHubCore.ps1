@@ -10,6 +10,7 @@
     hellcatAcceptHeader = 'application/vnd.github.hellcat-preview+json'
     inertiaAcceptHeader = 'application/vnd.github.inertia-preview+json'
     londonAcceptHeader = 'application/vnd.github.london-preview+json'
+    lukeCageAcceptHeader = 'application/vnd.github.luke-cage-preview+json'
     machineManAcceptHeader = 'application/vnd.github.machine-man-preview'
     mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
     mockingbirdAcceptHeader = 'application/vnd.github.mockingbird-preview'
