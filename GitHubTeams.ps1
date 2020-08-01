@@ -388,9 +388,6 @@ function New-GitHubTeam
 
         You can also pipe in a list of GitHub users that were returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
-        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
         Justification = 'One or more parameters (like NoStatus) are only referenced by helper
         methods which get access to it from the stack via Get-Variable -Scope 1.')]
@@ -498,6 +495,11 @@ function New-GitHubTeam
             $hashBody['parent_team_id'] = $team.id
         }
 
+        if (-not $PSCmdlet.ShouldProcess($TeamName, 'Create GitHub Team'))
+        {
+            return
+        }
+
         $params = @{
             UriFragment = $uriFragment
             Body = (ConvertTo-Json -InputObject $hashBody)
@@ -568,9 +570,6 @@ filter Set-GitHubTeam
 
         You can also pipe in a GitHub team that was returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
-        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
         Justification = 'One or more parameters (like NoStatus) are only referenced by helper
         methods which get access to it from the stack via Get-Variable -Scope 1.')]
@@ -647,6 +646,11 @@ filter Set-GitHubTeam
         $hashBody['parent_team_id'] = $parentTeam.id
     }
 
+    if (-not $PSCmdlet.ShouldProcess($TeamName, 'Set GitHub Team'))
+    {
+        return
+    }
+
     $params = @{
         UriFragment = $uriFragment
         Body = (ConvertTo-Json -InputObject $hashBody)
@@ -715,9 +719,6 @@ filter Remove-GitHubTeam
 
         You can also pipe in a GitHub team that was returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSShouldProcess', '',
-        Justification = 'Methods called within here make use of PSShouldProcess, and the switch
-        is passed on to them inherently.')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
         Justification = 'One or more parameters (like NoStatus) are only referenced by helper
         methods which get access to it from the stack via Get-Variable -Scope 1.')]
@@ -781,23 +782,25 @@ filter Remove-GitHubTeam
         $ConfirmPreference = 'None'
     }
 
-    if ($PSCmdlet.ShouldProcess($TeamName, "Remove Team"))
+    if (-not $PSCmdlet.ShouldProcess($TeamName, 'Remove Github Team'))
     {
-        Write-InvocationLog
-
-        $params = @{
-            UriFragment = $uriFragment
-            Method = 'Delete'
-            Description =  "Deleting $TeamName"
-            AccessToken = $AccessToken
-            TelemetryEventName = $MyInvocation.MyCommand.Name
-            TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-                -Name NoStatus -ConfigValueName DefaultNoStatus)
-        }
-
-        Invoke-GHRestMethod @params | Out-Null
+        return
     }
+
+    Write-InvocationLog
+
+    $params = @{
+        UriFragment = $uriFragment
+        Method = 'Delete'
+        Description =  "Deleting $TeamName"
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
+            -Name NoStatus -ConfigValueName DefaultNoStatus)
+    }
+
+    Invoke-GHRestMethod @params | Out-Null
 }
 
 filter Add-GitHubTeamAdditionalProperties
