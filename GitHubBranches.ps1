@@ -285,8 +285,6 @@ filter New-GitHubRepositoryBranch
             OwnerName = $OwnerName
             RepositoryName = $RepositoryName
             BranchName = $BranchName
-            Whatif = $false
-            Confirm = $false
         }
         if ($PSBoundParameters.ContainsKey('AccessToken'))
         {
