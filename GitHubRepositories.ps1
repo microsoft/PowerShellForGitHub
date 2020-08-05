@@ -2543,6 +2543,7 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
             Position = 1,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -2662,6 +2663,7 @@ filter Enable-GitHubRepositorySecurityFix
             Position = 1,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
@@ -2780,6 +2782,7 @@ filter Disable-GitHubRepositorySecurityFix
             Position = 1,
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
         [string] $Uri,
 
         [string] $AccessToken,
