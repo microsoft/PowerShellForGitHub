@@ -478,8 +478,6 @@ function New-GitHubTeam
             $getGitHubTeamParms = @{
                 OrganizationName = $OrganizationName
                 TeamName = $ParentTeamName
-                Whatif = $false
-                Confirm = $false
             }
             if ($PSBoundParameters.ContainsKey('AccessToken'))
             {
@@ -615,8 +613,6 @@ filter Set-GitHubTeam
 
     $getGitHubTeamParms = @{
         OrganizationName = $OrganizationName
-        Whatif = $false
-        Confirm = $false
     }
     if ($PSBoundParameters.ContainsKey('AccessToken'))
     {
@@ -761,8 +757,6 @@ filter Remove-GitHubTeam
     $getGitHubTeamParms = @{
         OrganizationName = $OrganizationName
         TeamName = $TeamName
-        Whatif = $false
-        Confirm = $false
     }
     if ($PSBoundParameters.ContainsKey('AccessToken'))
     {
