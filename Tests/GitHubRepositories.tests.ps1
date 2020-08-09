@@ -1289,6 +1289,7 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
         }
 
         Context 'When Enabling GitHub Repository Security Fixes' {
@@ -1306,6 +1307,7 @@ try
     Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url
         }
 
