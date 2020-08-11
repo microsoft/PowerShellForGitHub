@@ -1,6 +1,35 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
+  [0.15.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.0) - (2020/08/10)
+### Overview:
+This is a significant update that has a number of breaking changes amongst its payload.
+
+### Breaking Changes:
+
+
+### Features:
++ Example description
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
++ Example description
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
+
+### Fixes:
+- Example description
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
+
+- Module update check needs to be able to handle when the module in use is newer than the published
+  version (since publication to PowerShellGallery happens a few hours after the version is updated
+  in GitHub).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/204) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/efdcbfa4a086bd4606ec2c32ef67db8553711781)
+
+
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+
+------
+
   [0.14.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.14.0) - (2020/05/30)
 ### Features:
 + The module will now asynchronously check for updates up to once per day.  This can be disabled
