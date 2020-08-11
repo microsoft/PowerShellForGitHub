@@ -749,6 +749,8 @@ filter Remove-GitHubTeam
         [switch] $NoStatus
     )
 
+    Write-InvocationLog
+
     $telemetryProperties = @{
         OrganizationName = (Get-PiiSafeString -PlainText $RepositoryName)
         TeamName = (Get-PiiSafeString -PlainText $TeamName)
@@ -780,8 +782,6 @@ filter Remove-GitHubTeam
     {
         return
     }
-
-    Write-InvocationLog
 
     $params = @{
         UriFragment = $uriFragment
@@ -853,7 +853,7 @@ filter Add-GitHubTeamAdditionalProperties
                 }
             }
 
-            Add-Member -InputObject $item -Name 'OrganizationName' -value $organizationName -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'OrganizationName' -Value $organizationName -MemberType NoteProperty -Force
 
             # Apply these properties to any embedded parent teams as well.
             if ($null -ne $item.parent)

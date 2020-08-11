@@ -15,8 +15,6 @@ param()
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-Set-StrictMode -Version 1.0
-
 try
 {
     # Define Script-scoped, readonly, hidden variables.
