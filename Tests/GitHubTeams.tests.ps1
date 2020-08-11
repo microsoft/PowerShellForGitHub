@@ -685,15 +685,15 @@ try
                 $description = 'Team Description'
 
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
 
-                It 'Should not throw an exception' {
-                    { $team |Remove-GitHubTeam -Force } | Should -Not -Throw
-                }
+            It 'Should not throw an exception' {
+                { $team |Remove-GitHubTeam -Force } | Should -Not -Throw
+            }
 
-                It 'Should have removed the team' {
-                    { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
-                        Should -Throw
-                }
+            It 'Should have removed the team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
+                    Should -Throw
             }
         }
     }
