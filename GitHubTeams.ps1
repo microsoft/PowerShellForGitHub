@@ -45,12 +45,6 @@ filter Get-GitHubTeam
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -81,7 +75,6 @@ filter Get-GitHubTeam
     [OutputType(
         {$script:GitHubTeamTypeName},
         {$script:GitHubTeamSummaryTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param
     (
         [Parameter(ParameterSetName='Elements')]
@@ -116,9 +109,7 @@ filter Get-GitHubTeam
         [ValidateNotNullOrEmpty()]
         [string] $TeamId,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -165,7 +156,6 @@ filter Get-GitHubTeam
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params |
@@ -228,12 +218,6 @@ filter Get-GitHubTeamMember
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -280,18 +264,14 @@ filter Get-GitHubTeamMember
             ParameterSetName='ID')]
         [int64] $TeamId,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
 
-    $NoStatus = Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus
-
     if ($PSCmdlet.ParameterSetName -eq 'Name')
     {
-        $teams = Get-GitHubTeam -OrganizationName $OrganizationName -AccessToken $AccessToken -NoStatus:$NoStatus
+        $teams = Get-GitHubTeam -OrganizationName $OrganizationName -AccessToken $AccessToken
         $team = $teams | Where-Object {$_.name -eq $TeamName}
         if ($null -eq $team)
         {
@@ -315,7 +295,6 @@ filter Get-GitHubTeamMember
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = $NoStatus
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubUserAdditionalProperties)
@@ -388,9 +367,6 @@ function New-GitHubTeam
 
         You can also pipe in a list of GitHub users that were returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
-        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false
@@ -568,9 +544,6 @@ filter Set-GitHubTeam
 
         You can also pipe in a GitHub team that was returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
-        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false
@@ -715,9 +688,6 @@ filter Remove-GitHubTeam
 
         You can also pipe in a GitHub team that was returned from a previous command.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
-        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false,

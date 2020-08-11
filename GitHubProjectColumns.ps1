@@ -25,12 +25,6 @@ filter Get-GitHubProjectColumn
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Project
         GitHub.ProjectCard
@@ -51,7 +45,6 @@ filter Get-GitHubProjectColumn
 #>
     [CmdletBinding(DefaultParameterSetName = 'Column')]
     [OutputType({$script:GitHubProjectColumnTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -68,9 +61,7 @@ filter Get-GitHubProjectColumn
         [Alias('ColumnId')]
         [int64] $Column,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -101,7 +92,6 @@ filter Get-GitHubProjectColumn
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -126,12 +116,6 @@ filter New-GitHubProjectColumn
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         [String]
         GitHub.Project
@@ -148,7 +132,6 @@ filter New-GitHubProjectColumn
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType({$script:GitHubProjectColumnTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
 
         [Parameter(
@@ -163,9 +146,7 @@ filter New-GitHubProjectColumn
         [Alias('Name')]
         [string] $ColumnName,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -193,7 +174,6 @@ filter New-GitHubProjectColumn
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -218,12 +198,6 @@ filter Set-GitHubProjectColumn
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.ProjectCard
         GitHub.ProjectColumn
@@ -238,7 +212,6 @@ filter Set-GitHubProjectColumn
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType({$script:GitHubProjectColumnTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -250,9 +223,7 @@ filter Set-GitHubProjectColumn
         [Alias('Name')]
         [string] $ColumnName,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -279,7 +250,6 @@ filter Set-GitHubProjectColumn
         'Method' = 'Patch'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -304,12 +274,6 @@ filter Remove-GitHubProjectColumn
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.ProjectCard
         GitHub.ProjectColumn
@@ -333,7 +297,6 @@ filter Remove-GitHubProjectColumn
         SupportsShouldProcess,
         ConfirmImpact = 'High')]
     [Alias('Delete-GitHubProjectColumn')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -343,9 +306,7 @@ filter Remove-GitHubProjectColumn
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -372,7 +333,6 @@ filter Remove-GitHubProjectColumn
         'Method' = 'Delete'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -404,12 +364,6 @@ filter Move-GitHubProjectColumn
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.ProjectCard
         GitHub.ProjectColumn
@@ -430,7 +384,6 @@ filter Move-GitHubProjectColumn
         Moves the project column with ID 999999 to the position after column with ID 888888.
 #>
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -444,9 +397,7 @@ filter Move-GitHubProjectColumn
 
         [int64] $After,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -492,7 +443,6 @@ filter Move-GitHubProjectColumn
         'Method' = 'Post'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 

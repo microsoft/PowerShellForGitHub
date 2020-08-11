@@ -31,12 +31,6 @@ filter Get-GitHubUser
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .NOTES
         The email key in the following response is the publicly visible email address from the
         user's GitHub profile page.  You only see publicly visible email addresses when
@@ -74,7 +68,6 @@ filter Get-GitHubUser
 #>
     [CmdletBinding(DefaultParameterSetName = 'ListAndSearch')]
     [OutputType({$script:GitHubUserTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             ValueFromPipeline,
@@ -87,9 +80,7 @@ filter Get-GitHubUser
         [Parameter(ParameterSetName='Current')]
         [switch] $Current,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -97,7 +88,6 @@ filter Get-GitHubUser
     $params = @{
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     if ($Current)
@@ -153,12 +143,6 @@ filter Get-GitHubUserContextualInformation
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Issue
         GitHub.Organization
@@ -185,7 +169,6 @@ filter Get-GitHubUserContextualInformation
 #>
     [CmdletBinding(DefaultParameterSetName = 'NoContext')]
     [OutputType({$script:GitHubUserContextualInformationTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -219,9 +202,7 @@ filter Get-GitHubUserContextualInformation
             ParameterSetName='PullRequest')]
         [int64] $PullRequestId,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -273,7 +254,6 @@ filter Get-GitHubUserContextualInformation
         'AcceptHeader' = $script:hagarAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethod @params
@@ -331,12 +311,6 @@ function Set-GitHubProfile
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .OUTPUTS
         GitHub.User
 
@@ -364,9 +338,7 @@ function Set-GitHubProfile
 
         [switch] $Hireable,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -392,7 +364,6 @@ function Set-GitHubProfile
         'Description' = "Updating current authenticated user"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubUserAdditionalProperties)

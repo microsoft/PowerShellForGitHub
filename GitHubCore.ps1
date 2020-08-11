@@ -96,11 +96,6 @@ function Invoke-GHRestMethod
         used as the exception bucket value in the event of an exception.  If neither is specified,
         no bucket value will be used.
 
-    .PARAMETER NoStatus
-        Deprecated switch after v0.14.0.  Kept here for the time being to reduce module churn.
-        Specifying it does nothing.  It used to control whether or not the web request would have
-        a corresponding progress UI.
-
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
         [FileInfo] - The temporary file created for the downloaded file if -Save was specified.
@@ -149,9 +144,7 @@ function Invoke-GHRestMethod
 
         [hashtable] $TelemetryProperties = @{},
 
-        [string] $TelemetryExceptionBucket = $null,
-
-        [switch] $NoStatus
+        [string] $TelemetryExceptionBucket = $null
     )
 
     Invoke-UpdateCheck
@@ -607,11 +600,6 @@ function Invoke-GHRestMethodMultipleResult
         followed.
         WARNING: This might take a while depending on how many results there are.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-
     .OUTPUTS
         [PSCustomObject[]] - The result of the REST operation, in whatever form it comes in.
 
@@ -621,16 +609,8 @@ function Invoke-GHRestMethodMultipleResult
         Gets the first set of issues associated with this project,
         with the console window showing progress while awaiting the response
         from the REST request.
-
-    .EXAMPLE
-        Invoke-GHRestMethodMultipleResult -UriFragment "repos/PowerShell/PowerShellForGitHub/issues?state=all" -Description "Get all issues" -NoStatus
-
-        Gets the first set of issues associated with this project,
-        but the request happens in the foreground and there is no additional status
-        shown to the user until a response is returned from the REST request.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     [OutputType([Object[]])]
     param(
         [Parameter(Mandatory)]
@@ -649,9 +629,7 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $TelemetryExceptionBucket = $null,
 
-        [switch] $SinglePage,
-
-        [switch] $NoStatus
+        [switch] $SinglePage
     )
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
@@ -685,7 +663,6 @@ function Invoke-GHRestMethodMultipleResult
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
-                'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
             }
 
             $result = Invoke-GHRestMethod @params

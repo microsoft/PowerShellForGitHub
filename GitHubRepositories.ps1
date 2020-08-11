@@ -91,12 +91,6 @@ filter New-GitHubRepository
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -168,9 +162,7 @@ filter New-GitHubRepository
 
         [switch] $IsTemplate,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -228,7 +220,6 @@ filter New-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -276,12 +267,6 @@ filter New-GitHubRepositoryFromTemplate
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -357,9 +342,7 @@ filter New-GitHubRepositoryFromTemplate
 
         [switch] $Private,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -401,8 +384,6 @@ filter New-GitHubRepositoryFromTemplate
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue `
-            -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -438,12 +419,6 @@ filter Remove-GitHubRepository
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -489,7 +464,7 @@ filter Remove-GitHubRepository
         DefaultParameterSetName='Elements',
         ConfirmImpact="High")]
     [Alias('Delete-GitHubRepository')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -506,9 +481,7 @@ filter Remove-GitHubRepository
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -539,7 +512,6 @@ filter Remove-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return Invoke-GHRestMethod @params
@@ -609,12 +581,6 @@ filter Get-GitHubRepository
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -672,8 +638,6 @@ filter Get-GitHubRepository
 #>
     [CmdletBinding(DefaultParameterSetName = 'AuthenticatedUser')]
     [OutputType({$script:GitHubRepositoryTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             ValueFromPipelineByPropertyName,
@@ -728,9 +692,7 @@ filter Get-GitHubRepository
         [Parameter(ParameterSetName='PublicRepos')]
         [int64] $Since,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -891,7 +853,6 @@ filter Get-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubRepositoryAdditionalProperties)
@@ -930,12 +891,6 @@ filter Rename-GitHubRepository
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -1022,9 +977,7 @@ filter Rename-GitHubRepository
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     # This method was created by mistake and is now retained to avoid a breaking change.
@@ -1113,12 +1066,6 @@ filter Set-GitHubRepository
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -1206,9 +1153,7 @@ filter Set-GitHubRepository
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -1265,7 +1210,6 @@ filter Set-GitHubRepository
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -1299,12 +1243,6 @@ filter Get-GitHubRepositoryTopic
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -1333,7 +1271,7 @@ filter Get-GitHubRepositoryTopic
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryTopicTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1348,9 +1286,7 @@ filter Get-GitHubRepositoryTopic
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -1372,7 +1308,6 @@ filter Get-GitHubRepositoryTopic
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params |
@@ -1412,12 +1347,6 @@ function Set-GitHubRepositoryTopic
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -1498,9 +1427,7 @@ function Set-GitHubRepositoryTopic
             ParameterSetName='UriClear')]
         [switch] $Clear,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     begin
@@ -1559,7 +1486,6 @@ function Set-GitHubRepositoryTopic
             'AccessToken' = $AccessToken
             'TelemetryEventName' = $MyInvocation.MyCommand.Name
             'TelemetryProperties' = $telemetryProperties
-            'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return (Invoke-GHRestMethod @params |
@@ -1608,12 +1534,6 @@ filter Get-GitHubRepositoryContributor
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -1648,7 +1568,7 @@ filter Get-GitHubRepositoryContributor
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryContributorTypeName})]
     [OutputType({$script:GitHubRepositoryContributorStatisticsTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1667,9 +1587,7 @@ filter Get-GitHubRepositoryContributor
 
         [switch] $IncludeStatistics,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -1697,7 +1615,6 @@ filter Get-GitHubRepositoryContributor
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $results = Invoke-GHRestMethodMultipleResult @params
@@ -1759,12 +1676,6 @@ filter Get-GitHubRepositoryCollaborator
                      regardless of organization membership status.
            Outside: All outside collaborators of an organization-owned repository.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -1797,7 +1708,7 @@ filter Get-GitHubRepositoryCollaborator
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryCollaboratorTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1815,9 +1726,7 @@ filter Get-GitHubRepositoryCollaborator
         [ValidateSet('All', 'Direct', 'Outside')]
         [string] $Affiliation = 'All',
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -1841,7 +1750,6 @@ filter Get-GitHubRepositoryCollaborator
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
@@ -1876,12 +1784,6 @@ filter Get-GitHubRepositoryLanguage
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -1911,7 +1813,7 @@ filter Get-GitHubRepositoryLanguage
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryLanguageTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -1926,9 +1828,7 @@ filter Get-GitHubRepositoryLanguage
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -1948,7 +1848,6 @@ filter Get-GitHubRepositoryLanguage
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
@@ -1983,12 +1882,6 @@ filter Get-GitHubRepositoryTag
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -2017,7 +1910,7 @@ filter Get-GitHubRepositoryTag
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryTagTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -2032,9 +1925,7 @@ filter Get-GitHubRepositoryTag
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2054,7 +1945,6 @@ filter Get-GitHubRepositoryTag
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethodMultipleResult @params |
@@ -2096,12 +1986,6 @@ filter Move-GitHubRepositoryOwnership
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -2130,7 +2014,7 @@ filter Move-GitHubRepositoryOwnership
         DefaultParameterSetName='Elements')]
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Alias('Transfer-GitHubRepositoryOwnership')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -2151,9 +2035,7 @@ filter Move-GitHubRepositoryOwnership
 
         [int64[]] $TeamId,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2188,7 +2070,6 @@ filter Move-GitHubRepositoryOwnership
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
@@ -2221,12 +2102,6 @@ filter Test-GitHubRepositoryVulnerabilityAlert
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -2277,9 +2152,7 @@ filter Test-GitHubRepositoryVulnerabilityAlert
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2301,8 +2174,6 @@ filter Test-GitHubRepositoryVulnerabilityAlert
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     try
@@ -2369,12 +2240,6 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -2426,9 +2291,7 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2455,8 +2318,6 @@ filter Enable-GitHubRepositoryVulnerabilityAlert
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     Invoke-GHRestMethod @params | Out-Null
@@ -2489,12 +2350,6 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -2546,9 +2401,7 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2575,8 +2428,6 @@ filter Disable-GitHubRepositoryVulnerabilityAlert
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     Invoke-GHRestMethod @params | Out-Null
@@ -2609,12 +2460,6 @@ filter Enable-GitHubRepositorySecurityFix
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -2666,9 +2511,7 @@ filter Enable-GitHubRepositorySecurityFix
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2695,8 +2538,6 @@ filter Enable-GitHubRepositorySecurityFix
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     Invoke-GHRestMethod @params
@@ -2729,12 +2570,6 @@ filter Disable-GitHubRepositorySecurityFix
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Branch
@@ -2785,9 +2620,7 @@ filter Disable-GitHubRepositorySecurityFix
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -2814,8 +2647,6 @@ filter Disable-GitHubRepositorySecurityFix
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     Invoke-GHRestMethod @params | Out-Null

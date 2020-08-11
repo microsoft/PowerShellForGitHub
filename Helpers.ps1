@@ -283,7 +283,6 @@ $script:alwaysRedactParametersForLogging = @(
 )
 
 $script:alwaysExcludeParametersForLogging = @(
-    'NoStatus'
 )
 
 function Write-InvocationLog

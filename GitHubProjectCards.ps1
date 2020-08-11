@@ -26,12 +26,6 @@ filter Get-GitHubProjectCard
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.ProjectCard
         GitHub.ProjectColumn
@@ -80,9 +74,7 @@ filter Get-GitHubProjectCard
         [Alias('ArchivedState')]
         [string] $State = 'NotArchived',
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -123,7 +115,6 @@ filter Get-GitHubProjectCard
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -156,12 +147,6 @@ filter New-GitHubProjectCard
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.IssueComment
         GitHub.Issue
@@ -191,7 +176,6 @@ filter New-GitHubProjectCard
         SupportsShouldProcess,
         DefaultParameterSetName = 'Note')]
     [OutputType({$script:GitHubProjectCardTypeName})]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -217,9 +201,7 @@ filter New-GitHubProjectCard
             ParameterSetName = 'PullRequest')]
         [int64] $PullRequestId,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -269,7 +251,6 @@ filter New-GitHubProjectCard
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -300,12 +281,6 @@ filter Set-GitHubProjectCard
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.ProjectCard
@@ -348,9 +323,7 @@ filter Set-GitHubProjectCard
         [Parameter(ParameterSetName = 'Restore')]
         [switch] $Restore,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -393,7 +366,6 @@ filter Set-GitHubProjectCard
         'Method' = 'Patch'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -418,12 +390,6 @@ filter Remove-GitHubProjectCard
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.ProjectCard
 
@@ -446,7 +412,6 @@ filter Remove-GitHubProjectCard
         SupportsShouldProcess,
         ConfirmImpact = 'High')]
     [Alias('Delete-GitHubProjectCard')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="One or more parameters (like NoStatus) are only referenced by helper methods which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(
             Mandatory,
@@ -456,9 +421,7 @@ filter Remove-GitHubProjectCard
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -485,7 +448,6 @@ filter Remove-GitHubProjectCard
         'Method' = 'Delete'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
@@ -518,12 +480,6 @@ filter Move-GitHubProjectCard
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no command line status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.ProjectCard
@@ -569,9 +525,7 @@ filter Move-GitHubProjectCard
         [Alias('ColumnId')]
         [int64] $Column,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -623,7 +577,6 @@ filter Move-GitHubProjectCard
         'Method' = 'Post'
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 

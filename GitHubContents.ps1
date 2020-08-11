@@ -53,12 +53,6 @@
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -136,9 +130,7 @@
 
         [switch] $ResultAsString,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -179,7 +171,6 @@
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
         'TelemetryProperties' = $telemetryProperties
-        'NoStatus' = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     $result = Invoke-GHRestMethodMultipleResult @params
@@ -268,12 +259,6 @@ filter Set-GitHubContent
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
      .INPUTS
         GitHub.Branch
         GitHub.Content
@@ -297,9 +282,6 @@ filter Set-GitHubContent
 
         Sets the contents of the README.md file on the master branch of the PowerShellForGithub repository.
 #>
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '',
-        Justification = 'One or more parameters (like NoStatus) are only referenced by helper
-        methods which get access to it from the stack via Get-Variable -Scope 1.')]
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false)]
@@ -353,9 +335,7 @@ filter Set-GitHubContent
 
         [string] $AuthorEmail,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -441,8 +421,6 @@ filter Set-GitHubContent
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue -Name NoStatus `
-            -ConfigValueName DefaultNoStatus)
     }
 
     try
@@ -497,11 +475,6 @@ filter Set-GitHubContent
             if ($PSBoundParameters.ContainsKey('AccessToken'))
             {
                 $getGitHubContentParms['AccessToken'] = $AccessToken
-            }
-
-            if ($PSBoundParameters.ContainsKey('NoStatus'))
-            {
-                $getGitHubContentParms['NoStatus'] = $NoStatus
             }
 
             $object = Get-GitHubContent @getGitHubContentParms

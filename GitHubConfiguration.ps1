@@ -75,13 +75,6 @@ function Set-GitHubConfiguration
         Change the Application Insights instance that telemetry will be reported to (if telemetry
         hasn't been disabled via DisableTelemetry).
 
-    .PARAMETER DefaultNoStatus
-        Control if the -NoStatus switch should be passed-in by default to all methods.
-        The -NoStatus switch has been deprecated.  Commands in this module no longer display status
-        on the console, thus passing in -NoStatus to a command no longer has any impact.
-        Therefore, the value of this configuration setting also no longer has any impact on
-        command execution.
-
     .PARAMETER DefaultOwnerName
         The owner name that should be used with a command that takes OwnerName as a parameter
         when no value has been supplied.
@@ -201,8 +194,6 @@ function Set-GitHubConfiguration
 
         [string] $ApplicationInsightsKey,
 
-        [switch] $DefaultNoStatus,
-
         [string] $DefaultOwnerName,
 
         [string] $DefaultRepositoryName,
@@ -307,7 +298,6 @@ function Get-GitHubConfiguration
         [ValidateSet(
             'ApiHostName',
             'ApplicationInsightsKey',
-            'DefaultNoStatus',
             'DefaultOwnerName',
             'DefaultRepositoryName',
             'DisableLogging',
@@ -665,7 +655,6 @@ function Import-GitHubConfiguration
         'disableSmarterObjects' = $false
         'disableTelemetry' = $false
         'disableUpdateCheck' = $false
-        'defaultNoStatus' = $false
         'defaultOwnerName' = [String]::Empty
         'defaultRepositoryName' = [String]::Empty
         'logPath' = $logPath
@@ -824,10 +813,10 @@ function Resolve-ParameterWithDefaultConfigurationValue
         being null or an empty string.
 
     .EXAMPLE
-        Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name NoStatus -ConfigValueName DefaultNoStatus
+        Resolve-ParameterWithDefaultConfigurationValue -BoundParameters $PSBoundParameters -Name OwnerName -ConfigValueName DefaultOwnerName
 
-        Checks to see if the NoStatus switch was provided by the user from the calling method.  If
-        so, uses that value. otherwise uses the DefaultNoStatus value currently configured.
+        Checks to see if the OwnerName was provided by the user from the calling method.  If
+        so, uses that value. otherwise uses the DefaultOwnerName value currently configured.
 #>
     [CmdletBinding()]
     param(
