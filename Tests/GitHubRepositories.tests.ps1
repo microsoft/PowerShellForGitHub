@@ -1246,6 +1246,16 @@ try
             }
         }
 
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $status = $repo | Test-GitHubRepositoryVulnerabilityAlert
+            }
+
+            It 'Should return an object of the correct type' {
+                $status | Should -BeOfType System.Boolean
+            }
+        }
+
         AfterAll -ScriptBlock {
             Remove-GitHubRepository -Uri $repo.svn_url -Force
         }
@@ -1263,6 +1273,17 @@ try
             }
         }
 
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                Disable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should not throw' {
+                { $repo | Enable-GitHubRepositoryVulnerabilityAlert } |
+                    Should -Not -Throw
+            }
+        }
+
         AfterAll -ScriptBlock {
             Remove-GitHubRepository -Uri $repo.svn_url -Force
         }
@@ -1271,12 +1292,23 @@ try
     Describe 'GitHubRepositories\Disable-GitHubRepositoryVulnerabilityAlert' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-            Enable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
         }
 
         Context 'When Disabling GitHub Repository Vulnerability Alerts' {
             It 'Should not throw' {
-                { Disable-GitHubRepositoryVulnerabilityAlert -Uri  $repo.svn_url } |
+                { Disable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
+            }
+
+            It 'Should not throw' {
+                { $repo | Disable-GitHubRepositoryVulnerabilityAlert } |
                     Should -Not -Throw
             }
         }
@@ -1289,11 +1321,23 @@ try
     Describe 'GitHubRepositories\Enable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
         }
 
         Context 'When Enabling GitHub Repository Security Fixes' {
             It 'Should not throw' {
-                { Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                { Enable-GitHubRepositorySecurityFix -Uri $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                Disable-GitHubRepositorySecurityFix -Uri $repo.svn_url
+            }
+
+            It 'Should not throw' {
+                { $repo | Enable-GitHubRepositorySecurityFix } |
                     Should -Not -Throw
             }
         }
@@ -1306,12 +1350,24 @@ try
     Describe 'GitHubRepositories\Disable-GitHubRepositorySecurityFix' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+            Enable-GitHubRepositoryVulnerabilityAlert -Uri $repo.svn_url
             Enable-GitHubRepositorySecurityFix -Uri  $repo.svn_url
         }
 
         Context 'When Disabling GitHub Repository Security Fixes' {
             It 'Should not throw' {
-                { Disable-GitHubRepositorySecurityFix -Uri  $repo.svn_url } |
+                { Disable-GitHubRepositorySecurityFix -Uri $repo.svn_url } |
+                    Should -Not -Throw
+            }
+        }
+
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                Enable-GitHubRepositorySecurityFix -Uri $repo.svn_url
+            }
+
+            It 'Should not throw' {
+                { $repo | Disable-GitHubRepositorySecurityFix } |
                     Should -Not -Throw
             }
         }
