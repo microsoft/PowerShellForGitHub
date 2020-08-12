@@ -8,6 +8,23 @@
         <TypeName>GitHub.TeamSummary</TypeName>
       </ViewSelectedBy>
       <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Description</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Privacy</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Permission</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Organization</Label>
+          </TableColumnHeader>
+        </TableHeaders>
         <TableRowEntries>
           <TableRowEntry>
             <TableColumnItems>
@@ -42,33 +59,43 @@
           <ListEntry>
             <ListItems>
               <ListItem>
+                <Label>Name</Label>
                 <PropertyName>name</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Description</Label>
                 <PropertyName>description</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Privacy</Label>
                 <PropertyName>privacy</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Permission</Label>
                 <PropertyName>permission</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Created</Label>
                 <PropertyName>created_at</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Updated</Label>
                 <PropertyName>updated_at</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Members</Label>
                 <PropertyName>members_count</PropertyName>
               </ListItem>
               <ListItem>
+                <Label>Repos</Label>
                 <PropertyName>repos_count</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>parent</PropertyName>
+                <Label>Parent</Label>
+                <ScriptBlock>$_.parent.name</ScriptBlock>
               </ListItem>
               <ListItem>
+                <Label>Organization</Label>
                 <PropertyName>OrganizationName</PropertyName>
               </ListItem>
             </ListItems>
