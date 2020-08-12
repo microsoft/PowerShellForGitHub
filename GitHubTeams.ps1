@@ -659,10 +659,17 @@ filter Set-GitHubTeam
     }
     elseif ($PSBoundParameters.ContainsKey('ParentTeamId'))
     {
-        $hashBody['parent_team_id'] = $ParentTeamId
+        if ($ParentTeamId -gt 0)
+        {
+            $hashBody['parent_team_id'] = $ParentTeamId
+        }
+        else
+        {
+            $hashBody['parent_team_id'] = $null
+        }
     }
 
-    if (-not $PSCmdlet.ShouldProcess($TeamName, 'Set GitHub Team'))
+    if (-not $PSCmdlet.ShouldProcess($TeamSlug, 'Set GitHub Team'))
     {
         return
     }
@@ -728,11 +735,13 @@ filter Rename-GitHubTeam
         $team | Rename-GitHubTeam -NewTeamName 'DeveloperTeam'
 
         You can also pipe in a GitHub team that was returned from a previous command.
+
+    .NOTES
+        This is a helper/wrapper for Set-GitHubTeam which can also rename a GitHub Team.
 #>
     [CmdletBinding(
-        SupportsShouldProcess,
-        PositionalBinding = $false
-    )]
+        PositionalBinding = $false,
+        DefaultParameterSetName = 'TeamSlug')]
     [OutputType( { $script:GitHubTeamTypeName } )]
     param
     (
@@ -752,6 +761,7 @@ filter Rename-GitHubTeam
         [string] $TeamName,
 
         [Parameter(
+            Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='TeamSlug')]
         [ValidateNotNullOrEmpty()]
@@ -769,40 +779,20 @@ filter Rename-GitHubTeam
 
     Write-InvocationLog
 
-    $telemetryProperties = @{
-        OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
-        TeamSlug = (Get-PiiSafeString -PlainText $TeamSlug)
-        TeamName = (Get-PiiSafeString -PlainText $TeamName)
-    }
-
-    if ($PSBoundParameters.ContainsKey('TeamName'))
+    if (-not $PSBoundParameters.ContainsKey('TeamSlug'))
     {
         $team = Get-GitHubTeam -OrganizationName $OrganizationName -TeamName $TeamName -AccessToken:$AccessToken
         $TeamSlug = $team.slug
     }
 
-    $uriFragment = "/orgs/$OrganizationName/teams/$TeamSlug"
-
-    $hashBody = @{
-        name = $NewTeamName
-    }
-
-    if (-not $PSCmdlet.ShouldProcess($NewTeamName, "Rename GitHub Team ($TeamSlug) to"))
-    {
-        return
-    }
-
     $params = @{
-        UriFragment = $uriFragment
-        Body = (ConvertTo-Json -InputObject $hashBody)
-        Method = 'Patch'
-        Description =  "Renaming $TeamSlug"
+        OrganizationName = $OrganizationName
+        TeamSlug = $TeamSlug
+        TeamName = $NewTeamName
         AccessToken = $AccessToken
-        TelemetryEventName = $MyInvocation.MyCommand.Name
-        TelemetryProperties = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
+    return Set-GitHubTeam @params
 }
 
 filter Remove-GitHubTeam

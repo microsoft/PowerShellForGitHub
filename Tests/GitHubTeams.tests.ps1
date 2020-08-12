@@ -59,7 +59,7 @@ try
                 $team.description | Should -Be $description
                 $team.parent | Should -BeNullOrEmpty
                 $team.privacy | Should -Be $privacy
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -79,7 +79,7 @@ try
                     $team.updated_at | Should -Not -BeNullOrEmpty
                     $team.members_count | Should -Be 1
                     $team.repos_count | Should -Be 0
-                    $team.TeamName | Should -Be $teamName
+                    $team.TeamName | Should -Be $team.name
                     $team.TeamId | Should -Be $team.id
                     $team.OrganizationName | Should -Be $organizationName
                 }
@@ -97,7 +97,7 @@ try
                     $team.description | Should -Be $description
                     $team.parent | Should -BeNullOrEmpty
                     $team.privacy | Should -Be $privacy
-                    $team.TeamName | Should -Be $teamName
+                    $team.TeamName | Should -Be $team.name
                     $team.TeamId | Should -Be $team.id
                     $team.OrganizationName | Should -Be $organizationName
                 }
@@ -141,7 +141,7 @@ try
                 $team.description | Should -Be $description
                 $team.parent | Should -BeNullOrEmpty
                 $team.privacy | Should -Be $privacy
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -167,7 +167,7 @@ try
                     $team.updated_at | Should -Not -BeNullOrEmpty
                     $team.members_count | Should -Be 1
                     $team.repos_count | Should -Be 1
-                    $team.TeamName | Should -Be $teamName
+                    $team.TeamName | Should -Be $team.name
                     $team.TeamId | Should -Be $team.id
                     $team.OrganizationName | Should -Be $organizationName
                 }
@@ -190,7 +190,7 @@ try
                     $team.members_count | Should -Be 1
                     $team.repos_count | Should -Be 1
                     $team.privacy | Should -Be $privacy
-                    $team.TeamName | Should -Be $teamName
+                    $team.TeamName | Should -Be $team.name
                     $team.TeamId | Should -Be $team.id
                     $team.OrganizationName | Should -Be $organizationName
                 }
@@ -239,7 +239,7 @@ try
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -256,7 +256,7 @@ try
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
                 $team.privacy | Should -Be $privacy
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -294,7 +294,7 @@ try
                 $team.parent | Should -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -345,7 +345,7 @@ try
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 1
                 $team.privacy | Should -Be $privacy
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -394,7 +394,7 @@ try
                 $childTeam.organization.login | Should -Be $organizationName
                 $childTeam.parent.name | Should -Be $parentTeamName
                 $childTeam.privacy | Should -Be $privacy
-                $childTeam.TeamName | Should -Be $childTeamName
+                $childTeam.TeamName | Should -Be $childTeam.name
                 $childTeam.TeamId | Should -Be $childTeam.id
                 $childTeam.OrganizationName | Should -Be $organizationName
             }
@@ -443,7 +443,7 @@ try
                 $childTeam.organization.login | Should -Be $organizationName
                 $childTeam.parent.name | Should -Be $parentTeamName
                 $childTeam.privacy | Should -Be $privacy
-                $childTeam.TeamName | Should -Be $childTeamName
+                $childTeam.TeamName | Should -Be $childTeam.name
                 $childTeam.TeamId | Should -Be $childTeam.id
                 $childTeam.OrganizationName | Should -Be $organizationName
             }
@@ -490,7 +490,7 @@ try
                 $childTeam.organization.login | Should -Be $organizationName
                 $childTeam.parent.name | Should -Be $parentTeamName
                 $childTeam.privacy | Should -Be $privacy
-                $childTeam.TeamName | Should -Be $childTeamName
+                $childTeam.TeamName | Should -Be $childTeam.name
                 $childTeam.TeamId | Should -Be $childTeam.id
                 $childTeam.OrganizationName | Should -Be $organizationName
             }
@@ -524,7 +524,7 @@ try
                 $team.updated_at | Should -Not -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -554,7 +554,7 @@ try
                 $team.updated_at | Should -Not -BeNullOrEmpty
                 $team.members_count | Should -Be 1
                 $team.repos_count | Should -Be 0
-                $team.TeamName | Should -Be $teamName
+                $team.TeamName | Should -Be $team.name
                 $team.TeamId | Should -Be $team.id
                 $team.OrganizationName | Should -Be $organizationName
             }
@@ -614,7 +614,7 @@ try
                 $updatedTeam.description | Should -Be $description
                 $updatedTeam.parent.name | Should -Be $parentTeamName
                 $updatedTeam.privacy | Should -Be $privacy
-                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamName | Should -Be $team.name
                 $updatedTeam.TeamId | Should -Be $team.id
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
@@ -667,7 +667,7 @@ try
                 $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
                 $updatedTeam.members_count | Should -Be 1
                 $updatedTeam.repos_count | Should -Be 0
-                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamName | Should -Be $team.name
                 $updatedTeam.TeamId | Should -Be $team.id
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
@@ -721,7 +721,7 @@ try
                 $updatedTeam.description | Should -Be $description
                 $updatedTeam.parent.name | Should -Be $parentTeamName
                 $updatedTeam.privacy | Should -Be $privacy
-                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamName | Should -Be $team.name
                 $updatedTeam.TeamId | Should -Be $team.id
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
@@ -764,7 +764,7 @@ try
                 $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
                 $updatedTeam.members_count | Should -Be 1
                 $updatedTeam.repos_count | Should -Be 0
-                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamName | Should -Be $team.name
                 $updatedTeam.TeamId | Should -Be $updatedTeam.id
                 $updatedTeam.OrganizationName | Should -Be $organizationName
             }
@@ -774,6 +774,107 @@ try
                 {
                     $team | Remove-GitHubTeam -Force
                 }
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Rename-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $newTeamName = [Guid]::NewGuid().Guid
+        }
+
+        Context 'When renaming a GitHub team with the TeamName' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
+            }
+        }
+
+        Context 'When renaming a GitHub team with the TeamSlug' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
+            }
+        }
+
+        Context 'When renaming a GitHub team with the TeamSlug on the pipeline' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
             }
         }
     }
