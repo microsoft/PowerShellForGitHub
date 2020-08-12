@@ -477,7 +477,6 @@ try
                 $childTeamName = [Guid]::NewGuid().Guid
 
                 $newGithubTeamParms = @{
-                    OrganizationName = $organizationName
                     TeamName = $childTeamName
                     Privacy = $privacy
                 }
@@ -505,48 +504,6 @@ try
                 if (Get-Variable -Name parentTeam -ErrorAction SilentlyContinue)
                 {
                     $parentTeam | Remove-GitHubTeam -Force
-                }
-            }
-        }
-
-        Context 'When specifying the "Organization" parameter through the pipeline' {
-            BeforeAll {
-                $teamName1 = [Guid]::NewGuid().Guid
-                $teamName2 = [Guid]::NewGuid().Guid
-
-                $newGithubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName1
-                }
-
-                $team1 = New-GitHubTeam @newGithubTeamParms
-
-                $team2 = $team1 | New-GitHubTeam -TeamName $teamName2
-            }
-
-            It 'Should have the expected type and additional properties' {
-                $team2.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
-                $team2.name | Should -Be $teamName2
-                $team2.organization.login | Should -Be $organizationName
-                $team2.parent | Should -BeNullOrEmpty
-                $team2.created_at | Should -Not -BeNullOrEmpty
-                $team2.updated_at | Should -Not -BeNullOrEmpty
-                $team2.members_count | Should -Be 1
-                $team2.repos_count | Should -Be 0
-                $team2.TeamName | Should -Be $teamName2
-                $team2.TeamId | Should -Be $team2.id
-                $team2.OrganizationName | Should -Be $organizationName
-            }
-
-            AfterAll {
-                if (Get-Variable -Name team1 -ErrorAction SilentlyContinue)
-                {
-                    $team1 | Remove-GitHubTeam -Force
-                }
-
-                if (Get-Variable -Name team2 -ErrorAction SilentlyContinue)
-                {
-                    $team2 | Remove-GitHubTeam -Force
                 }
             }
         }
@@ -723,6 +680,65 @@ try
             }
         }
 
+        Context 'When updating a GitHub team to be a child using the Parent TeamId' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+                $parentTeamName = [Guid]::NewGuid().Guid
+                $description = 'Team Description'
+                $privacy = 'Closed'
+
+                $newGithubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $parentTeamName
+                    Privacy = $privacy
+                }
+
+                $parentTeam = New-GitHubTeam @newGithubTeamParms
+
+                $newGithubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName
+                    Privacy = $privacy
+                }
+
+                $team = New-GitHubTeam @newGithubTeamParms
+
+                $updateGitHubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName
+                    Description = $description
+                    Privacy = $privacy
+                    ParentTeamId = $parentTeam.id
+                }
+
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $teamName
+                $updatedTeam.organization.login | Should -Be $organizationName
+                $updatedTeam.description | Should -Be $description
+                $updatedTeam.parent.name | Should -Be $parentTeamName
+                $updatedTeam.privacy | Should -Be $privacy
+                $updatedTeam.TeamName | Should -Be $teamName
+                $updatedTeam.TeamId | Should -Be $team.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            AfterAll {
+                if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+                {
+                    $team | Remove-GitHubTeam -Force
+                }
+
+                if (Get-Variable -Name parentTeam -ErrorAction SilentlyContinue)
+                {
+                    $parentTeam | Remove-GitHubTeam -Force
+                }
+            }
+        }
+
         Context 'When specifying the "Organization" and "TeamName" parameters through the pipeline' {
             BeforeAll {
                 $teamName = [Guid]::NewGuid().Guid
@@ -733,7 +749,7 @@ try
                     TeamName = $teamName
                 }
 
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+                $team = New-GitHubTeam @newGithubTeamParms
 
                 $updatedTeam = $team | Set-GitHubTeam -Description $description -PassThru
             }

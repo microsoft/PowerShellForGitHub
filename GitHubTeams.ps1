@@ -572,7 +572,7 @@ filter Set-GitHubTeam
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false,
-        DefaultParameterSetName = 'TeamSlug'
+        DefaultParameterSetName = 'ParentName'
     )]
     [OutputType( { $script:GitHubTeamTypeName } )]
     param
@@ -587,33 +587,11 @@ filter Set-GitHubTeam
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName='TeamName')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName='TeamSlug')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            Position = 2,
-            ParameterSetName='ParentTeamId')]
+            Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamName,
 
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='TeamSlug')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='ParentTeamName')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='ParentTeamId')]
+        [Parameter(ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [string] $TeamSlug,
 
@@ -622,13 +600,9 @@ filter Set-GitHubTeam
         [ValidateSet('Secret','Closed')]
         [string] $Privacy,
 
-        [Parameter(ParameterSetName='TeamName')]
-        [Parameter(ParameterSetName='TeamSlug')]
         [Parameter(ParameterSetName='ParentTeamName')]
         [string] $ParentTeamName,
 
-        [Parameter(ParameterSetName='TeamName')]
-        [Parameter(ParameterSetName='TeamSlug')]
         [Parameter(ParameterSetName='ParentTeamId')]
         [int64] $ParentTeamId,
 
@@ -645,7 +619,8 @@ filter Set-GitHubTeam
         TeamName = (Get-PiiSafeString -PlainText $TeamName)
     }
 
-    if ($PSBoundParameters.ContainsKey('TeamName') -or $PSBoundParameters.ContainsKey('ParentTeamName'))
+    if ((-not $PSBoundParameters.ContainsKey('TeamSlug')) -or
+        $PSBoundParameters.ContainsKey('ParentTeamName'))
     {
         $getGitHubTeamParms = @{
             OrganizationName = $OrganizationName
