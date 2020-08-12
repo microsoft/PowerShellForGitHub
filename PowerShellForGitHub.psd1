@@ -165,6 +165,7 @@
         'Remove-GitHubTeam',
         'Rename-GitHubGistFile',
         'Rename-GitHubRepository',
+        'Rename-GitHubTeam',
         'Reset-GitHubConfiguration',
         'Restore-GitHubConfiguration',
         'Set-GitHubAuthentication',

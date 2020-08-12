@@ -527,6 +527,11 @@ filter Set-GitHubTeam
     .PARAMETER TeamName
         The name of the team.
 
+        When TeamSlug is specified, specifying a name here that is different from the existing
+        name will cause the team to be renamed. TeamSlug and TeamName are specified for you
+        automatically when piping in a GitHub.Team object, so a rename would only occur if
+        intentionally specify this parameter and provide a different name.
+
     .PARAMETER TeamSlug
         The slug (a unique key based on the team name) of the team to update.
 
@@ -677,6 +682,127 @@ filter Set-GitHubTeam
     {
         return $result
     }
+}
+
+filter Rename-GitHubTeam
+{
+<#
+    .SYNOPSIS
+        Renames a team within an organization on GitHub.
+
+    .DESCRIPTION
+        Renames a team within an organization on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OrganizationName
+        The name of the team's organization.
+
+    .PARAMETER TeamName
+        The existing name of the team.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the team to update.
+
+    .PARAMETER NewTeamName
+        The new name for the team.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Organization
+        GitHub.Team
+
+    .OUTPUTS
+        GitHub.Team
+
+    .EXAMPLE
+        Rename-GitHubTeam -OrganizationName PowerShell -TeamName Developers -NewTeamName DeveloperTeam
+
+        Renames the 'Developers' GitHub team in the 'PowerShell' organization to be 'DeveloperTeam'.
+
+    .EXAMPLE
+        $team = Get-GitHubTeam -OrganizationName PowerShell -TeamName Developers
+        $team | Rename-GitHubTeam -NewTeamName 'DeveloperTeam'
+
+        You can also pipe in a GitHub team that was returned from a previous command.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        PositionalBinding = $false
+    )]
+    [OutputType( { $script:GitHubTeamTypeName } )]
+    param
+    (
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string] $OrganizationName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2,
+            ParameterSetName='TeamName')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamName,
+
+        [Parameter(
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='TeamSlug')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamSlug,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string] $NewTeamName,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $telemetryProperties = @{
+        OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
+        TeamSlug = (Get-PiiSafeString -PlainText $TeamSlug)
+        TeamName = (Get-PiiSafeString -PlainText $TeamName)
+    }
+
+    if ($PSBoundParameters.ContainsKey('TeamName'))
+    {
+        $team = Get-GitHubTeam -OrganizationName $OrganizationName -TeamName $TeamName -AccessToken:$AccessToken
+        $TeamSlug = $team.slug
+    }
+
+    $uriFragment = "/orgs/$OrganizationName/teams/$TeamSlug"
+
+    $hashBody = @{
+        name = $NewTeamName
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($NewTeamName, "Rename GitHub Team ($TeamSlug) to"))
+    {
+        return
+    }
+
+    $params = @{
+        UriFragment = $uriFragment
+        Body = (ConvertTo-Json -InputObject $hashBody)
+        Method = 'Patch'
+        Description =  "Renaming $TeamSlug"
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
 }
 
 filter Remove-GitHubTeam
