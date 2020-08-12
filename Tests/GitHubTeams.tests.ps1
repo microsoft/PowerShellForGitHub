@@ -946,6 +946,54 @@ try
             }
         }
     }
+
+    Describe 'GitHubTeams\Get-GitHubTeamMember' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+        }
+
+        AfterAll {
+            $team | Remove-GitHubTeam -Force
+        }
+
+        Context 'Getting team members using TeamName' {
+            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamName $teamName)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Getting team members using TeamSlug' {
+            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamSlug $team.slug)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Getting team members using TeamSlug on the pipeline' {
+            $members = @($team | Get-GitHubTeamMember)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+    }
 }
 finally
 {
