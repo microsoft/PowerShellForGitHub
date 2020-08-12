@@ -183,8 +183,6 @@ filter Get-GitHubTeam
                 AccessToken = $AccessToken
                 TelemetryEventName = $MyInvocation.MyCommand.Name
                 TelemetryProperties = $telemetryProperties
-                NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-                    -Name NoStatus -ConfigValueName DefaultNoStatus)
             }
 
             $result = Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties
@@ -336,12 +334,6 @@ function New-GitHubTeam
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
 
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
-
     .INPUTS
         GitHub.Team
         GitHub.User
@@ -401,9 +393,7 @@ function New-GitHubTeam
 
         [string] $ParentTeamName,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     begin
@@ -459,10 +449,6 @@ function New-GitHubTeam
             {
                 $getGitHubTeamParms['AccessToken'] = $AccessToken
             }
-            if ($PSBoundParameters.ContainsKey('NoStatus'))
-            {
-                $getGitHubTeamParms['NoStatus'] = $NoStatus
-            }
 
             $team = Get-GitHubTeam @getGitHubTeamParms
 
@@ -482,8 +468,6 @@ function New-GitHubTeam
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
             TelemetryProperties = $telemetryProperties
-            NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-                -Name NoStatus -ConfigValueName DefaultNoStatus)
         }
 
         return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
@@ -519,12 +503,6 @@ filter Set-GitHubTeam
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Organization
@@ -572,9 +550,7 @@ filter Set-GitHubTeam
 
         [string] $ParentTeamName,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -590,10 +566,6 @@ filter Set-GitHubTeam
     if ($PSBoundParameters.ContainsKey('AccessToken'))
     {
         $getGitHubTeamParms['AccessToken'] = $AccessToken
-    }
-    if ($PSBoundParameters.ContainsKey('NoStatus'))
-    {
-        $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
 
     $orgTeams = Get-GitHubTeam @getGitHubTeamParms
@@ -628,8 +600,6 @@ filter Set-GitHubTeam
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     return (Invoke-GHRestMethod @params | Add-GitHubTeamAdditionalProperties)
@@ -658,12 +628,6 @@ filter Remove-GitHubTeam
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
-
-    .PARAMETER NoStatus
-        If this switch is specified, long-running commands will run on the main thread
-        with no commandline status update.  When not specified, those commands run in
-        the background, enabling the command prompt to provide status information.
-        If not supplied here, the DefaultNoStatus configuration property value will be used.
 
     .INPUTS
         GitHub.Organization
@@ -714,9 +678,7 @@ filter Remove-GitHubTeam
 
         [switch] $Force,
 
-        [string] $AccessToken,
-
-        [switch] $NoStatus
+        [string] $AccessToken
     )
 
     Write-InvocationLog
@@ -733,10 +695,6 @@ filter Remove-GitHubTeam
     if ($PSBoundParameters.ContainsKey('AccessToken'))
     {
         $getGitHubTeamParms['AccessToken'] = $AccessToken
-    }
-    if ($PSBoundParameters.ContainsKey('NoStatus'))
-    {
-        $getGitHubTeamParms['NoStatus'] = $NoStatus
     }
 
     $team = Get-GitHubTeam @getGitHubTeamParms
@@ -760,8 +718,6 @@ filter Remove-GitHubTeam
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
-        NoStatus = (Resolve-ParameterWithDefaultConfigurationValue `
-            -Name NoStatus -ConfigValueName DefaultNoStatus)
     }
 
     Invoke-GHRestMethod @params | Out-Null
