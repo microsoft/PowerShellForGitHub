@@ -534,7 +534,7 @@ try
                     ParentTeamName = $parentTeamName
                 }
 
-                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms -PassThru
             }
 
             It 'Should have the expected type and additional properties' {
@@ -583,7 +583,7 @@ try
                     Privacy = $privacy
                 }
 
-                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms -PassThru
             }
 
             It 'Should have the expected type and additional properties' {
@@ -622,7 +622,7 @@ try
 
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
 
-                $updatedTeam = $team | Set-GitHubTeam -Description $description
+                $updatedTeam = $team | Set-GitHubTeam -Description $description -PassThru
             }
 
             It 'Should have the expected type and additional properties' {

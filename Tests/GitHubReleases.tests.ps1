@@ -254,7 +254,7 @@ try
                 }
 
                 It 'Should be modifiable with the release on the pipeline' {
-                    $null = $release | Set-GitHubRelease -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
+                    $release | Set-GitHubRelease -Name $defaultReleaseName -Body $defaultReleaseBody -Draft -PreRelease
                     $queried = $release | Get-GitHubRelease
                     $queried.name | Should -Be $defaultReleaseName
                     $queried.body | Should -Be $defaultReleaseBody
@@ -263,7 +263,7 @@ try
                 }
 
                 It 'Should be modifiable with the URI on the pipeline' {
-                    $null = $repo | Set-GitHubRelease -Release $release.id -Draft:$false
+                    $repo | Set-GitHubRelease -Release $release.id -Draft:$false
                     $queried = $repo | Get-GitHubRelease -Release $release.id
                     $queried.name | Should -Be $defaultReleaseName
                     $queried.body | Should -Be $defaultReleaseBody
@@ -782,6 +782,7 @@ try
                 OwnerName = $script:ownerName
                 RepositoryName = $repo.name
                 Asset = $asset.id
+                PassThru = $true
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
@@ -806,6 +807,7 @@ try
                 RepositoryName = $repo.name
                 Asset = $asset.id
                 Name = $updatedFileName
+                PassThru = $true
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
@@ -820,6 +822,7 @@ try
                 RepositoryName = $repo.name
                 Asset = $asset.id
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
@@ -836,6 +839,7 @@ try
                 Asset = $asset.id
                 Name = $updatedFileName
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
@@ -856,6 +860,7 @@ try
 
             $setParams = @{
                 Asset = $asset.id
+                PassThru = $true
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
@@ -878,6 +883,7 @@ try
             $setParams = @{
                 Asset = $asset.id
                 Name = $updatedFileName
+                PassThru = $true
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
@@ -890,6 +896,7 @@ try
             $setParams = @{
                 Asset = $asset.id
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
@@ -904,6 +911,7 @@ try
                 Asset = $asset.id
                 Name = $updatedFileName
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
@@ -924,6 +932,7 @@ try
 
             $setParams = @{
                 Asset = $asset.id
+                PassThru = $true
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
@@ -946,6 +955,7 @@ try
             $setParams = @{
                 Asset = $asset.id
                 Name = $updatedFileName
+                PassThru = $true
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
@@ -958,6 +968,7 @@ try
             $setParams = @{
                 Asset = $asset.id
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
@@ -972,6 +983,7 @@ try
                 Asset = $asset.id
                 Name = $updatedFileName
                 Label = $updatedLabel
+                PassThru = $true
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
@@ -990,7 +1002,7 @@ try
                 $asset.label | Should -BeExactly $label
             }
 
-            $updated = $asset | Set-GitHubReleaseAsset
+            $updated = $asset | Set-GitHubReleaseAsset -PassThru
             It 'Should have the original property values' {
                 $updated.name | Should -BeExactly $fileName
                 $updated.label | Should -BeExactly $label
@@ -1007,14 +1019,14 @@ try
             }
 
             $updatedFileName = 'updated1.txt'
-            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName
+            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -PassThru
             It 'Should have a new name and the original label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $label
             }
 
             $updatedLabel = 'updatedLabel2'
-            $updated = $asset | Set-GitHubReleaseAsset -Label $updatedLabel
+            $updated = $asset | Set-GitHubReleaseAsset -Label $updatedLabel -PassThru
             It 'Should have the current name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
@@ -1022,7 +1034,7 @@ try
 
             $updatedFileName = 'updated3asset.txt'
             $updatedLabel = 'updatedLabel3asset'
-            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -Label $updatedLabel
+            $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -Label $updatedLabel -PassThru
             It 'Should have a new name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel

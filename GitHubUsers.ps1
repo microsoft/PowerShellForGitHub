@@ -307,6 +307,11 @@ function Set-GitHubProfile
         Specify to indicate a change in hireable availability for the current authenticated user's
         GitHub profile.  To change to "not hireable", specify -Hireable:$false
 
+    .PARAMETER PassThru
+        Returns the updated User Profile.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -338,6 +343,8 @@ function Set-GitHubProfile
 
         [switch] $Hireable,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -366,7 +373,11 @@ function Set-GitHubProfile
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubUserAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubUserAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Add-GitHubUserAdditionalProperties

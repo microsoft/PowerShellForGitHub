@@ -278,6 +278,11 @@ filter Set-GitHubProjectCard
     .PARAMETER Restore
         Restore a project card.
 
+    .PARAMETER PassThru
+        Returns the updated Project Card.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -322,6 +327,8 @@ filter Set-GitHubProjectCard
 
         [Parameter(ParameterSetName = 'Restore')]
         [switch] $Restore,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -369,7 +376,11 @@ filter Set-GitHubProjectCard
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubProjectCardAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubProjectCard

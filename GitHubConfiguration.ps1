@@ -79,6 +79,13 @@ function Set-GitHubConfiguration
         The owner name that should be used with a command that takes OwnerName as a parameter
         when no value has been supplied.
 
+    .PARAMETER DefaultPassThru
+        Sets what the default PassThru behavior should be for commands that have a PassThru
+        switch.  By default, those commands will not return the result of the command unless
+        the user passes in -PassThru.  By setting this value to $true, those commands will
+        always behave as if -PassThru had been specified, unless you explicitly specify
+        -PassThru:$false on an individual command.
+
     .PARAMETER DefaultRepositoryName
         The owner name that should be used with a command that takes RepositoryName as a parameter
         when no value has been supplied.
@@ -196,6 +203,8 @@ function Set-GitHubConfiguration
 
         [string] $DefaultOwnerName,
 
+        [string] $DefaultPassThru,
+
         [string] $DefaultRepositoryName,
 
         [switch] $DisableLogging,
@@ -299,6 +308,7 @@ function Get-GitHubConfiguration
             'ApiHostName',
             'ApplicationInsightsKey',
             'DefaultOwnerName',
+            'DefaultPassThru',
             'DefaultRepositoryName',
             'DisableLogging',
             'DisablePiiProtection',
@@ -656,6 +666,7 @@ function Import-GitHubConfiguration
         'disableTelemetry' = $false
         'disableUpdateCheck' = $false
         'defaultOwnerName' = [String]::Empty
+        'defaultPassThru' = $false
         'defaultRepositoryName' = [String]::Empty
         'logPath' = $logPath
         'logProcessId' = $false
@@ -835,6 +846,10 @@ function Resolve-ParameterWithDefaultConfigurationValue
     if ($BoundParameters.ContainsKey($Name))
     {
         $value = $BoundParameters[$Name]
+        if ($value -is [switch])
+        {
+            $value = $value.IsPresent
+        }
     }
     else
     {

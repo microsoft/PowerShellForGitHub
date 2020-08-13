@@ -4,6 +4,10 @@
 #### Table of Contents
 *   [Logging](#logging)
 *   [Telemetry](#telemetry)
+*   [Common PowerShell API Patterns](#common-powershell-api-patterns)
+    *   [Confirmation Required for Major Actions](#confirmation-required-for-major-actions)
+    *   [WhatIf Supported for All State Changing Commands](#whatif-supported-for-all-state-changing-commands)
+    *   [State Changing Commands are Silent by Default](#state-changing-commands-are-silent-by-default)
 *   [Examples](#examples)
     *   [Overview](#overview)
         *   [Embracing the pipeline](#embracing-the-pipeline)
@@ -208,6 +212,35 @@ Get-GitHubConfiguration -Name ApplicationInsightsKey
 ```
 It is requested that you do not change this value, otherwise the telemetry will not be reported to
 us for analysis.  We expose it here for complete transparency.
+
+----------
+
+## Common PowerShell API Patterns
+
+This module adopts many of the standard PowerShell API design patterns.  We want to call attention
+to those patterns here so that you can identify how you can most efficiently use the module.
+
+### Confirmation Required for Major Actions
+
+All commands that result in removing/deleting an object, as well as some commands that rename
+objects (like renaming a repository) require user confirmation before the comamnd will be processed.
+You can avoid that user confirmation by passing in either `-Confirm:$false` or `-Force`.
+
+### WhatIf Supported for All State Changing Commands
+
+Any command that _isn't_ `Get-GitHub*` supports the `-WhatIf` switch.  You can safely call that
+command by passing in the `-WhatIf` switch and know that the request will not actually be sent
+to GitHub.  This can be useful when paired with the `-Verbose` switch if you are examining what
+is happening behind the scenes.
+
+### State Changing Commands are Silent by Default
+
+By default, state changing commands like `Set-*`, `Rename-*`, etc... will not produce any output
+unless you specify the `-PassThru` switch.  You can change that default behavior by calling
+
+```powershell
+Set-GitHubConfiguration -DefaultPassThru:$true
+```
 
 ----------
 
@@ -603,7 +636,7 @@ Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerSh
 #### Getting a repository branch protection rule
 
 ```powershell
-Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master 
+Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 ```
 
 #### Creating a repository branch protection rule

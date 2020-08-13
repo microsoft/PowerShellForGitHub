@@ -679,23 +679,23 @@ try
             }
 
             It "Should have the expected new repository name - by URI" {
-                $renamedRepo = Rename-GitHubRepository -Uri ($repo.RepositoryUrl) -NewName $newRepoName -Force
+                $renamedRepo = Rename-GitHubRepository -Uri ($repo.RepositoryUrl) -NewName $newRepoName -Force -PassThru
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should have the expected new repository name - by Elements" {
-                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false
+                $renamedRepo = Rename-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name -NewName $newRepoName -Confirm:$false -PassThru
                 $renamedRepo.name | Should -Be $newRepoName
             }
 
             It "Should work via the pipeline" {
-                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false
+                $renamedRepo = $repo | Rename-GitHubRepository -NewName $newRepoName -Confirm:$false -PassThru
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
 
             It "Should be possible to rename with Set-GitHubRepository too" {
-                $renamedRepo = $repo | Set-GitHubRepository -NewName $newRepoName -Confirm:$false
+                $renamedRepo = $repo | Set-GitHubRepository -NewName $newRepoName -Confirm:$false -PassThru
                 $renamedRepo.name | Should -Be $newRepoName
                 $renamedRepo.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
             }
@@ -732,7 +732,7 @@ try
                         IsTemplate = $true
                     }
 
-                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
                 }
 
                 It 'Should return an object of the correct type' {
@@ -765,7 +765,7 @@ try
                         DisallowRebaseMerge = $true
                     }
 
-                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
                 }
 
                 It 'Should return an object of the correct type' {
@@ -788,7 +788,7 @@ try
                         Archived = $true
                     }
 
-                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
+                    $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
                 }
 
                 It 'Should return an object of the correct type' {
@@ -820,7 +820,7 @@ try
                     Private = $false
                 }
 
-                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
             }
 
             It 'Should return an object of the correct type' {
@@ -915,27 +915,26 @@ try
         Context -Name 'When getting a repository topic' {
             BeforeAll {
                 $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic |
-                    Out-Null
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
             }
 
             It 'Should have the expected topic' {
-                $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Topic $defaultRepoTopic
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Topic $defaultRepoTopic
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
 
                 $topic.names | Should -Be $defaultRepoTopic
             }
 
             It 'Should have no topics' {
-                $null = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
+                Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
                 $topic = Get-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
 
                 $topic.names | Should -BeNullOrEmpty
             }
 
             It 'Should have the expected topic (using repo via pipeline)' {
-                $null = $repo | Set-GitHubRepositoryTopic -Topic $defaultRepoTopic
+                $repo | Set-GitHubRepositoryTopic -Topic $defaultRepoTopic
                 $topic = $repo | Get-GitHubRepositoryTopic
 
                 $topic.names | Should -Be $defaultRepoTopic
@@ -944,7 +943,7 @@ try
             }
 
             It 'Should have the expected topic (using topic via pipeline)' {
-                $null = $defaultRepoTopic | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $defaultRepoTopic | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $topic = $repo | Get-GitHubRepositoryTopic
 
                 $topic.names | Should -Be $defaultRepoTopic
@@ -954,7 +953,7 @@ try
 
             It 'Should have the expected multi-topic (using topic via pipeline)' {
                 $topics = @('one', 'two')
-                $null = $topics | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
+                $topics | Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name
                 $result = $repo | Get-GitHubRepositoryTopic
 
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryTopic'
@@ -975,7 +974,7 @@ try
     Describe 'GitHubRepositories\Set-GitHubRepositoryTopic' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
-            $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic
+            $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Name $defaultRepoTopic -PassThru
         }
 
         Context -Name 'When setting a repository topic' {
@@ -990,7 +989,7 @@ try
 
         Context -Name 'When clearing all repository topics' {
             BeforeAll {
-                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear
+                $topic = Set-GitHubRepositoryTopic -OwnerName $repo.owner.login -RepositoryName $repo.name -Clear -PassThru
             }
 
             It 'Should return an object of the correct type' {

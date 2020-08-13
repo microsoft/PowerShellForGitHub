@@ -163,8 +163,8 @@ try
                 $newIssues += New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
             }
 
-            $newIssues[0] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed
-            $newIssues[-1] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed
+            $newIssues[0] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[0].number -State Closed -PassThru
+            $newIssues[-1] = Set-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $newIssues[-1].number -State Closed -PassThru
 
             $existingOpenIssues = @($existingIssues | Where-Object { $_.state -eq 'open' })
             $newOpenIssues = @($newIssues | Where-Object { $_.state -eq 'open' })
@@ -315,7 +315,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = Set-GitHubIssue @params
+            $updated = Set-GitHubIssue @params -PassThru
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -363,7 +363,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = $repo | Set-GitHubIssue @params
+            $updated = $repo | Set-GitHubIssue @params -PassThru
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -410,7 +410,7 @@ try
                 'MediaType' = 'Raw'
             }
 
-            $updated = $issue | Set-GitHubIssue @params
+            $updated = $issue | Set-GitHubIssue @params -PassThru
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number

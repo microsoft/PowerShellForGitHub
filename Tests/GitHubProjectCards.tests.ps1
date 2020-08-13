@@ -45,7 +45,7 @@ try
         BeforeAll {
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
             $cardArchived = New-GitHubProjectCard -Column $column.id -Note $defaultArchivedCard
-            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
+            Set-GitHubProjectCard -Card $cardArchived.id -Archive
         }
 
         AfterAll {
@@ -167,7 +167,7 @@ try
         }
 
         Context 'Modify card note' {
-            $null = Set-GitHubProjectCard -Card $card.id -Note $defaultCardUpdated
+            Set-GitHubProjectCard -Card $card.id -Note $defaultCardUpdated
             $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Should get card' {
@@ -197,7 +197,7 @@ try
                 $result.note | Should -Be $defaultCardUpdated
             }
 
-            $null = $card | Set-GitHubProjectCard -Note $defaultCard
+            $card | Set-GitHubProjectCard -Note $defaultCard
             $result = $card | Get-GitHubProjectCard
 
             It 'Should have the updated Note' {
@@ -217,7 +217,7 @@ try
         }
 
         Context 'Archive a card' {
-            $null = Set-GitHubProjectCard -Card $cardArchived.id -Archive
+            Set-GitHubProjectCard -Card $cardArchived.id -Archive
             $result = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {
@@ -230,7 +230,7 @@ try
         }
 
         Context 'Restore a card' {
-            $null = $cardArchived | Set-GitHubProjectCard -Restore
+            $cardArchived | Set-GitHubProjectCard -Restore
             $result = Get-GitHubProjectCard -Card $cardArchived.id
 
             It 'Should get card' {

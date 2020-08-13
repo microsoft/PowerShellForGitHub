@@ -888,6 +888,11 @@ filter Rename-GitHubRepository
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
 
+    .PARAMETER PassThru
+        Returns the renamed Repository.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -977,6 +982,8 @@ filter Rename-GitHubRepository
 
         [switch] $Force,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -1061,6 +1068,11 @@ filter Set-GitHubRepository
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution
         when renaming the repository.
+
+    .PARAMETER PassThru
+        Returns the updated GitHub Repository.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -1153,6 +1165,8 @@ filter Set-GitHubRepository
 
         [switch] $Force,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -1212,7 +1226,11 @@ filter Set-GitHubRepository
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Get-GitHubRepositoryTopic
@@ -1344,6 +1362,11 @@ function Set-GitHubRepositoryTopic
     .PARAMETER Clear
         Specify this to clear all topics from the repository.
 
+    .PARAMETER PassThru
+        Returns the updated Repository Topics.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1427,6 +1450,8 @@ function Set-GitHubRepositoryTopic
             ParameterSetName='UriClear')]
         [switch] $Clear,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -1488,8 +1513,12 @@ function Set-GitHubRepositoryTopic
             'TelemetryProperties' = $telemetryProperties
         }
 
-        return (Invoke-GHRestMethod @params |
+        $result = (Invoke-GHRestMethod @params |
             Add-GitHubRepositoryAdditionalProperties -TypeName $script:GitHubRepositoryTopicTypeName -OwnerName $OwnerName -RepositoryName $RepositoryName)
+        if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+        {
+            return $result
+        }
     }
 }
 
@@ -1982,6 +2011,11 @@ filter Move-GitHubRepositoryOwnership
         ID of the team or teams to add to the repository.  Teams can only be added to
         organization-owned repositories.
 
+    .PARAMETER PassThru
+        Returns the updated GitHub Repository.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -2035,6 +2069,8 @@ filter Move-GitHubRepositoryOwnership
 
         [int64[]] $TeamId,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -2072,7 +2108,11 @@ filter Move-GitHubRepositoryOwnership
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubRepositoryAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Test-GitHubRepositoryVulnerabilityAlert

@@ -519,6 +519,11 @@ filter Copy-GitHubGist
     .PARAMETER Gist
         The ID of the specific gist that you wish to fork.
 
+    .PARAMETER PassThru
+        Returns the newly created gist fork.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -539,16 +544,18 @@ filter Copy-GitHubGist
         Forks octocat's "hello_world.rb" gist.
 
     .EXAMPLE
-        Fork-GitHubGist -Gist 6cad326836d38bd3a7ae
+        $result = Fork-GitHubGist -Gist 6cad326836d38bd3a7ae -PassThru
 
         Forks octocat's "hello_world.rb" gist.  This is using the alias for the command.
         The result is the same whether you use Copy-GitHubGist or Fork-GitHubGist.
+        Specifying the -PassThru switch enables you to get a reference to the newly created fork.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistSummaryTypeName})]
     [Alias('Fork-GitHubGist')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -557,6 +564,8 @@ filter Copy-GitHubGist
         [Alias('GistId')]
         [ValidateNotNullOrEmpty()]
         [string] $Gist,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -578,8 +587,13 @@ filter Copy-GitHubGist
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params |
+    $result = (Invoke-GHRestMethod @params |
         Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistSummaryTypeName)
+
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Set-GitHubGistStar
@@ -1075,6 +1089,11 @@ filter Set-GitHubGist
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
 
+    .PARAMETER PassThru
+        Returns the updated gist.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1119,6 +1138,7 @@ filter Set-GitHubGist
         DefaultParameterSetName='Content',
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -1135,6 +1155,8 @@ filter Set-GitHubGist
         [string] $Description,
 
         [switch] $Force,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -1231,8 +1253,13 @@ filter Set-GitHubGist
 
     try
     {
-        return (Invoke-GHRestMethod @params |
+        $result = (Invoke-GHRestMethod @params |
             Add-GitHubGistAdditionalProperties -TypeName $script:GitHubGistTypeName)
+
+        if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+        {
+            return $result
+        }
     }
     catch
     {
@@ -1275,6 +1302,11 @@ function Set-GitHubGistFile
     .PARAMETER Content
         The content of a single file that should be part of the gist.
 
+    .PARAMETER PassThru
+        Returns the updated gist.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1314,6 +1346,7 @@ function Set-GitHubGistFile
     [OutputType({$script:GitHubGistTypeName})]
     [Alias('Add-GitHubGistFile')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -1344,6 +1377,8 @@ function Set-GitHubGistFile
             Position = 3)]
         [ValidateNotNullOrEmpty()]
         [string] $Content,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -1383,6 +1418,7 @@ function Set-GitHubGistFile
         $params = @{
             'Gist' = $Gist
             'Update' = $files
+            'PassThru' = (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
             'AccessToken' = $AccessToken
         }
 
@@ -1411,6 +1447,11 @@ function Remove-GitHubGistFile
 
     .PARAMETER Force
         If this switch is specified, you will not be prompted for confirmation of command execution.
+
+    .PARAMETER PassThru
+        Returns the updated gist.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -1447,6 +1488,7 @@ function Remove-GitHubGistFile
     [OutputType({$script:GitHubGistTypeName})]
     [Alias('Delete-GitHubGistFile')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -1464,6 +1506,8 @@ function Remove-GitHubGistFile
         [string[]] $FileName,
 
         [switch] $Force,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -1491,6 +1535,7 @@ function Remove-GitHubGistFile
             'Delete' = $files
             'Force' = $Force
             'Confirm' = ($Confirm -eq $true)
+            'PassThru' = (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
             'AccessToken' = $AccessToken
         }
 
@@ -1520,6 +1565,11 @@ filter Rename-GitHubGistFile
     .PARAMETER NewName
         The new name of the file for the gist.
 
+    .PARAMETER PassThru
+        Returns the updated gist.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1544,6 +1594,7 @@ filter Rename-GitHubGistFile
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "", Justification="This is a helper method for Set-GitHubGist which will handle ShouldProcess.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -1565,6 +1616,8 @@ filter Rename-GitHubGistFile
         [ValidateNotNullOrEmpty()]
         [string] $NewName,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -1574,6 +1627,7 @@ filter Rename-GitHubGistFile
     $params = @{
         'Gist' = $Gist
         'Update' = @{$FileName = @{ 'fileName' = $NewName }}
+        'PassThru' = (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
         'AccessToken' = $AccessToken
     }
 

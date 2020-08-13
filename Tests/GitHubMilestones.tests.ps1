@@ -182,21 +182,21 @@ try
                 $milestone.open_issues | Should -Be 0
             }
 
-            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber -PassThru
             $milestone = $milestone | Get-GitHubMilestone
             It "Should be associated to the milestone now" {
                 $issue.milestone.number | Should -Be $milestone.MilestoneNumber
                 $milestone.open_issues | Should -Be 1
             }
 
-            $issue = $issue | Set-GitHubIssue -Milestone 0
+            $issue = $issue | Set-GitHubIssue -Milestone 0 -PassThru
             $milestone = $milestone | Get-GitHubMilestone
             It 'Should no longer be associated to the milestone' {
                 $issue.milestone | Should -BeNullOrEmpty
                 $milestone.open_issues | Should -Be 0
             }
 
-            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber
+            $issue = $issue | Set-GitHubIssue -Milestone $milestone.MilestoneNumber -PassThru
             $milestone = $milestone | Get-GitHubMilestone
             It "Should be associated to the milestone again" {
                 $issue.milestone.number | Should -Be $milestone.MilestoneNumber
@@ -319,6 +319,7 @@ try
                 'State' = 'Closed'
                 'Description' = 'Edited Description'
                 'DueOn' = (Get-Date).AddDays(7).ToUniversalTime()
+                'PassThru' = $true
             }
         }
 

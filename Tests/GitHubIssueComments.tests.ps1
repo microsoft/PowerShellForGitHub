@@ -64,7 +64,7 @@ try
             }
 
             $commentId = $result.id
-            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody
+            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody -PassThru
             It 'Should have modified the expected comment' {
                 $updated.id | Should -Be $commentId
             }
@@ -115,7 +115,7 @@ try
             }
 
             $commentId = $result.id
-            $updated = $repo | Set-GitHubIssueComment -Comment $commentId -Body $defaultEditedCommentBody
+            $updated = $repo | Set-GitHubIssueComment -Comment $commentId -Body $defaultEditedCommentBody -PassThru
             It 'Should have modified the expected comment' {
                 $updated.id | Should -Be $commentId
             }
@@ -166,7 +166,7 @@ try
             }
 
             $commentId = $result.id
-            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody
+            $updated = Set-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $commentId -Body $defaultEditedCommentBody -PassThru
             It 'Should have modified the expected comment' {
                 $updated.id | Should -Be $commentId
             }
@@ -216,7 +216,7 @@ try
                 $result.user.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $updated = $comment | Set-GitHubIssueComment -Body $defaultEditedCommentBody
+            $updated = $comment | Set-GitHubIssueComment -Body $defaultEditedCommentBody -PassThru
             It 'Should have modified the expected comment' {
                 $updated.id | Should -Be $comment.id
             }

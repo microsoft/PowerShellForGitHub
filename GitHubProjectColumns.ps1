@@ -194,6 +194,11 @@ filter Set-GitHubProjectColumn
     .PARAMETER Name
         The name for the column.
 
+    .PARAMETER PassThru
+        Returns the updated Project Column.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -212,6 +217,7 @@ filter Set-GitHubProjectColumn
 #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType({$script:GitHubProjectColumnTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -222,6 +228,8 @@ filter Set-GitHubProjectColumn
         [Parameter(Mandatory)]
         [Alias('Name')]
         [string] $ColumnName,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -253,7 +261,11 @@ filter Set-GitHubProjectColumn
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubProjectColumnAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubProjectColumnAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubProjectColumn

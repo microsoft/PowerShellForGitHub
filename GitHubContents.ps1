@@ -255,6 +255,11 @@ filter Set-GitHubContent
         The email of the author of the commit. Defaults to the email of the authenticated user if
         not specified. If specified, AuthorName must also be specified.
 
+    .PARAMETER PassThru
+        Returns the updated GitHub Content.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -334,6 +339,8 @@ filter Set-GitHubContent
         [string] $AuthorName,
 
         [string] $AuthorEmail,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -425,7 +432,11 @@ filter Set-GitHubContent
 
     try
     {
-        return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+        $result = (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+        if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+        {
+            return $result
+        }
     }
     catch
     {
@@ -486,7 +497,11 @@ filter Set-GitHubContent
                 'of that file.  Retrieving the SHA now.'
             Write-Log -Level Verbose -Message $message
 
-            return (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+            $result = (Invoke-GHRestMethod @params | Add-GitHubContentAdditionalProperties)
+            if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+            {
+                return $result
+            }
         }
     }
 }

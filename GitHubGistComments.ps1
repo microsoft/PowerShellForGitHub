@@ -315,6 +315,11 @@ filter Set-GitHubGistComment
     .PARAMETER Body
         The new text of the comment that you wish to leave on the gist.
 
+    .PARAMETER PassThru
+        Returns the updated Comment.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -330,7 +335,7 @@ filter Set-GitHubGistComment
         GitHub.GistComment
 
     .EXAMPLE
-        New-GitHubGistComment -Gist 6cad326836d38bd3a7ae -Comment 1232456 -Body 'Hello World'
+        Set-GitHubGistComment -Gist 6cad326836d38bd3a7ae -Comment 1232456 -Body 'Hello World'
 
         Updates the body of the comment with ID 1232456 octocat's "hello_world.rb" gist to be
         "Hello World".
@@ -339,6 +344,7 @@ filter Set-GitHubGistComment
         SupportsShouldProcess,
         PositionalBinding = $false)]
     [OutputType({$script:GitHubGistCommentTypeName})]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
         [Parameter(
             Mandatory,
@@ -361,6 +367,8 @@ filter Set-GitHubGistComment
             Position = 3)]
         [ValidateNotNullOrEmpty()]
         [string] $Body,
+
+        [switch] $PassThru,
 
         [string] $AccessToken
     )
@@ -387,7 +395,11 @@ filter Set-GitHubGistComment
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubGistCommentAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Add-GitHubGistCommentAdditionalProperties

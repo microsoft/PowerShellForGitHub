@@ -692,6 +692,11 @@ filter Set-GitHubIssue
         Full - Return raw, text and HTML representations.
                Response will include body, body_text, and body_html.
 
+    .PARAMETER PassThru
+        Returns the updated Issue.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -760,6 +765,8 @@ filter Set-GitHubIssue
         [ValidateSet('Raw', 'Text', 'Html', 'Full')]
         [string] $MediaType ='Raw',
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -806,7 +813,11 @@ filter Set-GitHubIssue
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Lock-GitHubIssue

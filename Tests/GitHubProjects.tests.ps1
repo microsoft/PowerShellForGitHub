@@ -146,7 +146,7 @@ try
         Context 'Get a closed Repo project (via pipeline)' {
             BeforeAll {
                 $project = $repo | New-GitHubProject -ProjectName $defaultProjectClosed -Description $defaultProjectClosedDesc
-                $null = Set-GitHubProject -Project $project.id -State Closed
+                Set-GitHubProject -Project $project.id -State Closed
             }
 
             AfterAll {
@@ -267,7 +267,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $null = Set-GitHubProject -Project $project.id -Description $modifiedUserProjectDesc
+            Set-GitHubProject -Project $project.id -Description $modifiedUserProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
@@ -298,7 +298,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $null = $project.id | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $project.id | Set-GitHubProject -Description $modifiedUserProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
@@ -329,7 +329,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $null = $project | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $project | Set-GitHubProject -Description $modifiedUserProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
@@ -360,7 +360,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $null = Set-GitHubProject -Project $project.id -Description $modifiedOrgProjectDesc -Private:$false -OrganizationPermission Admin
+            Set-GitHubProject -Project $project.id -Description $modifiedOrgProjectDesc -Private:$false -OrganizationPermission Admin
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
@@ -402,7 +402,7 @@ try
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $null = Set-GitHubProject -Project $project.id -Description $modifiedRepoProjectDesc
+            Set-GitHubProject -Project $project.id -Description $modifiedRepoProjectDesc
             $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty

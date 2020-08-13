@@ -424,6 +424,11 @@ filter Set-GitHubRelease
     .PARAMETER PreRelease
         Indicates if this should be identified as a pre-release or as a full release.
 
+    .PARAMETER PassThru
+        Returns the updated GitHub Release.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -495,6 +500,8 @@ filter Set-GitHubRelease
 
         [switch] $PreRelease,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -538,7 +545,11 @@ filter Set-GitHubRelease
         return
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubReleaseAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubRelease
@@ -1124,6 +1135,11 @@ filter Set-GitHubReleaseAsset
     .PARAMETER Label
         An alternate short description of the asset.  Used in place of the filename.
 
+    .PARAMETER PassThru
+        Returns the updated Release Asset.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -1185,6 +1201,8 @@ filter Set-GitHubReleaseAsset
 
         [string] $Label,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -1220,7 +1238,11 @@ filter Set-GitHubReleaseAsset
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubReleaseAssetAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubReleaseAsset

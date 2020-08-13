@@ -415,6 +415,11 @@ filter Set-GitHubMilestone
         GitHub will drop any time provided with this value, therefore please ensure that the
         UTC version of this value has your desired date.
 
+    .PARAMETER PassThru
+        Returns the updated Milestone.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -503,6 +508,8 @@ filter Set-GitHubMilestone
 
         [DateTime] $DueOn,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -562,7 +569,11 @@ filter Set-GitHubMilestone
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubMilestoneAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubMilestoneAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubMilestone

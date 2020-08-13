@@ -375,7 +375,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
-            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor -PassThru
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -395,7 +395,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = '#AAAAAA'
-            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor -PassThru
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -415,7 +415,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
-            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -PassThru
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -435,7 +435,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Description $newDescription
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Description $newDescription -PassThru
 
             It 'Label should have different name' {
                 $result.name | Should -Be $label.name
@@ -457,7 +457,7 @@ try
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
-            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription
+            $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription -PassThru
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -479,7 +479,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
-            $result = $repo | Set-GitHubLabel -Label $label.name -Color $newColor
+            $result = $repo | Set-GitHubLabel -Label $label.name -Color $newColor -PassThru
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -499,7 +499,7 @@ try
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
-            $result = $label | Set-GitHubLabel -NewName $newName
+            $result = $label | Set-GitHubLabel -NewName $newName -PassThru
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -521,7 +521,7 @@ try
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
-            $result = $label | Set-GitHubLabel -NewName $newName -Color $newColor -Description $newDescription
+            $result = $label | Set-GitHubLabel -NewName $newName -Color $newColor -Description $newDescription -PassThru
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -626,7 +626,7 @@ try
         Context 'Adding labels to an issue' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $expectedLabels)
+            $result = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $expectedLabels -PassThru)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -669,7 +669,7 @@ try
         Context 'Adding labels to an issue with the repo on the pipeline' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @($repo | Add-GitHubIssueLabel -Issue $issue.number -LabelName $expectedLabels)
+            $result = @($repo | Add-GitHubIssueLabel -Issue $issue.number -LabelName $expectedLabels -PassThru)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -712,7 +712,7 @@ try
         Context 'Adding labels to an issue with the issue on the pipeline' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @($issue | Add-GitHubIssueLabel -LabelName $expectedLabels)
+            $result = @($issue | Add-GitHubIssueLabel -LabelName $expectedLabels -PassThru)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -755,7 +755,7 @@ try
         Context 'Adding labels to an issue with the label names on the pipeline' {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
-            $result = @($expectedLabels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number)
+            $result = @($expectedLabels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -799,7 +799,7 @@ try
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $labels = @($expectedLabels | ForEach-Object { Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $_ } )
-            $result = @($labels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number)
+            $result = @($labels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -922,7 +922,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -945,7 +945,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -967,7 +967,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -992,7 +992,7 @@ try
         #     $issue = $repo | New-GitHubIssue -Title $issueName
 
         #     $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-        #     $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+        #     $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
         #     $issueLabels = @($issue | Get-GitHubLabel)
         #     It 'Should have the expected number of labels' {
@@ -1014,7 +1014,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -1037,7 +1037,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -1057,7 +1057,7 @@ try
             $issue = $repo | New-GitHubIssue -Title $issueName
 
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
-            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd
+            $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
             It 'Should have the expected number of labels' {
@@ -1097,7 +1097,7 @@ try
             }
 
             $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $newIssueLabels)
+            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1131,7 +1131,7 @@ try
             }
 
             $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @($repo | Set-GitHubIssueLabel -Issue $issue.number -Label $newIssueLabels)
+            $result = @($repo | Set-GitHubIssueLabel -Issue $issue.number -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1165,7 +1165,7 @@ try
             }
 
             $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @($issue | Set-GitHubIssueLabel -Label $newIssueLabels)
+            $result = @($issue | Set-GitHubIssueLabel -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1200,7 +1200,7 @@ try
 
             $newIssueLabelNames = @($defaultLabels[0].name, $defaultLabels[5].name)
             $issueLabels = @($newIssueLabelNames | ForEach-Object { $repo | Get-GitHubLabel -Label $_ })
-            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number)
+            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabelNames.Count

@@ -236,6 +236,11 @@ filter Set-GitHubReaction
         The type of reaction you want to set. This is aslo called the 'content' in the GitHub API.
         Valid options are based off: https://developer.github.com/v3/reactions/#reaction-types
 
+    .PARAMETER PassThru
+        Returns the updated Reaction.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -331,6 +336,8 @@ filter Set-GitHubReaction
         [Parameter(Mandatory)]
         [string] $ReactionType,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -386,9 +393,13 @@ filter Set-GitHubReaction
         'TelemetryProperties' = $telemetryProperties
     }
 
-    $result = Invoke-GHRestMethod @params
+    $result = (Invoke-GHRestMethod @params |
+        Add-GitHubReactionAdditionalProperties @splatForAddedProperties)
 
-    return ($result | Add-GitHubReactionAdditionalProperties @splatForAddedProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubReaction

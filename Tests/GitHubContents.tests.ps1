@@ -285,7 +285,7 @@ try
                     authorEmail = $authorEmail
                 }
 
-                $result = Set-GitHubContent @setGitHubContentParms
+                $result = Set-GitHubContent @setGitHubContentParms -PassThru
             }
 
             It 'Should have the expected type and additional properties' {
@@ -359,7 +359,7 @@ try
                     authorEmail = $authorEmail
                 }
 
-                $result = Set-GitHubContent @setGitHubContentParms
+                $result = Set-GitHubContent @setGitHubContentParms -PassThru
             }
 
             It 'Should have the expected type and additional properties' {

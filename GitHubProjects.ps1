@@ -419,6 +419,11 @@ filter Set-GitHubProject
         Only available for organization and user projects.
         Note: Updating a project's visibility requires admin access to the project.
 
+    .PARAMETER PassThru
+        Returns the updated Project.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -474,6 +479,8 @@ filter Set-GitHubProject
 
         [switch] $Private,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -526,7 +533,11 @@ filter Set-GitHubProject
         'AcceptHeader' = $script:inertiaAcceptHeader
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubProjectAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubProject

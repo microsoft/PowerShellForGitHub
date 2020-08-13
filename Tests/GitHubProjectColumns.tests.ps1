@@ -125,7 +125,7 @@ try
         }
 
         Context 'Modify column name' {
-            $null = Set-GitHubProjectColumn -Column $column.id -ColumnName $defaultColumnUpdate
+            Set-GitHubProjectColumn -Column $column.id -ColumnName $defaultColumnUpdate
             $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Should get column' {

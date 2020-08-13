@@ -234,7 +234,7 @@ try
                 $comment.body | Should -Be $body
             }
 
-            $comment = Set-GitHubGistComment -Gist $gist.id -Comment $comment.id -Body $updatedBody
+            $comment = Set-GitHubGistComment -Gist $gist.id -Comment $comment.id -Body $updatedBody -PassThru
             It 'Should have the expected result' {
                 $comment.body | Should -Be $updatedBody
             }
@@ -253,7 +253,7 @@ try
                 $comment.body | Should -Be $body
             }
 
-            $comment = $gist | Set-GitHubGistComment -Comment $comment.id -Body $updatedBody
+            $comment = $gist | Set-GitHubGistComment -Comment $comment.id -Body $updatedBody -PassThru
             It 'Should have the expected result' {
                 $comment.body | Should -Be $updatedBody
             }
@@ -272,7 +272,7 @@ try
                 $comment.body | Should -Be $body
             }
 
-            $comment = $comment | Set-GitHubGistComment -Body $updatedBody
+            $comment = $comment | Set-GitHubGistComment -Body $updatedBody -PassThru
             It 'Should have the expected result' {
                 $comment.body | Should -Be $updatedBody
             }

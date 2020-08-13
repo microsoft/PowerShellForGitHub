@@ -257,6 +257,11 @@ function Add-GitHubAssignee
         NOTE: Only users with push access can add assignees to an issue.
         Assignees are silently ignored otherwise.
 
+    .PARAMETER PassThru
+        Returns the updated GitHub Issue.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -346,6 +351,8 @@ function Add-GitHubAssignee
         [Alias('UserName')]
         [string[]] $Assignee,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -397,7 +404,11 @@ function Add-GitHubAssignee
             return
         }
 
-        return (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+        $result = (Invoke-GHRestMethod @params | Add-GitHubIssueAdditionalProperties)
+        if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+        {
+            return $result
+        }
     }
 }
 

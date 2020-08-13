@@ -462,7 +462,7 @@ try
         }
 
         Context 'By parameters' {
-            $gist = Copy-GitHubGist -Gist $originalGist.id
+            $gist = Copy-GitHubGist -Gist $originalGist.id -PassThru
             It 'Should have been forked' {
                 $gist.files.Count | Should -Be $originalGist.files.Count
                 foreach ($file in $gist.files)
@@ -486,7 +486,7 @@ try
         }
 
         Context 'Gist on the pipeline' {
-            $gist = $originalGist | Copy-GitHubGist
+            $gist = $originalGist | Copy-GitHubGist -PassThru
             It 'Should have been forked' {
                 $gist.files.Count | Should -Be $originalGist.files.Count
                 foreach ($file in $gist.files)
@@ -736,7 +736,7 @@ try
                 $gist | Remove-GitHubGist -Force
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $fileBName -Content $fileBContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $fileBName -Content $fileBContent -PassThru
             It 'Should be in the expected, original state' {
                 $gist.description | Should -Be $description
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
@@ -758,7 +758,7 @@ try
                 }
             }
 
-            $gist = Set-GitHubGist @setParams -Force
+            $gist = Set-GitHubGist @setParams -Force -PassThru
             It 'Should have been properly updated' {
                 $gist.description | Should -Be $updatedDescription
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 3
@@ -799,7 +799,7 @@ try
                 $gist | Remove-GitHubGist -Force
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $fileBName -Content $fileBContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $fileBName -Content $fileBContent -PassThru
             It 'Should be in the expected, original state' {
                 $gist.description | Should -Be $description
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
@@ -820,7 +820,7 @@ try
                 }
             }
 
-            $gist = $gist | Set-GitHubGist @setParams -Confirm:$false
+            $gist = $gist | Set-GitHubGist @setParams -Confirm:$false -PassThru
             It 'Should have been properly updated' {
                 $gist.description | Should -Be $updatedDescription
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 3
@@ -869,7 +869,7 @@ try
         }
 
         Context 'By content with parameters' {
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $updatedOrigContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $updatedOrigContent -PassThru
             It 'Should have the expected result' {
                 $gist.files.$origFileName.content | Should -Be $updatedOrigContent
                 $gist.files.$newFileName | Should -BeNullOrEmpty
@@ -881,7 +881,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $newFileName -Content $newContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $newFileName -Content $newContent -PassThru
             It 'Should have the expected result' {
                 $gist.files.$origFileName.content | Should -Be $updatedOrigContent
                 $gist.files.$newFileName.content | Should -Be $newContent
@@ -893,14 +893,14 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent -PassThru
             It 'Should remove the new file' {
                 { $gist | Remove-GitHubGistFile -FileName $newFileName -Force } | Should -Not -Throw
             }
         }
 
         Context 'By content with the gist on the pipeline' {
-            $gist = $gist | Set-GitHubGistFile -FileName $origFileName -Content $updatedOrigContent
+            $gist = $gist | Set-GitHubGistFile -FileName $origFileName -Content $updatedOrigContent -PassThru
             It 'Should have the expected result' {
                 $gist.files.$origFileName.content | Should -Be $updatedOrigContent
                 $gist.files.$newFileName | Should -BeNullOrEmpty
@@ -912,7 +912,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = $gist | Set-GitHubGistFile -FileName $newFileName -Content $newContent
+            $gist = $gist | Set-GitHubGistFile -FileName $newFileName -Content $newContent -PassThru
             It 'Should have the expected result' {
                 $gist.files.$origFileName.content | Should -Be $updatedOrigContent
                 $gist.files.$newFileName.content | Should -Be $newContent
@@ -924,7 +924,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent -PassThru
             It 'Should remove the new file' {
                 { $gist | Remove-GitHubGistFile -FileName $newFileName -Force } | Should -Not -Throw
             }
@@ -945,7 +945,7 @@ try
                 @($fileA) | Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -File $fileA
+            $gist = Set-GitHubGistFile -Gist $gist.id -File $fileA -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -959,7 +959,7 @@ try
             }
 
             Out-File -FilePath $fileA -InputObject $fileAUpdatedContent -Encoding utf8
-            $gist = Set-GitHubGistFile -Gist $gist.id -File $fileA
+            $gist = Set-GitHubGistFile -Gist $gist.id -File $fileA -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -972,7 +972,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent -PassThru
             It 'Should remove the new file' {
                 { $gist | Remove-GitHubGistFile -FileName $fileAName -Force } | Should -Not -Throw
             }
@@ -993,7 +993,7 @@ try
                 @($fileA) | Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
             }
 
-            $gist = $gist | Set-GitHubGistFile -File $fileA
+            $gist = $gist | Set-GitHubGistFile -File $fileA -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -1007,7 +1007,7 @@ try
             }
 
             Out-File -FilePath $fileA -InputObject $fileAUpdatedContent -Encoding utf8
-            $gist = $gist | Set-GitHubGistFile -File $fileA
+            $gist = $gist | Set-GitHubGistFile -File $fileA -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -1020,7 +1020,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent -PassThru
             It 'Should remove the new file' {
                 { $gist | Remove-GitHubGistFile -FileName $fileAName -Force } | Should -Not -Throw
             }
@@ -1041,7 +1041,7 @@ try
                 @($fileA) | Remove-Item -Force -ErrorAction SilentlyContinue | Out-Null
             }
 
-            $gist = $fileA | Set-GitHubGistFile -Gist $gist.id
+            $gist = $fileA | Set-GitHubGistFile -Gist $gist.id -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -1055,7 +1055,7 @@ try
             }
 
             Out-File -FilePath $fileA -InputObject $fileAUpdatedContent -Encoding utf8
-            $gist = $fileA | Set-GitHubGistFile -Gist $gist.id
+            $gist = $fileA | Set-GitHubGistFile -Gist $gist.id -PassThru
             It 'Should have the expected result' {
                 ($gist.files | Get-Member -Type NoteProperty).Count | Should -Be 2
                 $gist.files.$origFileName.content | Should -Be $origContent
@@ -1068,7 +1068,7 @@ try
                 $gist.owner.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
-            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent
+            $gist = Set-GitHubGistFile -Gist $gist.id -FileName $origFileName -Content $origContent -PassThru
             It 'Should remove the new file' {
                 { $gist | Remove-GitHubGistFile -FileName $fileAName -Force } | Should -Not -Throw
             }
@@ -1089,7 +1089,7 @@ try
                 $gist.files.$newName | Should -BeNullOrEmpty
             }
 
-            $gist = Rename-GitHubGistFile -Gist $gist.id -FileName $originalName -NewName $newName
+            $gist = Rename-GitHubGistFile -Gist $gist.id -FileName $originalName -NewName $newName -PassThru
             It 'Should have been renamed' {
                 $gist.files.$originalName | Should -BeNullOrEmpty
                 $gist.files.$newName.content | Should -Be $content
@@ -1113,7 +1113,7 @@ try
                 $gist.files.$newName | Should -BeNullOrEmpty
             }
 
-            $gist = $gist | Rename-GitHubGistFile -FileName $originalName -NewName $newName
+            $gist = $gist | Rename-GitHubGistFile -FileName $originalName -NewName $newName -PassThru
             It 'Should have been renamed' {
                 $gist.files.$originalName | Should -BeNullOrEmpty
                 $gist.files.$newName.content | Should -Be $content
@@ -1143,7 +1143,7 @@ try
                 $gist.files.$fileName | Should -Not -BeNullOrEmpty
             }
 
-            $gist = Remove-GitHubGistFile -Gist $gist.id -FileName $fileName -Force
+            $gist = Remove-GitHubGistFile -Gist $gist.id -FileName $fileName -Force -PassThru
             It 'Should have been removed' {
                 $gist.files.$fileName | Should -BeNullOrEmpty
             }
@@ -1165,7 +1165,7 @@ try
                 $gist.files.$fileName | Should -Not -BeNullOrEmpty
             }
 
-            $gist = $gist | Remove-GitHubGistFile -FileName $fileName -Confirm:$false
+            $gist = $gist | Remove-GitHubGistFile -FileName $fileName -Confirm:$false -PassThru
             It 'Should have been removed' {
                 $gist.files.$fileName | Should -BeNullOrEmpty
             }

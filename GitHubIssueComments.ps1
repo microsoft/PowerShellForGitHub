@@ -451,6 +451,11 @@ filter Set-GitHubIssueComment
         Full - Return raw, text and HTML representations.
                Response will include body, body_text, and body_html.
 
+    .PARAMETER PassThru
+        Returns the updated Comment.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -513,6 +518,8 @@ filter Set-GitHubIssueComment
         [ValidateSet('Raw', 'Text', 'Html', 'Full')]
         [string] $MediaType ='Raw',
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -548,7 +555,11 @@ filter Set-GitHubIssueComment
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubIssueCommentAdditionalProperties)
+    $result = (Invoke-GHRestMethod @params | Add-GitHubIssueCommentAdditionalProperties)
+    if (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
+    {
+        return $result
+    }
 }
 
 filter Remove-GitHubIssueComment
