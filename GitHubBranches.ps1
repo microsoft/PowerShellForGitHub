@@ -216,6 +216,17 @@ filter New-GitHubRepositoryBranch
         $repo | New-GitHubRepositoryBranch -TargetBranchName new-branch
 
         You can also pipe in a repo that was returned from a previous command.
+
+    .EXAMPLE
+        $branch = Get-GitHubRepositoryBranch -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName main
+        $branch | New-GitHubRepositoryBranch -TargetBranchName beta
+
+        You can also pipe in a branch that was returned from a previous command.
+
+    .EXAMPLE
+        New-GitHubRepositoryBranch -Uri 'https://github.com/microsoft/PowerShellForGitHub' -Sha 1c3b80b754a983f4da20e77cfb9bd7f0e4cb5da6 -TargetBranchName new-branch
+
+        You can also create a new branch based off of a specific SHA1 commit value.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -1119,11 +1130,11 @@ filter Add-GitHubBranchAdditionalProperties
 
             Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
 
-            if ($item.commit)
+            if ($null -ne $item.commit)
             {
                 Add-Member -InputObject $item -Name 'Sha' -Value $item.commit.sha -MemberType NoteProperty -Force
             }
-            elseif ($item.object)
+            elseif ($null -ne $item.object)
             {
                 Add-Member -InputObject $item -Name 'Sha' -Value $item.object.sha -MemberType NoteProperty -Force
             }

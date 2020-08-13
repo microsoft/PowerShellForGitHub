@@ -210,6 +210,70 @@ try
                             Should -Not -Throw
                     }
                 }
+
+                Context 'When providing the GitHub.Branch on the pipeline' {
+                    BeforeAll {
+                        $baseBranchName = 'develop4'
+                        $baseBranch = $baseBranchName | New-GitHubRepositoryBranch -Uri $repo.html_url
+
+                        $newBranchName = 'develop5'
+                        $branch = $baseBranch | New-GitHubRepositoryBranch -TargetBranchName $newBranchName
+                    }
+
+                    It 'Should have been created from the right Sha' {
+                        $branch.Sha | Should -Be $baseBranch.Sha
+                    }
+
+                    It 'Should have the expected type and addititional properties' {
+                        $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                        $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                        $branch.BranchName | Should -Be $newBranchName
+                        $branch.Sha | Should -Be $branch.object.sha
+                    }
+
+                    It 'Should have created the branch' {
+                        $getGitHubRepositoryBranchParms = @{
+                            OwnerName = $script:ownerName
+                            RepositoryName = $repoName
+                            BranchName = $newBranchName
+                        }
+
+                        { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                            Should -Not -Throw
+                    }
+                }
+
+                Context 'When providing the Repo on the pipeline and specifying the Sha' {
+                    BeforeAll {
+                        $baseBranchName = 'sha1'
+                        $baseBranch = $baseBranchName | New-GitHubRepositoryBranch -Uri $repo.html_url
+
+                        $newBranchName = 'sha2'
+                        $branch = $repo | New-GitHubRepositoryBranch -Sha $baseBranch.Sha -TargetBranchName $newBranchName
+                    }
+
+                    It 'Should have been created from the right Sha' {
+                        $branch.Sha | Should -Be $baseBranch.Sha
+                    }
+
+                    It 'Should have the expected type and addititional properties' {
+                        $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
+                        $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                        $branch.BranchName | Should -Be $newBranchName
+                        $branch.Sha | Should -Be $branch.object.sha
+                    }
+
+                    It 'Should have created the branch' {
+                        $getGitHubRepositoryBranchParms = @{
+                            OwnerName = $script:ownerName
+                            RepositoryName = $repoName
+                            BranchName = $newBranchName
+                        }
+
+                        { Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms } |
+                            Should -Not -Throw
+                    }
+                }
             }
 
             Context 'When the origin branch cannot be found' {
