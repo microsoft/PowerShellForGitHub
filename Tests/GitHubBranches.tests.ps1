@@ -45,6 +45,7 @@ try
                 $branches[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branches[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branches[0].BranchName | Should -Be $branches[0].name
+                $branches[0].Sha | Should -Be $branches[0].commit.sha
             }
         }
 
@@ -63,6 +64,7 @@ try
                 $branches[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branches[0].RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branches[0].BranchName | Should -Be $branches[0].name
+                $branches[0].Sha | Should -Be $branches[0].commit.sha
             }
         }
 
@@ -77,6 +79,7 @@ try
                 $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branch.BranchName | Should -Be $branch.name
+                $branch.Sha | Should -Be $branch.commit.sha
             }
         }
 
@@ -91,6 +94,7 @@ try
                 $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branch.BranchName | Should -Be $branch.name
+                $branch.Sha | Should -Be $branch.commit.sha
             }
         }
 
@@ -106,6 +110,7 @@ try
                 $branchAgain.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                 $branchAgain.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $branchAgain.BranchName | Should -Be $branchAgain.name
+                $branchAgain.Sha | Should -Be $branchAgain.commit.sha
             }
         }
     }
@@ -140,6 +145,7 @@ try
                     $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                     $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                     $branch.BranchName | Should -Be $newBranchName
+                    $branch.Sha | Should -Be $branch.object.sha
                 }
 
                 It 'Should have created the branch' {
@@ -165,6 +171,7 @@ try
                         $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                         $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                         $branch.BranchName | Should -Be $newBranchName
+                        $branch.Sha | Should -Be $branch.object.sha
                     }
 
                     It 'Should have created the branch' {
@@ -189,6 +196,7 @@ try
                         $branch.PSObject.TypeNames[0] | Should -Be 'GitHub.Branch'
                         $branch.RepositoryUrl | Should -Be $repo.RepositoryUrl
                         $branch.BranchName | Should -Be $newBranchName
+                        $branch.Sha | Should -Be $branch.object.sha
                     }
 
                     It 'Should have created the branch' {

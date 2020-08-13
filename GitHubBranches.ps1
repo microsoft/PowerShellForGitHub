@@ -175,6 +175,10 @@ filter New-GitHubRepositoryBranch
     .PARAMETER TargetBranchName
         Name of the branch to be created.
 
+    .PARAMETER Sha
+        The SHA1 value of the commit that this branch should be based on.
+        If not specified, will use the head of BranchName.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -235,6 +239,7 @@ filter New-GitHubRepositoryBranch
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(ValueFromPipelineByPropertyName)]
         [string] $BranchName = 'master',
 
         [Parameter(
@@ -242,6 +247,9 @@ filter New-GitHubRepositoryBranch
             ValueFromPipeline,
             Position = 2)]
         [string] $TargetBranchName,
+
+        [Parameter(ValueFromPipelineByPropertyName)]
+        [string] $Sha,
 
         [string] $AccessToken
     )
@@ -259,51 +267,55 @@ filter New-GitHubRepositoryBranch
 
     $originBranch = $null
 
-    try
+    if (-not $PSBoundParameters.ContainsKey('Sha'))
     {
-        $getGitHubRepositoryBranchParms = @{
-            OwnerName = $OwnerName
-            RepositoryName = $RepositoryName
-            BranchName = $BranchName
-        }
-        if ($PSBoundParameters.ContainsKey('AccessToken'))
+        try
         {
-            $getGitHubRepositoryBranchParms['AccessToken'] = $AccessToken
-        }
-
-        Write-Log -Level Verbose "Getting $BranchName branch for sha reference"
-        $originBranch = Get-GitHubRepositoryBranch  @getGitHubRepositoryBranchParms
-    }
-    catch
-    {
-        # Temporary code to handle current differences in exception object between PS5 and PS7
-        $throwObject = $_
-
-        if ($PSVersionTable.PSedition -eq 'Core')
-        {
-            if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
-            ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
-            {
-                $throwObject = "Origin branch $BranchName not found"
+            $getGitHubRepositoryBranchParms = @{
+                OwnerName = $OwnerName
+                RepositoryName = $RepositoryName
+                BranchName = $BranchName
             }
-        }
-        else
-        {
-            if ($_.Exception.Message -like '*Not Found*')
+            if ($PSBoundParameters.ContainsKey('AccessToken'))
             {
-                $throwObject = "Origin branch $BranchName not found"
+                $getGitHubRepositoryBranchParms['AccessToken'] = $AccessToken
             }
-        }
 
-        Write-Log -Message $throwObject -Level Error
-        throw $throwObject
+            Write-Log -Level Verbose "Getting $BranchName branch for sha reference"
+            $originBranch = Get-GitHubRepositoryBranch @getGitHubRepositoryBranchParms
+            $Sha = $originBranch.commit.sha
+        }
+        catch
+        {
+            # Temporary code to handle current differences in exception object between PS5 and PS7
+            $throwObject = $_
+
+            if ($PSVersionTable.PSedition -eq 'Core')
+            {
+                if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException] -and
+                ($_.ErrorDetails.Message | ConvertFrom-Json).message -eq 'Branch not found')
+                {
+                    $throwObject = "Origin branch $BranchName not found"
+                }
+            }
+            else
+            {
+                if ($_.Exception.Message -like '*Not Found*')
+                {
+                    $throwObject = "Origin branch $BranchName not found"
+                }
+            }
+
+            Write-Log -Message $throwObject -Level Error
+            throw $throwObject
+        }
     }
 
     $uriFragment = "repos/$OwnerName/$RepositoryName/git/refs"
 
     $hashBody = @{
         ref = "refs/heads/$TargetBranchName"
-        sha = $originBranch.commit.sha
+        sha = $Sha
     }
 
     if (-not $PSCmdlet.ShouldProcess($BranchName, 'Create Repository Branch'))
@@ -1106,6 +1118,15 @@ filter Add-GitHubBranchAdditionalProperties
             }
 
             Add-Member -InputObject $item -Name 'BranchName' -Value $branchName -MemberType NoteProperty -Force
+
+            if ($item.commit)
+            {
+                Add-Member -InputObject $item -Name 'Sha' -Value $item.commit.sha -MemberType NoteProperty -Force
+            }
+            elseif ($item.object)
+            {
+                Add-Member -InputObject $item -Name 'Sha' -Value $item.object.sha -MemberType NoteProperty -Force
+            }
         }
 
         Write-Output $item
