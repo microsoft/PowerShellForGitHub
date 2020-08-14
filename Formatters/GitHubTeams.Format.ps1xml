@@ -10,19 +10,19 @@
       <TableControl>
         <TableHeaders>
           <TableColumnHeader>
-            <Label>Name</Label>
+            <Label>name</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Description</Label>
+            <Label>description</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Privacy</Label>
+            <Label>privacy</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Permission</Label>
+            <Label>permission</Label>
           </TableColumnHeader>
           <TableColumnHeader>
-            <Label>Organization</Label>
+            <Label>OrganizationName</Label>
           </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
@@ -59,43 +59,34 @@
           <ListEntry>
             <ListItems>
               <ListItem>
-                <Label>Name</Label>
                 <PropertyName>name</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Description</Label>
                 <PropertyName>description</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Privacy</Label>
                 <PropertyName>privacy</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Permission</Label>
                 <PropertyName>permission</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Created</Label>
                 <PropertyName>created_at</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Updated</Label>
-                <PropertyName>updated_at</PropertyName>
+                <PropertyName>created_at</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Members</Label>
                 <PropertyName>members_count</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Repos</Label>
                 <PropertyName>repos_count</PropertyName>
               </ListItem>
               <ListItem>
-                <Label>Parent</Label>
+                <Label>parent.name</Label>
                 <ScriptBlock>$_.parent.name</ScriptBlock>
               </ListItem>
               <ListItem>
-                <Label>Organization</Label>
                 <PropertyName>OrganizationName</PropertyName>
               </ListItem>
             </ListItems>
