@@ -714,6 +714,11 @@ filter Rename-GitHubTeam
     .PARAMETER NewTeamName
         The new name for the team.
 
+    .PARAMETER PassThru
+        Returns the updated GitHub Team.  By default, this cmdlet does not generate any output.
+        You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
+        of this switch.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -774,6 +779,8 @@ filter Rename-GitHubTeam
         [ValidateNotNullOrEmpty()]
         [string] $NewTeamName,
 
+        [switch] $PassThru,
+
         [string] $AccessToken
     )
 
@@ -789,6 +796,7 @@ filter Rename-GitHubTeam
         OrganizationName = $OrganizationName
         TeamSlug = $TeamSlug
         TeamName = $NewTeamName
+        PassThru = (Resolve-ParameterWithDefaultConfigurationValue -Name PassThru -ConfigValueName DefaultPassThru)
         AccessToken = $AccessToken
     }
 
