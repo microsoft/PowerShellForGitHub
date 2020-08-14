@@ -711,7 +711,7 @@ try
                     ParentTeamId = $parentTeam.id
                 }
 
-                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms
+                $updatedTeam = Set-GitHubTeam @updateGitHubTeamParms -PassThru
             }
 
             It 'Should have the expected type and additional properties' {
@@ -790,7 +790,7 @@ try
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
             }
 
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
@@ -821,7 +821,7 @@ try
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
             }
 
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
@@ -852,7 +852,7 @@ try
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
             }
 
-            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName
+            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
