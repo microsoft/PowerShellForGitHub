@@ -9,22 +9,52 @@ This is a significant update that has a number of breaking changes amongst its p
 + Complete pipeline support has been added to the module.  You can now pipe the output of almost
   any command as input to almost any command.  Every command output now has a specific `GitHub.*`
   type that is queryable as well.
+
 + Major performance increase.  It turns out that showing animated status would make an operation
   take 3 seconds that would otherwise take 1/4 second due to performance issues with ProgressBar.
   We no longer show status except for commands that 10+ pages of results which we must query for,
   and that minimum can be changed with a new configuration property: `multiRequestProgressThreshold`
   (set it to `0` to never see any progress).
 
++ Default formatters have been added for many (but not yet all) of the types introduced by this
+  module.  Formatter support will be increased over the coming releases.
+
 ### Breaking Changes:
+
+#### Stardized naming (and verb usage) throghout the module
+* A number of commands have been renamed to follow the pattern that we're standardizing on:
+  `Get` / `Set` / `New` / `Remove`
+  (but we will continue to alias `Remove-*` as `Delete-*`).
+
+* The following renames have occurred:
+  * `Update-GitHubCurrentUser` -> `Set-GitHubProfile` `[Alias('Update-GitHubCurrentUser')]`
+  * `Update-GitHubIssue` -> `Set-GitHubIssue`  `[Alias('Update-GitHubIssue')]`
+  * `Update-GitHubRepository` -> `Set-GitHubRepository`  `[Alias('Update-GitHubRepository')]`
+  * `New-GitHubAssignee` -> `Add-GitHubAssignee` `[Alias('New-GitHubAssignee')]`
+  * [breaking] `Update-GitHubLabel` -> `Set-GitHubLabel`  `[Alias('Update-GitHubLabel')]`
+  * [breaking] `Set-GitHubLabel` -> `Initialize-GitHubLabel` `<no alias due to above>`
+
+#### Other breaking changes
 * All `Remove-*` functions (and some `Rename-*` functions) now prompt for confirmation before
   performing the requested action.  This can be silently bypassed by passing-in `-Confirm:$false`
   or `-Force`.
+
 * `WhatIf` support changes:
   * Only GitHub state-changing commands now support `-WhatIf` (which means `Get-GitHub*` and
     `Test-GitHub*` no longer support `-WhatIf`).
   * All other `-WhatIf`-supporting commands will only have a single `-WhatIf` output.
 
+* The `NoStatus` parameter has been removed from all functions due to the change in status behavior
+  as descried above.  The `DefaultNoStatus` configuration value has also been removed for the same
+  reason.
 
+* All state-changing functions are now silent by default (no resulting output).  If you want them
+  to return the result, you can pass in `-PassThru`, which is a PowerShell standard design pattern.
+  To truly get back to previous module behavior, you can set the new configuration property:
+  `DefaultPassThru`.
+
+* `Get-GitHubTeam` and `Get-GitHubTeamMember` no longer support the `TeamId` parameter, as that
+  functionality has been deprecated by GitHub.  You can use `TeamSlug` instead.
 
 ### Features:
 + Example description
@@ -50,6 +80,86 @@ This is a significant update that has a number of breaking changes amongst its p
 + Added additional options to `Update-GitHubRepository` (later renamed to `Set-GitHubRepository`):
   `DeleteBranchOnMerge` and `IsTemplate`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/192) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ef246cd5b2a8a1d5646be8f1467e304cf27aabd4)
+
++ Added Dependabot service functions: `Test-GitHubRepositoryVulnerabilityAlert`.
+  `Enable-GitHubRepositoryVulnerabilityAlert`, `Disable-GitHubRepositoryVulnerabilityAlert`.
+  `Enable-GitHubRepositorySecurityFix`. `Disable-GitHubRepositorySecurityFix`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/235) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b70c7d433721bcbe82e6272e32979cf2e5c5e1d8)
+
++ Added `New-GitHubRepositoryFromTemplate` which can create a new GitHub repository from a specified
+  template repository.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/221) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d96541ee5e16a3b9e11a52994a26540b203fb22c)
+
++ Added `Set-GitHubContent` and added a `BranchName` parameter to `Get-GitHubContent`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/241) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/a1f5e935165b2c606f81089524e89da9bb8b851d)
+
++ Added default "views" for all types exposed in GitHubRepositories.ps1: `GitHub.Repository`,
+  `GitHub.RepositoryTopic`, `GitHub.RepositoryContributor`, `GitHub.RepositoryContributorStatistics`,
+  `GitHub.RepositoryCollaborator`, `GitHub.RepositoryTag`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/205) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/41de3adb29ed583f775ce30e52c3d6ed8ade35ff)
+
++ Standardized verb usage and parameter naming throughout the module.  This is great for long-term
+  maintainability of the module, but it does introduced breaking changes from 0.14.0.  The breaking
+  changes are covered more completely, above.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/228) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/e57a9563ef68f3a897c2b523e5ea0cbf23011d4c)
+
++ Overhauled how status works for the module.  No longer shows an animation while invoking a web
+  request.  This has the side effect of simplifying the code and significantly speeding-up the
+  module.  This deprecates `NoStatus` and `DefaultNoStatus`.  This adds
+  `MultiRequestProgressThreshold` to control how many pages of results are needed before a command
+  will show status of completion across the full number of pages being retrieved.  This defaults to
+  10.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/253) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/2740026e64f2246d3b10bd3ccca197ea4ca3c9d8)
+
++ Added `New-GitHubRepositoryBranch` and `Remove-GitHubRepositoryBranch`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/256) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d76f54b08ea7c3f3355ec188827fadc0035d0595)
+
++ Updated `New-GitHubRepositoryBranch` to better support pipeline input, and added `Sha` as an
+  optional parameter to allow for arbitrary commit branch creation.  Also added `Sha` as a top-level
+  property to a `GitHub.Branch` object.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/277) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3e79c2592ce0f062c52d95f2de2c87cbff40e8ea)
+
++ Added GitHub Reactions support for Issues and Pull Requests: `Get-GitHubReaction`,
+  `Set-GitHubReaction`, `Remove-GitHubReaction`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/193) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/8e55f5af03aa0ae2d402e52b7cd50ca43ded03a7)
+
++ Added complete support for the GitHub Releases API surface: `New-GitHubRelease`,
+  `Set-GitHubRelease`, `Remove-GitHubRelease`, `Get-GitHubReleaseAsset`, `New-GitHubReleaseAsset`,
+  `Set-GitHubReleaseAsset`, `Remove-GitHubReleaseAsset`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/177) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/356af2f5b69fa8cd60bc77670d250cde796ac1d6)
+
++ Added complete support for the GitHub gists API surface: `Get-GitHubGist`, `Remove-GitHubGist`,
+  `Copy-GitHubGist` (aka `Fork-GitHubGist`), `Add-GitHubGistStar`, `Remove-GitHubGistStar`,
+  `Set-GitHubGistStar`, `Test-GitHubGistStar`, `New-GitHubGist`, `Set-GitHubGist`,
+  `Rename-GitHubGistFile`, `Remove-GitHubGistFile`, `Set-GitHubGistFile` (aka`Add-GitHubGistFile`),
+  `Get-GitHubGistComment`, `Set-GitHubGistComment`, `New-GitHubGistComment`,
+  `Remove-GitHubGistComment`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/172) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/92c4aa8b3a0142752e68a50af73ac276db0c1ff6)
+
++ Added branch protection rule commands: `Get-GitHubRepositoryBranchProtectionRule`,
+  `New-GitHubRepositoryBranchProtectionRule`, `Remove-GitHubRepositoryBranchProtectionRule`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/255) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/981b85c2d49172df531bee641c9554a425181625)
+
++ Standardized and improved the `WhatIf` support throughout the entire module.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/254) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/2f16de1f46611a89cd833429f6227c83b5563e84)
+
++ Added additional support for Teams: `New-GitHubTeam`, `Set-GitHubTeam`, `Remove-GitHubTeam`, and
+  adds `TeamName` as an additional way to call into `Get-GitHubTeam`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/257) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/6a51601ec841a52e1fa95cf0e2e0a6fd1100269a)
+
++ Minor improvements to the new Teams commands to better support pipeline input and to provide
+  alternative calling patterns (which can specify a team's `slug` or parent team's `TeamId` in order
+  to minimize additional queries that would have to be done internally to complete your request).
+  Added `Rename-GitHubTeam` as well.
+  This _also_ removes `TeamId` as a way to call `Get-GitHubTeam` or `Get-GitHubTeamMember`, as
+  those API's have been deprecated by GitHub.  You can now speficy a `TeamSlug` instead.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/275) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/9ef3c2b5670fc7b640a47a33d0aa725c63319839)
+
+* All state-changing functions are now silent by default (no resulting output).  If you want them
+  to return the result, you can pass in `-PassThru`, which is a PowerShell standard design pattern.
+  To truly get back to previous module behavior, you can set the new configuration property:
+  `DefaultPassThru`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/276) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/9600fc21120e17241e60606c5de3459d973026bb)
 
 ### Fixes:
 - Example description
@@ -87,11 +197,36 @@ This is a significant update that has a number of breaking changes amongst its p
   misconfiguration.  That has now been fixed.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/243) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/2385b5cf5d959a7581bf968f15f346d9a0ff816b)
 
+- Added a `ValidateSet` to the `Affiiliation` parameter in `Get-GitHubRepository` to limit input to
+  the set of permitted options. Comment-based help was updated for `Get-GitHubRepositoryCollaborator`
+  and `Move-GitHubRepositoryOwnership`.  Removed an unreachable codepath in `Get-GitHubRepository`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/233) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/eedfaa3740ac5330128fea27038f213c8abf1d4b)
+
+- Fixes to module version update checking: Fixed regression introduced by the
+  [pipeline work](https://github.com/PowerShell/PowerShellForGitHub/pull/242), and suppressed
+  its usage of the progress bar to speed it up further.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/252) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d32bd11d971c8b5c4a56b6ff6f997aca61fba2ca)
+
+- Fixed pipeline support for the newly added
+  [`New-GitHubRepositoryFromTemplate`](https://github.com/PowerShell/PowerShellForGitHub/pull/221).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/259) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/f31d79133df1310fac1f14643eea4cdb4972a26a)
+
+- Fixed how numerical configuration values are handled to accommodate behavior differences in
+  PowerShell 5 and PowerShell 7 Core.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/262) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/683187a94f05b7c69bc6ca3459ce615936f5a0d2)
+
+- Fixed pipeline input handling for the newly added Dependabot functions.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/272) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/4ded2faf8127a502fc7f21d7e60167e1230061af)
+
+- Removed `NoStatus` completely from the module to complete the transitional work done for how
+  status is handled in the module.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/274) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/db111559f9844e9a30b666ec069a5dc462643c63)
 
 Authors:
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
    * [**@X-Guardian**](https://github.com/X-Guardian)
    * [**@themilfan**](https://github.com/themilfan)
+   * [**@TylerLeonhardt**](https://github.com/TylerLeonhardt)
 
 ------
 
