@@ -5,14 +5,51 @@
 ### Overview:
 This is a significant update that has a number of breaking changes amongst its payload.
 
+### Highlights:
++ Complete pipeline support has been added to the module.  You can now pipe the output of almost
+  any command as input to almost any command.  Every command output now has a specific `GitHub.*`
+  type that is queryable as well.
++ Major performance increase.  It turns out that showing animated status would make an operation
+  take 3 seconds that would otherwise take 1/4 second due to performance issues with ProgressBar.
+  We no longer show status except for commands that 10+ pages of results which we must query for,
+  and that minimum can be changed with a new configuration property: `multiRequestProgressThreshold`
+  (set it to `0` to never see any progress).
+
 ### Breaking Changes:
+* All `Remove-*` functions (and some `Rename-*` functions) now prompt for confirmation before
+  performing the requested action.  This can be silently bypassed by passing-in `-Confirm:$false`
+  or `-Force`.
+* `WhatIf` support changes:
+  * Only GitHub state-changing commands now support `-WhatIf` (which means `Get-GitHub*` and
+    `Test-GitHub*` no longer support `-WhatIf`).
+  * All other `-WhatIf`-supporting commands will only have a single `-WhatIf` output.
+
 
 
 ### Features:
 + Example description
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
-+ Example description
-  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
+
++ Complete pipeline support has been added to the module.  You can now pipe the output of almost
+  any command as input to almost any command.  Every command output now has a specific `GitHub.*`
+  type that is queryable as well.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/242) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/17f6122d7812ee4001ce4bdf630429e711e45f7b)
+
++ All removal functions (and some rename functions) now prompt for confirmation.  This can be silently
+  disabled with `-Confirm:$false`.  A later change will add support for using `-Force` as well.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/174) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/a6a27aa0aa1129d97bb6e5188707ff3ef6d53549)
+
++ All commands that require confirmation now accept `-Force` in addition to `-Confirm:$false`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/226) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3c642d2e686725f7b17ad096c1f04d7d3777f733)
+
++ Telemetry no longer has any external dependencies.  We used to have to download .NET assemblies
+  in order to send telemetry, and the downloading of those binaries took up time.  Telemetry
+  reporting has now been completely implemented within PowerShell, removing all external dependencies.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/186) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ae8467f74a8bae1b97ca808a3b6eec727d15fc7e)
+
++ Added additional options to `Update-GitHubRepository` (later renamed to `Set-GitHubRepository`):
+  `DeleteBranchOnMerge` and `IsTemplate`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/192) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ef246cd5b2a8a1d5646be8f1467e304cf27aabd4)
 
 ### Fixes:
 - Example description
@@ -23,10 +60,38 @@ This is a significant update that has a number of breaking changes amongst its p
   in GitHub).
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/204) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/efdcbfa4a086bd4606ec2c32ef67db8553711781)
 
+- Simplified `-WhatIf` handling within `Invoke-GHRestMethod` to only have a single `ShouldProcess`
+  statement.  This was the first attempt at simplifying how `-WhatIf` should work.  There was a
+  successive change that took things further (see below).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/213) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ad15657551d137c5db063b64f15c2760f74ac5af)
+
+- Fixed exception that occurred when calling `Set-GitHubRepositoryTopic` with `-Clear`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/216) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d1bd976d70cc975dfd247f9ad2bace58a465c7da)
+
+- Disabled the progress bar for `Invoke-WebRequest` which greatly improves its performance in
+  PowerShell 5.1.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/229) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/6e794cbcaf5782bb9ba1cdbaeaa567f81435484e)
+
+- Significantly increased the performance of `Get-GitHubContent` with some internal changes.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/232) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/78187766f0b8b4d2bece25b945edc6b5aa43bbb4)
+
+- Removed positional binding support on `Set-GitHubConfiguration` to solve a common misconfiguration
+  problem introduced by accidentally setting the wrong configuration value state.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/234) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/08ff284644c70f9f1d9bc5d65f62dc41cafef0ac)
+
+- The module will now restore the previous state of `[Net.ServicePointManager]::SecurityProtocol `
+  after performing its operation.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/240) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/618398eedd4571a42e000a4ce4527b56244f7720)
+
+- Some commands were not properly validating the `OwnerName`/`RepositoryName` input due to a
+  misconfiguration.  That has now been fixed.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/243) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/2385b5cf5d959a7581bf968f15f346d9a0ff816b)
 
 
 Authors:
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@X-Guardian**](https://github.com/X-Guardian)
+   * [**@themilfan**](https://github.com/themilfan)
 
 ------
 
