@@ -1,7 +1,7 @@
 # PowerShellForGitHub PowerShell Module
 ## Changelog
 
-  [0.15.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.0) - (2020/08/10)
+  [0.15.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.0) - (2020/08/16)
 ### Overview:
 This is a significant update that has a number of breaking changes amongst its payload.
 
@@ -16,10 +16,43 @@ This is a significant update that has a number of breaking changes amongst its p
   and that minimum can be changed with a new configuration property: `multiRequestProgressThreshold`
   (set it to `0` to never see any progress).
 
++ Lots of new functionality added:
+  + Full support for gists: `Get-GitHubGist`, `Remove-GitHubGist`,
+    `Copy-GitHubGist` (aka `Fork-GitHubGist`), `Add-GitHubGistStar`, `Remove-GitHubGistStar`,
+    `Set-GitHubGistStar`, `Test-GitHubGistStar`, `New-GitHubGist`, `Set-GitHubGist`,
+    `Rename-GitHubGistFile`, `Remove-GitHubGistFile`, `Set-GitHubGistFile` (aka`Add-GitHubGistFile`),
+    `Get-GitHubGistComment`, `Set-GitHubGistComment`, `New-GitHubGistComment`,
+    `Remove-GitHubGistComment`
+
+  + Full support for Releases:
+    `New-GitHubRelease`, `Set-GitHubRelease`, `Remove-GitHubRelease`, `Get-GitHubReleaseAsset`,
+    `New-GitHubReleaseAsset`, `Set-GitHubReleaseAsset`, `Remove-GitHubReleaseAsset`
+
+  + Improved support for Teams:
+    `New-GitHubTeam`, `Set-GitHubTeam`, `Remove-GitHubTeam`, `Rename-GitHubTeam`
+
+  + Dependabot support: `Test-GitHubRepositoryVulnerabilityAlert`,
+    `Enable-GitHubRepositoryVulnerabilityAlert`, `Disable-GitHubRepositoryVulnerabilityAlert`,
+    `Enable-GitHubRepositorySecurityFix`, `Disable-GitHubRepositorySecurityFix`
+
+  + New Repository-related commands:
+    `New-GitHubRepositoryFromTemplate`, `Set-GitHubContent`, `New-GitHubRepositoryBranch`,
+    `Remove-GitHubRepositoryBranch`, `Get-GitHubRepositoryBranchProtectionRule`,
+    `New-GitHubRepositoryBranchProtectionRule`, `Remove-GitHubRepositoryBranchProtectionRule`
+
+  + New Reaction support added for issues and pull requests:
+    `Get-GitHubReaction`, `Set-GitHubReaction`, `Remove-GitHubReaction`
+
 + Default formatters have been added for many (but not yet all) of the types introduced by this
   module.  Formatter support will be increased over the coming releases.
 
-### Breaking Changes:
++ No longer has any external dependencies.  Previously had to download .NET
+  assemblies in order to send telemetry, which made the initial commands
+  take up much more time than needed.  With no eternal dependencies involved
+  anymore, telemetry is lightning-fast with negligible impact to normal
+  command execution.
+
+### Breaking Changes
 
 #### Stardized naming (and verb usage) throghout the module
 * A number of commands have been renamed to follow the pattern that we're standardizing on:
@@ -57,9 +90,6 @@ This is a significant update that has a number of breaking changes amongst its p
   functionality has been deprecated by GitHub.  You can use `TeamSlug` instead.
 
 ### Features:
-+ Example description
-  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/xxx) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/xxxxxxx)
-
 + Complete pipeline support has been added to the module.  You can now pipe the output of almost
   any command as input to almost any command.  Every command output now has a specific `GitHub.*`
   type that is queryable as well.
@@ -81,9 +111,9 @@ This is a significant update that has a number of breaking changes amongst its p
   `DeleteBranchOnMerge` and `IsTemplate`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/192) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ef246cd5b2a8a1d5646be8f1467e304cf27aabd4)
 
-+ Added Dependabot service functions: `Test-GitHubRepositoryVulnerabilityAlert`.
-  `Enable-GitHubRepositoryVulnerabilityAlert`, `Disable-GitHubRepositoryVulnerabilityAlert`.
-  `Enable-GitHubRepositorySecurityFix`. `Disable-GitHubRepositorySecurityFix`
++ Added Dependabot service functions: `Test-GitHubRepositoryVulnerabilityAlert`,
+  `Enable-GitHubRepositoryVulnerabilityAlert`, `Disable-GitHubRepositoryVulnerabilityAlert`,
+  `Enable-GitHubRepositorySecurityFix`, `Disable-GitHubRepositorySecurityFix`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/235) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b70c7d433721bcbe82e6272e32979cf2e5c5e1d8)
 
 + Added `New-GitHubRepositoryFromTemplate` which can create a new GitHub repository from a specified
