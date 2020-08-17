@@ -164,7 +164,7 @@ filter Get-GitHubIssueComment
             ValueFromPipelineByPropertyName,
             ParameterSetName='CommentUri')]
         [Alias('CommentId')]
-        [string] $Comment,
+        [int64] $Comment,
 
         [Parameter(
             Mandatory,

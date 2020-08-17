@@ -327,7 +327,7 @@ filter New-GitHubPullRequest
             ValueFromPipelineByPropertyName,
             ParameterSetName='Uri_Issue')]
         [Alias('IssueNumber')]
-        [int] $Issue,
+        [int64] $Issue,
 
         [Parameter(Mandatory)]
         [string] $Head,

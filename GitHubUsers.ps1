@@ -19,7 +19,7 @@ filter Get-GitHubUser
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
-    .PARAMETER User
+    .PARAMETER UserName
         The GitHub user to retrieve information for.
         If not specified, will retrieve information on all GitHub users
         (and may take a while to complete).

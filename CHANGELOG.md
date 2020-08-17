@@ -3,7 +3,8 @@
 
   [0.15.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.0) - (2020/08/16)
 ### Overview:
-This is a significant update that has a number of breaking changes amongst its payload.
+This is a significant update that has a number of breaking changes amongst its payload that
+existing users need to be made aware of.
 
 ### Highlights:
 + Complete pipeline support has been added to the module.  You can now pipe the output of almost
@@ -54,23 +55,71 @@ This is a significant update that has a number of breaking changes amongst its p
 
 ### Breaking Changes
 
-#### Stardized naming (and verb usage) throghout the module
+#### Stardized naming (and verb usage) throughout the module
 * A number of commands have been renamed to follow the pattern that we're standardizing on:
   `Get` / `Set` / `New` / `Remove`
   (but we will continue to alias `Remove-*` as `Delete-*`).
+  * That resulted in the following command renames:
+    * `Get-GitHubComment` -> `Get-GitHubIssueComment` `[Alias('Get-GitHubComment)]`
+    * `New-GitHubAssignee` -> `Add-GitHubAssignee` `[Alias('New-GitHubAssignee')]`
+    * `New-GitHubComment` -> `New-GitHubIssueComment` `[Alias('New-GitHubComment)]`
+    * `Remove-GitHubComment` -> `Remove-GitHubIssueComment` `[Alias('Remove-GitHubComment)]`
+    * `Set-GitHubLabel` -> `Initialize-GitHubLabel` _[breaking behavior due to the `Update-GitHubLabel` change below]_`
+    * `Update-GitHubCurrentUser` -> `Set-GitHubProfile` `[Alias('Update-GitHubCurrentUser')]`
+    * `Update-GitHubIssue` -> `Set-GitHubIssue`  `[Alias('Update-GitHubIssue')]`
+    * `Update-GitHubLabel` -> `Set-GitHubLabel`  `[Alias('Update-GitHubLabel')]`
+      _[breaking behavior since `Set-GitHubLabel` used to do something else]_
+    * `Update-GitHubRepository` -> `Set-GitHubRepository`  `[Alias('Update-GitHubRepository')]`
 
-* The following renames have occurred:
-  * `Update-GitHubCurrentUser` -> `Set-GitHubProfile` `[Alias('Update-GitHubCurrentUser')]`
-  * `Update-GitHubIssue` -> `Set-GitHubIssue`  `[Alias('Update-GitHubIssue')]`
-  * `Update-GitHubRepository` -> `Set-GitHubRepository`  `[Alias('Update-GitHubRepository')]`
-  * `New-GitHubAssignee` -> `Add-GitHubAssignee` `[Alias('New-GitHubAssignee')]`
-  * [breaking] `Update-GitHubLabel` -> `Set-GitHubLabel`  `[Alias('Update-GitHubLabel')]`
-  * [breaking] `Set-GitHubLabel` -> `Initialize-GitHubLabel` `<no alias due to above>`
+* The following parameter renames occurred as well:
+  * `Add-GitHubIssueLabel`: `Name` -> `Label`
+  * `Get-GitHubCodeOfConduct`: `Name` -> `Key`
+  * `Get-GitHubProjectCard`: `ArchivedState` -> `State` (although we kept an alias for `ArchivedState`)
+  * `Get-GitHubLabel`: `Name` -> `Label`, `Milestone` -> `MilestoneNumber`
+  * `Get-GitHubLicense`: `Name` -> `Key`
+  * `Get-GitHubRelease`: `ReleaseId` -> `Release` (although we kept an alias for `ReleaseId`)
+  * `Get-GitHubRepositoryBranch`: `Name` -> `BranchName`
+  * `Get-GitHubUser`: `User` -> `UserName` (although we kept an alias for `User`)
+  * `Get-GitHubUserContextualInformation`: There is no longer `SubjectId` and `Subject`.
+     Instead you either specify `OrganizationId`, `RepositoryId`, `IssueId` or `PullRequestId`.
+  * `Move-GitHubProjectCard`: `ColumnId` -> `Column` (although we kept an alias for `ColumnId`)
+  * `New-GitHubLabel`: `Name` -> `Label`
+  * `New-GitHubProject`: `Name` -> `ProjectName` (although we kept an alias for `Name`)
+  * `New-GitHubProjectCard`: There is no longer `ContentId` and `ContentType`.
+     Instead you either specify `IssueId` or `PullRequestId`.
+  * `New-GitHubProjectColumn`: `Name` -> `ColumnName` (although we kept an alias for `Name`)
+  * `Remove-GitHubIssueLabel`: `Name` -> `Label`
+  * `Remove-GitHubLabel`: `Name` -> `Label`
+  * `Rename-GitHubRepository`: `html_url` alias for `Uri` has been removed
+  * `Set-GitHubIssueLabel`: `Name` -> `Label`
+  * `Set-GitHubLabel` (formerly `Update-GitHubLabel`): `Name` -> `Label`
+  * `Set-GitHubProjectColumn`: `Name` -> `ColumnName` (although we kept an alias for `Name`)
+  * `Set-GitHubRepositoryTopic`: `Name` -> `Topic` (although we kept an alias for `Name`)
 
 #### Other breaking changes
-* All `Remove-*` functions (and some `Rename-*` functions) now prompt for confirmation before
+* All `Remove-*` functions (and some `Rename-*`/`Set-*` functions) now prompt for confirmation before
   performing the requested action.  This can be silently bypassed by passing-in `-Confirm:$false`
   or `-Force`.
+  * Affected commands that existed in previous releases:
+    * `Remove-GitHubAssignee`
+    * `Remove-GitHubIssueComment` (formerly named `Remove-GitHubComment`)
+    * `Remove-GitHubIssueLabel`
+    * `Remove-GitHubLabel`
+    * `Remove-GitHubMilestone`
+    * `Remove-GitHubProject`
+    * `Remove-GitHubProjectCard`
+    * `Remove-GitHubProjectColumn`
+    * `Remove-GitHubRepository`
+    * `Rename-GitHubRepository`
+    * `Set-GitHubLabel` (formerly named `Update-GitHubLabel`)
+    * `Set-GitHubRepository` (only affected when being used to rename the repository)
+
+* Some parameters have had their type updated:
+  * `Comment`: `[string]` -> `[int64]`
+  * `Issue`/`IssueNumber`: `[string]`/`[int]` -> `[int64]`
+  * `Milestone`/`MilestoneNumber`: `[string]` -> `[int64]`
+  * `PullRequest`/`PullRequestNumber`: `[string]`/`[int]` -> `[int64]`
+  * `Release`/`ReleaseId`: `[string]` -> `[int64]`
 
 * `WhatIf` support changes:
   * Only GitHub state-changing commands now support `-WhatIf` (which means `Get-GitHub*` and

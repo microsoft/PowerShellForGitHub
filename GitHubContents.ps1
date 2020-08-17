@@ -4,7 +4,7 @@
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
- filter Get-GitHubContent
+filter Get-GitHubContent
 {
     <#
     .SYNOPSIS

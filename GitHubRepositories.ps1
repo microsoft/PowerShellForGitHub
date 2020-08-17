@@ -1581,7 +1581,7 @@ filter Get-GitHubRepositoryContributor
         GitHub.Repository
 
     .OUTPUTS
-        GitHub.User
+        GitHub.Contributor
         GitHub.RepositoryContributorStatistics
 
     .EXAMPLE
