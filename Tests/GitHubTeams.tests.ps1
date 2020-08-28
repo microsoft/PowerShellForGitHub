@@ -270,6 +270,432 @@ try
         }
     }
 
+    Describe 'GitHubTeams\Get-GitHubTeamMember' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+        }
+
+        AfterAll {
+            $team | Remove-GitHubTeam -Force
+        }
+
+        Context 'Getting team members using TeamName' {
+            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamName $teamName)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Getting team members using TeamSlug' {
+            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamSlug $team.slug)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+
+        Context 'Getting team members using TeamSlug on the pipeline' {
+            $members = @($team | Get-GitHubTeamMember)
+
+            It 'Should have the expected type number of members' {
+                $members.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Get-GitHubTeamProject' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $projects = @()
+            $projectCount = 3
+            for ($i = 0; $i -lt $projectCount; $i++)
+            {
+                $project = New-GitHubProject `
+                    -OrganizationName $organizationName `
+                    -ProjectName "TestProject_$([Guid]::NewGuid().Guid)" `
+                    -Description "This is my desc for test team project #$i"
+
+                if ($i + 1 -lt $projectCount)
+                {
+                    $team | Set-GitHubTeamProjectPermission `
+                        -OrganizationName $organizationName `
+                        -Project $project.id `
+                        -Permission 'Admin'
+                }
+
+                $projects += $project
+            }
+        }
+
+        AfterAll {
+            foreach ($project in $projects)
+            {
+                Remove-GitHubProject -Project $project.id -Force
+            }
+
+            $team | Remove-GitHubTeam -Force
+        }
+
+        Context 'Getting all team projects using TeamName' {
+            It 'Should have the expected number of projects' {
+                $results = @(
+                    Get-GitHubTeamProject -OrganizationName $organizationName -TeamName $teamName
+                )
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting all team projects using TeamSlug' {
+            It 'Should have the expected number of projects' {
+                $results = @(
+                    Get-GitHubTeamProject -OrganizationName $organizationName -TeamName $team.slug
+                )
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting all team projects using TeamSlug on the pipeline' {
+            It 'Should have the expected number of projects' {
+                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting a specific team project using TeamName' {
+            It 'Should have the expected number of projects' {
+                $results = @(
+                    Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -TeamName $teamName `
+                        -Project $projects[0].id
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting a specific team project using TeamSlug' {
+            It 'Should have the expected number of projects' {
+                $results = @(
+                    Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -TeamName $team.slug `
+                        -Project $projects[0].id
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting a specific team project using TeamSlug on the pipeline' {
+            It 'Should have the expected number of projects' {
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $projects[0].id
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
+                }
+            }
+        }
+
+        Context 'Getting a specific project that has not been added to the team' {
+            It 'Should throw since there are no team permissions on the project' {
+                {
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $projects[$projectCount - 1].id
+                } | Should -Throw
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Get-GitHubTeamRepository' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $repos = @()
+            $repoCount = 3
+            for ($i = 0; $i -lt $repoCount; $i++)
+            {
+                $repo = New-GitHubRepository `
+                    -OrganizationName $organizationName `
+                    -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
+                    -Description "This is my desc for test team repo #$i"
+
+                if ($i + 1 -lt $repoCount)
+                {
+                    $team | Set-GitHubTeamRepositoryPermission `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl `
+                        -Permission 'Admin'
+                }
+
+                $repo += $repo
+            }
+        }
+
+        AfterAll {
+            foreach ($repo in $repos)
+            {
+                Remove-GitHubRepository -Uri $repo.RepositoryUrl -Force
+            }
+
+            $team | Remove-GitHubTeam -Force
+        }
+
+        Context 'Getting all team repositories using TeamName' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $teamName
+                )
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting all team repositories using TeamSlug' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository -OrganizationName $organizationName -TeamName $team.slug
+                )
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting all team repositories using TeamSlug on the pipeline' {
+            It 'Should have the expected number of repositories' {
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 2
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific team repository by its owner and name using TeamName' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $teamName `
+                        -OwnerName $repos[0].owner.name `
+                        -RepositoryName $repos[0].name
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific team repository by its URI using TeamName' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $teamName `
+                        -Uri $repos[0].RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific team repository by its owner and name using TeamSlug' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $team.slug `
+                        -OwnerName $repos[0].owner.name `
+                        -RepositoryName $repos[0].name
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific team repository by its URI using TeamSlug' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $team.slug `
+                        -Uri $repos[0].RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific team repository using TeamSlug on the pipeline' {
+            It 'Should have the expected number of repositories' {
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repos[0].RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+            }
+
+            It 'Should have the expected type and additional properties' {
+                foreach ($result in $results)
+                {
+                    $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
+                }
+            }
+        }
+
+        Context 'Getting a specific repository that has not been added to the team' {
+            It 'Should throw since there are no team permissions on the repository' {
+                {
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repos[$repoCount - 1].RepositoryUrl
+                } | Should -Throw
+            }
+        }
+    }
+
     Describe 'GitHubTeams\New-GitHubTeam' {
         BeforeAll {
             $organizationName = $script:organizationName
@@ -568,6 +994,411 @@ try
         }
     }
 
+    Describe 'GitHubTeams\Remove-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+        }
+
+        Context 'When removing a GitHub team with the TeamName' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            It 'Should not throw an exception' {
+                $removeGitHubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamName = $teamName
+                    Confirm = $false
+                }
+
+                { Remove-GitHubTeam @RemoveGitHubTeamParms } | Should -Not -Throw
+            }
+
+            It 'Should have removed the team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
+                    Should -Throw
+            }
+        }
+
+        Context 'When removing a GitHub team with the TeamSlug' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            It 'Should not throw an exception' {
+                $removeGitHubTeamParms = @{
+                    OrganizationName = $organizationName
+                    TeamSlug = $team.slug
+                    Confirm = $false
+                }
+
+                { Remove-GitHubTeam @RemoveGitHubTeamParms } | Should -Not -Throw
+            }
+
+            It 'Should have removed the team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug } |
+                    Should -Throw
+            }
+        }
+
+        Context 'When removing a GitHub team with the TeamSlug on the pipeline' {
+            BeforeAll {
+                $teamName = [Guid]::NewGuid().Guid
+
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            It 'Should not throw an exception' {
+                { $team | Remove-GitHubTeam -Force } | Should -Not -Throw
+            }
+
+            It 'Should have removed the team' {
+                { $team | Get-GitHubTeam } | Should -Throw
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Remove-GitHubTeamProject' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+        }
+
+        BeforeEach {
+            $project = New-GitHubProject `
+                -OrganizationName $organizationName `
+                -ProjectName "TestProject_$([Guid]::NewGuid().Guid)" `
+                -Description "This is my desc for test team project"
+
+            $team | Set-GitHubTeamProjectPermission `
+                -OrganizationName $organizationName `
+                -Project $project.id `
+                -Permission 'Admin'
+        }
+
+        AfterAll {
+            $team | Remove-GetHubTeam -Force
+        }
+
+        AfterEach {
+            Remove-GitHubProject -Project $project.id -Force
+        }
+
+        Context 'When removing a GitHub project from a team with the TeamName' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamProject `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -Project $project.id `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub project from a team with the TeamSlug' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamProject `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -Project $project.id `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub project from a team with the TeamSlug on the pipeline' {
+            It 'Is successfully removed from the team' {
+                $team | Remove-GitHubTeamProject `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When attempting to remove a GitHub project from a team with insufficient permissions' {
+            # TODO
+        }
+
+        Context 'When attempting to remove a GitHub project from a team that has been removed already' {
+            It 'Is successfully removed from the team' {
+                $team | Remove-GitHubTeamProject `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+
+                $team | Remove-GitHubTeamProject `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Force
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Remove-GitHubTeamRepository' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+        }
+
+        BeforeEach {
+            $repo = New-GitHubRepository `
+                -OrganizationName $organizationName `
+                -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
+                -Description "This is my desc for test team repo"
+
+            $team | Set-GitHubTeamRepositoryPermission `
+                -OrganizationName $organizationName `
+                -Uri $repo.RepositoryUrl `
+                -Permission 'Admin'
+        }
+
+        AfterAll {
+            $team | Remove-GetHubTeam -Force
+        }
+
+        AfterEach {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Force
+        }
+
+        Context 'When removing a GitHub repository from a team with the TeamName, OwnerName and RepositoryName' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -OwnerName $repo.owner.name `
+                    -RepositoryName $repo.name `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub repository from a team with the TeamName and RespositoryUri' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -Uri $repo.RepositoryUrl `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub repository from a team with the TeamSlug, OwnerName and RepositoryName' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -OwnerName $repo.owner.name `
+                    -RepositoryName $repo.name `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub repository from a team with the TeamSlug and RespositoryUri' {
+            It 'Is successfully removed from the team' {
+                Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -Uri $repo.RepositoryUrl `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When removing a GitHub repository from a team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Is successfully removed from the team' {
+                $team | Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+            }
+        }
+
+        Context 'When attempting to remove a GitHub repository from a team with insufficient permissions' {
+            # TODO
+        }
+
+        Context 'When attempting to remove a GitHub repository from a team that has been removed already' {
+            It 'Is successfully removed from the team' {
+                $team | Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Force
+
+                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+
+                $results.Count | Should -Be 0
+
+                $team | Remove-GitHubTeamRepository `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Force
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Rename-GitHubTeam' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $newTeamName = [Guid]::NewGuid().Guid
+        }
+
+        Context 'When renaming a GitHub team with the TeamName' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName -PassThru
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
+            }
+        }
+
+        Context 'When renaming a GitHub team with the TeamSlug' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName -PassThru
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
+            }
+        }
+
+        Context 'When renaming a GitHub team with the TeamSlug on the pipeline' {
+            BeforeAll {
+                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            }
+
+            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName -PassThru
+            It 'Should have the expected type and additional properties' {
+                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
+                $updatedTeam.name | Should -Be $newTeamName
+                $updatedTeam.organization.login | Should -Be $OrganizationName
+                $updatedTeam.description | Should -BeNullOrEmpty
+                $updatedTeam.parent.name | Should -BeNullOrEmpty
+                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
+                $updatedTeam.members_count | Should -Be 1
+                $updatedTeam.repos_count | Should -Be 0
+                $updatedTeam.TeamName | Should -Be $updatedTeam.name
+                $updatedTeam.TeamId | Should -Be $updatedTeam.id
+                $updatedTeam.OrganizationName | Should -Be $organizationName
+            }
+
+            It 'Should find the renamed team' {
+                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
+                    Should -Not -Throw
+            }
+
+            AfterAll {
+                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
+            }
+        }
+    }
+
     Describe 'GitHubTeams\Set-GitHubTeam' {
         BeforeAll {
             $organizationName = $script:organizationName
@@ -778,219 +1609,421 @@ try
         }
     }
 
-    Describe 'GitHubTeams\Rename-GitHubTeam' {
+    Describe 'GitHubTeams\Set-GitHubTeamProjectPermission' {
         BeforeAll {
             $organizationName = $script:organizationName
             $teamName = [Guid]::NewGuid().Guid
-            $newTeamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
         }
 
-        Context 'When renaming a GitHub team with the TeamName' {
-            BeforeAll {
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
+        BeforeEach {
+            $project = New-GitHubProject `
+                -OrganizationName $organizationName `
+                -ProjectName "TestProject_$([Guid]::NewGuid().Guid)" `
+                -Description "This is my desc for test team project"
 
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName -PassThru
-            It 'Should have the expected type and additional properties' {
-                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
-                $updatedTeam.name | Should -Be $newTeamName
-                $updatedTeam.organization.login | Should -Be $OrganizationName
-                $updatedTeam.description | Should -BeNullOrEmpty
-                $updatedTeam.parent.name | Should -BeNullOrEmpty
-                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.members_count | Should -Be 1
-                $updatedTeam.repos_count | Should -Be 0
-                $updatedTeam.TeamName | Should -Be $updatedTeam.name
-                $updatedTeam.TeamId | Should -Be $updatedTeam.id
-                $updatedTeam.OrganizationName | Should -Be $organizationName
-            }
-
-            It 'Should find the renamed team' {
-                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
-                    Should -Not -Throw
-            }
-
-            AfterAll {
-                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
-            }
-        }
-
-        Context 'When renaming a GitHub team with the TeamSlug' {
-            BeforeAll {
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
-
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName -PassThru
-            It 'Should have the expected type and additional properties' {
-                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
-                $updatedTeam.name | Should -Be $newTeamName
-                $updatedTeam.organization.login | Should -Be $OrganizationName
-                $updatedTeam.description | Should -BeNullOrEmpty
-                $updatedTeam.parent.name | Should -BeNullOrEmpty
-                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.members_count | Should -Be 1
-                $updatedTeam.repos_count | Should -Be 0
-                $updatedTeam.TeamName | Should -Be $updatedTeam.name
-                $updatedTeam.TeamId | Should -Be $updatedTeam.id
-                $updatedTeam.OrganizationName | Should -Be $organizationName
-            }
-
-            It 'Should find the renamed team' {
-                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
-                    Should -Not -Throw
-            }
-
-            AfterAll {
-                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
-            }
-        }
-
-        Context 'When renaming a GitHub team with the TeamSlug on the pipeline' {
-            BeforeAll {
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
-
-            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName -PassThru
-            It 'Should have the expected type and additional properties' {
-                $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
-                $updatedTeam.name | Should -Be $newTeamName
-                $updatedTeam.organization.login | Should -Be $OrganizationName
-                $updatedTeam.description | Should -BeNullOrEmpty
-                $updatedTeam.parent.name | Should -BeNullOrEmpty
-                $updatedTeam.created_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.updated_at | Should -Not -BeNullOrEmpty
-                $updatedTeam.members_count | Should -Be 1
-                $updatedTeam.repos_count | Should -Be 0
-                $updatedTeam.TeamName | Should -Be $updatedTeam.name
-                $updatedTeam.TeamId | Should -Be $updatedTeam.id
-                $updatedTeam.OrganizationName | Should -Be $organizationName
-            }
-
-            It 'Should find the renamed team' {
-                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName } |
-                    Should -Not -Throw
-            }
-
-            AfterAll {
-                Remove-GitHubTeam -OrganizationName $organizationName -TeamName $newTeamName -Force
-            }
-        }
-    }
-
-    Describe 'GitHubTeams\Remove-GitHubTeam' {
-        BeforeAll {
-            $organizationName = $script:organizationName
-        }
-
-        Context 'When removing a GitHub team with the TeamName' {
-            BeforeAll {
-                $teamName = [Guid]::NewGuid().Guid
-
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
-
-            It 'Should not throw an exception' {
-                $removeGitHubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamName = $teamName
-                    Confirm = $false
-                }
-
-                { Remove-GitHubTeam @RemoveGitHubTeamParms } | Should -Not -Throw
-            }
-
-            It 'Should have removed the team' {
-                { Get-GitHubTeam -OrganizationName $organizationName -TeamName $teamName } |
-                    Should -Throw
-            }
-        }
-
-        Context 'When removing a GitHub team with the TeamSlug' {
-            BeforeAll {
-                $teamName = [Guid]::NewGuid().Guid
-
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
-
-            It 'Should not throw an exception' {
-                $removeGitHubTeamParms = @{
-                    OrganizationName = $organizationName
-                    TeamSlug = $team.slug
-                    Confirm = $false
-                }
-
-                { Remove-GitHubTeam @RemoveGitHubTeamParms } | Should -Not -Throw
-            }
-
-            It 'Should have removed the team' {
-                { Get-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug } |
-                    Should -Throw
-            }
-        }
-
-        Context 'When removing a GitHub team with the TeamSlug on the pipeline' {
-            BeforeAll {
-                $teamName = [Guid]::NewGuid().Guid
-
-                $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
-            }
-
-            It 'Should not throw an exception' {
-                { $team | Remove-GitHubTeam -Force } | Should -Not -Throw
-            }
-
-            It 'Should have removed the team' {
-                { $team | Get-GitHubTeam } | Should -Throw
-            }
-        }
-    }
-
-    Describe 'GitHubTeams\Get-GitHubTeamMember' {
-        BeforeAll {
-            $organizationName = $script:organizationName
-            $teamName = [Guid]::NewGuid().Guid
-            $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+            $team | Set-GitHubTeamProjectPermission `
+                -OrganizationName $organizationName `
+                -Project $project.id `
+                -Permission 'Admin'
         }
 
         AfterAll {
             $team | Remove-GitHubTeam -Force
         }
 
-        Context 'Getting team members using TeamName' {
-            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamName $teamName)
+        AfterEach {
+            Remove-GitHubProject -Project $project.id -Force
+        }
 
-            It 'Should have the expected type number of members' {
-                $members.Count | Should -Be 1
-            }
+        Context 'When setting project permissions to Admin for a GitHub team with the TeamName' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $permission = 'Admin'
 
-            It 'Should have the expected type and additional properties' {
-                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -Project $project.id `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
             }
         }
 
-        Context 'Getting team members using TeamSlug' {
-            $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamSlug $team.slug)
+        Context 'When setting project permissions to Admin for a GitHub team with the TeamSlug' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $permission = 'Admin'
 
-            It 'Should have the expected type number of members' {
-                $members.Count | Should -Be 1
-            }
+                Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -Project $project.id `
+                    -Permission $permission
 
-            It 'Should have the expected type and additional properties' {
-                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
             }
         }
 
-        Context 'Getting team members using TeamSlug on the pipeline' {
-            $members = @($team | Get-GitHubTeamMember)
+        Context 'When setting project permissions to Admin for a GitHub team with the TeamSlug on the pipeline' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $permission = 'Admin'
 
-            It 'Should have the expected type number of members' {
-                $members.Count | Should -Be 1
+                $team | Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting project permissions to Read for a GitHub team with the TeamSlug on the pipeline' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $permission = 'Read'
+
+                $team | Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting project permissions to Write for a GitHub team with the TeamSlug on the pipeline' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $permission = 'Write'
+
+                $team | Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -Project $project.id `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting project permissions to Default for a GitHub team with the TeamSlug on the pipeline' {
+            It 'Sucessfully updates the corresponding permission on the project' {
+                $team | Set-GitHubTeamProjectPermission `
+                    -OrganizationName $organizationName `
+                    -Project $project.id
+
+                $results = @(
+                    $team | Get-GitHubTeamProject `
+                        -OrganizationName $organizationName `
+                        -Project $project.id
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+    }
+
+    Describe 'GitHubTeams\Set-GitHubTeamRepositoryPermission' {
+        BeforeAll {
+            $organizationName = $script:organizationName
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $maintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $maintainerName
             }
 
-            It 'Should have the expected type and additional properties' {
-                $members[0].PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+            $team = New-GitHubTeam @newGithubTeamParms
+        }
+
+        BeforeEach {
+            $repo = New-GitHubRepository `
+                -OrganizationName $organizationName `
+                -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
+                -Description "This is my desc for test team repo"
+
+            $team | Set-GitHubTeamRepositoryPermission `
+                -OrganizationName $organizationName `
+                -Uri $repo.RepositoryUrl `
+                -Permission 'Admin'
+        }
+
+        AfterAll {
+            $team | Remove-GitHubTeam -Force
+        }
+
+        AfterEach {
+            Remove-GitHubRepository -Uri $repo.RepositoryUrl -Force
+        }
+
+        Context 'When setting repository permissions to Admin for a GitHub team with the TeamName, OwnerName and RepositoryName' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Admin'
+
+                Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -OwnerName $repo.owner.name `
+                    -RepositoryName $repo.name `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Admin for a GitHub team with the TeamName and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Admin'
+
+                Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -TeamName $teamName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Admin for a GitHub team with the TeamSlug, OwnerName and RepositoryName' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Admin'
+
+                Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -OwnerName $repo.owner.name `
+                    -RepositoryName $repo.name `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Admin for a GitHub team with the TeamSlug and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Admin'
+
+                Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -TeamSlug $team.slug `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Admin for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Admin'
+
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Pull for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Pull'
+
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Push for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Push'
+
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Maintain for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Maintain'
+
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Triage for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $permission = 'Triage'
+
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
+            }
+        }
+
+        Context 'When setting repository permissions to Default for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
+            It 'Sucessfully updates the corresponding permission on the repository' {
+                $team | Set-GitHubTeamRepositoryPermission `
+                    -OrganizationName $organizationName `
+                    -Uri $repo.RepositoryUrl `
+                    -Permission $permission
+
+                $results = @(
+                    $team | Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -Uri $repo.RepositoryUrl
+                )
+
+                $results.Count | Should -Be 1
+
+                # TODO: Check permissions?
             }
         }
     }
