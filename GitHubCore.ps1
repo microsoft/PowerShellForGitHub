@@ -15,6 +15,7 @@
     mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
     mockingbirdAcceptHeader = 'application/vnd.github.mockingbird-preview'
     nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
+    repositoryAcceptHeader = 'application/vnd.github.v3.repository+json'
     sailorVAcceptHeader = 'application/vnd.github.sailor-v-preview+json'
     scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
     squirrelGirlAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
