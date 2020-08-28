@@ -458,6 +458,7 @@ filter Get-GitHubTeamProject
 
         $params = @{
             UriFragment = "orgs/$OrganizationName/teams/$TeamSlug/projects/$Project"
+            Method = 'Get'
             Description = "Getting project $project of team $TeamSlug"
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -665,6 +666,7 @@ filter Get-GitHubTeamRepository
 
         $params = @{
             UriFragment = "orgs/$OrganizationName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+            Method = 'Get'
             Description = "Getting repository $OwnerName/$RepositoryName of team $TeamSlug"
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
