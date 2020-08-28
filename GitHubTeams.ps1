@@ -628,16 +628,10 @@ filter Get-GitHubTeamRepository
 
     Write-InvocationLog
 
-    $elements = Resolve-RepositoryElements
-    $OwnerName = $elements.ownerName
-    $RepositoryName = $elements.repositoryName
-
     $telemetryProperties = @{
         OrganizationName = (Get-PiiSafeString -PlainText $OrganizationName)
         TeamName = (Get-PiiSafeString -PlainText $TeamName)
         TeamSlug = (Get-PiiSafeString -PlainText $TeamSlug)
-        OwnerName = (Get-PiiSafeString -PlainText $OwnerName)
-        RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'TeamName')
@@ -661,6 +655,10 @@ filter Get-GitHubTeamRepository
         $PSCmdlet.ParameterSetName -eq 'TeamSlugAndRepoElements' -or
         $PSCmdlet.ParameterSetName -eq 'TeamSlugAndRepoUri')
     {
+        $elements = Resolve-RepositoryElements
+        $OwnerName = $elements.ownerName
+        $RepositoryName = $elements.repositoryName
+
         $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
         $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
 
