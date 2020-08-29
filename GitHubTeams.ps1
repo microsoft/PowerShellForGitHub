@@ -395,10 +395,6 @@ filter Get-GitHubTeamProject
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='TeamName')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='TeamNameAndProject')]
         [ValidateNotNullOrEmpty()]
         [String] $TeamName,
 
@@ -406,20 +402,10 @@ filter Get-GitHubTeamProject
             Mandatory,
             ValueFromPipelineByPropertyName,
             ParameterSetName='TeamSlug')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='TeamSlugAndProject')]
         [string] $TeamSlug,
 
         [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='TeamNameAndProject')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='TeamSlugAndProject')]
+            ValueFromPipelineByPropertyName)]
         [Alias('ProjectId')]
         [int64] $Project,
 
@@ -451,8 +437,7 @@ filter Get-GitHubTeamProject
         $TeamSlug = $team.slug
     }
 
-    if ($PSCmdlet.ParameterSetName -eq 'TeamNameAndProject' -or
-        $PSCmdlet.ParameterSetName -eq 'TeamSlugAndProject')
+    if ($Project)
     {
         $telemetryProperties['Project'] = Get-PiiSafeString -PlainText $Project
 
@@ -1253,9 +1238,9 @@ filter Remove-GitHubTeamProject
     }
 
     $params = @{
-        UriFragment =  "/orgs/$OrganizationName/teams/$TeamSlug/project/$Project"
+        UriFragment =  "/orgs/$OrganizationName/teams/$TeamSlug/projects/$Project"
         Method = 'Delete'
-        Description =  "Removing project $Project from $TeamSlug"
+        Description =  "Removing project $Project from team $TeamSlug"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
@@ -1346,7 +1331,7 @@ filter Remove-GitHubTeamRepository
         SupportsShouldProcess,
         PositionalBinding = $false,
         ConfirmImpact = 'High',
-        DefaultParameterSetName = 'TeamSlugAndRepoElements')]
+        DefaultParameterSetName = 'TeamSlugAndRepoUri')]
     [Alias('Delete-GitHubTeamRepository')]
     param
     (
@@ -1377,12 +1362,20 @@ filter Remove-GitHubTeamRepository
             ParameterSetName='TeamSlugAndRepoUri')]
         [string] $TeamSlug,
 
-        [Parameter(ParameterSetName='TeamNameAndRepoElements')]
-        [Parameter(ParameterSetName='TeamSlugAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamNameAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamSlugAndRepoElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='TeamNameAndRepoElements')]
-        [Parameter(ParameterSetName='TeamSlugAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamNameAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamSlugAndRepoElements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -1763,8 +1756,14 @@ filter Set-GitHubTeamProjectPermission
         $TeamSlug = $team.slug
     }
 
-    $hashBody = @{
-        permission = $Permission.ToLowerInvariant()
+    $body = $null
+    if ($Permission)
+    {
+        $hashBody = @{
+            permission = $Permission.ToLowerInvariant()
+        }
+
+        $body = $hashBody | ConvertTo-Json
     }
 
     if (-not $PSCmdlet.ShouldProcess($TeamSlug, 'Set GitHub Team Project Permission'))
@@ -1773,14 +1772,14 @@ filter Set-GitHubTeamProjectPermission
     }
 
     $params = @{
-        'UriFragment' = "orgs/$OrganizationName/teams/$TeamSlug/projects/$Project"
-        'Body' = (ConvertTo-Json -InputObject $hashBody)
-        'Method' = 'Put'
-        'Description' = "Setting project permission of team $TeamSlug"
-        'AccessToken' = $AccessToken
-        'TelemetryEventName' = $MyInvocation.MyCommand.Name
-        'TelemetryProperties' = $telemetryProperties
-        'AcceptHeader' = $script:inertiaAcceptHeader
+        UriFragment = "orgs/$OrganizationName/teams/$TeamSlug/projects/$Project"
+        Body = $body
+        Method = 'Put'
+        Description = "Setting project permission of team $TeamSlug"
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+        AcceptHeader = $script:inertiaAcceptHeader
     }
 
     Invoke-GHRestMethod @params | Out-Null
@@ -1895,12 +1894,20 @@ filter Set-GitHubTeamRepositoryPermission
             ParameterSetName='TeamSlugAndRepoUri')]
         [string] $TeamSlug,
 
-        [Parameter(ParameterSetName='TeamNameAndRepoElements')]
-        [Parameter(ParameterSetName='TeamSlugAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamNameAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamSlugAndRepoElements')]
         [string] $OwnerName,
 
-        [Parameter(ParameterSetName='TeamNameAndRepoElements')]
-        [Parameter(ParameterSetName='TeamSlugAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamNameAndRepoElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='TeamSlugAndRepoElements')]
         [string] $RepositoryName,
 
         [Parameter(
@@ -1953,8 +1960,14 @@ filter Set-GitHubTeamRepositoryPermission
         $TeamSlug = $team.slug
     }
 
-    $hashBody = @{
-        permission = $Permission.ToLowerInvariant()
+    $body = $null
+    if ($Permission)
+    {
+        $hashBody = @{
+            permission = $Permission.ToLowerInvariant()
+        }
+
+        $body = $hashBody | ConvertTo-Json
     }
 
     if (-not $PSCmdlet.ShouldProcess($TeamSlug, 'Set GitHub Team Repository Permission'))
@@ -1964,7 +1977,7 @@ filter Set-GitHubTeamRepositoryPermission
 
     $params = @{
         UriFragment = "orgs/$OrganizationName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
-        Body = (ConvertTo-Json -InputObject $hashBody)
+        Body = $body
         Method = 'Put'
         Description = "Setting repository permission of team $TeamSlug"
         AccessToken = $AccessToken

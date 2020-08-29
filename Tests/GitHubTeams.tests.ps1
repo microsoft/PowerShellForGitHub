@@ -367,15 +367,13 @@ try
         }
 
         Context 'Getting all team projects using TeamName' {
-            It 'Should have the expected number of projects' {
+            It 'Should return all projects that the team has been added to' {
                 $results = @(
                     Get-GitHubTeamProject -OrganizationName $organizationName -TeamName $teamName
                 )
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -384,15 +382,13 @@ try
         }
 
         Context 'Getting all team projects using TeamSlug' {
-            It 'Should have the expected number of projects' {
+            It 'Should return all projects that the team has been added to' {
                 $results = @(
                     Get-GitHubTeamProject -OrganizationName $organizationName -TeamName $team.slug
                 )
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -401,13 +397,11 @@ try
         }
 
         Context 'Getting all team projects using TeamSlug on the pipeline' {
-            It 'Should have the expected number of projects' {
-                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+            It 'Should return all projects that the team has been added to' {
+                $results = @($team | Get-GitHubTeamProject)
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -416,7 +410,7 @@ try
         }
 
         Context 'Getting a specific team project using TeamName' {
-            It 'Should have the expected number of projects' {
+            It 'Should return the specific project if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamProject `
                         -OrganizationName $organizationName `
@@ -425,9 +419,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -436,7 +428,7 @@ try
         }
 
         Context 'Getting a specific team project using TeamSlug' {
-            It 'Should have the expected number of projects' {
+            It 'Should return the specific project if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamProject `
                         -OrganizationName $organizationName `
@@ -445,9 +437,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -456,17 +446,11 @@ try
         }
 
         Context 'Getting a specific team project using TeamSlug on the pipeline' {
-            It 'Should have the expected number of projects' {
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $projects[0].id
-                )
+            It 'Should return the specific project if the team has been added to it' {
+                $results = @($team | Get-GitHubTeamProject -Project $projects[0].id)
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Project'
@@ -477,9 +461,7 @@ try
         Context 'Getting a specific project that has not been added to the team' {
             It 'Should throw since there are no team permissions on the project' {
                 {
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $projects[$projectCount - 1].id
+                    $team | Get-GitHubTeamProject -Project $projects[$projectCount - 1].id
                 } | Should -Throw
             }
         }
@@ -510,7 +492,8 @@ try
                 $repo = New-GitHubRepository `
                     -OrganizationName $organizationName `
                     -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
-                    -Description "This is my desc for test team repo #$i"
+                    -Description "This is my desc for test team repo #$i" `
+                    -Private
 
                 if ($i + 1 -lt $repoCount)
                 {
@@ -534,7 +517,7 @@ try
         }
 
         Context 'Getting all team repositories using TeamName' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return all repositories that the team has been added to' {
                 $results = @(
                     Get-GitHubTeamRepository `
                         -OrganizationName $organizationName `
@@ -542,9 +525,7 @@ try
                 )
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -553,15 +534,15 @@ try
         }
 
         Context 'Getting all team repositories using TeamSlug' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return all repositories that the team has been added to' {
                 $results = @(
-                    Get-GitHubTeamRepository -OrganizationName $organizationName -TeamName $team.slug
+                    Get-GitHubTeamRepository `
+                        -OrganizationName $organizationName `
+                        -TeamName $team.slug
                 )
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -570,13 +551,11 @@ try
         }
 
         Context 'Getting all team repositories using TeamSlug on the pipeline' {
-            It 'Should have the expected number of repositories' {
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+            It 'Should return all repositories that the team has been added to' {
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 2
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -585,7 +564,7 @@ try
         }
 
         Context 'Getting a specific team repository by its owner and name using TeamName' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return the specific repository if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamRepository `
                         -OrganizationName $organizationName `
@@ -595,9 +574,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -606,7 +583,7 @@ try
         }
 
         Context 'Getting a specific team repository by its URI using TeamName' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return the specific repository if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamRepository `
                         -OrganizationName $organizationName `
@@ -615,9 +592,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -626,7 +601,7 @@ try
         }
 
         Context 'Getting a specific team repository by its owner and name using TeamSlug' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return the specific repository if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamRepository `
                         -OrganizationName $organizationName `
@@ -636,9 +611,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -647,7 +620,7 @@ try
         }
 
         Context 'Getting a specific team repository by its URI using TeamSlug' {
-            It 'Should have the expected number of repositories' {
+            It 'Should return the specific repository if the team has been added to it' {
                 $results = @(
                     Get-GitHubTeamRepository `
                         -OrganizationName $organizationName `
@@ -656,9 +629,7 @@ try
                 )
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -667,17 +638,11 @@ try
         }
 
         Context 'Getting a specific team repository using TeamSlug on the pipeline' {
-            It 'Should have the expected number of repositories' {
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repos[0].RepositoryUrl
-                )
+            It 'Should return the specific repository if the team has been added to it' {
+                $results = @($team | Get-GitHubTeamRepository -Uri $repos[0].RepositoryUrl)
 
                 $results.Count | Should -Be 1
-            }
 
-            It 'Should have the expected type and additional properties' {
                 foreach ($result in $results)
                 {
                     $results.PSObject.TypeNames[0] | Should -Be 'GitHub.Repository'
@@ -688,9 +653,7 @@ try
         Context 'Getting a specific repository that has not been added to the team' {
             It 'Should throw since there are no team permissions on the repository' {
                 {
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repos[$repoCount - 1].RepositoryUrl
+                    $team | Get-GitHubTeamRepository -Uri $repos[$repoCount - 1].RepositoryUrl
                 } | Should -Throw
             }
         }
@@ -1087,10 +1050,7 @@ try
                 -ProjectName "TestProject_$([Guid]::NewGuid().Guid)" `
                 -Description "This is my desc for test team project"
 
-            $team | Set-GitHubTeamProjectPermission `
-                -OrganizationName $organizationName `
-                -Project $project.id `
-                -Permission 'Admin'
+            $team | Set-GitHubTeamProjectPermission -Project $project.id -Permission 'Admin'
         }
 
         AfterAll {
@@ -1109,7 +1069,7 @@ try
                     -Project $project.id `
                     -Force
 
-                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamProject)
 
                 $results.Count | Should -Be 0
             }
@@ -1123,7 +1083,7 @@ try
                     -Project $project.id `
                     -Force
 
-                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamProject)
 
                 $results.Count | Should -Be 0
             }
@@ -1131,12 +1091,9 @@ try
 
         Context 'When removing a GitHub project from a team with the TeamSlug on the pipeline' {
             It 'Is successfully removed from the team' {
-                $team | Remove-GitHubTeamProject `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Force
+                $team | Remove-GitHubTeamProject -Project $project.id -Force
 
-                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamProject)
 
                 $results.Count | Should -Be 0
             }
@@ -1148,19 +1105,13 @@ try
 
         Context 'When attempting to remove a GitHub project from a team that has been removed already' {
             It 'Is successfully removed from the team' {
-                $team | Remove-GitHubTeamProject `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Force
+                $team | Remove-GitHubTeamProject -Project $project.id -Force
 
-                $results = @($team | Get-GitHubTeamProject -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamProject)
 
                 $results.Count | Should -Be 0
 
-                $team | Remove-GitHubTeamProject `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Force
+                $team | Remove-GitHubTeamProject -Project $project.id -Force
             }
         }
     }
@@ -1188,12 +1139,10 @@ try
             $repo = New-GitHubRepository `
                 -OrganizationName $organizationName `
                 -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
-                -Description "This is my desc for test team repo"
+                -Description "This is my desc for test team repo" `
+                -Private
 
-            $team | Set-GitHubTeamRepositoryPermission `
-                -OrganizationName $organizationName `
-                -Uri $repo.RepositoryUrl `
-                -Permission 'Admin'
+            $team | Set-GitHubTeamRepositoryPermission -Uri $repo.RepositoryUrl -Permission 'Admin'
         }
 
         AfterAll {
@@ -1213,7 +1162,7 @@ try
                     -RepositoryName $repo.name `
                     -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
             }
@@ -1227,7 +1176,7 @@ try
                     -Uri $repo.RepositoryUrl `
                     -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
             }
@@ -1242,7 +1191,7 @@ try
                     -RepositoryName $repo.name `
                     -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
             }
@@ -1256,7 +1205,7 @@ try
                     -Uri $repo.RepositoryUrl `
                     -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
             }
@@ -1264,12 +1213,9 @@ try
 
         Context 'When removing a GitHub repository from a team with the TeamSlug on the pipeline and RepositoryUri' {
             It 'Is successfully removed from the team' {
-                $team | Remove-GitHubTeamRepository `
-                    -OrganizationName $organizationName `
-                    -Uri $repo.RepositoryUrl `
-                    -Force
+                $team | Remove-GitHubTeamRepository -Uri $repo.RepositoryUrl -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
             }
@@ -1281,19 +1227,13 @@ try
 
         Context 'When attempting to remove a GitHub repository from a team that has been removed already' {
             It 'Is successfully removed from the team' {
-                $team | Remove-GitHubTeamRepository `
-                    -OrganizationName $organizationName `
-                    -Uri $repo.RepositoryUrl `
-                    -Force
+                $team | Remove-GitHubTeamRepository -Uri $repo.RepositoryUrl -Force
 
-                $results = @($team | Get-GitHubTeamRepository -OrganizationName $organizationName)
+                $results = @($team | Get-GitHubTeamRepository)
 
                 $results.Count | Should -Be 0
 
-                $team | Remove-GitHubTeamRepository `
-                    -OrganizationName $organizationName `
-                    -Uri $repo.RepositoryUrl `
-                    -Force
+                $team | Remove-GitHubTeamRepository -Uri $repo.RepositoryUrl -Force
             }
         }
     }
@@ -1634,10 +1574,7 @@ try
                 -ProjectName "TestProject_$([Guid]::NewGuid().Guid)" `
                 -Description "This is my desc for test team project"
 
-            $team | Set-GitHubTeamProjectPermission `
-                -OrganizationName $organizationName `
-                -Project $project.id `
-                -Permission 'Admin'
+            $team | Set-GitHubTeamProjectPermission -Project $project.id -Permission 'Admin'
         }
 
         AfterAll {
@@ -1658,11 +1595,7 @@ try
                     -Project $project.id `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1680,11 +1613,7 @@ try
                     -Project $project.id `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1696,16 +1625,9 @@ try
             It 'Sucessfully updates the corresponding permission on the project' {
                 $permission = 'Admin'
 
-                $team | Set-GitHubTeamProjectPermission `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Permission $permission
+                $team | Set-GitHubTeamProjectPermission -Project $project.id -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1717,16 +1639,9 @@ try
             It 'Sucessfully updates the corresponding permission on the project' {
                 $permission = 'Read'
 
-                $team | Set-GitHubTeamProjectPermission `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Permission $permission
+                $team | Set-GitHubTeamProjectPermission -Project $project.id -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1738,16 +1653,9 @@ try
             It 'Sucessfully updates the corresponding permission on the project' {
                 $permission = 'Write'
 
-                $team | Set-GitHubTeamProjectPermission `
-                    -OrganizationName $organizationName `
-                    -Project $project.id `
-                    -Permission $permission
+                $team | Set-GitHubTeamProjectPermission -Project $project.id -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1757,15 +1665,9 @@ try
 
         Context 'When setting project permissions to Default for a GitHub team with the TeamSlug on the pipeline' {
             It 'Sucessfully updates the corresponding permission on the project' {
-                $team | Set-GitHubTeamProjectPermission `
-                    -OrganizationName $organizationName `
-                    -Project $project.id
+                $team | Set-GitHubTeamProjectPermission -Project $project.id
 
-                $results = @(
-                    $team | Get-GitHubTeamProject `
-                        -OrganizationName $organizationName `
-                        -Project $project.id
-                )
+                $results = @($team | Get-GitHubTeamProject -Project $project.id)
 
                 $results.Count | Should -Be 1
 
@@ -1797,12 +1699,10 @@ try
             $repo = New-GitHubRepository `
                 -OrganizationName $organizationName `
                 -RepositoryName "TestRepo_$([Guid]::NewGuid().Guid)" `
-                -Description "This is my desc for test team repo"
+                -Description "This is my desc for test team repo" `
+                -Private
 
-            $team | Set-GitHubTeamRepositoryPermission `
-                -OrganizationName $organizationName `
-                -Uri $repo.RepositoryUrl `
-                -Permission 'Admin'
+            $team | Set-GitHubTeamRepositoryPermission -Uri $repo.RepositoryUrl -Permission 'Admin'
         }
 
         AfterAll {
@@ -1824,11 +1724,7 @@ try
                     -RepositoryName $repo.name `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1846,11 +1742,7 @@ try
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1869,11 +1761,7 @@ try
                     -RepositoryName $repo.name `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1891,11 +1779,7 @@ try
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1908,15 +1792,10 @@ try
                 $permission = 'Admin'
 
                 $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1929,15 +1808,10 @@ try
                 $permission = 'Pull'
 
                 $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1950,15 +1824,10 @@ try
                 $permission = 'Push'
 
                 $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1971,15 +1840,10 @@ try
                 $permission = 'Maintain'
 
                 $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -1992,15 +1856,10 @@ try
                 $permission = 'Triage'
 
                 $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
                     -Uri $repo.RepositoryUrl `
                     -Permission $permission
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
@@ -2010,16 +1869,9 @@ try
 
         Context 'When setting repository permissions to Default for a GitHub team with the TeamSlug on the pipeline and RepositoryUri' {
             It 'Sucessfully updates the corresponding permission on the repository' {
-                $team | Set-GitHubTeamRepositoryPermission `
-                    -OrganizationName $organizationName `
-                    -Uri $repo.RepositoryUrl `
-                    -Permission $permission
+                $team | Set-GitHubTeamRepositoryPermission -Uri $repo.RepositoryUrl
 
-                $results = @(
-                    $team | Get-GitHubTeamRepository `
-                        -OrganizationName $organizationName `
-                        -Uri $repo.RepositoryUrl
-                )
+                $results = @($team | Get-GitHubTeamRepository -Uri $repo.RepositoryUrl)
 
                 $results.Count | Should -Be 1
 
