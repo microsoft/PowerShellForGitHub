@@ -655,7 +655,7 @@ function Import-GitHubConfiguration
     $logToLocalAppDataFolder = [System.String]::IsNullOrEmpty($documentsFolder)
     if ($logToLocalAppDataFolder)
     {
-        $logPath = Join-Path -Path [Environment]::GetFolderPath('LocalApplicationData') -ChildPath $logName
+        $logPath = Join-Path -Path ([Environment]::GetFolderPath('LocalApplicationData')) -ChildPath $logName
     }
     else
     {
