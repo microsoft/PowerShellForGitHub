@@ -650,10 +650,16 @@ function Import-GitHubConfiguration
     # Create a configuration object with all the default values.  We can then update the values
     # with any that we find on disk.
     $logPath = [String]::Empty
+    $logName = 'PowerShellForGitHub.log'
     $documentsFolder = [System.Environment]::GetFolderPath('MyDocuments')
-    if (-not [System.String]::IsNullOrEmpty($documentsFolder))
+    $logToTempFolder = [System.String]::IsNullOrEmpty($documentsFolder)
+    if ($logToTempFolder)
     {
-        $logPath = Join-Path -Path $documentsFolder -ChildPath 'PowerShellForGitHub.log'
+        $logPath = Join-Path -Path $env:TEMP -ChildPath $logName
+    }
+    else
+    {
+        $logPath = Join-Path -Path $documentsFolder -ChildPath $logName
     }
 
     $config = [PSCustomObject]@{
@@ -696,6 +702,16 @@ function Import-GitHubConfiguration
             $type = $config.$name.GetType().Name
             $config.$name = Resolve-PropertyValue -InputObject $jsonObject -Name $name -Type $type -DefaultValue $config.$name
         }
+
+    # Quick verification for logPath
+    $configuredLogPath = $config.logPath
+    if ($logToTempFolder -and ($logPath -eq $configuredLogPath))
+    {
+        # Limited instance where we write the warning directly instead of using Write-Log, since
+        # Write-Log won't yet be configured.
+        $message = "Default log location could not be determined.  Reverting to storing log at [$logPath].  You can change this location by calling Set-GitHubConfiguration -LogPath <desiredPathToLogFile>"
+        Write-Warning -Message $message
+    }
 
     return $config
 }

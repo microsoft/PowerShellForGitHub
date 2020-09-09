@@ -137,7 +137,8 @@ The logging is affected by configuration properties (which can be checked with
 `Get-GitHubConfiguration` and changed with `Set-GitHubConfiguration`).
 
  **`LogPath`** [string] The logfile. Defaults to
-   `$env:USERPROFILE\Documents\PowerShellForGitHub.log`
+   `$env:USERPROFILE\Documents\PowerShellForGitHub.log`.  Will default to
+   `$env:TEMP\PowerShellForGitHub.log` when there is no user profile (like in an Azure environment).
 
  **`DisableLogging`** [bool] Defaults to `$false`.
 
