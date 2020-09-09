@@ -652,10 +652,10 @@ function Import-GitHubConfiguration
     $logPath = [String]::Empty
     $logName = 'PowerShellForGitHub.log'
     $documentsFolder = [System.Environment]::GetFolderPath('MyDocuments')
-    $logToTempFolder = [System.String]::IsNullOrEmpty($documentsFolder)
-    if ($logToTempFolder)
+    $logToLocalAppDataFolder = [System.String]::IsNullOrEmpty($documentsFolder)
+    if ($logToLocalAppDataFolder)
     {
-        $logPath = Join-Path -Path $env:TEMP -ChildPath $logName
+        $logPath = Join-Path -Path [Environment]::GetFolderPath('LocalApplicationData') -ChildPath $logName
     }
     else
     {
@@ -703,13 +703,14 @@ function Import-GitHubConfiguration
             $config.$name = Resolve-PropertyValue -InputObject $jsonObject -Name $name -Type $type -DefaultValue $config.$name
         }
 
-    # Quick verification for logPath
+    # Let the user know when we had to revert to using the LocalApplicationData folder for the
+    # log location (if they haven't already changed its path in their local config).
     $configuredLogPath = $config.logPath
-    if ($logToTempFolder -and ($logPath -eq $configuredLogPath))
+    if ($logToLocalAppDataFolder -and ($logPath -eq $configuredLogPath))
     {
         # Limited instance where we write the warning directly instead of using Write-Log, since
         # Write-Log won't yet be configured.
-        $message = "Default log location could not be determined.  Reverting to storing log at [$logPath].  You can change this location by calling Set-GitHubConfiguration -LogPath <desiredPathToLogFile>"
+        $message = "Storing log at non-default location: [$logPath] (no user profile path was found).  You can change this location by calling Set-GitHubConfiguration -LogPath <desiredPathToLogFile>"
         Write-Warning -Message $message
     }
 
