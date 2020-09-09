@@ -6,7 +6,7 @@
 
 # The location of the file that we'll store any settings that can/should roam with the user.
 [string] $script:configurationFilePath = [System.IO.Path]::Combine(
-    [Environment]::GetFolderPath('ApplicationData'),
+    [System.Environment]::GetFolderPath('ApplicationData'),
     'Microsoft',
     'PowerShellForGitHub',
     'config.json')
@@ -14,7 +14,7 @@
 # The location of the file that we'll store the Access Token SecureString
 # which cannot/should not roam with the user.
 [string] $script:accessTokenFilePath = [System.IO.Path]::Combine(
-    [Environment]::GetFolderPath('LocalApplicationData'),
+    [System.Environment]::GetFolderPath('LocalApplicationData'),
     'Microsoft',
     'PowerShellForGitHub',
     'accessToken.txt')
@@ -655,7 +655,7 @@ function Import-GitHubConfiguration
     $logToLocalAppDataFolder = [System.String]::IsNullOrEmpty($documentsFolder)
     if ($logToLocalAppDataFolder)
     {
-        $logPath = Join-Path -Path ([Environment]::GetFolderPath('LocalApplicationData')) -ChildPath $logName
+        $logPath = Join-Path -Path ([System.Environment]::GetFolderPath('LocalApplicationData')) -ChildPath $logName
     }
     else
     {
@@ -711,7 +711,7 @@ function Import-GitHubConfiguration
         # Limited instance where we write the warning directly instead of using Write-Log, since
         # Write-Log won't yet be configured.
         $message = "Storing log at non-default location: [$logPath] (no user profile path was found).  You can change this location by calling Set-GitHubConfiguration -LogPath <desiredPathToLogFile>"
-        Write-Warning -Message $message
+        Write-Verbose -Message $message
     }
 
     return $config
