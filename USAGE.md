@@ -422,8 +422,8 @@ Get-GitHubRepositoryContributor -OwnerName 'PowerShell' -RepositoryName 'PowerSh
 #### Querying Team and Organization Membership
 
 ```powershell
-$organizationMembers = Get-GitHubOrganizationMembers -OrganizationName 'OrganizationName'
-$teamMembers = Get-GitHubTeamMembers -OrganizationName 'OrganizationName' -TeamName 'TeamName'
+$organizationMembers = Get-GitHubOrganizationMember -OrganizationName 'OrganizationName'
+$teamMembers = Get-GitHubTeamMember -OrganizationName 'OrganizationName' -TeamName 'TeamName'
 ```
 
 ----------
