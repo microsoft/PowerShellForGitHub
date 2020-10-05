@@ -1046,8 +1046,11 @@ filter ConvertTo-SmarterObject
 function Get-MediaAcceptHeader
 {
 <#
+    .SYNOPSIS
+        Returns a formatted AcceptHeader based on the requested MediaType.
+
     .DESCRIPTION
-        Returns a formatted AcceptHeader based on the requested MediaType
+        Returns a formatted AcceptHeader based on the requested MediaType.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

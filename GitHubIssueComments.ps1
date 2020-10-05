@@ -11,6 +11,9 @@
 filter Get-GitHubIssueComment
 {
 <#
+    .SYNOPSIS
+        Get the Issue comments for a given GitHub repository.
+
     .DESCRIPTION
         Get the Issue comments for a given GitHub repository.
 
@@ -279,8 +282,11 @@ filter Get-GitHubIssueComment
 filter New-GitHubIssueComment
 {
 <#
+    .SYNOPSIS
+        Creates a new GitHub comment for an issue for the given repository.
+
     .DESCRIPTION
-        Creates a new GitHub comment for an issue for the given repository
+        Creates a new GitHub comment for an issue for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -414,8 +420,11 @@ filter New-GitHubIssueComment
 filter Set-GitHubIssueComment
 {
 <#
+    .SYNOPSIS
+        Modifies an existing comment in an issue for the given repository.
+
     .DESCRIPTION
-        Modifies an existing comment in an issue for the given repository
+        Modifies an existing comment in an issue for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -565,8 +574,11 @@ filter Set-GitHubIssueComment
 filter Remove-GitHubIssueComment
 {
 <#
+    .SYNOPSIS
+        Deletes a GitHub comment from an Issue in the given repository.
+
     .DESCRIPTION
-        Deletes a GitHub comment from an Issue in the given repository
+        Deletes a GitHub comment from an Issue in the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

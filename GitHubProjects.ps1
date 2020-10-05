@@ -10,6 +10,9 @@
 filter Get-GitHubProject
 {
 <#
+    .SYNOPSIS
+        Get the projects for a given GitHub user, repository or organization.
+
     .DESCRIPTION
         Get the projects for a given GitHub user, repository or organization.
 
@@ -212,8 +215,11 @@ filter Get-GitHubProject
 filter New-GitHubProject
 {
 <#
+    .SYNOPSIS
+        Creates a new GitHub project for the given repository.
+
     .DESCRIPTION
-        Creates a new GitHub project for the given repository
+        Creates a new GitHub project for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -395,6 +401,9 @@ filter New-GitHubProject
 filter Set-GitHubProject
 {
 <#
+    .SYNOPSIS
+        Modify a GitHub Project.
+
     .DESCRIPTION
         Modify a GitHub Project.
 
@@ -543,6 +552,9 @@ filter Set-GitHubProject
 filter Remove-GitHubProject
 {
 <#
+    .SYNOPSIS
+        Removes the projects for a given GitHub repository.
+
     .DESCRIPTION
         Removes the projects for a given GitHub repository.
 

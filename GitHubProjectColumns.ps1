@@ -10,6 +10,9 @@
 filter Get-GitHubProjectColumn
 {
 <#
+    .SYNOPSIS
+        Get the columns for a given GitHub Project.
+
     .DESCRIPTION
         Get the columns for a given GitHub Project.
 
@@ -101,6 +104,9 @@ filter Get-GitHubProjectColumn
 filter New-GitHubProjectColumn
 {
 <#
+    .SYNOPSIS
+        Creates a new column for a GitHub project.
+
     .DESCRIPTION
         Creates a new column for a GitHub project.
 
@@ -183,6 +189,9 @@ filter New-GitHubProjectColumn
 filter Set-GitHubProjectColumn
 {
 <#
+    .SYNOPSIS
+        Modify a GitHub Project Column.
+
     .DESCRIPTION
         Modify a GitHub Project Column.
 
@@ -271,6 +280,9 @@ filter Set-GitHubProjectColumn
 filter Remove-GitHubProjectColumn
 {
 <#
+    .SYNOPSIS
+        Removes the column for a project.
+
     .DESCRIPTION
         Removes the column for a project.
 
@@ -354,6 +366,9 @@ filter Remove-GitHubProjectColumn
 filter Move-GitHubProjectColumn
 {
 <#
+    .SYNOPSIS
+        Move a GitHub Project Column.
+
     .DESCRIPTION
         Move a GitHub Project Column.
 

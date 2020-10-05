@@ -14,6 +14,9 @@ $script:minimumHoursToEnsureDesiredDateInPacificTime = 9
 filter Get-GitHubMilestone
 {
 <#
+    .SYNOPSIS
+        Get the milestones for a given GitHub repository.
+
     .DESCRIPTION
         Get the milestones for a given GitHub repository.
 
@@ -205,8 +208,11 @@ filter Get-GitHubMilestone
 filter New-GitHubMilestone
 {
 <#
+    .SYNOPSIS
+        Creates a new GitHub milestone for the given repository.
+
     .DESCRIPTION
-        Creates a new GitHub milestone for the given repository
+        Creates a new GitHub milestone for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -380,8 +386,11 @@ filter New-GitHubMilestone
 filter Set-GitHubMilestone
 {
 <#
+    .SYNOPSIS
+        Update an existing milestone for the given repository.
+
     .DESCRIPTION
-        Update an existing milestone for the given repository
+        Update an existing milestone for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -579,8 +588,11 @@ filter Set-GitHubMilestone
 filter Remove-GitHubMilestone
 {
 <#
+    .SYNOPSIS
+        Deletes a GitHub milestone for the given repository.
+
     .DESCRIPTION
-        Deletes a GitHub milestone for the given repository
+        Deletes a GitHub milestone for the given repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
