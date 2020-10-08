@@ -135,6 +135,12 @@ function Set-GitHubConfiguration
     .PARAMETER LogTimeAsUtc
         If specified, all times logged will be logged as UTC instead of the local timezone.
 
+    .PARAMETER MaximumRetriesWhenResultNotReady
+        Some API requests may take time for GitHub to gather the results, and in the interim,
+        a 202 response is returned.  This value indicates the maximum number of times that the
+        query will be retried before giving up and failing.  The amount of time between each of
+        these requests is controlled by the RetryDelaySeconds configuration value.
+
     .PARAMETER MultiRequestProgressThreshold
         Some commands may require sending multiple requests to GitHub.  In some situations,
         getting the entirety of the request might take 70+ requests occurring over 20+ seconds.
@@ -145,6 +151,8 @@ function Set-GitHubConfiguration
 
     .PARAMETER RetryDelaySeconds
         The number of seconds to wait before retrying a command again after receiving a 202 response.
+        The number of times that a retry will occur is controlled by the
+        MaximumRetriesWhenResultNotReady configuration value.
 
     .PARAMETER StateChangeDelaySeconds
         The number of seconds to wait before returning the result after executing a command that
@@ -226,6 +234,8 @@ function Set-GitHubConfiguration
         [switch] $LogRequestBody,
 
         [switch] $LogTimeAsUtc,
+
+        [int] $MaximumRetriesWhenResultNotReady,
 
         [int] $MultiRequestProgressThreshold,
 
@@ -320,6 +330,7 @@ function Get-GitHubConfiguration
             'LogProcessId',
             'LogRequestBody',
             'LogTimeAsUtc',
+            'MaximumRetriesWhenResultNotReady',
             'MultiRequestProgressThreshold',
             'RetryDelaySeconds',
             'StateChangeDelaySeconds',
@@ -678,6 +689,7 @@ function Import-GitHubConfiguration
         'logProcessId' = $false
         'logRequestBody' = $false
         'logTimeAsUtc' = $false
+        'maximumRetriesWhenResultNotReady' = 30
         'multiRequestProgressThreshold' = 10
         'retryDelaySeconds' = 30
         'stateChangeDelaySeconds' = 0
