@@ -392,8 +392,8 @@ filter Set-GitHubContent
     if ($PSBoundParameters.ContainsKey('AuthorName') -or
         $PSBoundParameters.ContainsKey('AuthorEmail'))
     {
-        if (![System.String]::IsNullOrEmpty($CommitterName) -and
-            ![System.String]::IsNullOrEmpty($CommitterEmail))
+        if (![System.String]::IsNullOrEmpty($AuthorName) -and
+            ![System.String]::IsNullOrEmpty($AuthorEmail))
         {
             $hashBody['author'] = @{
                 name = $AuthorName
