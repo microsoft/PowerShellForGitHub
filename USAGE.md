@@ -2,6 +2,7 @@
 ## Usage
 
 #### Table of Contents
+*   [Full Module Documentation](#full-module-documentation)
 *   [Logging](#logging)
 *   [Telemetry](#telemetry)
 *   [Common PowerShell API Patterns](#common-powershell-api-patterns)
@@ -127,6 +128,20 @@
         *   [Removing a gist comment](#removing-a-gist-comment)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
+
+----------
+
+## Full Module Documentation
+
+All commands for the module have "Comment-Based Help" available at your fingertips.
+You can access that help at any time by running:
+
+```powershell
+Get-Help -Full <commandName>
+```
+
+In addition to accessing it from the commandline, all of that help documentation is also available
+online on our [wiki](https://github.com/microsoft/PowerShellForGitHub/wiki).
 
 ----------
 
