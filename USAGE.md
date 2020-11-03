@@ -1017,8 +1017,7 @@ or with pipelining...
 
 ```powershell
 $asset | Remove-GitHubReleaseAsset -force
-
-----------
+```
 
 ### Gists
 
