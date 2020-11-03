@@ -1019,6 +1019,8 @@ or with pipelining...
 $asset | Remove-GitHubReleaseAsset -force
 ```
 
+----------
+
 ### Gists
 
 #### Getting gists
