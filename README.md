@@ -62,6 +62,7 @@ At present, this module can:
       * Query the languages and tags in a repository, and and query/update its topics.
       * Change repository ownership.
       * Query, enable and disable security and vulnerability alerts.
+      * Query and set GitHub Actions permission.
       * Query various [traffic reports](https://developer.github.com/v3/repos/traffic/) including
         referral sources and paths, page views and clones.
  * Query, create, edit, lock/unlock [Issues](https://developer.github.com/v3/issues/) and

@@ -9,6 +9,7 @@
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
+    GitHubRepositoryActionsPermissionTypeName = 'GitHub.RepositoryActionsPermission'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -2684,6 +2685,247 @@ filter Disable-GitHubRepositorySecurityFix
         Description =  "Disabling Automated Security Fixes for $RepositoryName"
         AcceptHeader = $script:londonAcceptHeader
         Method = 'Delete'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    Invoke-GHRestMethod @params | Out-Null
+}
+
+filter Get-GitHubRepositoryActionsPermission
+{
+ <#
+    .SYNOPSIS
+        Gets GitHub Actions permission for a repository on GitHub.
+
+    .DESCRIPTION
+        Gets GitHub Actions permission for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.RepositoryActionsPermission
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Get-GitHubRepositoryActionsPermission -OwnerName Microsoft -RepositoryName PowerShellForGitHub
+
+        Gets GitHub Actions permissions for the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Get-GitHubRepositoryActionsPermission -Uri https://github.com/PowerShell/PowerShellForGitHub
+
+        Gets GitHub Actions permissions for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(
+            ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $params = @{
+        UriFragment = "/repos/$OwnerName/$RepositoryName/actions/permissions"
+        Description =  "Getting GitHub Actions permissions for $RepositoryName"
+        Method = 'Get'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHRestMethod @params
+
+    return [PSCustomObject]@{
+        PSTypeName = $GitHubRepositoryActionsPermissionTypeName
+        RepositoryName = $RepositoryName
+        RepositoryUri = "https://github.com/$OwnerName/$RepositoryName"
+        Enabled = $result.enabled
+        AllowedActions = $result.allowed_actions
+    }
+}
+
+filter Set-GitHubRepositoryActionsPermission
+{
+ <#
+    .SYNOPSIS
+        Sets GitHub Actions permissions for a repository on GitHub.
+
+    .DESCRIPTION
+        Sets GitHub Actions permissions for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        The authenticated user must have admin access to the repository.
+
+    .EXAMPLE
+        Set-GitHubRepositoryActionsPermission -OwnerName Microsoft -RepositoryName PowerShellForGitHub -AllowedActions All
+
+        Sets GitHub Actions permissions to 'All' for the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Set-GitHubRepositoryActionsPermission -Uri https://github.com/PowerShell/PowerShellForGitHub -AllowedActions Disabled
+
+        Sets GitHub Actions permissions to 'Disabled' for the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName='Elements')]
+    param(
+        [Parameter(
+            ParameterSetName='Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName='Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName='Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(Mandatory)]
+        [ValidateSet('All', 'Local_Only', 'Selected', 'Disabled')]
+        [string] $AllowedActions,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements -BoundParameters $PSBoundParameters
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    if ($AllowedActions -eq 'Disabled')
+    {
+        $hashBody = @{
+            'enabled' = $false
+        }
+    }
+    else
+    {
+        $hashBody = @{
+            'enabled' = $true
+            'allowed_actions' = $AllowedActions.ToLower()
+        }
+    }
+
+    if (-not $PSCmdlet.ShouldProcess($RepositoryName, 'Set GitHub Repository Actions Permissions'))
+    {
+        return
+    }
+
+    $params = @{
+        UriFragment = "/repos/$OwnerName/$RepositoryName/actions/permissions"
+        Description =  "Setting GitHub Actions permissions for $RepositoryName"
+        Method = 'Put'
+        Body = (ConvertTo-Json -InputObject $hashBody)
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties

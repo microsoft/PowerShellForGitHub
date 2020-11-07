@@ -177,5 +177,32 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <!--=============== GitHub.RepositoryActionsPermission Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryActionsPermission</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryActionsPermission</TypeName>
+      </ViewSelectedBy>
+      <ListControl>
+        <ListEntries>
+          <ListEntry>
+            <ListItems>
+              <ListItem>
+                <PropertyName>RepositoryName</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>RepositoryUri</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>Enabled</PropertyName>
+              </ListItem>
+              <ListItem>
+                <PropertyName>AllowedActions</PropertyName>
+              </ListItem>
+            </ListItems>
+          </ListEntry>
+        </ListEntries>
+      </ListControl>
+    </View>
   </ViewDefinitions>
 </Configuration>

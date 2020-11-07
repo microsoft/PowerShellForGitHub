@@ -1379,6 +1379,99 @@ try
             Remove-GitHubRepository -Uri $repo.svn_url -Force
         }
     }
+
+    Describe 'GitHubRepositories\Get-GitHubRepositoryActionsPermission' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -RepositoryName $repoName
+
+            $allowedActions = 'All', 'Local_Only', 'Selected', 'Disabled'
+        }
+
+        foreach ($allowedAction in $allowedActions)
+        {
+            Context "When the AllowedAction is $allowedAction" {
+                BeforeAll {
+                    $setGitHubRepositoryActionsPermissionParms = @{
+                        Uri = $repo.svn_url
+                        AllowedActions = $allowedAction
+                    }
+
+                    Set-GitHubRepositoryActionsPermission @setGitHubRepositoryActionsPermissionParms
+
+                    $permissions = Get-GitHubRepositoryActionsPermission -Uri $repo.svn_url
+                }
+
+                It 'Should return the correct type and properties' {
+                    $permissions.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryActionsPermission'
+
+                    $permissions.RepositoryName | Should -Be $repoName
+                    $permissions.RepositoryUri | Should -Be $repo.svn_url
+
+                    if ($allowedAction -eq 'Disabled')
+                    {
+                        $permissions.Enabled | Should -BeFalse
+                    }
+                    else
+                    {
+                        $permissions.Enabled | Should -BeTrue
+                        $permissions.AllowedActions | Should -Be $allowedAction
+                    }
+                }
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
+
+    Describe 'GitHubRepositories\Set-GitHubRepositoryActionsPermission' {
+        BeforeAll {
+            $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
+
+            $allowedActions = 'All', 'Local_Only', 'Selected', 'Disabled'
+        }
+
+        foreach ($allowedAction in $allowedActions)
+        {
+            Context "When the AllowedAction Parameter is $allowedAction" {
+                BeforeAll {
+                    $setGitHubRepositoryActionsPermissionParms = @{
+                        Uri = $repo.svn_url
+                        AllowedActions = $allowedAction
+                    }
+
+                    Set-GitHubRepositoryActionsPermission @setGitHubRepositoryActionsPermissionParms
+                }
+
+                It 'Should have set the expected permissions' {
+                    $permissions = Get-GitHubRepositoryActionsPermission -Uri $repo.svn_url
+
+                    if ($allowedAction -eq 'Disabled')
+                    {
+                        $permissions.Enabled | Should -BeFalse
+                    }
+                    else
+                    {
+                        $permissions.Enabled | Should -BeTrue
+                        $permissions.AllowedActions | Should -Be $allowedAction
+                    }
+                }
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
+
 }
 finally
 {

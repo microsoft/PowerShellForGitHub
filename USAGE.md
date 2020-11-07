@@ -53,6 +53,8 @@
         *   [Disable repository vulnerability alerts](#disable-repository-vulnerability-alerts)
         *   [Enable repository automatic security fixes](#enable-repository-automatic-security-fixes)
         *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
+        *   [Get repository GitHub Actions permissions](#get-repository-github-actions-permissions)
+        *   [Set repository GitHub Actions permissions](#set-repository-github-actions-permissions)
     *   [Branches](#branches)
         *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
         *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
@@ -644,6 +646,18 @@ Enable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShe
 
 ```powershell
 Disable-GitHubRepositorySecurityFix -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Get repository GitHub Actions permissions
+
+```powershell
+Get-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Set repository GitHub Actions permissions
+
+```powershell
+Set-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -AllowedActions All
 ```
 
 ----------
