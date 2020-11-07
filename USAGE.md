@@ -55,6 +55,9 @@
         *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
         *   [Get repository GitHub Actions permissions](#get-repository-github-actions-permissions)
         *   [Set repository GitHub Actions permissions](#set-repository-github-actions-permissions)
+        *   [Get a repository team permission](#get-a-repository-team-permission)
+        *   [Set a repository team permission](#set-a-repository-team-permission)
+        *   [Remove a repository team permission](#remove-a-repository-team-permission)
     *   [Branches](#branches)
         *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
         *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
@@ -658,6 +661,24 @@ Get-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName Power
 
 ```powershell
 Set-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -AllowedActions All
+```
+
+#### Get a repository team permission
+
+```powershell
+Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+```
+
+#### Set a repository team permission
+
+```powershell
+Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
+```
+
+#### Remove a repository team permission
+
+```powershell
+Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
 ```
 
 ----------

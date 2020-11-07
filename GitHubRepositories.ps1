@@ -10,6 +10,7 @@
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
+    GitHubRepositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
