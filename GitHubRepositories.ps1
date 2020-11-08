@@ -2829,6 +2829,10 @@ filter Set-GitHubRepositoryActionsPermission
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER AllowedActions
+        The permissions policy that controls the actions that are allowed to run.
+        Can be one of: 'All', 'Local_Only', 'Selected' or 'Disabled'.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
