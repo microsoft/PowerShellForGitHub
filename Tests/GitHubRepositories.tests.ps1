@@ -1421,6 +1421,16 @@ try
             }
         }
 
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            BeforeAll {
+                $permissions = $repo | Get-GitHubRepositoryActionsPermission
+            }
+
+            It 'Should return an object of the correct type' {
+                $permissions.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryActionsPermission'
+            }
+        }
+
         AfterAll {
             if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
             {
@@ -1464,6 +1474,13 @@ try
             }
         }
 
+        Context "When specifiying the 'URI' Parameter from the Pipeline" {
+            It 'Should not throw' {
+                { $repo | Set-GitHubRepositoryActionsPermission -AllowedActions 'All' } |
+                    Should -Not -Throw
+            }
+        }
+
         AfterAll {
             if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
             {
@@ -1471,7 +1488,6 @@ try
             }
         }
     }
-
 }
 finally
 {
