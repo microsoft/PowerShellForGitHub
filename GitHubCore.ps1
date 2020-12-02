@@ -197,6 +197,10 @@ function Invoke-GHRestMethod
         $errorBucket = $TelemetryEventName
     }
 
+    # Handling retries for 202
+    $numRetriesAttempted = 0
+    $maxiumRetriesPermitted = Get-GitHubConfiguration -Name 'MaximumRetriesWhenResultNotReady'
+
     # Since we have retry logic, we won't create a new stopwatch every time,
     # we'll just always continue the existing one...
     $stopwatch.Start()
@@ -262,181 +266,192 @@ function Invoke-GHRestMethod
 
     try
     {
-        Write-Log -Message $Description -Level Verbose
-        Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
-
-        $result = $null
-        $params = @{}
-        $params.Add("Uri", $url)
-        $params.Add("Method", $Method)
-        $params.Add("Headers", $headers)
-        $params.Add("UseDefaultCredentials", $true)
-        $params.Add("UseBasicParsing", $true)
-        $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
-        if ($PSBoundParameters.ContainsKey('InFile')) { $params.Add('InFile', $InFile) }
-        if (-not [String]::IsNullOrWhiteSpace($outFile)) { $params.Add('OutFile', $outFile) }
-
-        if (($Method -in $ValidBodyContainingRequestMethods) -and (-not [String]::IsNullOrEmpty($Body)))
+        while ($true) # infinite loop for handling the 202 retry, but we'll either exit via a return, or throw an exception if retry limit exceeded.
         {
-            $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
-            $params.Add("Body", $bodyAsBytes)
-            Write-Log -Message "Request includes a body." -Level Verbose
-            if (Get-GitHubConfiguration -Name LogRequestBody)
+            Write-Log -Message $Description -Level Verbose
+            Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
+
+            $result = $null
+            $params = @{}
+            $params.Add("Uri", $url)
+            $params.Add("Method", $Method)
+            $params.Add("Headers", $headers)
+            $params.Add("UseDefaultCredentials", $true)
+            $params.Add("UseBasicParsing", $true)
+            $params.Add("TimeoutSec", (Get-GitHubConfiguration -Name WebRequestTimeoutSec))
+            if ($PSBoundParameters.ContainsKey('InFile')) { $params.Add('InFile', $InFile) }
+            if (-not [String]::IsNullOrWhiteSpace($outFile)) { $params.Add('OutFile', $outFile) }
+
+            if (($Method -in $ValidBodyContainingRequestMethods) -and (-not [String]::IsNullOrEmpty($Body)))
             {
-                Write-Log -Message $Body -Level Verbose
+                $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
+                $params.Add("Body", $bodyAsBytes)
+                Write-Log -Message "Request includes a body." -Level Verbose
+                if (Get-GitHubConfiguration -Name LogRequestBody)
+                {
+                    Write-Log -Message $Body -Level Verbose
+                }
             }
-        }
 
-        # Disable Progress Bar in function scope during Invoke-WebRequest
-        $ProgressPreference = 'SilentlyContinue'
+            # Disable Progress Bar in function scope during Invoke-WebRequest
+            $ProgressPreference = 'SilentlyContinue'
 
-        [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+            [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
 
-        $result = Invoke-WebRequest @params
+            $result = Invoke-WebRequest @params
 
-        if ($Method -eq 'Delete')
-        {
-            Write-Log -Message "Successfully removed." -Level Verbose
-        }
-
-        # Record the telemetry for this event.
-        $stopwatch.Stop()
-        if (-not [String]::IsNullOrEmpty($TelemetryEventName))
-        {
-            $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
-            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
-        }
-
-        $finalResult = $result.Content
-        try
-        {
-            if ($Save)
+            if ($Method -eq 'Delete')
             {
-                $finalResult = Get-Item -Path $outFile
+                Write-Log -Message "Successfully removed." -Level Verbose
+            }
+
+            # Record the telemetry for this event.
+            $stopwatch.Stop()
+            if (-not [String]::IsNullOrEmpty($TelemetryEventName))
+            {
+                $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
+                Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
+            }
+
+            $finalResult = $result.Content
+            try
+            {
+                if ($Save)
+                {
+                    $finalResult = Get-Item -Path $outFile
+                }
+                else
+                {
+                    $finalResult = $finalResult | ConvertFrom-Json
+                }
+            }
+            catch [InvalidOperationException]
+            {
+                # In some cases, the returned data might have two different keys of the same characters
+                # but different casing (this can happen with gists with two files named 'a.txt' and 'A.txt').
+                # PowerShell 6 introduced the -AsHashtable switch to work around this issue, but this
+                # module wants to be compatible down to PowerShell 4, so we're unable to use that feature.
+                Write-Log -Message 'The returned object likely contains keys that differ only in casing.  Unable to convert to an object.  Returning the raw JSON as a fallback.' -Level Warning
+                $finalResult = $finalResult
+            }
+            catch [ArgumentException]
+            {
+                # The content must not be JSON (which is a legitimate situation).
+                # We'll return the raw content result instead.
+                # We do this unnecessary assignment to avoid PSScriptAnalyzer's PSAvoidUsingEmptyCatchBlock.
+                $finalResult = $finalResult
+            }
+
+            if ((-not $Save) -and (-not (Get-GitHubConfiguration -Name DisableSmarterObjects)))
+            {
+                # In the case of getting raw content from the repo, we'll end up with a large object/byte
+                # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
+                # a lot of time.  Let's optimize here by not bothering to send in something that we
+                # know is definitely not convertible ([int32] on PS5, [long] on PS7).
+                if (($finalResult -isnot [Object[]]) -or
+                    (($finalResult.Count -gt 0) -and
+                    ($finalResult[0] -isnot [int]) -and
+                    ($finalResult[0] -isnot [long])))
+                {
+                    $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
+                }
+            }
+
+            if ($result.Headers.Count -gt 0)
+            {
+                $links = $result.Headers['Link'] -split ','
+                $nextLink = $null
+                $nextPageNumber = 1
+                $numPages = 1
+                $since = 0
+                foreach ($link in $links)
+                {
+                    if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
+                    {
+                        $nextLink = $Matches[1]
+                        $nextPageNumber = [int]$Matches[2]
+                    }
+                    elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
+                    {
+                        # Special case scenario for the users endpoint.
+                        $nextLink = $Matches[1]
+                        $since = [int]$Matches[2]
+                        $numPages = 0 # Signifies an unknown number of pages.
+                    }
+                    elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
+                    {
+                        $numPages = [int]$Matches[1]
+                    }
+                }
+            }
+
+            $resultNotReadyStatusCode = 202
+            if ($result.StatusCode -eq $resultNotReadyStatusCode)
+            {
+                $retryDelaySeconds = Get-GitHubConfiguration -Name RetryDelaySeconds
+
+                if ($Method -ne 'Get')
+                {
+                    # We only want to do our retry logic for GET requests...
+                    # We don't want to repeat PUT/PATCH/POST/DELETE.
+                    Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)])." -Level Warning
+                }
+                elseif ($retryDelaySeconds -le 0)
+                {
+                    Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]), however the module is currently configured to not retry in this scenario (RetryDelaySeconds is set to 0).  Please try this command again later." -Level Warning
+                }
+                elseif ($numRetriesAttempted -lt $maxiumRetriesPermitted)
+                {
+                    $numRetriesAttempted++
+                    $localTelemetryProperties['RetryAttempt'] = $numRetriesAttempted
+                    Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]).  Will retry in [$retryDelaySeconds] seconds. $($maxiumRetriesPermitted - $numRetriesAttempted) retries remaining." -Level Warning
+                    Start-Sleep -Seconds ($retryDelaySeconds)
+                    continue # loop back and try this again
+                }
+                else
+                {
+                    $message = "Request still not ready after $numRetriesAttempted retries.  Retry limit has been reached as per configuration value 'MaximumRetriesWhenResultNotReady'"
+                    Write-Log -Message $message -Level Error
+                    throw $message
+                }
+            }
+
+            # Allow for a delay after a command that may result in a state change in order to
+            # increase the reliability of the UT's which attempt multiple successive state change
+            # on the same object.
+            $stateChangeDelaySeconds = $(Get-GitHubConfiguration -Name 'StateChangeDelaySeconds')
+            $stateChangeMethods = @('Delete', 'Post', 'Patch', 'Put')
+            if (($stateChangeDelaySeconds -gt 0) -and ($Method -in $stateChangeMethods))
+            {
+                Start-Sleep -Seconds $stateChangeDelaySeconds
+            }
+
+            if ($ExtendedResult)
+            {
+                $finalResultEx = @{
+                    'result' = $finalResult
+                    'statusCode' = $result.StatusCode
+                    'requestId' = $result.Headers['X-GitHub-Request-Id']
+                    'nextLink' = $nextLink
+                    'nextPageNumber' = $nextPageNumber
+                    'numPages' = $numPages
+                    'since' = $since
+                    'link' = $result.Headers['Link']
+                    'lastModified' = $result.Headers['Last-Modified']
+                    'ifNoneMatch' = $result.Headers['If-None-Match']
+                    'ifModifiedSince' = $result.Headers['If-Modified-Since']
+                    'eTag' = $result.Headers['ETag']
+                    'rateLimit' = $result.Headers['X-RateLimit-Limit']
+                    'rateLimitRemaining' = $result.Headers['X-RateLimit-Remaining']
+                    'rateLimitReset' = $result.Headers['X-RateLimit-Reset']
+                }
+
+                return ([PSCustomObject] $finalResultEx)
             }
             else
             {
-                $finalResult = $finalResult | ConvertFrom-Json
+                return $finalResult
             }
-        }
-        catch [InvalidOperationException]
-        {
-            # In some cases, the returned data might have two different keys of the same characters
-            # but different casing (this can happen with gists with two files named 'a.txt' and 'A.txt').
-            # PowerShell 6 introduced the -AsHashtable switch to work around this issue, but this
-            # module wants to be compatible down to PowerShell 4, so we're unable to use that feature.
-            Write-Log -Message 'The returned object likely contains keys that differ only in casing.  Unable to convert to an object.  Returning the raw JSON as a fallback.' -Level Warning
-            $finalResult = $finalResult
-        }
-        catch [ArgumentException]
-        {
-            # The content must not be JSON (which is a legitimate situation).
-            # We'll return the raw content result instead.
-            # We do this unnecessary assignment to avoid PSScriptAnalyzer's PSAvoidUsingEmptyCatchBlock.
-            $finalResult = $finalResult
-        }
-
-        if ((-not $Save) -and (-not (Get-GitHubConfiguration -Name DisableSmarterObjects)))
-        {
-            # In the case of getting raw content from the repo, we'll end up with a large object/byte
-            # array which isn't convertible to a smarter object, but by _trying_ we'll end up wasting
-            # a lot of time.  Let's optimize here by not bothering to send in something that we
-            # know is definitely not convertible ([int32] on PS5, [long] on PS7).
-            if (($finalResult -isnot [Object[]]) -or
-                (($finalResult.Count -gt 0) -and
-                 ($finalResult[0] -isnot [int]) -and
-                 ($finalResult[0] -isnot [long])))
-            {
-                $finalResult = ConvertTo-SmarterObject -InputObject $finalResult
-            }
-        }
-
-        if ($result.Headers.Count -gt 0)
-        {
-            $links = $result.Headers['Link'] -split ','
-            $nextLink = $null
-            $nextPageNumber = 1
-            $numPages = 1
-            $since = 0
-            foreach ($link in $links)
-            {
-                if ($link -match '<(.*page=(\d+)[^\d]*)>; rel="next"')
-                {
-                    $nextLink = $Matches[1]
-                    $nextPageNumber = [int]$Matches[2]
-                }
-                elseif ($link -match '<(.*since=(\d+)[^\d]*)>; rel="next"')
-                {
-                    # Special case scenario for the users endpoint.
-                    $nextLink = $Matches[1]
-                    $since = [int]$Matches[2]
-                    $numPages = 0 # Signifies an unknown number of pages.
-                }
-                elseif ($link -match '<.*page=(\d+)[^\d]+rel="last"')
-                {
-                    $numPages = [int]$Matches[1]
-                }
-            }
-        }
-
-        $resultNotReadyStatusCode = 202
-        if ($result.StatusCode -eq $resultNotReadyStatusCode)
-        {
-            $retryDelaySeconds = Get-GitHubConfiguration -Name RetryDelaySeconds
-
-            if ($Method -ne 'Get')
-            {
-                # We only want to do our retry logic for GET requests...
-                # We don't want to repeat PUT/PATCH/POST/DELETE.
-                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)])." -Level Warning
-            }
-            elseif ($retryDelaySeconds -le 0)
-            {
-                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]), however the module is currently configured to not retry in this scenario (RetryDelaySeconds is set to 0).  Please try this command again later." -Level Warning
-            }
-            else
-            {
-                Write-Log -Message "The server has indicated that the result is not yet ready (received status code of [$($result.StatusCode)]).  Will retry in [$retryDelaySeconds] seconds." -Level Warning
-                Start-Sleep -Seconds ($retryDelaySeconds)
-                return (Invoke-GHRestMethod @PSBoundParameters)
-            }
-        }
-
-        # Allow for a delay after a command that may result in a state change in order to
-        #increase the reliability of the UT's which attempt multiple successive state change
-        # on the same object.
-        $stateChangeDelaySeconds = $(Get-GitHubConfiguration -Name 'StateChangeDelaySeconds')
-        $stateChangeMethods = @('Delete', 'Post', 'Patch', 'Put')
-        if (($stateChangeDelaySeconds -gt 0) -and ($Method -in $stateChangeMethods))
-        {
-            Start-Sleep -Seconds $stateChangeDelaySeconds
-        }
-
-        if ($ExtendedResult)
-        {
-            $finalResultEx = @{
-                'result' = $finalResult
-                'statusCode' = $result.StatusCode
-                'requestId' = $result.Headers['X-GitHub-Request-Id']
-                'nextLink' = $nextLink
-                'nextPageNumber' = $nextPageNumber
-                'numPages' = $numPages
-                'since' = $since
-                'link' = $result.Headers['Link']
-                'lastModified' = $result.Headers['Last-Modified']
-                'ifNoneMatch' = $result.Headers['If-None-Match']
-                'ifModifiedSince' = $result.Headers['If-Modified-Since']
-                'eTag' = $result.Headers['ETag']
-                'rateLimit' = $result.Headers['X-RateLimit-Limit']
-                'rateLimitRemaining' = $result.Headers['X-RateLimit-Remaining']
-                'rateLimitReset' = $result.Headers['X-RateLimit-Reset']
-            }
-
-            return ([PSCustomObject] $finalResultEx)
-        }
-        else
-        {
-            return $finalResult
         }
     }
     catch
@@ -1047,8 +1062,11 @@ filter ConvertTo-SmarterObject
 function Get-MediaAcceptHeader
 {
 <#
+    .SYNOPSIS
+        Returns a formatted AcceptHeader based on the requested MediaType.
+
     .DESCRIPTION
-        Returns a formatted AcceptHeader based on the requested MediaType
+        Returns a formatted AcceptHeader based on the requested MediaType.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

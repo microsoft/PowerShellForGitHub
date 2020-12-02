@@ -35,7 +35,7 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   dependsOn: waitForRunningBuilds
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
     parameters:
@@ -56,7 +56,7 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   dependsOn: waitForRunningBuilds
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
@@ -72,7 +72,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   dependsOn: waitForRunningBuilds
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml
@@ -88,7 +88,7 @@ jobs:
   pool:
     vmImage: 'macOS-latest'
   dependsOn: waitForRunningBuilds
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - template: ./templates/verify-testConfigSettingsHash.yaml
   - template: ./templates/run-staticAnalysis.yaml

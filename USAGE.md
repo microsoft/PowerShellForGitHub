@@ -2,6 +2,7 @@
 ## Usage
 
 #### Table of Contents
+*   [Full Module Documentation](#full-module-documentation)
 *   [Logging](#logging)
 *   [Telemetry](#telemetry)
 *   [Common PowerShell API Patterns](#common-powershell-api-patterns)
@@ -130,6 +131,20 @@
 
 ----------
 
+## Full Module Documentation
+
+All commands for the module have "Comment-Based Help" available at your fingertips.
+You can access that help at any time by running:
+
+```powershell
+Get-Help -Full <commandName>
+```
+
+In addition to accessing it from the commandline, all of that help documentation is also available
+online on our [wiki](https://github.com/microsoft/PowerShellForGitHub/wiki).
+
+----------
+
 ## Logging
 
 All commands will log to the console, as well as to a log file, by default.
@@ -137,7 +152,9 @@ The logging is affected by configuration properties (which can be checked with
 `Get-GitHubConfiguration` and changed with `Set-GitHubConfiguration`).
 
  **`LogPath`** [string] The logfile. Defaults to
-   `$env:USERPROFILE\Documents\PowerShellForGitHub.log`
+   `([System.Environment]::GetFolderPath('MyDocuments'))\PowerShellForGitHub.log`.  Will default to
+   `([System.Environment]::GetFolderPath('LocalApplicationData'))\PowerShellForGitHub.log` when
+   there is no user profile (like in an Azure environment).
 
  **`DisableLogging`** [bool] Defaults to `$false`.
 
@@ -420,8 +437,8 @@ Get-GitHubRepositoryContributor -OwnerName 'PowerShell' -RepositoryName 'PowerSh
 #### Querying Team and Organization Membership
 
 ```powershell
-$organizationMembers = Get-GitHubOrganizationMembers -OrganizationName 'OrganizationName'
-$teamMembers = Get-GitHubTeamMembers -OrganizationName 'OrganizationName' -TeamName 'TeamName'
+$organizationMembers = Get-GitHubOrganizationMember -OrganizationName 'OrganizationName'
+$teamMembers = Get-GitHubTeamMember -OrganizationName 'OrganizationName' -TeamName 'TeamName'
 ```
 
 ----------
@@ -455,7 +472,7 @@ Remove-GitHubLabel -OwnerName PowerShell -RepositoryName DesiredStateConfigurati
 
 #### Adding Labels to an Issue
 ```powershell
-$labelNames = @{'bug', 'discussion')
+$labelNames = @('bug', 'discussion')
 Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue 1 -LabelName $labelNames
 ```
 
@@ -999,7 +1016,8 @@ Remove-GitHubReleaseAsset -OwnerName PowerShell -RepositoryName PowerShell -Asse
 or with pipelining...
 
 ```powershell
-$asset | Remove-GitHubReleaseAsset -force
+$asset | Remove-GitHubReleaseAsset -Force
+```
 
 ----------
 
@@ -1185,4 +1203,3 @@ $issue | New-GitHubIssueComment -Body $CommentBody
 # Close issue
 $issue | Set-GitHubIssue -State Closed
 ```
-

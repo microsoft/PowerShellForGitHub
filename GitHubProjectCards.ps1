@@ -10,6 +10,9 @@
 filter Get-GitHubProjectCard
 {
 <#
+    .SYNOPSIS
+        Get the cards for a given GitHub Project Column.
+
     .DESCRIPTION
         Get the cards for a given GitHub Project Column.
 
@@ -124,6 +127,9 @@ filter Get-GitHubProjectCard
 filter New-GitHubProjectCard
 {
 <#
+    .SYNOPSIS
+        Creates a new card for a GitHub project.
+
     .DESCRIPTION
         Creates a new card for a GitHub project.
 
@@ -260,6 +266,9 @@ filter New-GitHubProjectCard
 filter Set-GitHubProjectCard
 {
 <#
+    .SYNOPSIS
+        Modify a GitHub Project Card.
+
     .DESCRIPTION
         Modify a GitHub Project Card.
 
@@ -386,6 +395,9 @@ filter Set-GitHubProjectCard
 filter Remove-GitHubProjectCard
 {
 <#
+    .SYNOPSIS
+        Removes a project card.
+
     .DESCRIPTION
         Removes a project card.
 
@@ -468,6 +480,9 @@ filter Remove-GitHubProjectCard
 filter Move-GitHubProjectCard
 {
 <#
+    .SYNOPSIS
+        Move a GitHub Project Card.
+
     .DESCRIPTION
         Move a GitHub Project Card.
 

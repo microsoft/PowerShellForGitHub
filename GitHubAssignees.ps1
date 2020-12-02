@@ -4,6 +4,9 @@
 filter Get-GitHubAssignee
 {
 <#
+    .SYNOPSIS
+        Lists the available assignees for issues in a repository.
+
     .DESCRIPTION
         Lists the available assignees for issues in a repository.
 
@@ -103,6 +106,9 @@ filter Get-GitHubAssignee
 filter Test-GitHubAssignee
 {
 <#
+    .SYNOPSIS
+        Checks if a user has permission to be assigned to an issue in this repository.
+
     .DESCRIPTION
         Checks if a user has permission to be assigned to an issue in this repository.
 
@@ -230,6 +236,9 @@ filter Test-GitHubAssignee
 function Add-GitHubAssignee
 {
 <#
+    .SYNOPSIS
+       Adds a list of assignees to a GitHub Issue for the given repository.
+
     .DESCRIPTION
        Adds a list of assignees to a GitHub Issue for the given repository.
 
@@ -415,6 +424,9 @@ function Add-GitHubAssignee
 function Remove-GitHubAssignee
 {
 <#
+    .SYNOPSIS
+        Removes an assignee from a GitHub issue.
+
     .DESCRIPTION
         Removes an assignee from a GitHub issue.
 

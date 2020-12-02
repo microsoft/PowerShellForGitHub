@@ -10,8 +10,11 @@
 filter Get-GitHubEvent
 {
 <#
+    .SYNOPSIS
+        Lists events for an issue, repository, or a single event.
+
     .DESCRIPTION
-        Lists events for an issue, repository, or a single event
+        Lists events for an issue, repository, or a single event.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 

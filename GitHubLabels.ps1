@@ -795,6 +795,9 @@ filter Initialize-GitHubLabel
 function Add-GitHubIssueLabel
 {
 <#
+    .SYNOPSIS
+        Adds a label to an issue in the given GitHub repository.
+
     .DESCRIPTION
         Adds a label to an issue in the given GitHub repository.
 
@@ -960,6 +963,9 @@ function Add-GitHubIssueLabel
 function Set-GitHubIssueLabel
 {
 <#
+    .SYNOPSIS
+        Replaces labels on an issue in the given GitHub repository.
+
     .DESCRIPTION
         Replaces labels on an issue in the given GitHub repository.
 
@@ -1159,6 +1165,9 @@ function Set-GitHubIssueLabel
 filter Remove-GitHubIssueLabel
 {
 <#
+    .SYNOPSIS
+        Deletes a label from an issue in the given GitHub repository.
+
     .DESCRIPTION
         Deletes a label from an issue in the given GitHub repository.
 

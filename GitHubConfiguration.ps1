@@ -6,7 +6,7 @@
 
 # The location of the file that we'll store any settings that can/should roam with the user.
 [string] $script:configurationFilePath = [System.IO.Path]::Combine(
-    [Environment]::GetFolderPath('ApplicationData'),
+    [System.Environment]::GetFolderPath('ApplicationData'),
     'Microsoft',
     'PowerShellForGitHub',
     'config.json')
@@ -14,7 +14,7 @@
 # The location of the file that we'll store the Access Token SecureString
 # which cannot/should not roam with the user.
 [string] $script:accessTokenFilePath = [System.IO.Path]::Combine(
-    [Environment]::GetFolderPath('LocalApplicationData'),
+    [System.Environment]::GetFolderPath('LocalApplicationData'),
     'Microsoft',
     'PowerShellForGitHub',
     'accessToken.txt')
@@ -135,6 +135,12 @@ function Set-GitHubConfiguration
     .PARAMETER LogTimeAsUtc
         If specified, all times logged will be logged as UTC instead of the local timezone.
 
+    .PARAMETER MaximumRetriesWhenResultNotReady
+        Some API requests may take time for GitHub to gather the results, and in the interim,
+        a 202 response is returned.  This value indicates the maximum number of times that the
+        query will be retried before giving up and failing.  The amount of time between each of
+        these requests is controlled by the RetryDelaySeconds configuration value.
+
     .PARAMETER MultiRequestProgressThreshold
         Some commands may require sending multiple requests to GitHub.  In some situations,
         getting the entirety of the request might take 70+ requests occurring over 20+ seconds.
@@ -145,6 +151,8 @@ function Set-GitHubConfiguration
 
     .PARAMETER RetryDelaySeconds
         The number of seconds to wait before retrying a command again after receiving a 202 response.
+        The number of times that a retry will occur is controlled by the
+        MaximumRetriesWhenResultNotReady configuration value.
 
     .PARAMETER StateChangeDelaySeconds
         The number of seconds to wait before returning the result after executing a command that
@@ -226,6 +234,8 @@ function Set-GitHubConfiguration
         [switch] $LogRequestBody,
 
         [switch] $LogTimeAsUtc,
+
+        [int] $MaximumRetriesWhenResultNotReady,
 
         [int] $MultiRequestProgressThreshold,
 
@@ -320,6 +330,7 @@ function Get-GitHubConfiguration
             'LogProcessId',
             'LogRequestBody',
             'LogTimeAsUtc',
+            'MaximumRetriesWhenResultNotReady',
             'MultiRequestProgressThreshold',
             'RetryDelaySeconds',
             'StateChangeDelaySeconds',
@@ -650,10 +661,16 @@ function Import-GitHubConfiguration
     # Create a configuration object with all the default values.  We can then update the values
     # with any that we find on disk.
     $logPath = [String]::Empty
+    $logName = 'PowerShellForGitHub.log'
     $documentsFolder = [System.Environment]::GetFolderPath('MyDocuments')
-    if (-not [System.String]::IsNullOrEmpty($documentsFolder))
+    $logToLocalAppDataFolder = [System.String]::IsNullOrEmpty($documentsFolder)
+    if ($logToLocalAppDataFolder)
     {
-        $logPath = Join-Path -Path $documentsFolder -ChildPath 'PowerShellForGitHub.log'
+        $logPath = Join-Path -Path ([System.Environment]::GetFolderPath('LocalApplicationData')) -ChildPath $logName
+    }
+    else
+    {
+        $logPath = Join-Path -Path $documentsFolder -ChildPath $logName
     }
 
     $config = [PSCustomObject]@{
@@ -672,6 +689,7 @@ function Import-GitHubConfiguration
         'logProcessId' = $false
         'logRequestBody' = $false
         'logTimeAsUtc' = $false
+        'maximumRetriesWhenResultNotReady' = 30
         'multiRequestProgressThreshold' = 10
         'retryDelaySeconds' = 30
         'stateChangeDelaySeconds' = 0
@@ -696,6 +714,17 @@ function Import-GitHubConfiguration
             $type = $config.$name.GetType().Name
             $config.$name = Resolve-PropertyValue -InputObject $jsonObject -Name $name -Type $type -DefaultValue $config.$name
         }
+
+    # Let the user know when we had to revert to using the LocalApplicationData folder for the
+    # log location (if they haven't already changed its path in their local config).
+    $configuredLogPath = $config.logPath
+    if ($logToLocalAppDataFolder -and ($logPath -eq $configuredLogPath))
+    {
+        # Limited instance where we write the warning directly instead of using Write-Log, since
+        # Write-Log won't yet be configured.
+        $message = "Storing log at non-default location: [$logPath] (no user profile path was found).  You can change this location by calling Set-GitHubConfiguration -LogPath <desiredPathToLogFile>"
+        Write-Verbose -Message $message
+    }
 
     return $config
 }
