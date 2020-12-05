@@ -1385,7 +1385,7 @@ try
             $repoName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repoName
 
-            $allowedActions = 'All', 'Local_Only', 'Selected', 'Disabled'
+            $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
         }
 
         foreach ($allowedAction in $allowedActions)
@@ -1406,7 +1406,7 @@ try
                     $permissions.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryActionsPermission'
 
                     $permissions.RepositoryName | Should -Be $repoName
-                    $permissions.RepositoryUri | Should -Be $repo.svn_url
+                    $permissions.RepositoryUrl | Should -Be $repo.svn_url
 
                     if ($allowedAction -eq 'Disabled')
                     {
@@ -1443,7 +1443,7 @@ try
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
 
-            $allowedActions = 'All', 'Local_Only', 'Selected', 'Disabled'
+            $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
         }
 
         foreach ($allowedAction in $allowedActions)

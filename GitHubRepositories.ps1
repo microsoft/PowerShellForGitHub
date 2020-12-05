@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 @{
+    GitHubRepositoryActionsPermissionTypeName = 'GitHub.RepositoryActionsPermission'
     GitHubRepositoryTypeName = 'GitHub.Repository'
     GitHubRepositoryTopicTypeName = 'GitHub.RepositoryTopic'
     GitHubRepositoryContributorTypeName = 'GitHub.RepositoryContributor'
@@ -9,7 +10,6 @@
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
-    GitHubRepositoryActionsPermissionTypeName = 'GitHub.RepositoryActionsPermission'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -2794,15 +2794,8 @@ filter Get-GitHubRepositoryActionsPermission
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHRestMethod @params
-
-    return [PSCustomObject]@{
-        PSTypeName = $GitHubRepositoryActionsPermissionTypeName
-        RepositoryName = $RepositoryName
-        RepositoryUri = "https://github.com/$OwnerName/$RepositoryName"
-        Enabled = $result.enabled
-        AllowedActions = $result.allowed_actions
-    }
+    return (Invoke-GHRestMethod @params |
+        Add-GitHubRepositoryActionsPermissionAdditionalProperties -RepositoryName $RepositoryName -OwnerName $OwnerName)
 }
 
 filter Set-GitHubRepositoryActionsPermission
@@ -2831,7 +2824,7 @@ filter Set-GitHubRepositoryActionsPermission
 
     .PARAMETER AllowedActions
         The permissions policy that controls the actions that are allowed to run.
-        Can be one of: 'All', 'Local_Only', 'Selected' or 'Disabled'.
+        Can be one of: 'All', 'LocalOnly', 'Selected' or 'Disabled'.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -2857,6 +2850,10 @@ filter Set-GitHubRepositoryActionsPermission
 
     .NOTES
         The authenticated user must have admin access to the repository.
+
+        If the repository belongs to an organization or enterprise that has set restrictive
+        permissions at the organization or enterprise levels, such as 'AllowedActions' to 'Selected'
+        actions, then you cannot override them for the repository.
 
     .EXAMPLE
         Set-GitHubRepositoryActionsPermission -OwnerName Microsoft -RepositoryName PowerShellForGitHub -AllowedActions All
@@ -2889,7 +2886,7 @@ filter Set-GitHubRepositoryActionsPermission
         [string] $Uri,
 
         [Parameter(Mandatory)]
-        [ValidateSet('All', 'Local_Only', 'Selected', 'Disabled')]
+        [ValidateSet('All', 'LocalOnly', 'Selected', 'Disabled')]
         [string] $AllowedActions,
 
         [string] $AccessToken
@@ -2906,6 +2903,15 @@ filter Set-GitHubRepositoryActionsPermission
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $allowedActionsConverter = @{
+        All = 'all'
+        LocalOnly = 'local_only'
+        Selected = 'selected'
+        Disabled = 'disabled'
+    }
+
+    $hashBodyAllowedActions = $allowedActionsConverter[$AllowedActions]
+
     if ($AllowedActions -eq 'Disabled')
     {
         $hashBody = @{
@@ -2916,7 +2922,7 @@ filter Set-GitHubRepositoryActionsPermission
     {
         $hashBody = @{
             'enabled' = $true
-            'allowed_actions' = $AllowedActions.ToLower()
+            'allowed_actions' = $hashBodyAllowedActions
         }
     }
 
@@ -3209,6 +3215,82 @@ filter Add-GitHubRepositoryCollaboratorAdditionalProperties
                 Add-Member @addMemberParms
             }
         }
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryActionsPermissionAdditionalProperties
+{
+    <#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository Actions Permissions objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryCollaborator
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
+        Justification='Internal helper that is definitely adding more than one property.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [PSCustomObject[]] $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryActionsPermissionTypeName,
+
+        [Parameter(Mandatory)]
+        [string] $OwnerName,
+
+        [Parameter(Mandatory)]
+        [string] $RepositoryName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+
+        Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+        Add-Member -InputObject $item -Name 'RepositoryName' -Value $RepositoryName -MemberType NoteProperty -Force
+
+        $allowedActionsConverter = @{
+            all = 'All'
+            local_only = 'LocalOnly'
+            selected = 'Selected'
+        }
+
+        if ([String]::IsNullOrEmpty($item.allowed_actions))
+        {
+            $allowedActions = 'Disabled'
+        }
+        else
+        {
+            $allowedActions = $allowedActionsConverter[$item.allowed_actions]
+        }
+
+        Add-Member -InputObject $item -Name 'AllowedActions' -Value $allowedActions -MemberType NoteProperty -Force
 
         Write-Output $item
     }

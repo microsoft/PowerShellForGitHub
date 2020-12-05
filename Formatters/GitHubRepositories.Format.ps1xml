@@ -191,7 +191,7 @@
                 <PropertyName>RepositoryName</PropertyName>
               </ListItem>
               <ListItem>
-                <PropertyName>RepositoryUri</PropertyName>
+                <PropertyName>RepositoryUrl</PropertyName>
               </ListItem>
               <ListItem>
                 <PropertyName>Enabled</PropertyName>
