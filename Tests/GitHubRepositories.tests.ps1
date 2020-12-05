@@ -1444,7 +1444,7 @@ try
 
             It 'Should have the expected type and additional properties' {
                 $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
-                $repoPermission.RepositoryName | Should -Be $repoName
+                $repoPermission.RepositoryName | Should -Be $repo.full_name
                 $repoPermission.TeamName | Should -Be $teamName
             }
         }
@@ -1460,7 +1460,7 @@ try
 
             It 'Should have the expected type and additional properties' {
                 $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
-                $repoPermission.RepositoryName | Should -Be $repoName
+                $repoPermission.RepositoryName | Should -Be $repo.full_name
                 $repoPermission.TeamName | Should -Be $teamName
                 $repoPermission.TeamSlug | Should -Be $team.TeamSlug
             }

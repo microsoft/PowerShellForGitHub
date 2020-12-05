@@ -666,19 +666,19 @@ Set-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName Power
 #### Get a repository team permission
 
 ```powershell
-Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName microsoft -TeamName Admins
 ```
 
 #### Set a repository team permission
 
 ```powershell
-Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
+Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName microsoft -TeamName Admins -Permission Admin
 ```
 
 #### Remove a repository team permission
 
 ```powershell
-Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName microsoft -TeamName Admins
 ```
 
 ----------

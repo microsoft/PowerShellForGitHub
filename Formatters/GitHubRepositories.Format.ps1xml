@@ -183,11 +183,11 @@
       <ViewSelectedBy>
         <TypeName>GitHub.RepositoryActionsPermission</TypeName>
       </ViewSelectedBy>
-      <ListControl>
-        <ListEntries>
-          <ListEntry>
-            <ListItems>
-              <ListItem>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
                 <PropertyName>RepositoryName</PropertyName>
               </ListItem>
               <ListItem>
