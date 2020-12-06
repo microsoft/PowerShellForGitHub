@@ -3241,6 +3241,12 @@ filter Add-GitHubRepositoryActionsPermissionAdditionalProperties
         Name of the repository.  This information might be obtainable from InputObject, so this
         is optional based on what InputObject contains.
 
+    .PARAMETER TeamName
+        The name of the team.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the team.
+
     .INPUTS
         PSCustomObject
 
