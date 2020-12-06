@@ -3244,7 +3244,7 @@ filter Add-GitHubRepositoryActionsPermissionAdditionalProperties
         PSCustomObject
 
     .OUTPUTS
-        GitHub.RepositoryCollaborator
+        GitHub.RepositoryActionsPermission
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '',
