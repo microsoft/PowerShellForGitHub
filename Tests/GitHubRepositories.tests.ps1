@@ -1382,7 +1382,6 @@ try
 
     Describe 'GitHubRepositories\Get-GitHubRepositoryActionsPermission' {
         BeforeAll {
-            $repositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'
             $repoName = [Guid]::NewGuid().Guid
             $repo = New-GitHubRepository -RepositoryName $repoName
 
@@ -1432,40 +1431,6 @@ try
             }
         }
 
-        Context "When specifying the 'URI' Parameter from the Pipeline" {
-            BeforeAll -ScriptBlock {
-                $getGitHubRepositoryTeamPermissionParms = @{
-                    TeamName = $teamName
-                    OrganizationName = $script:organizationName
-                }
-                $repoPermission = $repo |
-                    Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
-            }
-
-            It 'Should have the expected type and additional properties' {
-                $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
-                $repoPermission.RepositoryName | Should -Be $repo.full_name
-                $repoPermission.TeamName | Should -Be $teamName
-            }
-        }
-
-        Context "When specifying the 'TeamSlug' and 'OrganizationName' Parameters from the Pipeline" {
-            BeforeAll -ScriptBlock {
-                $getGitHubRepositoryTeamPermissionParms = @{
-                    Uri = $repo.svn_url
-                }
-                $repoPermission = $team |
-                    Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
-            }
-
-            It 'Should have the expected type and additional properties' {
-                $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
-                $repoPermission.RepositoryName | Should -Be $repo.full_name
-                $repoPermission.TeamName | Should -Be $teamName
-                $repoPermission.TeamSlug | Should -Be $team.TeamSlug
-            }
-        }
-
         AfterAll {
             if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
             {
@@ -1512,35 +1477,6 @@ try
         Context "When specifiying the 'URI' Parameter from the Pipeline" {
             It 'Should not throw' {
                 { $repo | Set-GitHubRepositoryActionsPermission -AllowedActions 'All' } |
-                    Should -Not -Throw
-            }
-        }
-
-        Context "When specifying the 'URI' Parameter from the Pipeline" {
-            BeforeAll -ScriptBlock {
-                $removeGitHubRepositoryTeamPermissionParms = @{
-                    TeamName = $teamName
-                    OrganizationName = $script:organizationName
-                    Force = $true
-                }
-            }
-
-            It 'Should not throw' {
-                { $repo | Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
-                    Should -Not -Throw
-            }
-        }
-
-        Context "When specifying the 'TeamSlug' and 'Organization' Parameter from the Pipeline" {
-            BeforeAll -ScriptBlock {
-                $removeGitHubRepositoryTeamPermissionParms = @{
-                    RepositoryUrl = $repo.svn_url
-                    Force = $true
-                }
-            }
-
-            It 'Should not throw' {
-                { $team | Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
                     Should -Not -Throw
             }
         }
