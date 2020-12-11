@@ -57,7 +57,6 @@ filter New-GitHubRepository
         a private repository or use the Visibility parameter.
 
     .PARAMETER Visibility
-```suggestion
         Can be public or private. If your organization is associated with an enterprise account
         using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be
         internal.
@@ -189,6 +188,12 @@ filter New-GitHubRepository
     {
         $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
         $uriFragment = "orgs/$OrganizationName/repos"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Visibility') -and $PSBoundParameters.ContainsKey('Private') -and
+        (($Private -and ($Visiblity -ne 'Private')) -or ((-not $Private) -and ($Visibility -ne 'Public'))))
+    {
+        Write-Log -Level Warning 'The value specified by Visibility will override the value specified by Private when both are specified.'
     }
 
     if ($PSBoundParameters.ContainsKey('TeamId') -and (-not $PSBoundParameters.ContainsKey('OrganizationName')))
@@ -1213,6 +1218,12 @@ filter Set-GitHubRepository
         $hashBody['name'] = $NewName
         $ConfirmPreference = 'Low'
         $shouldProcessMessage = "Rename repository to '$NewName'"
+    }
+
+    if ($PSBoundParameters.ContainsKey('Visibility') -and $PSBoundParameters.ContainsKey('Private') -and
+        (($Private -and ($Visiblity -ne 'Private')) -or ((-not $Private) -and ($Visibility -ne 'Public'))))
+    {
+        Write-Log -Level Warning 'The value specified by Visibility will override the value specified by Private when both are specified.'
     }
 
     if ($PSBoundParameters.ContainsKey('Description')) { $hashBody['description'] = $Description }
