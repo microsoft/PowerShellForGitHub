@@ -57,8 +57,12 @@ filter New-GitHubRepository
         a private repository or use the Visibility parameter.
 
     .PARAMETER Visibility
-        Specify this to make the repository public, private or internal.  This overrides the
-        private parameter when you use both parameters.
+```suggestion
+        Can be public or private. If your organization is associated with an enterprise account
+        using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be
+        internal.
+
+        This will override the Private parameter if also specified in the same command.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -149,7 +153,7 @@ filter New-GitHubRepository
 
         [switch] $Private,
 
-        [ValidateSet("public", "private", "internal")]
+        [ValidateSet("Public", "Private", "Internal")]
         [string] $Visibility,
 
         [switch] $NoIssues,
@@ -204,7 +208,7 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('LicenseTemplate')) { $hashBody['license_template'] = $LicenseTemplate }
     if ($PSBoundParameters.ContainsKey('TeamId')) { $hashBody['team_id'] = $TeamId }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
-    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility.ToLower() }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -1043,8 +1047,11 @@ filter Set-GitHubRepository
         parameter.
 
     .PARAMETER Visibility
-        Specify this to make the repository public, private or internal.  This overrides the
-        private parameter when you use both parameters.
+        Can be public or private. If your organization is associated with an enterprise account
+        using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be
+        internal.
+
+        This will override the Private parameter if also specified in the same command.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -1159,7 +1166,7 @@ filter Set-GitHubRepository
 
         [switch] $Private,
 
-        [ValidateSet("public", "private", "internal")]
+        [ValidateSet("Public", "Private", "Internal")]
         [string] $Visibility,
 
         [switch] $NoIssues,
@@ -1212,7 +1219,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Homepage')) { $hashBody['homepage'] = $Homepage }
     if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $hashBody['default_branch'] = $DefaultBranch }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
-    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility.ToLower() }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
