@@ -103,6 +103,83 @@ try
                 }
             }
 
+            Context -Name 'When creating a private repository with default settings using visibility parameter' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        Visibility = 'Private'
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeTrue
+                    $repo.visibility | Should -Be 'private'
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
+            Context -Name 'When creating a repository with conflicting private and visibility parameters' -Fixture {
+                BeforeAll -ScriptBlock {
+                    $repoName = ([Guid]::NewGuid().Guid)
+                    $newGitHubRepositoryParms = @{
+                        RepositoryName = $repoName
+                        Private = $true
+                        Visibility = 'Public'
+                    }
+                    $repo = New-GitHubRepository @newGitHubRepositoryParms
+                }
+
+                It 'Should return an object of the correct type' {
+                    $repo | Should -BeOfType PSCustomObject
+                }
+
+                It 'Should return the correct properties' {
+                    $repo.name | Should -Be $repoName
+                    $repo.private | Should -BeFalse
+                    $repo.visibility | Should -Be 'public'
+                    $repo.description | Should -BeNullOrEmpty
+                    $repo.homepage | Should -BeNullOrEmpty
+                    $repo.has_issues | Should -BeTrue
+                    $repo.has_projects | Should -BeTrue
+                    $repo.has_Wiki | Should -BeTrue
+                    $repo.allow_squash_merge | Should -BeTrue
+                    $repo.allow_merge_commit | Should -BeTrue
+                    $repo.allow_rebase_merge | Should -BeTrue
+                    $repo.delete_branch_on_merge | Should -BeFalse
+                    $repo.is_template | Should -BeFalse
+                }
+
+                AfterAll -ScriptBlock {
+                    if ($repo)
+                    {
+                        Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                    }
+                }
+            }
+
             Context -Name 'When creating a repository with all possible settings' -Fixture {
                 BeforeAll -ScriptBlock {
                     $repoName = ([Guid]::NewGuid().Guid)
