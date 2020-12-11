@@ -54,7 +54,11 @@ filter New-GitHubRepository
 
     .PARAMETER Private
         By default, this repository will be created Public.  Specify this to create
-        a private repository.
+        a private repository or use the Visibility parameter.
+
+    .PARAMETER Visibility
+        Specify this to make the repository public, private or internal.  This overrides the
+        private parameter when you use both parameters.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -145,6 +149,9 @@ filter New-GitHubRepository
 
         [switch] $Private,
 
+        [ValidateSet("public", "private", "internal")]
+        [string] $Visibility,
+
         [switch] $NoIssues,
 
         [switch] $NoProjects,
@@ -197,6 +204,7 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('LicenseTemplate')) { $hashBody['license_template'] = $LicenseTemplate }
     if ($PSBoundParameters.ContainsKey('TeamId')) { $hashBody['team_id'] = $TeamId }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -216,7 +224,7 @@ filter New-GitHubRepository
         'UriFragment' = $uriFragment
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'AcceptHeader' = $script:baptisteAcceptHeader
+        'AcceptHeader' = "$script:baptisteAcceptHeader,$script:nebulaAcceptHeader"
         'Description' = "Creating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -1031,7 +1039,12 @@ filter Set-GitHubRepository
 
     .PARAMETER Private
         Specify this to make the repository private.
-        To change a repository to be public, specify -Private:$false
+        To change a repository to be public, specify -Private:$false or use the Visibility
+        parameter.
+
+    .PARAMETER Visibility
+        Specify this to make the repository public, private or internal.  This overrides the
+        private parameter when you use both parameters.
 
     .PARAMETER NoIssues
         By default, this repository will support Issues.  Specify this to disable Issues.
@@ -1146,6 +1159,9 @@ filter Set-GitHubRepository
 
         [switch] $Private,
 
+        [ValidateSet("public", "private", "internal")]
+        [string] $Visibility,
+
         [switch] $NoIssues,
 
         [switch] $NoProjects,
@@ -1196,6 +1212,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('Homepage')) { $hashBody['homepage'] = $Homepage }
     if ($PSBoundParameters.ContainsKey('DefaultBranch')) { $hashBody['default_branch'] = $DefaultBranch }
     if ($PSBoundParameters.ContainsKey('Private')) { $hashBody['private'] = $Private.ToBool() }
+    if ($PSBoundParameters.ContainsKey('Visibility')) { $hashBody['visibility'] = $Visibility }
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
@@ -1220,7 +1237,7 @@ filter Set-GitHubRepository
         'UriFragment' = "repos/$OwnerName/$RepositoryName"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Patch'
-        'AcceptHeader' = $script:baptisteAcceptHeader
+        'AcceptHeader' = "$script:baptisteAcceptHeader,$script:nebulaAcceptHeader"
         'Description' = "Updating $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
