@@ -235,16 +235,6 @@ filter Add-GitHubEventAdditionalProperties
                 Add-Member -InputObject $item -Name 'IssueNumber' -Value $item.issue.number -MemberType NoteProperty -Force
             }
 
-            if ($null -ne $item.label)
-            {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
-            }
-
-            if ($null -ne $item.labels)
-            {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
-            }
-
             if ($null -ne $item.milestone)
             {
                 $null = Add-GitHubMilestoneAdditionalProperties -InputObject $item.milestone
