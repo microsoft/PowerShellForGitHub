@@ -1362,14 +1362,10 @@ filter Add-GitHubLabelAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ([System.String]::IsNullOrEmpty($item.url) -and $PSBoundParameters.ContainsKey('RepositoryUrl'))
-            {
-                $repositoryUrl = $RepositoryUrl
-            }
-            else
+            if (-not [System.String]::IsNullOrEmpty($item.url))
             {
                 $elements = Split-GitHubUri -Uri $item.url
-                $repositoryUrl = Join-GitHubUri @elements
+                $RepositoryUrl = Join-GitHubUri @elements
             }
 
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $RepositoryUrl -MemberType NoteProperty -Force
