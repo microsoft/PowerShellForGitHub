@@ -1372,7 +1372,7 @@ filter Add-GitHubLabelAdditionalProperties
                 $repositoryUrl = Join-GitHubUri @elements
             }
 
-            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $RepositoryUrl -MemberType NoteProperty -Force
 
             if ($null -ne $item.id)
             {
