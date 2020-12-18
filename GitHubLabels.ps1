@@ -1330,6 +1330,9 @@ filter Add-GitHubLabelAdditionalProperties
     .PARAMETER TypeName
         The type that should be assigned to the object.
 
+    .PARAMETER Uri
+        Repoistory URL to include as the RepositoryUrl additional properties, typically used if the type is GitHub.LabelSummary rather than GitHub.Label
+
     .INPUTS
         [PSCustomObject]
 
@@ -1347,7 +1350,10 @@ filter Add-GitHubLabelAdditionalProperties
         [PSCustomObject[]] $InputObject,
 
         [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubLabelTypeName
+        [string] $TypeName = $script:GitHubLabelTypeName,
+
+        [Alias('RepositoryUrl')]
+        [string] $Uri
     )
 
     foreach ($item in $InputObject)
@@ -1356,7 +1362,15 @@ filter Add-GitHubLabelAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            $elements = Split-GitHubUri -Uri $item.url
+            if ([System.String]::IsNullOrEmpty($item.url) -and $PSBoundParameters.ContainsKey('Uri'))
+            {
+                $elements = Split-GitHubUri -Uri $Uri
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.url
+            }
+
             $repositoryUrl = Join-GitHubUri @elements
             Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
 
