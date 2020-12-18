@@ -238,12 +238,12 @@ filter Add-GitHubEventAdditionalProperties
 
             if ($null -ne $item.label)
             {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label -TypeName $script:GitHubLabelSummaryTypeName -Uri $repositoryUrl
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label -TypeName $script:GitHubLabelSummaryTypeName -RepositoryUrl $repositoryUrl
             }
 
             if ($null -ne $item.labels)
             {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels -TypeName $script:GitHubLabelSummaryTypeName -Uri $repositoryUrl
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels -TypeName $script:GitHubLabelSummaryTypeName -RepositoryUrl $repositoryUrl
             }
 
             if ($null -ne $item.milestone)
