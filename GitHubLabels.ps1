@@ -1327,12 +1327,12 @@ filter Add-GitHubLabelAdditionalProperties
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
 
-    .PARAMETER TypeName
-        The type that should be assigned to the object.
-
     .PARAMETER RepositoryUrl
         Optionally supplied if the Label object doesn't have this value already
         (as is the case for GitHub.LabelSummary).
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
 
     .INPUTS
         [PSCustomObject]
