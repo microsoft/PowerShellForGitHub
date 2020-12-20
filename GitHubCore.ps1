@@ -744,6 +744,316 @@ function Invoke-GHRestMethodMultipleResult
     }
 }
 
+function Invoke-GHGraphQl
+{
+<#
+    .SYNOPSIS
+        A wrapper around Invoke-WebRequest that understands the GitHub GraphQL API.
+
+    .DESCRIPTION
+        A very heavy wrapper around Invoke-WebRequest that understands the GitHub QraphQL API.
+        It also understands how to parse and handle errors from the REST calls.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER Description
+        A friendly description of the operation being performed for logging.
+
+    .PARAMETER Body
+        This parameter forms the body of the request. It will be automatically
+        encoded to UTF8 and sent as Content Type: "application/json; charset=UTF-8"
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api as opposed to requesting a new one.
+
+    .PARAMETER TelemetryEventName
+        If provided, the successful execution of this REST command will be logged to telemetry
+        using this event name.
+
+    .PARAMETER TelemetryProperties
+        If provided, the successful execution of this REST command will be logged to telemetry
+        with these additional properties.  This will be silently ignored if TelemetryEventName
+        is not provided as well.
+
+    .PARAMETER TelemetryExceptionBucket
+        If provided, any exception that occurs will be logged to telemetry using this bucket.
+        It's possible that users will wish to log exceptions but not success (by providing
+        TelemetryEventName) if this is being executed as part of a larger scenario.  If this
+        isn't provided, but TelemetryEventName *is* provided, then TelemetryEventName will be
+        used as the exception bucket value in the event of an exception.  If neither is specified,
+        no bucket value will be used.
+
+    .OUTPUTS
+        PSCustomObject
+
+    .EXAMPLE
+        Invoke-GHGraphQl
+
+    .NOTES
+        This wraps Invoke-WebRequest as opposed to Invoke-RestMethod because we want access
+        to the headers that are returned in the response, and Invoke-RestMethod drops those headers.
+#>
+    [CmdletBinding()]
+    [OutputType([System.Management.Automation.ErrorRecord])]
+    param(
+        [string] $Description,
+
+        [Parameter(Mandatory)]
+        [string] $Body,
+
+        [string] $AccessToken,
+
+        [string] $TelemetryEventName = $null,
+
+        [hashtable] $TelemetryProperties = @{},
+
+        [string] $TelemetryExceptionBucket = $null
+    )
+
+    Invoke-UpdateCheck
+
+    # Telemetry-related
+    $stopwatch = New-Object -TypeName System.Diagnostics.Stopwatch
+    $localTelemetryProperties = @{}
+    $TelemetryProperties.Keys | ForEach-Object { $localTelemetryProperties[$_] = $TelemetryProperties[$_] }
+    $errorBucket = $TelemetryExceptionBucket
+    if ([String]::IsNullOrEmpty($errorBucket))
+    {
+        $errorBucket = $TelemetryEventName
+    }
+
+    $stopwatch.Start()
+
+    $hostName = $(Get-GitHubConfiguration -Name "ApiHostName")
+
+    if ($hostName -eq 'github.com')
+    {
+        $url = "https://api.$hostName/graphql"
+    }
+    else
+    {
+        $url = "https://$hostName/api/v3/graphql"
+    }
+
+    $headers = @{
+        'User-Agent' = 'PowerShellForGitHub'
+    }
+
+    $AccessToken = Get-AccessToken -AccessToken $AccessToken
+    if (-not [String]::IsNullOrEmpty($AccessToken))
+    {
+        $headers['Authorization'] = "token $AccessToken"
+    }
+
+    Write-Log -Message $Description -Level Verbose
+    Write-Log -Message "Accessing [$Method] $url [Timeout = $(Get-GitHubConfiguration -Name WebRequestTimeoutSec))]" -Level Verbose
+
+    $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
+
+    $params = @{
+        Uri = $url
+        Method = 'Post'
+        Headers = $headers
+        Body = $bodyAsBytes
+        UseDefaultCredentials = $true
+        UseBasicParsing = $true
+        TimeoutSec = Get-GitHubConfiguration -Name WebRequestTimeoutSec
+    }
+
+    if (Get-GitHubConfiguration -Name LogRequestBody)
+    {
+        Write-Log -Message $Body -Level Verbose
+    }
+
+    # Disable Progress Bar in function scope during Invoke-WebRequest
+    $ProgressPreference = 'SilentlyContinue'
+
+    # Save Current Security Protocol
+    $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+
+    # Enforce TLS v1.2 Security Protocol
+    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+
+    try {
+        $result = Invoke-WebRequest @params
+    }
+    catch
+    {
+        Write-Debug -Message "Processing Exception $($_.Exception.PSTypeNames[0])"
+
+        if ($_.Exception.PSTypeNames[0] -eq 'System.Net.WebException' -or
+            $_.Exception.PSTypeNames[0] -eq 'Microsoft.PowerShell.Commands.HttpResponseException')
+        {
+            $ex = $_.Exception
+            $message = $ex.Message
+
+            if ($ex.Exception.Response -is [System.Net.WebResponse])
+            {
+                $statusCode = $ex.Response.StatusCode.value__ # Note that value__ is not a typo.
+
+                if ($ex.Response.PSTypeNames[0] -eq 'System.Net.Http.HttpResponseMessage')
+                {
+                    $statusDescription = $ex.Response.ReasonPhrase
+                }
+                elseif ($ex.Response.PSTypeNames[0] -eq 'System.Net.HttpWebResponse')
+                {
+                    $statusDescription = $ex.Response.StatusDescription
+                }
+                else {
+                    $statusDescription = ''
+                }
+
+                if ($ex.Response.Headers.Count -gt 0)
+                {
+                    $requestId = $ex.Response.Headers['X-GitHub-Request-Id']
+                }
+            }
+
+            $innerMessage = $_.ErrorDetails.Message
+            try
+            {
+#                $rawContent = Get-HttpWebResponseContent -WebResponse $ex.Response
+            }
+            catch
+            {
+                Write-Log -Message "Unable to retrieve the raw HTTP Web Response:" -Exception $_ -Level Warning
+            }
+        }
+        else
+        {
+            Write-Log -Exception $_ -Level Error
+            Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+
+            $exception = [Exception]::new($_.ErrorDetails.Message)
+            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                $exception,
+                $statusCode,
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $_.TargetObject
+            )
+
+            if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
+            {
+                $PSCmdlet.ThrowTerminatingError($errorRecord)
+            }
+            else
+            {
+                return $errorRecord
+            }
+        }
+
+        $output = @()
+        $output += $message
+
+        if (-not [string]::IsNullOrEmpty($statusCode))
+        {
+            $output += "$statusCode | $($statusDescription.Trim())"
+        }
+
+        if (-not [string]::IsNullOrEmpty($innerMessage))
+        {
+            try
+            {
+                $innerMessageJson = ($innerMessage | ConvertFrom-Json)
+            }
+            catch [System.ArgumentException]
+            {
+                # Will be thrown if $innerMessage isn't JSON content
+                $innerMessageJson = $innerMessage.Trim()
+            }
+
+            if ($innerMessageJson -is [String])
+            {
+                $output += $innerMessageJson.Trim()
+            }
+            elseif (-not [String]::IsNullOrWhiteSpace($innerMessageJson.message))
+            {
+                $output += "$($innerMessageJson.message.Trim()) | $($innerMessageJson.documentation_url.Trim())"
+                if ($innerMessageJson.details)
+                {
+                    $output += "$($innerMessageJson.details | Format-Table | Out-String)"
+                }
+            }
+            else
+            {
+                # In this case, it's probably not a normal message from the API
+                $output += ($innerMessageJson | Out-String)
+            }
+        }
+
+        # It's possible that the API returned JSON content in its error response.
+        if (-not [String]::IsNullOrWhiteSpace($rawContent))
+        {
+            $output += $rawContent
+        }
+
+        if (-not [String]::IsNullOrEmpty($requestId))
+        {
+            $localTelemetryProperties['RequestId'] = $requestId
+            $message = 'RequestId: ' + $requestId
+            $output += $message
+            Write-Log -Message $message -Level Verbose
+        }
+
+        $newLineOutput = ($output -join [Environment]::NewLine)
+        Write-Log -Message $newLineOutput -Level Error
+        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+        $exception = [Exception]::new($newLineOutput)
+        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+            $exception,
+            $statusCode,
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $body
+        )
+
+        if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
+        {
+            $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+        else
+        {
+            return $errorRecord
+        }
+    }
+    finally {
+        # Restore original security protocol
+        [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+
+        # Record the telemetry for this event.
+        $stopwatch.Stop()
+        if (-not [String]::IsNullOrEmpty($TelemetryEventName))
+        {
+            $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
+            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
+        }
+    }
+
+    $graphQlResult = $result.Content | ConvertFrom-Json
+    if ($graphQlResult.errors)
+    {
+        $exception = [Exception]::new($graphQlResult.errors.message)
+        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+            $exception,
+            $graphQlResult.errors.type,
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            '' # TargetObject
+        )
+
+        if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
+        {
+            $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+        else
+        {
+            return $errorRecord
+        }
+    }
+    else {
+        return $graphQlResult
+    }
+}
+
 filter Split-GitHubUri
 {
 <#

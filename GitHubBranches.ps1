@@ -597,6 +597,162 @@ filter Get-GitHubRepositoryBranchProtectionRule
     return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
 }
 
+filter Get-GitHubQlRepositoryBranchProtectionRule
+{
+    <#
+    .SYNOPSIS
+        Retrieve branch protection rules for a given GitHub repository.
+
+    .DESCRIPTION
+        Retrieve branch protection rules for a given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchNamePattern
+        Name of the specific branch Pattern to be retrieved.  If not supplied, all rules will be retrieved.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Release
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.BranchProtectionRule
+
+    .EXAMPLE
+        Get-GitHubQlRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchNamePattern master
+
+        Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Get-GitHubQlRepositoryBranchProtectionRule -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchNamePattern master
+
+        Retrieves branch protection rules for the master branch of the PowerShellForGithub repository.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        DefaultParameterSetName = 'Elements')]
+    [OutputType({ $script:GitHubBranchProtectionRuleTypeName })]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [Alias('BranchName')]
+        [string] $BranchNamePattern,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $branchProtectionRuleFields = 'allowsDeletions allowsForcePushes dismissesStaleReviews id ' +
+        'isAdminEnforced pattern requiredApprovingReviewCount requiredStatusCheckContexts ' +
+        'requiresApprovingReviews requiresCodeOwnerReviews requiresCommitSignatures requiresLinearHistory ' +
+        'requiresStatusChecks requiresStrictStatusChecks restrictsPushes restrictsReviewDismissals ' +
+        'repository { url }'
+
+    $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
+        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { " +
+        " $branchProtectionRuleFields } } } }"}
+
+    $description = "Querying $RepositoryName repository for branch protection rules"
+
+    Write-Debug -Message $description
+    Write-Debug -Message "Query: $($hashbody.query)"
+
+    $params = @{
+        Body = ConvertTo-Json -InputObject $hashBody
+        Description = $description
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHGraphQl @params
+
+    if ($result -is [System.Management.Automation.ErrorRecord])
+    {
+        $PSCmdlet.ThrowTerminatingError($result)
+    }
+
+    if ($result.data.repository.branchProtectionRules)
+    {
+        $rule = ($result.data.repository.branchProtectionRules.nodes |
+            Where-Object -Property pattern -eq $BranchNamePattern)
+    }
+
+    if (!$rule)
+    {
+        $exception = [Exception]::new(
+            "Branch Protection Rule '$BranchNamePattern' not found on repository $RepositoryName")
+        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+            $exception,
+            'BranchProtectionRuleNotFound',
+            [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+            $BranchNamePattern
+        )
+
+        $PSCmdlet.ThrowTerminatingError($errorRecord)
+    }
+
+    #return ($rule | Add-GitHubBranchProtectionRuleAdditionalProperties)
+    return $rule
+
+}
+
 filter New-GitHubRepositoryBranchProtectionRule
 {
     <#
@@ -950,6 +1106,478 @@ filter New-GitHubRepositoryBranchProtectionRule
     return (Invoke-GHRestMethod @params | Add-GitHubBranchProtectionRuleAdditionalProperties)
 }
 
+filter New-GitHubQLRepositoryBranchProtectionRule
+{
+    <#
+    .SYNOPSIS
+        Creates a branch protection rule for a branch on a given GitHub repository.
+
+    .DESCRIPTION
+        Creates a branch protection rules for a branch on a given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER OrganizationName
+        Name of the Organization.
+
+    .PARAMETER BranchNamePattern
+        The branch name pattern to create the protection rule on.
+
+    .PARAMETER StatusChecks
+        The list of status checks to require in order to merge into the branch.
+
+    .PARAMETER RequireUpToDateBranches
+        Require branches to be up to date before merging. This setting will not take effect unless
+        at least one status check is defined.
+
+    .PARAMETER EnforceAdmins
+        Enforce all configured restrictions for administrators.
+
+    .PARAMETER DismissalUsers
+        Specify the user names of users who can dismiss pull request reviews. This can only be
+        specified for organization-owned repositories.
+
+    .PARAMETER DismissalTeams
+        Specify which teams can dismiss pull request reviews.
+
+    .PARAMETER DismissStaleReviews
+        If specified, approving reviews when someone pushes a new commit are automatically
+        dismissed.
+
+    .PARAMETER RequireCodeOwnerReviews
+        Blocks merging pull requests until code owners review them.
+
+    .PARAMETER RequiredApprovingReviewCount
+        Specify the number of reviewers required to approve pull requests. Use a number between 1
+        and 6.
+
+    .PARAMETER RestrictPushUsers
+        Specify which users have push access.
+
+    .PARAMETER RestrictPushTeams
+        Specify which teams have push access.
+
+    .PARAMETER RestrictPushApps
+        Specify which apps have push access.
+
+    .PARAMETER RequireLinearHistory
+        Enforces a linear commit Git history, which prevents anyone from pushing merge commits to a
+        branch. Your repository must allow squash merging or rebase merging before you can enable a
+        linear commit history.
+
+    .PARAMETER RequireSignedCommits
+
+    .PARAMETER AllowForcePushes
+        Permits force pushes to the protected branch by anyone with write access to the repository.
+
+    .PARAMETER AllowDeletions
+        Allows deletion of the protected branch by anyone with write access to the repository.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Repository
+        GitHub.Branch
+
+    .OUTPUTS
+        GitHub.BranchRepositoryRule
+
+    .NOTES
+        Protecting a branch requires admin or owner permissions to the repository.
+
+    .EXAMPLE
+        New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master -EnforceAdmins
+
+        Creates a branch protection rule for the master branch of the PowerShellForGithub repository
+        enforcing all configuration restrictions for administrators.
+
+    .EXAMPLE
+        New-GitHubRepositoryBranchProtectionRule -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchName master -RequiredApprovingReviewCount 1
+
+        Creates a branch protection rule for the master branch of the PowerShellForGithub repository
+        requiring one approving review.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'Elements')]
+    [OutputType({$script:GitHubBranchProtectionRuleTypeName })]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [string] $OrganizationName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [Alias('BranchName')]
+        [string] $BranchNamePattern,
+
+        [string[]] $StatusChecks,
+
+        [switch] $RequireUpToDateBranches,
+
+        [switch] $EnforceAdmins,
+
+        [string[]] $DismissalUsers,
+
+        [string[]] $DismissalTeams,
+
+        [switch] $DismissStaleReviews,
+
+        [switch] $RequireCodeOwnerReviews,
+
+        [ValidateRange(1, 6)]
+        [int] $RequiredApprovingReviewCount,
+
+        [string[]] $RestrictPushUsers,
+
+        [string[]] $RestrictPushTeams,
+
+        [string[]] $RestrictPushApps,
+
+        [switch] $RequireLinearHistory,
+
+        [switch] $AllowForcePushes,
+
+        [switch] $AllowDeletions,
+
+        [switch] $RequireSignedCommits,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    If ([System.String]::IsNullOrEmpty($OrganizationName))
+    {
+        $OrganizationName = $OwnerName
+    }
+
+    $telemetryProperties = @{
+        OwnerName = (Get-PiiSafeString -PlainText $OwnerName)
+        RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"" , " +
+        "owner: ""$OwnerName"") { id } }"}
+
+    Write-Debug -Message "Querying Repository $RepositoryName, Owner $OwnerName"
+
+    $params = @{
+        Body = ConvertTo-Json -InputObject $hashBody
+        Description = "Querying $RepositoryName"
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHGraphQl @params
+
+    if ($result -is [System.Management.Automation.ErrorRecord])
+    {
+        $PSCmdlet.ThrowTerminatingError($result)
+    }
+
+    $repoId = $result.data.repository.id
+
+    $mutationList = @(
+        "repositoryId: ""$repoId"", pattern: ""$BranchNamePattern"""
+        'requiresLinearHistory: ' + $RequireLinearHistory.ToBool().ToString().ToLower()
+        'allowsForcePushes: ' + $AllowForcePushes.ToBool().ToString().ToLower()
+        'allowsDeletions: ' + $AllowDeletions.ToBool().ToString().ToLower()
+        'isAdminEnforced: ' + $EnforceAdmins.ToBool().ToString().ToLower()
+        'dismissesStaleReviews: ' + $DismissStaleReviews.ToBool().ToString().ToLower()
+        'requiresCodeOwnerReviews: ' + $RequireCodeOwnerReviews.ToBool().ToString().ToLower()
+        'requiresStrictStatusChecks: ' + $RequireUpToDateBranches.ToBool().ToString().ToLower()
+        'requiresCommitSignatures: ' + $RequireSignedCommits.ToBool().ToString().ToLower()
+    )
+
+    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
+    {
+        $mutationList += 'requiresApprovingReviews: true'
+        $mutationList += 'requiredApprovingReviewCount: ' + $RequiredApprovingReviewCount
+    }
+    if ($PSBoundParameters.ContainsKey('StatusChecks'))
+    {
+        $mutationList += 'requiresStatusChecks: true'
+        $mutationList += 'requiredStatusCheckContexts: [ "' + ($StatusChecks -join ('","')) + '" ]'
+    }
+
+    If ($PSBoundParameters.ContainsKey('RestrictPushUsers') -or
+        $PSBoundParameters.ContainsKey('RestrictPushTeams') -or
+        $PSBoundParameters.ContainsKey('RestrictPushApps'))
+    {
+        $restrictPushActorIds = @()
+
+        If ($PSBoundParameters.ContainsKey('RestrictPushUsers'))
+        {
+            Foreach($user in $RestrictPushUsers)
+            {
+                $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
+
+                $description = "Querying User $user"
+                Write-Debug -Message $description
+
+                $params = @{
+                    Body = ConvertTo-Json -InputObject $hashBody
+                    Description = $description
+                    AccessToken = $AccessToken
+                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryProperties = $telemetryProperties
+                }
+
+                $result = Invoke-GHGraphQl @params
+
+                if ($result -is [System.Management.Automation.ErrorRecord])
+                {
+                    $PSCmdlet.ThrowTerminatingError($result)
+                }
+
+                $restrictPushActorIds += $result.data.user.id
+            }
+        }
+
+        If ($PSBoundParameters.ContainsKey('RestrictPushTeams'))
+        {
+            Foreach($team in $RestrictPushTeams)
+            {
+                $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
+                    "{ team(slug: ""$team"") { id } } }"}
+
+                $description = "Querying $OrganizationName organisation for team $team"
+
+                Write-Debug -Message $description
+
+                $params = @{
+                    Body = ConvertTo-Json -InputObject $hashBody
+                    Description = $description
+                    AccessToken = $AccessToken
+                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryProperties = $telemetryProperties
+                }
+
+                $result = Invoke-GHGraphQl @params
+                if ($result -is [System.Management.Automation.ErrorRecord])
+                {
+                    $PSCmdlet.ThrowTerminatingError($result)
+                }
+
+                if ($result.data.organization.team)
+                {
+                    $restrictPushActorIds += $result.data.organization.team.id
+                }
+                else
+                {
+                    $exception = [Exception]::new("Team $team not found in organization $OrganizationName")
+                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                        $exception,
+                        'RestictPushTeamNotFound',
+                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                        $team
+                    )
+
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+            }
+        }
+
+        if ($PSBoundParameters.ContainsKey('RestrictPushApps'))
+        {
+            Foreach($app in $RestrictPushApps)
+            {
+                $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }"}
+
+                $description = "Querying for app $app"
+
+                Write-Debug -Message $description
+
+                $params = @{
+                    Body = ConvertTo-Json -InputObject $hashBody
+                    Description = $description
+                    AccessToken = $AccessToken
+                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryProperties = $telemetryProperties
+                }
+
+                $result = Invoke-GHGraphQl @params
+
+                if ($result -is [System.Management.Automation.ErrorRecord])
+                {
+                    $PSCmdlet.ThrowTerminatingError($result)
+                }
+
+                if ($result.data.marketplaceListing)
+                {
+                    $restrictPushActorIds += $result.data.marketplaceListing.app.id
+                }
+                else
+                {
+                    $exception = [Exception]::new("App $app not found")
+                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                        $exception,
+                        'RestictPushAppNotFound',
+                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                        $team
+                    )
+
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+            }
+        }
+
+        $mutationList += 'restrictsPushes: true'
+        $mutationList += 'pushActorIds: [ "' + ($restrictPushActorIds -join ('","')) + '" ]'
+    }
+
+    if ($PSBoundParameters.ContainsKey('DismissalUsers') -or
+        $PSBoundParameters.ContainsKey('DismissalTeams'))
+    {
+        $reviewDismissalActorIds = @()
+
+        If ($PSBoundParameters.ContainsKey('DismissalUsers'))
+        {
+            Foreach($user in $DismissalUsers)
+            {
+                $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
+
+                $description = "Querying user $user"
+
+                Write-Debug -Message $description
+
+                $params = @{
+                    Body = ConvertTo-Json -InputObject $hashBody
+                    Description = $description
+                    AccessToken = $AccessToken
+                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryProperties = $telemetryProperties
+                }
+
+                $result = Invoke-GHGraphQl @params
+
+                if ($result -is [System.Management.Automation.ErrorRecord])
+                {
+                    $PSCmdlet.ThrowTerminatingError($result)
+                }
+
+                $reviewDismissalActorIds += $result.data.user.id
+            }
+        }
+
+        If ($PSBoundParameters.ContainsKey('DismissalTeams'))
+        {
+            Foreach($team in $DismissalTeams)
+            {
+                $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
+                    "{ team(slug: ""$team"") { id } } }"}
+
+                $description = "Querying $OrganizationName organisation for team $team"
+
+                Write-Debug -Message $description
+
+                $params = @{
+                    Body = ConvertTo-Json -InputObject $hashBody
+                    Description = $description
+                    AccessToken = $AccessToken
+                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryProperties = $telemetryProperties
+                }
+
+                $result = Invoke-GHGraphQl @params
+
+                if ($result -is [System.Management.Automation.ErrorRecord])
+                {
+                    $PSCmdlet.ThrowTerminatingError($result)
+                }
+
+                if ($result.data.organization.team)
+                {
+                    $reviewDismissalActorIds += $result.data.organization.team.id
+                }
+                else
+                {
+                    $exception = [Exception]::new("Team $team not found in organization $OrganizationName")
+                    $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+                        $exception,
+                        'DismissalTeamNotFound',
+                        [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+                        $team
+                    )
+
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+            }
+        }
+
+        $mutationList += 'restrictsReviewDismissals: true'
+        $mutationList += 'reviewDismissalActorIds: [ "' + ($reviewDismissalActorIds -join ('","')) + '" ]'
+    }
+
+    $mutationInput = $mutationList -join(',')
+    $hashbody = @{query = "mutation ProtectionRule { createBranchProtectionRule(input: { $mutationInput }) " +
+        "{ clientMutationId  } } " }
+
+    $description = "Setting $BranchNamePattern branch protection status for $RepositoryName"
+    $body = ConvertTo-Json -InputObject $hashBody
+
+    Write-Debug -Message $description
+    Write-Debug -Message "Query: $body"
+
+    if (-not $PSCmdlet.ShouldProcess(
+        "Owner '$OwnerName', Repository '$RepositoryName'",
+        "Create '$BranchNamePattern' branch pattern GitHub Repository Branch Protection Rule"))
+    {
+        return
+    }
+
+    $params = @{
+        Body = $body
+        Description = $description
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHGraphQl @params
+
+    if ($result -is [System.Management.Automation.ErrorRecord])
+    {
+        $PSCmdlet.ThrowTerminatingError($result)
+    }
+}
+
 filter Remove-GitHubRepositoryBranchProtectionRule
 {
     <#
@@ -1070,6 +1698,184 @@ filter Remove-GitHubRepositoryBranchProtectionRule
     }
 
     return Invoke-GHRestMethod @params | Out-Null
+}
+
+filter Remove-GitHubQlRepositoryBranchProtectionRule
+{
+    <#
+    .SYNOPSIS
+        Remove branch protection rules from a given GitHub repository.
+
+    .DESCRIPTION
+        Remove branch protection rules from a given GitHub repository.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER BranchNamePattern
+        Name of the specific branch pattern to remove the branch protection rule from.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Repository
+        GitHub.Branch
+
+    .OUTPUTS
+        None
+
+    .EXAMPLE
+        Remove-GitHubQLRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchNamePattern master
+
+        Removes branch protection rules from the master branch of the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Removes-GitHubQLRepositoryBranchProtection -Uri 'https://github.com/microsoft/PowerShellForGitHub' -BranchNamePattern master
+
+        Removes branch protection rules from the master branch of the PowerShellForGithub repository.
+
+    .EXAMPLE
+        Removes-GitHubQLRepositoryBranchProtection -Uri 'https://github.com/master/PowerShellForGitHub' -BranchNamePattern master -Force
+
+        Removes branch protection rules from the master branch of the PowerShellForGithub repository
+        without prompting for confirmation.
+#>
+    [CmdletBinding(
+        PositionalBinding = $false,
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'Elements',
+        ConfirmImpact = "High")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
+        Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
+    [Alias('Delete-GitHubQLRepositoryBranchProtectionRule')]
+    param(
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            Position = 1,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 2)]
+        [Alias('BranchName')]
+        [string] $BranchNamePattern,
+
+        [switch] $Force,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    $telemetryProperties = @{
+        'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
+        'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+    }
+
+    $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
+        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { id pattern } } } }"}
+
+    $description = "Querying $RepositoryName repository for branch protection rules"
+
+    Write-Debug -Message $description
+
+    $params = @{
+        Body = ConvertTo-Json -InputObject $hashBody
+        Description = $description
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHGraphQl @params
+
+    if ($result -is [System.Management.Automation.ErrorRecord])
+    {
+        $PSCmdlet.ThrowTerminatingError($result)
+    }
+
+    if ($result.data.repository.branchProtectionRules)
+    {
+        $ruleId = ($result.data.repository.branchProtectionRules.nodes |
+            Where-Object -Property pattern -eq $BranchNamePattern).id
+    }
+
+    if (!$ruleId)
+    {
+        $exception = [Exception]::new(
+            "Branch Protection Rule '$BranchNamePattern' not found on repository $RepositoryName")
+        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+            $exception,
+            'BranchProtectionRuleNotFound',
+            [System.Management.Automation.ErrorCategory]::ObjectNotFound,
+            $BranchNamePattern
+        )
+
+        $PSCmdlet.ThrowTerminatingError($errorRecord)
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    $hashbody = @{query = "mutation ProtectionRule { deleteBranchProtectionRule(input: " +
+        "{ branchProtectionRuleId: ""$ruleId"" } ) { clientMutationId } }" }
+
+    $description = "Removing $BranchNamePattern branch protection rule for $RepositoryName"
+    $body = ConvertTo-Json -InputObject $hashBody
+
+    Write-Debug -Message $description
+    Write-Debug -Message "Query: $body"
+
+    if (-not $PSCmdlet.ShouldProcess("'$BranchNamePattern' branch of repository '$RepositoryName'",
+            'Remove GitHub Repository Branch Protection Rule'))
+    {
+        return
+    }
+
+    $params = @{
+        Body = $body
+        Description = $description
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHGraphQl @params
+
+    if ($result -is [System.Management.Automation.ErrorRecord])
+    {
+        $PSCmdlet.ThrowTerminatingError($result)
+    }
 }
 
 filter Add-GitHubBranchAdditionalProperties
