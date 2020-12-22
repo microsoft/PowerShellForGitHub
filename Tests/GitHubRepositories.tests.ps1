@@ -1488,6 +1488,7 @@ try
             }
         }
     }
+
     Describe 'GitHubRepositories\Get-GitHubRepositoryTeamPermission' {
         BeforeAll {
             $repositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'

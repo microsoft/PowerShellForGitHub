@@ -3042,20 +3042,7 @@ filter Get-GitHubRepositoryTeamPermission
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameUri')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugUri')]
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
@@ -3131,7 +3118,7 @@ filter Get-GitHubRepositoryTeamPermission
         $TeamName = $team.name
     }
 
-    return (Invoke-GHRestMethod @params |
+    return ($result |
         Add-GitHubRepositoryTeamPermissionAdditionalProperties -TeamName $TeamName -TeamSlug $TeamSlug)
 }
 
@@ -3173,13 +3160,13 @@ filter Set-GitHubRepositoryTeamPermission
     .PARAMETER Permission
         The permission to grant the team on this repository.
         Can be one of:
-        * pull - team members can pull, but not push to or administer this repository.
-        * push - team members can pull and push, but not administer this repository.
-        * admin - team members can pull, push and administer this repository.
-        * maintain - team members can manage the repository without access to sensitive or
+        * Pull - team members can pull, but not push to or administer this repository.
+        * Push - team members can pull and push, but not administer this repository.
+        * Admin - team members can pull, push and administer this repository.
+        * Maintain - team members can manage the repository without access to sensitive or
           destructive actions. Recommended for project managers. Only applies to repositories owned
           by organizations.
-        * triage - team members can proactively manage issues and pull requests without write access.
+        * Triage - team members can proactively manage issues and pull requests without write access.
           Recommended for contributors who triage a repository. Only applies to repositories owned
           by organizations.
         If no permission is specified, the team's permission attribute will be used to determine
@@ -3243,20 +3230,7 @@ filter Set-GitHubRepositoryTeamPermission
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameUri')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugUri')]
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
@@ -3440,20 +3414,7 @@ filter Remove-GitHubRepositoryTeamPermission
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugElements')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamNameUri')]
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName = 'TeamSlugUri')]
+            ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
         [string] $OrganizationName,
 
@@ -3893,9 +3854,6 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
     .PARAMETER InputObject
         The GitHub object to add additional properties to.
 
-    .PARAMETER TypeName
-        The type that should be assigned to the object.
-
     .PARAMETER OwnerName
         Owner of the repository.  This information might be obtainable from InputObject, so this
         is optional based on what InputObject contains.
@@ -3909,6 +3867,9 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
 
     .PARAMETER TeamSlug
         The slug (a unique key based on the team name) of the team.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
 
     .INPUTS
         PSCustomObject
@@ -3927,9 +3888,6 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
         [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
 
-        [ValidateNotNullOrEmpty()]
-        [string] $TypeName = $script:GitHubRepositoryTeamPermissionTypeName,
-
         [string] $OwnerName,
 
         [string] $RepositoryName,
@@ -3938,8 +3896,11 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
         [string] $TeamName,
 
         [Parameter(Mandatory)]
-        [string] $TeamSlug
-    )
+        [string] $TeamSlug,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryTeamPermissionTypeName
+        )
 
     foreach ($item in $InputObject)
     {
