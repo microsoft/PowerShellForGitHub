@@ -1518,7 +1518,6 @@ try
                 BeforeAll {
                     $setGitHubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamSlug = $team.slug
                         Permission = $permission
                     }
@@ -1527,7 +1526,6 @@ try
 
                     $getGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamSlug = $team.slug
                     }
 
@@ -1552,7 +1550,6 @@ try
 
                 $setGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                     Permission = $permission
                 }
@@ -1561,7 +1558,6 @@ try
 
                 $getGithubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamName = $teamName
                 }
 
@@ -1584,7 +1580,6 @@ try
 
                     $getGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamName = $nonExistingTeamName
                     }
                 }
@@ -1600,7 +1595,6 @@ try
             BeforeAll -ScriptBlock {
                 $getGitHubRepositoryTeamPermissionParms = @{
                     TeamName = $teamName
-                    OrganizationName = $script:organizationName
                 }
                 $repoPermission = $repo |
                     Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
@@ -1671,7 +1665,6 @@ try
                 BeforeAll {
                     $setGitHubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamSlug = $team.slug
                         Permission = $permission
                     }
@@ -1687,7 +1680,6 @@ try
                 It 'Should have set the correct Team permission' {
                     $getGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamSlug = $team.slug
                     }
 
@@ -1704,7 +1696,6 @@ try
 
                 $setGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamName = $teamName
                     Permission = $permission
                 }
@@ -1718,7 +1709,6 @@ try
             It 'Should have set the correct Team permission' {
                 $getGithubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                 }
 
@@ -1733,7 +1723,6 @@ try
 
                     $setGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamName = $nonExistingTeamName
                     }
                 }
@@ -1749,7 +1738,6 @@ try
             BeforeAll -ScriptBlock {
                 $setGitHubRepositoryTeamPermissionParms = @{
                     TeamName = $teamName
-                    OrganizationName = $script:organizationName
                 }
             }
 
@@ -1807,7 +1795,6 @@ try
 
             $setGitHubRepositoryTeamPermissionParms = @{
                 Uri = $repo.svn_url
-                OrganizationName = $script:organizationName
                 TeamSlug = $team.slug
                 Permission = 'Pull'
             }
@@ -1819,7 +1806,6 @@ try
             BeforeAll {
                 $setGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                     Permission = 'Pull'
                 }
@@ -1830,7 +1816,6 @@ try
             It 'Should not throw' {
                 $removeGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                     Force = $true
                 }
@@ -1843,7 +1828,6 @@ try
             It 'Should have removed the Team permission' {
                 $getGithubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                 }
 
@@ -1856,7 +1840,6 @@ try
             BeforeAll {
                 $setGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                     Permission = 'Pull'
                 }
@@ -1867,7 +1850,6 @@ try
             It 'Should not throw' {
                 $removeGitHubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamName = $teamName
                     Force = $true
                 }
@@ -1879,7 +1861,6 @@ try
             It 'Should have removed the Team permission' {
                 $getGithubRepositoryTeamPermissionParms = @{
                     Uri = $repo.svn_url
-                    OrganizationName = $script:organizationName
                     TeamSlug = $team.slug
                 }
 
@@ -1893,7 +1874,6 @@ try
 
                     $removeGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
-                        OrganizationName = $script:organizationName
                         TeamName = $nonExistingTeamName
                         Force = $true
                     }
@@ -1910,7 +1890,6 @@ try
             BeforeAll -ScriptBlock {
                 $removeGitHubRepositoryTeamPermissionParms = @{
                     TeamName = $teamName
-                    OrganizationName = $script:organizationName
                     Force = $true
                 }
             }

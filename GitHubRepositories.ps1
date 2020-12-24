@@ -2969,9 +2969,6 @@ filter Get-GitHubRepositoryTeamPermission
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER OrganizationName
-        The name of the organization of which the team is a member.
-
     .PARAMETER TeamName
         The name of the team.
         Note: This will be slower than querying by TeamSlug since it requires retrieving
@@ -3007,12 +3004,12 @@ filter Get-GitHubRepositoryTeamPermission
         GitHub.RepositoryTeamPermission
 
     .EXAMPLE
-        Get-GitHubRepositoryTeamPermission -OrganizationName microsoft -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
+        Get-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
 
         Gets permission for the Devs team on the microsoft/PowerShellForGitHub repository.
 
     .EXAMPLE
-        Get-GitHubRepositoryTeamPermission -OrganizationName microsoft -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+        Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
 
         Gets permission for the Admin team on the microsoft/PowerShellForGitHub repository.
 #>
@@ -3039,12 +3036,6 @@ filter Get-GitHubRepositoryTeamPermission
             ParameterSetName = 'TeamSlugUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName)]
-        [ValidateNotNullOrEmpty()]
-        [string] $OrganizationName,
 
         [Parameter(
             Mandatory,
@@ -3079,7 +3070,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OrganizationName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3096,7 +3087,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     $telemetryProperties['TeamSlug'] = Get-PiiSafeString -PlainText $TeamSlug
 
-    $uriFragment = "/orgs/$OrganizationName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+    $uriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
     $description = "Getting team $TeamSlug permissions for repository $RepositoryName"
 
     $params = @{
@@ -3113,7 +3104,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamSlug'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OrganizationName -TeamSlug $TeamSlug
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug
 
         $TeamName = $team.name
     }
@@ -3145,9 +3136,6 @@ filter Set-GitHubRepositoryTeamPermission
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
-
-    .PARAMETER OrganizationName
-        The name of the organization of which the team is a member.
 
     .PARAMETER TeamName
         The name of the specific team to retrieve.
@@ -3196,12 +3184,12 @@ filter Set-GitHubRepositoryTeamPermission
         GitHub.Team
 
     .EXAMPLE
-        Set-GitHubRepositoryTeamPermission -OrganizationName microsoft -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs -Permission Push
+        Set-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs -Permission Push
 
         Sets the Push permission for the Devs team on the microsoft/PowerShellForGitHub repository.
 
     .EXAMPLE
-        Set-GitHubRepositoryTeamPermission -OrganizationName microsoft -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
+        Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
 
         Sets the Admin permission for the Admin team on the microsoft/PowerShellForGitHub repository.
 #>
@@ -3227,12 +3215,6 @@ filter Set-GitHubRepositoryTeamPermission
             ParameterSetName = 'TeamSlugUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName)]
-        [ValidateNotNullOrEmpty()]
-        [string] $OrganizationName,
 
         [Parameter(
             Mandatory,
@@ -3271,7 +3253,7 @@ filter Set-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OrganizationName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3303,7 +3285,7 @@ filter Set-GitHubRepositoryTeamPermission
     }
 
     $params = @{
-        UriFragment = "/orgs/$OrganizationName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+        UriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
         Description =  "Setting team $TeamSlug $Permission permissions for repository $RepositoryName"
         Body = (ConvertTo-Json -InputObject $hashBody)
         Method = 'Put'
@@ -3338,9 +3320,6 @@ filter Remove-GitHubRepositoryTeamPermission
         Uri for the repository.
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
-
-    .PARAMETER OrganizationName
-        The name of the organization of which the team is a member.
 
     .PARAMETER TeamName
         The name of the specific team to remove.
@@ -3377,12 +3356,12 @@ filter Remove-GitHubRepositoryTeamPermission
         GitHub.Team
 
     .EXAMPLE
-        Remove-GitHubRepositoryTeamPermission -OrganizationName microsoft -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
+        Remove-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
 
         Removes the permission for the Devs team on the microsoft/PowerShellForGitHub repository.
 
     .EXAMPLE
-        Remove-GitHubRepositoryTeamPermission -OrganizationName microsoft -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+        Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
 
         Removes the permission for the Admin team on the microsoft/PowerShellForGitHub repository.
 
@@ -3411,12 +3390,6 @@ filter Remove-GitHubRepositoryTeamPermission
             ParameterSetName = 'TeamSlugUri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
-
-        [Parameter(
-            Mandatory,
-            ValueFromPipelineByPropertyName)]
-        [ValidateNotNullOrEmpty()]
-        [string] $OrganizationName,
 
         [Parameter(
             Mandatory,
@@ -3453,7 +3426,7 @@ filter Remove-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OrganizationName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3482,7 +3455,7 @@ filter Remove-GitHubRepositoryTeamPermission
     }
 
     $params = @{
-        UriFragment = "/orgs/$OrganizationName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+        UriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
         Description =  "Removing team $TeamSlug permissions from repository $RepositoryName"
         Method = 'Delete'
         AccessToken = $AccessToken
