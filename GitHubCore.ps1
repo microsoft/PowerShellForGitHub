@@ -882,6 +882,8 @@ function Invoke-GHGraphQl
     {
         Write-Debug -Message "Processing Exception $($_.Exception.PSTypeNames[0])"
 
+        # PowerShell 5 Invoke-WebRequest returns a 'System.Net.WebException' object on error
+        # PowerShell 6+ Invoke-WebRequest returns a 'Microsoft.PowerShell.Commands.HttpResponseException' object on error
         if ($_.Exception.PSTypeNames[0] -eq 'System.Net.WebException' -or
             $_.Exception.PSTypeNames[0] -eq 'Microsoft.PowerShell.Commands.HttpResponseException')
         {
@@ -890,7 +892,7 @@ function Invoke-GHGraphQl
 
             if ($ex.Exception.Response -is [System.Net.WebResponse])
             {
-                $statusCode = $ex.Response.StatusCode.value__ # Note that value__ is not a typo.
+                $statusCode = $ex.Response.StatusCode.value__
 
                 if ($ex.Response.PSTypeNames[0] -eq 'System.Net.Http.HttpResponseMessage')
                 {
@@ -922,16 +924,15 @@ function Invoke-GHGraphQl
         }
         else
         {
-            Write-Log -Exception $_ -Level Error
             Set-TelemetryException -Exception $_.Exception -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
-            $exception = [Exception]::new($_.ErrorDetails.Message)
-            $errorRecord = [System.Management.Automation.ErrorRecord]::new(
-                $exception,
-                $statusCode,
-                [System.Management.Automation.ErrorCategory]::InvalidOperation,
-                $_.TargetObject
-            )
+            $newErrorRecordParms = @{
+                ErrorMessage = $_.ErrorDetails.Message
+                ErrorId = $statusCode
+                ErrorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                TargetObject = $body
+            }
+            $errorRecord = New-ErrorRecord @newErrorRecordParms
 
             if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
             {
@@ -997,15 +998,15 @@ function Invoke-GHGraphQl
         }
 
         $newLineOutput = ($output -join [Environment]::NewLine)
-        Write-Log -Message $newLineOutput -Level Error
         Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
-        $exception = [Exception]::new($newLineOutput)
-        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
-            $exception,
-            $statusCode,
-            [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            $body
-        )
+
+        $newErrorRecordParms = @{
+            ErrorMessage = $newLineOutput
+            ErrorId = $statusCode
+            ErrorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
+            TargetObject = $body
+        }
+        $errorRecord = New-ErrorRecord @newErrorRecordParms
 
         if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
         {
@@ -1030,15 +1031,16 @@ function Invoke-GHGraphQl
     }
 
     $graphQlResult = $result.Content | ConvertFrom-Json
+
     if ($graphQlResult.errors)
     {
-        $exception = [Exception]::new($graphQlResult.errors.message)
-        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
-            $exception,
-            $graphQlResult.errors.type,
-            [System.Management.Automation.ErrorCategory]::InvalidOperation,
-            '' # TargetObject
-        )
+        write-debug ($graphqlResult.errors|Fl|out-string)
+        $newErrorRecordParms = @{
+            ErrorMessage = $graphQlResult.errors[0].message
+            ErrorId = $graphQlResult.errors[0].type
+            ErrorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
+        }
+        $errorRecord = New-ErrorRecord @newErrorRecordParms
 
         if ($PSCmdlet.CommandOrigin -eq [System.Management.Automation.CommandOrigin]::Runspace)
         {
@@ -1049,7 +1051,8 @@ function Invoke-GHGraphQl
             return $errorRecord
         }
     }
-    else {
+    else
+    {
         return $graphQlResult
     }
 }

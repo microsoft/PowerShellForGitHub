@@ -15,6 +15,7 @@
 
     # Format files (.ps1xml) to be loaded when importing this module
     FormatsToProcess = @(
+        'Formatters/GitHubBranches.Format.ps1xml',
         'Formatters/GitHubGistComments.Format.ps1xml',
         'Formatters/GitHubGists.Format.ps1xml',
         'Formatters/GitHubReleases.Format.ps1xml'
@@ -103,7 +104,7 @@
         'Get-GitHubRepository',
         'Get-GitHubRepositoryActionsPermission',
         'Get-GitHubRepositoryBranch',
-        'Get-GitHubQlRepositoryBranchProtectionRule',
+        'Get-GitHubRepositoryBranchPatternProtectionRule',
         'Get-GitHubRepositoryBranchProtectionRule',
         'Get-GitHubRepositoryCollaborator',
         'Get-GitHubRepositoryContributor',
@@ -144,8 +145,8 @@
         'New-GitHubRepository',
         'New-GitHubRepositoryFromTemplate',
         'New-GitHubRepositoryBranch',
+        'New-GitHubRepositoryBranchPatternProtectionRule',
         'New-GitHubRepositoryBranchProtectionRule',
-        'New-GitHubQLRepositoryBranchProtectionRule',
         'New-GitHubRepositoryFork',
         'New-GitHubTeam',
         'Remove-GitHubAssignee',
@@ -166,7 +167,7 @@
         'Remove-GitHubReleaseAsset',
         'Remove-GitHubRepository',
         'Remove-GitHubRepositoryBranch'
-        'Remove-GitHubQlRepositoryBranchProtectionRule',
+        'Remove-GitHubRepositoryBranchPatternProtectionRule',
         'Remove-GitHubRepositoryBranchProtectionRule',
         'Remove-GitHubRepositoryTeamPermission',
         'Remove-GitHubTeam',
@@ -227,6 +228,7 @@
         'Delete-GitHubReleaseAsset',
         'Delete-GitHubRepository',
         'Delete-GitHubRepositoryBranch',
+        'Delete-GitHubRepositoryBranchPatternProtectionRule',
         'Delete-GitHubRepositoryBranchProtectionRule',
         'Delete-GitHubRepositoryTeamPermission',
         'Delete-GitHubTeam',
