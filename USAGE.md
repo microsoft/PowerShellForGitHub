@@ -618,7 +618,7 @@ New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $m
 #### Create a repository from a template repository
 
 ```powershell
-New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+New-GitHubRepositoryFromTemplate -OwnerName MyOrg -RepositoryName TemplateRepoName -TargetRepositoryName MyNewRepo -TargetOwnerName MyUserName
 ```
 
 #### Get repository vulnerability alert status
