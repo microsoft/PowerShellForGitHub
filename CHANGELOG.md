@@ -1,6 +1,40 @@
 # PowerShellForGitHub PowerShell Module
 # Changelog
 
+## [0.16.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.16.0) - (2021/01/06)
+
+### Features:
+
++ Added the ability to retrieve and modify team permissions on a repository with
+  `Get-GitHubRepositoryTeamPermission`, `Set-GitHubRepositoryTeamPermission` and
+  `Remove-GitHubRepositoryTeamPermission`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/300) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/22e3d7bdf6c3b33fdead74dac831e0bb43beb2c4)
+
++ Added the ability to retrieve and modify the GitHub Actions permissions policy for repositories
+  with `Get-GitHubRepositoryActionsPermission` and `Set-GitHubRepositoryActionsPermission`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/301) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d4997057f8b1234ea1aabeb4fb6742148d3afaaf)
+
+### Fixes:
+
+- Added missing `.SYNOPSIS` to a number of functions throughout the module.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/293) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ab536c772a7656f92166d13f5df9ef7bf6627a3f)
+
+- Fixed an error in `Set-GitHubContent` which caused it to ignore requested changes to
+  `AuthorName`/`AuthorEmail`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/295) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ec7950c02c1e52af2a6edc30331982d172f6e7ff)
+
+- Fixed `Get-GitHubEvent`, which was erroring out when its result contained any labels.  (The labels
+  were being post-processed incorrectly when adding support for pipelining).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/306) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/8fd42010209edaf10936751b8eb190655a2bdb38)
+
+Authors:
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@@X-Guardian**](https://github.com/X-Guardian)
+   * [**@johnlokerse**](https://github.com/johnlokerse)
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
 ## [0.15.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.1) - (2020/09/09)
 
 ### Fixes:
