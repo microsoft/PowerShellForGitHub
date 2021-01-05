@@ -344,6 +344,11 @@ Set-StrictMode -Version 1.0
 
 $Path = Resolve-Path -Path $Path
 
+if ($PSVersionTable.PSVersion.Major -lt 7)
+{
+    Write-Warning 'It is recommended to run this with PowerShell 7+, as platyPS has a bug which doesn''t properly handle multi-line examples when run on older vesrions of PowerShell.'
+}
+
 $numSteps = 11
 $currentStep = 0
 $progressParams = @{
@@ -354,7 +359,7 @@ $progressParams = @{
 #######
 $currentStep++
 Write-Progress @progressParams -Status 'Ensuring PlatyPS installed' -PercentComplete (($currentStep / $numSteps) * 100)
-if ($null -eq (Get-Module -Name 'PlatyPS'))
+if ($null -eq (Get-Module -Name 'PlatyPS' -ListAvailable))
 {
     Write-Verbose -Message 'Installing PlatyPS Module'
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force -Verbose:$false | Out-Null
@@ -377,6 +382,7 @@ $moduleRootPageFileName = "$ModuleName.md"
 # files that should be _removed_ from the Wiki due to rename/removal of exports.
 $tempFolder = Join-Path -Path $env:TEMP -ChildPath ([Guid]::NewGuid().Guid)
 New-Item -Path $tempFolder -ItemType Directory | Out-Null
+Write-Verbose -Message "Working from temp location: $tempFolder"
 
 #######
 $currentStep++
@@ -475,7 +481,7 @@ foreach ($file in $currentFiles)
     $content = Get-Content -Path $file -Raw -Encoding utf8
     if (($content -match $generatedMarker) -and
         ($file.BaseName -notin $modulePages) -and
-        ($file.Name -ne $moduleRootPageFileName))
+        ($file.Name -notin ($moduleRootPageFileName, 'Home.md')))
     {
         $deprecatedFiles += $file
     }
@@ -508,7 +514,7 @@ Write-Progress @progressParams -Status "Moving generated content to final destin
 $files = Get-ChildItem -Path $tempFolder
 foreach ($file in $files)
 {
-    Move-Item -Path $file -Destination $Path -Force:$Force.IsPresent
+    Move-Item -Path $file.FullName -Destination $Path -Force:$Force.IsPresent
 }
 
 Remove-Item -Path $tempFolder -Recurse -Force
