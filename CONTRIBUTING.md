@@ -567,9 +567,10 @@ within the module.
    ```
 
 2. Open a PowerShell 7+ console window (don't use Windows PowerShell as there's a platyPS bug
-   in that version regarding multi-line examples) and navigate to the WIKI repo.
+   with that version regarding multi-line examples) and navigate to your Wiki clone.
 
-3. Run this command:
+3. Run this command (assuming that you have a `PowerShellForGitHub` clone at the same level as your
+   Wiki clone):
 
    ```powershell
    ..\PowerShellForGitHub\build\scripts\Build-Wiki.ps1 -Path .\ -RemoveDeprecated -Verbose -Force
@@ -583,8 +584,8 @@ within the module.
    a pull request for the Wiki changes.
 
 > This is not currently automated as part of the [Release pipeline](#running-the-release-build)
-> because I don't want to store any credentials/tokens with admin rights to the repo in the pipeline
-> at this time.
+> because I don't currently want to store any credentials/tokens with write access to the repo
+> in the pipeline.
 
 ----------
 
