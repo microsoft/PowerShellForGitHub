@@ -37,7 +37,7 @@ Looking for information on how to use this module?  Head on over to [README.md](
     *   [Updating the CHANGELOG](#updating-the-changelog)
     *   [Adding a New Tag](#adding-a-new-tag)
     *   [Running the Release Build](#running-the-release-build)
-    *   [Updating the WIKI documentation](#updating-the-wiki-documentation)
+    *   [Updating the Wiki documentation](#updating-the-wiki-documentation)
 *   [Contributors](#contributors)
 *   [Legal and Licensing](#legal-and-licensing)
 
@@ -552,7 +552,7 @@ maintainer because it accesses internal services to sign the module files with M
 > Instructions for updating the `PowerShellGalleryApiKey` secret in the pipeline can be found in the
 > [internal Microsoft repo for this project](https://microsoft.visualstudio.com/Apps/_git/eng.powershellforgithub).
 
-#### Updating the WIKI Documentation
+#### Updating the Wiki Documentation
 
 The [Wiki](https://github.com/microsoft/PowerShellForGitHub/wiki) contains the full documentation
 for all exported commands from the module, thanks to [platyPS](https://github.com/PowerShell/platyPS).
