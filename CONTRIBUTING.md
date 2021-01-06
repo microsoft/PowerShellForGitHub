@@ -37,6 +37,7 @@ Looking for information on how to use this module?  Head on over to [README.md](
     *   [Updating the CHANGELOG](#updating-the-changelog)
     *   [Adding a New Tag](#adding-a-new-tag)
     *   [Running the Release Build](#running-the-release-build)
+    *   [Updating the WIKI documentation](#updating-the-wiki-documentation)
 *   [Contributors](#contributors)
 *   [Legal and Licensing](#legal-and-licensing)
 
@@ -550,6 +551,40 @@ maintainer because it accesses internal services to sign the module files with M
 >
 > Instructions for updating the `PowerShellGalleryApiKey` secret in the pipeline can be found in the
 > [internal Microsoft repo for this project](https://microsoft.visualstudio.com/Apps/_git/eng.powershellforgithub).
+
+#### Updating the WIKI Documentation
+
+The [Wiki](https://github.com/microsoft/PowerShellForGitHub/wiki) contains the full documentation
+for all exported commands from the module, thanks to [platyPS](https://github.com/PowerShell/platyPS).
+
+Every time a new release occurs, the Wiki should be updated to reflect any changes that occurred
+within the module.
+
+1. Ensure that you have cloned the Wiki:
+
+   ```
+   git clone https://github.com/microsoft/PowerShellForGitHub.wiki.git
+   ```
+
+2. Open a PowerShell 7+ console window (don't use Windows PowerShell as there's a platyPS bug
+   in that version regarding multi-line examples) and navigate to the WIKI repo.
+
+3. Run this command:
+
+   ```powershell
+   ..\PowerShellForGitHub\build\scripts\Build-Wiki.ps1 -Path .\ -RemoveDeprecated -Verbose -Force
+   ```
+
+4. Verify the changes all make sense.  You will also need to manually copy the core content of
+   `PowerShellForGitHub.md` into `Home.md`.  For the time being, we are duplicating that content
+   in Home until such time as we have better content to put there.
+
+5. Commit the change and directly push it to the Wiki's `master` branch...no need to go through
+   a pull request for the Wiki changes.
+
+> This is not currently automated as part of the [Release pipeline](#running-the-release-build)
+> because I don't want to store any credentials/tokens with admin rights to the repo in the pipeline
+> at this time.
 
 ----------
 
