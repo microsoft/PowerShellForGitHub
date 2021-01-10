@@ -1282,40 +1282,186 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
     $mutationList = @(
         "repositoryId: ""$repoId"", pattern: ""$BranchPatternName"""
-        'requiresLinearHistory: ' + $RequireLinearHistory.ToBool().ToString().ToLower()
-        'allowsForcePushes: ' + $AllowForcePushes.ToBool().ToString().ToLower()
-        'allowsDeletions: ' + $AllowDeletions.ToBool().ToString().ToLower()
-        'isAdminEnforced: ' + $IsAdminEnforced.ToBool().ToString().ToLower()
-        'dismissesStaleReviews: ' + $DismissStaleReviews.ToBool().ToString().ToLower()
-        'requiresCodeOwnerReviews: ' + $RequireCodeOwnerReviews.ToBool().ToString().ToLower()
-        'requiresStrictStatusChecks: ' + $RequireStrictStatusChecks.ToBool().ToString().ToLower()
-        'requiresCommitSignatures: ' + $RequireCommitSignatures.ToBool().ToString().ToLower()
     )
 
-    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
+    # Process 'Require pull request reviews before merging' properties
+    if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount') -or
+        $PSBoundParameters.ContainsKey('DismissStaleReviews') -or
+        $PSBoundParameters.ContainsKey('RequireCodeOwnerReviews') -or
+        $PSBoundParameters.ContainsKey('DismissalUsers') -or
+        $PSBoundParameters.ContainsKey('DismissalTeams'))
     {
         $mutationList += 'requiresApprovingReviews: true'
-        $mutationList += 'requiredApprovingReviewCount: ' + $RequiredApprovingReviewCount
-    }
-    if ($PSBoundParameters.ContainsKey('StatusChecks'))
-    {
-        $mutationList += 'requiresStatusChecks: true'
-        $mutationList += 'requiredStatusCheckContexts: [ "' + ($StatusChecks -join ('","')) + '" ]'
+
+        if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount'))
+        {
+            $mutationList += 'requiredApprovingReviewCount: ' + $RequiredApprovingReviewCount
+        }
+
+        if ($PSBoundParameters.ContainsKey('DismissStaleReviews'))
+        {
+            $mutationList += 'dismissesStaleReviews: ' + $DismissStaleReviews.ToBool().ToString().ToLower()
+        }
+
+        if ($PSBoundParameters.ContainsKey('RequireCodeOwnerReviews'))
+        {
+            $mutationList += 'requiresCodeOwnerReviews: ' + $RequireCodeOwnerReviews.ToBool().ToString().ToLower()
+        }
+
+        if ($PSBoundParameters.ContainsKey('DismissalUsers') -or
+        $PSBoundParameters.ContainsKey('DismissalTeams'))
+        {
+            $reviewDismissalActorIds = @()
+
+            If ($PSBoundParameters.ContainsKey('DismissalUsers'))
+            {
+                Foreach($user in $DismissalUsers)
+                {
+                    $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
+
+                    $description = "Querying user $user"
+
+                    Write-Debug -Message $description
+
+                    $params = @{
+                        Body = ConvertTo-Json -InputObject $hashBody
+                        Description = $description
+                        AccessToken = $AccessToken
+                        TelemetryEventName = $MyInvocation.MyCommand.Name
+                        TelemetryProperties = $telemetryProperties
+                    }
+
+                    $result = Invoke-GHGraphQl @params
+
+                    if ($result -is [System.Management.Automation.ErrorRecord])
+                    {
+                        $PSCmdlet.ThrowTerminatingError($result)
+                    }
+
+                    $reviewDismissalActorIds += $result.data.user.id
+                }
+            }
+
+            If ($PSBoundParameters.ContainsKey('DismissalTeams'))
+            {
+                Foreach($team in $DismissalTeams)
+                {
+                    $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
+                        "{ team(slug: ""$team"") { id } } }"}
+
+                    $description = "Querying $OrganizationName organisation for team $team"
+
+                    Write-Debug -Message $description
+
+                    $params = @{
+                        Body = ConvertTo-Json -InputObject $hashBody
+                        Description = $description
+                        AccessToken = $AccessToken
+                        TelemetryEventName = $MyInvocation.MyCommand.Name
+                        TelemetryProperties = $telemetryProperties
+                    }
+
+                    $result = Invoke-GHGraphQl @params
+
+                    if ($result -is [System.Management.Automation.ErrorRecord])
+                    {
+                        $PSCmdlet.ThrowTerminatingError($result)
+                    }
+
+                    if ([System.String]::IsNullOrEmpty($result.data.organization.team))
+                    {
+                        $newErrorRecordParms = @{
+                            ErrorMessage = "Team $team not found in organization $OrganizationName"
+                            ErrorId = 'DismissalTeamNotFound'
+                            ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            TargetObject = $team
+                        }
+                        $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                        $PSCmdlet.ThrowTerminatingError($errorRecord)
+                    }
+
+                    $getGitHubRepositoryTeamPermissionParms = @{
+                        TeamName = $team
+                        OwnerName = $ownerName
+                        RepositoryName = $repositoryName
+                    }
+
+                    $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+
+                    if ($teamPermission.permissions.push -eq $true -or $teamPermission.permissions.maintain -eq $true)
+                    {
+                        $reviewDismissalActorIds += $result.data.organization.team.id
+                    }
+                    else
+                    {
+                        $newErrorRecordParms = @{
+                            ErrorMessage = "Team $team does not have push or maintain permissions on repository $RepositoryName"
+                            ErrorId = 'DismissalTeamNoPermissions'
+                            ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
+                            TargetObject = $team
+                        }
+
+                        $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                        $PSCmdlet.ThrowTerminatingError($errorRecord)
+                    }
+
+                }
+            }
+
+            $mutationList += 'restrictsReviewDismissals: true'
+            $mutationList += 'reviewDismissalActorIds: [ "' + ($reviewDismissalActorIds -join ('","')) + '" ]'
+        }
     }
 
-    If ($PSBoundParameters.ContainsKey('RestrictPushUsers') -or
+    # Process 'Require status checks to pass before merging' properties
+    if ($PSBoundParameters.ContainsKey('StatusChecks') -or
+        $PSBoundParameters.ContainsKey('RequireStrictStatusChecks'))
+    {
+        $mutationList += 'requiresStatusChecks: true'
+
+        if ($PSBoundParameters.ContainsKey('RequireStrictStatusChecks'))
+        {
+            $mutationList += 'requiresStrictStatusChecks: ' + $RequireStrictStatusChecks.ToBool().ToString().ToLower()
+        }
+
+        if ($PSBoundParameters.ContainsKey('StatusChecks'))
+        {
+            $mutationList += 'requiredStatusCheckContexts: [ "' + ($StatusChecks -join ('","')) + '" ]'
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('RequireCommitSignatures'))
+    {
+        $mutationList += 'requiresCommitSignatures: ' + $RequireCommitSignatures.ToBool().ToString().ToLower()
+    }
+
+    if ($PSBoundParameters.ContainsKey('RequireLinearHistory'))
+    {
+        $mutationList += 'requiresLinearHistory: ' + $RequireLinearHistory.ToBool().ToString().ToLower()
+    }
+
+    if ($PSBoundParameters.ContainsKey('IsAdminEnforced'))
+    {
+        $mutationList += 'isAdminEnforced: ' + $IsAdminEnforced.ToBool().ToString().ToLower()
+    }
+
+    # Process 'Restrict who can push to matching branches' properties
+    if ($PSBoundParameters.ContainsKey('RestrictPushUsers') -or
         $PSBoundParameters.ContainsKey('RestrictPushTeams') -or
         $PSBoundParameters.ContainsKey('RestrictPushApps'))
     {
         $restrictPushActorIds = @()
 
-        If ($PSBoundParameters.ContainsKey('RestrictPushUsers'))
+        if ($PSBoundParameters.ContainsKey('RestrictPushUsers'))
         {
-            Foreach($user in $RestrictPushUsers)
+            foreach($user in $RestrictPushUsers)
             {
                 $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
                 $description = "Querying User $user"
+
                 Write-Debug -Message $description
 
                 $params = @{
@@ -1357,23 +1503,47 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 }
 
                 $result = Invoke-GHGraphQl @params
+
                 if ($result -is [System.Management.Automation.ErrorRecord])
                 {
                     $PSCmdlet.ThrowTerminatingError($result)
                 }
 
-                if ($result.data.organization.team)
+                if ([System.String]::IsNullOrEmpty($result.data.organization.team))
+                {
+                    $newErrorRecordParms = @{
+                        ErrorMessage = "Team $team not found in organization $OrganizationName"
+                        ErrorId = 'DismissalTeamNotFound'
+                        ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        TargetObject = $team
+                    }
+
+                    $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+
+                $getGitHubRepositoryTeamPermissionParms = @{
+                    TeamName = $team
+                    OwnerName = $ownerName
+                    RepositoryName = $repositoryName
+                }
+
+                $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+
+                if ($teamPermission.permissions.push -eq $true -or $teamPermission.permissions.maintain -eq $true)
                 {
                     $restrictPushActorIds += $result.data.organization.team.id
                 }
                 else
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "Team $team not found with write permissions to $RepositoryName"
-                        ErrorId = 'RestictPushTeamNotFound'
-                        ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                        ErrorMessage = "Team $team does not have push or maintain permissions on repository $RepositoryName"
+                        ErrorId = 'PushTeamNoPermissions'
+                        ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
                         TargetObject = $team
                     }
+
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
@@ -1413,7 +1583,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 else
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "App $app not found with write permissions to $RepositoryName"
+                        ErrorMessage = "App $app not found in marketplace"
                         ErrorId = 'RestictPushAppNotFound'
                         ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                         TargetObject = $app
@@ -1429,87 +1599,14 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         $mutationList += 'pushActorIds: [ "' + ($restrictPushActorIds -join ('","')) + '" ]'
     }
 
-    if ($PSBoundParameters.ContainsKey('DismissalUsers') -or
-        $PSBoundParameters.ContainsKey('DismissalTeams'))
+    if ($PSBoundParameters.ContainsKey('AllowForcePushes'))
     {
-        $reviewDismissalActorIds = @()
+        $mutationList += 'allowsForcePushes: ' + $AllowForcePushes.ToBool().ToString().ToLower()
+    }
 
-        If ($PSBoundParameters.ContainsKey('DismissalUsers'))
-        {
-            Foreach($user in $DismissalUsers)
-            {
-                $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
-
-                $description = "Querying user $user"
-
-                Write-Debug -Message $description
-
-                $params = @{
-                    Body = ConvertTo-Json -InputObject $hashBody
-                    Description = $description
-                    AccessToken = $AccessToken
-                    TelemetryEventName = $MyInvocation.MyCommand.Name
-                    TelemetryProperties = $telemetryProperties
-                }
-
-                $result = Invoke-GHGraphQl @params
-
-                if ($result -is [System.Management.Automation.ErrorRecord])
-                {
-                    $PSCmdlet.ThrowTerminatingError($result)
-                }
-
-                $reviewDismissalActorIds += $result.data.user.id
-            }
-        }
-
-        If ($PSBoundParameters.ContainsKey('DismissalTeams'))
-        {
-            Foreach($team in $DismissalTeams)
-            {
-                $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
-                    "{ team(slug: ""$team"") { id } } }"}
-
-                $description = "Querying $OrganizationName organisation for team $team"
-
-                Write-Debug -Message $description
-
-                $params = @{
-                    Body = ConvertTo-Json -InputObject $hashBody
-                    Description = $description
-                    AccessToken = $AccessToken
-                    TelemetryEventName = $MyInvocation.MyCommand.Name
-                    TelemetryProperties = $telemetryProperties
-                }
-
-                $result = Invoke-GHGraphQl @params
-
-                if ($result -is [System.Management.Automation.ErrorRecord])
-                {
-                    $PSCmdlet.ThrowTerminatingError($result)
-                }
-
-                if ($result.data.organization.team)
-                {
-                    $reviewDismissalActorIds += $result.data.organization.team.id
-                }
-                else
-                {
-                    $newErrorRecordParms = @{
-                        ErrorMessage = "Team $team not found in organization $OrganizationName"
-                        ErrorId = 'DismissalTeamNotFound'
-                        ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                        TargetObject = $team
-                    }
-                    $errorRecord = New-ErrorRecord @newErrorRecordParms
-
-                    $PSCmdlet.ThrowTerminatingError($errorRecord)
-                }
-            }
-        }
-
-        $mutationList += 'restrictsReviewDismissals: true'
-        $mutationList += 'reviewDismissalActorIds: [ "' + ($reviewDismissalActorIds -join ('","')) + '" ]'
+    if ($PSBoundParameters.ContainsKey('AllowDeletions'))
+    {
+        $mutationList += 'allowsDeletions: ' + $AllowDeletions.ToBool().ToString().ToLower()
     }
 
     $mutationInput = $mutationList -join(',')

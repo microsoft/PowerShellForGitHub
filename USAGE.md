@@ -64,6 +64,9 @@
         *   [Getting a repository branch protection rule](#getting-a-repository-branch-protection-rule)
         *   [Creating a repository branch protection rule](#creating-a-repository-branch-protection-rule)
         *   [Removing a repository branch protection rule](#removing-a-repository-branch-protection-rule)
+        *   [Getting a repository branch pattern protection rule](#getting-a-repository-branch-pattern-protection-rule)
+        *   [Creating a repository branch pattern protection rule](#creating-a-repository-branch-pattern-protection-rule)
+        *   [Removing a repository branch pattern protection rule](#removing-a-repository-branch-pattern-protection-rule)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -701,6 +704,24 @@ New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName Po
 
 ```powershell
 Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
+```
+
+#### Getting a repository branch pattern protection rule
+
+```powershell
+Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
+```
+
+#### Creating a repository branch pattern protection rule
+
+```powershell
+New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*' -RequiredApprovingReviewCount 1 -DismissStaleReviews -RequireStrictStatusChecks -StatusChecks 'CICheck'
+```
+
+#### Removing a repository branch pattern protection rule
+
+```powershell
+Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
 ```
 
 ----------
