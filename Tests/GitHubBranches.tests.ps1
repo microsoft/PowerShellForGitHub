@@ -782,6 +782,586 @@ try
         }
     }
 
+    Describe 'GitHubBranches\Get-GitHubRepositoryBranchPatternProtectionRule' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+
+            $repo = New-GitHubRepository -RepositoryName $repoName
+
+            $teamName = [Guid]::NewGuid().Guid
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:OrganizationName
+                TeamName = $teamName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $setGitHubRepositoryTeamPermissionParms = @{
+                Uri = $repo.svn_url
+                TeamSlug = $team.slug
+                Permission = 'Push'
+            }
+
+            Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+        }
+
+        Context 'When getting branch pattern protection default options' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                New-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeFalse
+                $rule.requiredApprovingReviewCount | Should -BeNullOrEmpty
+                $rule.dismissesStaleReviews | Should -BeFalse
+                $rule.requiresCodeOwnerReviews | Should -BeFalse
+                $rule.restrictsReviewDismissals | Should -BeFalse
+                $rule.DismissalTeams | Should -BeNullOrEmpty
+                $rule.DismissalUsers | Should -BeNullOrEmpty
+                $rule.requiresStatusChecks | Should -BeFalse
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -BeNullOrEmpty
+                $rule.requiresCommitSignatures | Should -BeFalse
+                $rule.requiresLinearHistory | Should -BeFalse
+                $rule.isAdminEnforced | Should -BeFalse
+                $rule.restrictsPushes | Should -BeFalse
+                $rule.RestrictPushUsers | Should -BeNullOrEmpty
+                $rule.RestrictPushTeams | Should -BeNullOrEmpty
+                $rule.RestictPushApps | Should -BeNullOrEmpty
+                $rule.allowsForcePushes | Should -BeFalse
+                $rule.allowsDeletions | Should -BeFalse
+            }
+        }
+
+        Context 'When getting base protection options' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequireCommitSignatures = $true
+                    RequireLinearHistory = $true
+                    IsAdminEnforced = $true
+                    RestrictPushUsers = $script:OwnerName
+                    RestrictPushTeams = $TeamName
+                    AllowForcePushes = $true
+                    AllowDeletions = $true
+                }
+
+                New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
+
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeFalse
+                $rule.requiredApprovingReviewCount | Should -BeNullOrEmpty
+                $rule.dismissesStaleReviews | Should -BeFalse
+                $rule.requiresCodeOwnerReviews | Should -BeFalse
+                $rule.restrictsReviewDismissals | Should -BeFalse
+                $rule.DismissalTeams | Should -BeNullOrEmpty
+                $rule.DismissalUsers | Should -BeNullOrEmpty
+                $rule.requiresStatusChecks | Should -BeFalse
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -BeNullOrEmpty
+                $rule.requiresCommitSignatures | Should -BeTrue
+                $rule.requiresLinearHistory | Should -BeTrue
+                $rule.isAdminEnforced | Should -BeTrue
+                $rule.restrictsPushes | Should -BeTrue
+                $rule.RestrictPushUsers.Count | Should -Be 1
+                $rule.RestrictPushUsers | Should -Contain $script:OwnerName
+                $rule.RestrictPushTeams.Count | Should -Be 1
+                $rule.RestrictPushTeams | Should -Contain $pushTeamName
+                $rule.RestrictPushApps | Should -BeNullOrEmpty
+                $rule.allowsForcePushes | Should -BeTrue
+                $rule.allowsDeletions | Should -BeTrue
+            }
+        }
+
+        Context 'When getting required pull request reviews' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequiredApprovingReviewCount = 1
+                    DismissStaleReviews = $true
+                    RequireCodeOwnerReviews = $true
+                    DismissalUsers = $script:OwnerName
+                    DismissalTeams = $pushTeamName
+                }
+
+                New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
+
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeTrue
+                $rule.requiredApprovingReviewCount | Should -Be 1
+                $rule.dismissesStaleReviews | Should -BeTrue
+                $rule.requiresCodeOwnerReviews | Should -BeTrue
+                $rule.restrictsReviewDismissals | Should -BeTrue
+                $rule.DismissalTeams.Count | Should -Be 1
+                $rule.DismissalTeams | Should -Contain $pushTeamName
+                $rule.DismissalUsers.Count | Should -Be 1
+                $rule.DismissalUsers | Should -Contain $script:OwnerName
+            }
+        }
+
+        Context 'When getting required status checks' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+                $statusChecks = 'test'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequireStrictStatusChecks = $true
+                    StatusChecks = $statusChecks
+                }
+
+                New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
+
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresStatusChecks | Should -BeTrue
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -Contain $statusChecks
+            }
+        }
+
+        Context 'When specifying the "Uri" parameter through the pipeline' {
+            BeforeAll {
+                $rule = $repo | Get-GitHubRepositoryBranchPatternProtectionRule -BranchPatternName $branchPatternName
+            }
+
+            It 'Should have the expected type and addititional properties' {
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
+
+    Describe 'GitHubBranches\New-GitHubRepositoryBranchPatternProtectionRule' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $newGitHubRepositoryParms = @{
+                OrganizationName = $script:organizationName
+                RepositoryName = $repoName
+            }
+
+            $repo = New-GitHubRepository @newGitHubRepositoryParms
+
+            $pushTeamName = [Guid]::NewGuid().Guid
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:OrganizationName
+                TeamName = $pushTeamName
+            }
+
+            $pushTeam = New-GitHubTeam @newGithubTeamParms
+
+            $setGitHubRepositoryTeamPermissionParms = @{
+                Uri = $repo.svn_url
+                TeamSlug = $pushTeam.slug
+
+                Permission = 'Push'
+            }
+
+            Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+
+            $pullTeamName = [Guid]::NewGuid().Guid
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:OrganizationName
+                TeamName = $pullTeamName
+            }
+
+            $pullTeam = New-GitHubTeam @newGithubTeamParms
+
+            $setGitHubRepositoryTeamPermissionParms = @{
+                Uri = $repo.svn_url
+                TeamSlug = $pullTeam.slug
+
+                Permission = 'Pull'
+            }
+
+            Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+        }
+
+        Context 'When setting default protection options' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                }
+            }
+
+            It 'Should not throw' {
+                { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeFalse
+                $rule.requiredApprovingReviewCount | Should -BeNullOrEmpty
+                $rule.dismissesStaleReviews | Should -BeFalse
+                $rule.requiresCodeOwnerReviews | Should -BeFalse
+                $rule.restrictsReviewDismissals | Should -BeFalse
+                $rule.DismissalTeams | Should -BeNullOrEmpty
+                $rule.DismissalUsers | Should -BeNullOrEmpty
+                $rule.requiresStatusChecks | Should -BeFalse
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -BeNullOrEmpty
+                $rule.requiresCommitSignatures | Should -BeFalse
+                $rule.requiresLinearHistory | Should -BeFalse
+                $rule.isAdminEnforced | Should -BeFalse
+                $rule.restrictsPushes | Should -BeFalse
+                $rule.RestrictPushUsers | Should -BeNullOrEmpty
+                $rule.RestrictPushTeams | Should -BeNullOrEmpty
+                $rule.RestictPushApps | Should -BeNullOrEmpty
+                $rule.allowsForcePushes | Should -BeFalse
+                $rule.allowsDeletions | Should -BeFalse
+            }
+        }
+
+        Context 'When setting base protection options' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequireCommitSignatures = $true
+                    RequireLinearHistory = $true
+                    IsAdminEnforced = $true
+                    RestrictPushUsers = $script:OwnerName
+                    RestrictPushTeams = $pushTeamName
+                    AllowForcePushes = $true
+                    AllowDeletions = $true
+                }
+            }
+
+            It 'Should not throw' {
+                { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeFalse
+                $rule.requiredApprovingReviewCount | Should -BeNullOrEmpty
+                $rule.dismissesStaleReviews | Should -BeFalse
+                $rule.requiresCodeOwnerReviews | Should -BeFalse
+                $rule.restrictsReviewDismissals | Should -BeFalse
+                $rule.DismissalTeams | Should -BeNullOrEmpty
+                $rule.DismissalUsers | Should -BeNullOrEmpty
+                $rule.requiresStatusChecks | Should -BeFalse
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -BeNullOrEmpty
+                $rule.requiresCommitSignatures | Should -BeTrue
+                $rule.requiresLinearHistory | Should -BeTrue
+                $rule.isAdminEnforced | Should -BeTrue
+                $rule.restrictsPushes | Should -BeTrue
+                $rule.RestrictPushUsers.Count | Should -Be 1
+                $rule.RestrictPushUsers | Should -Contain $script:OwnerName
+                $rule.RestrictPushTeams.Count | Should -Be 1
+                $rule.RestrictPushTeams | Should -Contain $pushTeamName
+                $rule.RestrictPushApps | Should -BeNullOrEmpty
+                $rule.allowsForcePushes | Should -BeTrue
+                $rule.allowsDeletions | Should -BeTrue
+            }
+
+            Context 'When the Restrict Push Team does not exist in the organization' {
+                BeforeAll {
+                    $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+                    $mockTeamName = 'MockTeam'
+
+                    $newGitHubRepositoryBranchPatternProtectionParms = @{
+                        Uri = $repo.svn_url
+                        BranchPatternName = $branchPatternName
+                        RestrictPushTeams = $mockTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = "Team $mockTeamName not found in organization $OrganizationName"
+                    { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                        Should -Throw $errorMessage
+                }
+            }
+
+            Context 'When the Restrict Push Team does not have push Permissions to the Repository' {
+                BeforeAll {
+                    $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                    $newGitHubRepositoryBranchPatternProtectionParms = @{
+                        Uri = $repo.svn_url
+                        BranchPatternName = $branchPatternName
+                        RestrictPushTeams = $pullTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = "Team $pullTeamName does not have push or maintain permissions on repository $repoName"
+                    { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                        Should -Throw $errorMessage
+                }
+            }
+        }
+
+        Context 'When setting required pull request reviews' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequiredApprovingReviewCount = 1
+                    DismissStaleReviews = $true
+                    RequireCodeOwnerReviews = $true
+                    DismissalUsers = $script:OwnerName
+                    DismissalTeams = $pushTeamName
+                }
+            }
+
+            It 'Should not throw' {
+                { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresApprovingReviews | Should -BeTrue
+                $rule.requiredApprovingReviewCount | Should -Be 1
+                $rule.dismissesStaleReviews | Should -BeTrue
+                $rule.requiresCodeOwnerReviews | Should -BeTrue
+                $rule.restrictsReviewDismissals | Should -BeTrue
+                $rule.DismissalTeams.Count | Should -Be 1
+                $rule.DismissalTeams | Should -Contain $pushTeamName
+                $rule.DismissalUsers.Count | Should -Be 1
+                $rule.DismissalUsers | Should -Contain $script:OwnerName
+            }
+
+            Context 'When the Dismissal Team does not exist in the organization' {
+                BeforeAll {
+                    $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+                    $mockTeamName = 'MockTeam'
+
+                    $newGitHubRepositoryBranchPatternProtectionParms = @{
+                        Uri = $repo.svn_url
+                        BranchPatternName = $branchPatternName
+                        DismissalTeams = $mockTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = "Team $mockTeamName not found in organization $OrganizationName"
+                    { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                        Should -Throw $errorMessage
+                }
+            }
+
+            Context 'When the Dismissal Team does not have write Permissions to the Repository' {
+                BeforeAll {
+                    $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                    $newGitHubRepositoryBranchPatternProtectionParms = @{
+                        Uri = $repo.svn_url
+                        BranchPatternName = $branchPatternName
+                        DismissalTeams = $pullTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    $errorMessage = "Team $pullTeamName does not have push or maintain permissions on repository $repoName"
+                    { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                        Should -Throw $errorMessage
+                }
+            }
+        }
+
+        Context 'When setting required status checks' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+                $statusChecks = 'test'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                    RequireStrictStatusChecks = $true
+                    StatusChecks = $statusChecks
+                }
+            }
+
+            It 'Should not throw' {
+                { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+                $rule.requiresStatusChecks | Should -BeTrue
+                $rule.requiresStrictStatusChecks | Should -BeTrue
+                $rule.requiredStatusCheckContexts | Should -Contain $statusChecks
+            }
+        }
+
+        Context 'When the branch pattern rule already exists' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $newGitHubRepositoryBranchPatternProtectionParms = @{
+                    Uri = $repo.svn_url
+                    BranchPatternName = $branchPatternName
+                }
+
+                $rule = New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
+            }
+
+            It 'Should throw the correct exception' {
+                $errorMessage = "Name already protected: $branchPatternName"
+                { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
+                    Should -Throw $errorMessage
+            }
+        }
+
+        Context 'When specifying the "Uri" parameter through the pipeline' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+            }
+
+            It 'Should not throw' {
+                { $repo | New-GitHubRepositoryBranchPatternProtectionRule -BranchPatternName $branchPatternName } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct properties' {
+                $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+
+                $rule.PSObject.TypeNames[0] | Should -Be 'GitHub.BranchPatternProtectionRule'
+                $rule.pattern | Should -Be $branchPatternName
+                $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
+            }
+        }
+
+        AfterAll -ScriptBlock {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+
+            if (Get-Variable -Name pushTeam -ErrorAction SilentlyContinue)
+            {
+                $pushTeam | Remove-GitHubTeam -Force
+            }
+
+            if (Get-Variable -Name pullTeam -ErrorAction SilentlyContinue)
+            {
+                $pullTeam | Remove-GitHubTeam -Force
+            }
+        }
+    }
+
+    Describe 'GitHubBranches\Remove-GitHubRepositoryBranchPatternProtectionRule' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+
+            $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+        }
+
+        Context 'When removing GitHub repository branch pattern protection' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                New-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should not throw' {
+                { Remove-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName -Force } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have removed the protection rule' {
+                { Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName } |
+                    Should -Throw
+            }
+        }
+
+        Context 'When specifying the "Uri" parameter through the pipeline' {
+            BeforeAll {
+                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
+
+                $rule = New-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
+            }
+
+            It 'Should not throw' {
+                { $repo | Remove-GitHubRepositoryBranchPatternProtectionRule -BranchPatternName $branchPatternName -Force} |
+                    Should -Not -Throw
+            }
+
+            It 'Should have removed the protection rule' {
+                { Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName } |
+                    Should -Throw
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
 }
 finally
 {
