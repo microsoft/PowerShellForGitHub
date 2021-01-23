@@ -709,8 +709,6 @@ function New-ErrorRecord
         [System.Management.Automation.PSObject] $TargetObject
     )
 
-    Write-Log -Message $ErrorMessage -Level Error
-
     $exception = New-Object -TypeName System.Exception -ArgumentList $ErrorMessage
     $errorRecordArgumentList = $exception, $ErrorId, $ErrorCategory, $TargetObject
     $errorRecord = New-Object -TypeName System.Management.Automation.ErrorRecord -ArgumentList $errorRecordArgumentList
