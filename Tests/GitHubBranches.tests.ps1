@@ -786,7 +786,11 @@ try
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
 
-            $repo = New-GitHubRepository -RepositoryName $repoName
+            $newGitHubRepositoryParms = @{
+                OrganizationName = $script:organizationName
+                RepositoryName = $repoName
+            }
+            $repo = New-GitHubRepository @newGitHubRepositoryParms
 
             $teamName = [Guid]::NewGuid().Guid
 
@@ -794,7 +798,6 @@ try
                 OrganizationName = $script:OrganizationName
                 TeamName = $teamName
             }
-
             $team = New-GitHubTeam @newGithubTeamParms
 
             $setGitHubRepositoryTeamPermissionParms = @{
@@ -802,7 +805,6 @@ try
                 TeamSlug = $team.slug
                 Permission = 'Push'
             }
-
             Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
         }
 
@@ -856,7 +858,6 @@ try
                     AllowForcePushes = $true
                     AllowDeletions = $true
                 }
-
                 New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
 
                 $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
@@ -883,7 +884,7 @@ try
                 $rule.RestrictPushUsers.Count | Should -Be 1
                 $rule.RestrictPushUsers | Should -Contain $script:OwnerName
                 $rule.RestrictPushTeams.Count | Should -Be 1
-                $rule.RestrictPushTeams | Should -Contain $pushTeamName
+                $rule.RestrictPushTeams | Should -Contain $teamName
                 $rule.RestrictPushApps | Should -BeNullOrEmpty
                 $rule.allowsForcePushes | Should -BeTrue
                 $rule.allowsDeletions | Should -BeTrue
@@ -901,9 +902,8 @@ try
                     DismissStaleReviews = $true
                     RequireCodeOwnerReviews = $true
                     DismissalUsers = $script:OwnerName
-                    DismissalTeams = $pushTeamName
+                    DismissalTeams = $teamName
                 }
-
                 New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
 
                 $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
@@ -920,7 +920,7 @@ try
                 $rule.requiresCodeOwnerReviews | Should -BeTrue
                 $rule.restrictsReviewDismissals | Should -BeTrue
                 $rule.DismissalTeams.Count | Should -Be 1
-                $rule.DismissalTeams | Should -Contain $pushTeamName
+                $rule.DismissalTeams | Should -Contain $teamName
                 $rule.DismissalUsers.Count | Should -Be 1
                 $rule.DismissalUsers | Should -Contain $script:OwnerName
             }
@@ -937,7 +937,6 @@ try
                     RequireStrictStatusChecks = $true
                     StatusChecks = $statusChecks
                 }
-
                 New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
 
                 $rule = Get-GitHubRepositoryBranchPatternProtectionRule -Uri $repo.svn_url -BranchPatternName $branchPatternName
@@ -970,17 +969,22 @@ try
             {
                 $repo | Remove-GitHubRepository -Force
             }
+
+            if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+            {
+                $team | Remove-GitHubTeam -Force
+            }
         }
     }
 
     Describe 'GitHubBranches\New-GitHubRepositoryBranchPatternProtectionRule' {
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
+
             $newGitHubRepositoryParms = @{
                 OrganizationName = $script:organizationName
                 RepositoryName = $repoName
             }
-
             $repo = New-GitHubRepository @newGitHubRepositoryParms
 
             $pushTeamName = [Guid]::NewGuid().Guid
@@ -989,16 +993,13 @@ try
                 OrganizationName = $script:OrganizationName
                 TeamName = $pushTeamName
             }
-
             $pushTeam = New-GitHubTeam @newGithubTeamParms
 
             $setGitHubRepositoryTeamPermissionParms = @{
                 Uri = $repo.svn_url
                 TeamSlug = $pushTeam.slug
-
                 Permission = 'Push'
             }
-
             Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
 
             $pullTeamName = [Guid]::NewGuid().Guid
@@ -1007,7 +1008,6 @@ try
                 OrganizationName = $script:OrganizationName
                 TeamName = $pullTeamName
             }
-
             $pullTeam = New-GitHubTeam @newGithubTeamParms
 
             $setGitHubRepositoryTeamPermissionParms = @{
@@ -1016,7 +1016,6 @@ try
 
                 Permission = 'Pull'
             }
-
             Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
         }
 
@@ -1264,7 +1263,6 @@ try
                     Uri = $repo.svn_url
                     BranchPatternName = $branchPatternName
                 }
-
                 $rule = New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
             }
 
@@ -1316,7 +1314,7 @@ try
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
 
-            $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+            $repo = New-GitHubRepository -RepositoryName $repoName
         }
 
         Context 'When removing GitHub repository branch pattern protection' {
