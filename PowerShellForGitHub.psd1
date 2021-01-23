@@ -34,6 +34,7 @@
         'GitHubAssignees.ps1',
         'GitHubBranches.ps1',
         'GitHubCore.ps1',
+        'GitHubGraphQl.ps1',
         'GitHubContents.ps1',
         'GitHubEvents.ps1',
         'GitHubGistComments.ps1',
