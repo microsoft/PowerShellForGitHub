@@ -1248,7 +1248,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     $OwnerName = $elements.ownerName
     $RepositoryName = $elements.repositoryName
 
-    If ([System.String]::IsNullOrEmpty($OrganizationName))
+    if ([System.String]::IsNullOrEmpty($OrganizationName))
     {
         $OrganizationName = $OwnerName
     }
@@ -1258,8 +1258,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"" , " +
-        "owner: ""$OwnerName"") { id } }"}
+    $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"", owner: ""$OwnerName"") { id } }"}
 
     Write-Debug -Message "Querying Repository $RepositoryName, Owner $OwnerName"
 
@@ -1271,11 +1270,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHGraphQl @params
-
-    if ($result -is [System.Management.Automation.ErrorRecord])
+    try
     {
-        $PSCmdlet.ThrowTerminatingError($result)
+        $result = Invoke-GHGraphQl @params
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     $repoId = $result.data.repository.id
@@ -1313,9 +1314,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         {
             $reviewDismissalActorIds = @()
 
-            If ($PSBoundParameters.ContainsKey('DismissalUsers'))
+            if ($PSBoundParameters.ContainsKey('DismissalUsers'))
             {
-                Foreach($user in $DismissalUsers)
+                foreach($user in $DismissalUsers)
                 {
                     $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
@@ -1331,20 +1332,22 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         TelemetryProperties = $telemetryProperties
                     }
 
-                    $result = Invoke-GHGraphQl @params
-
-                    if ($result -is [System.Management.Automation.ErrorRecord])
+                    try
                     {
-                        $PSCmdlet.ThrowTerminatingError($result)
+                        $result = Invoke-GHGraphQl @params
+                    }
+                    catch
+                    {
+                        $PSCmdlet.ThrowTerminatingError($_)
                     }
 
                     $reviewDismissalActorIds += $result.data.user.id
                 }
             }
 
-            If ($PSBoundParameters.ContainsKey('DismissalTeams'))
+            if ($PSBoundParameters.ContainsKey('DismissalTeams'))
             {
-                Foreach($team in $DismissalTeams)
+                foreach($team in $DismissalTeams)
                 {
                     $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                         "{ team(slug: ""$team"") { id } } }"}
@@ -1361,11 +1364,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         TelemetryProperties = $telemetryProperties
                     }
 
-                    $result = Invoke-GHGraphQl @params
-
-                    if ($result -is [System.Management.Automation.ErrorRecord])
+                    try
                     {
-                        $PSCmdlet.ThrowTerminatingError($result)
+                        $result = Invoke-GHGraphQl @params
+                    }
+                    catch
+                    {
+                        $PSCmdlet.ThrowTerminatingError($_)
                     }
 
                     if ([System.String]::IsNullOrEmpty($result.data.organization.team))
@@ -1472,20 +1477,22 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     TelemetryProperties = $telemetryProperties
                 }
 
-                $result = Invoke-GHGraphQl @params
-
-                if ($result -is [System.Management.Automation.ErrorRecord])
+                try
                 {
-                    $PSCmdlet.ThrowTerminatingError($result)
+                    $result = Invoke-GHGraphQl @params
+                }
+                catch
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
                 }
 
                 $restrictPushActorIds += $result.data.user.id
             }
         }
 
-        If ($PSBoundParameters.ContainsKey('RestrictPushTeams'))
+        if ($PSBoundParameters.ContainsKey('RestrictPushTeams'))
         {
-            Foreach($team in $RestrictPushTeams)
+            foreach($team in $RestrictPushTeams)
             {
                 $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                     "{ team(slug: ""$team"") { id } } }"}
@@ -1502,11 +1509,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     TelemetryProperties = $telemetryProperties
                 }
 
-                $result = Invoke-GHGraphQl @params
-
-                if ($result -is [System.Management.Automation.ErrorRecord])
+                try
                 {
-                    $PSCmdlet.ThrowTerminatingError($result)
+                    $result = Invoke-GHGraphQl @params
+                }
+                catch
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
                 }
 
                 if ([System.String]::IsNullOrEmpty($result.data.organization.team))
@@ -1553,7 +1562,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
         if ($PSBoundParameters.ContainsKey('RestrictPushApps'))
         {
-            Foreach($app in $RestrictPushApps)
+            foreach ($app in $RestrictPushApps)
             {
                 $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }"}
 
@@ -1569,11 +1578,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     TelemetryProperties = $telemetryProperties
                 }
 
-                $result = Invoke-GHGraphQl @params
-
-                if ($result -is [System.Management.Automation.ErrorRecord])
+                try
                 {
-                    $PSCmdlet.ThrowTerminatingError($result)
+                    $result = Invoke-GHGraphQl @params
+                }
+                catch
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
                 }
 
                 if ($result.data.marketplaceListing)
@@ -1768,11 +1779,13 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHGraphQl @params
-
-    if ($result -is [System.Management.Automation.ErrorRecord])
+    try
     {
-        $PSCmdlet.ThrowTerminatingError($result)
+        $result = Invoke-GHGraphQl @params
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     if ($result.data.repository.branchProtectionRules)
@@ -1909,11 +1922,13 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHGraphQl @params
-
-    if ($result -is [System.Management.Automation.ErrorRecord])
+    try
     {
-        $PSCmdlet.ThrowTerminatingError($result)
+        $result = Invoke-GHGraphQl @params
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 
     if ($result.data.repository.branchProtectionRules)
@@ -1963,11 +1978,13 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHGraphQl @params
-
-    if ($result -is [System.Management.Automation.ErrorRecord])
+    try
     {
-        $PSCmdlet.ThrowTerminatingError($result)
+        $result = Invoke-GHGraphQl @params
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }
 
