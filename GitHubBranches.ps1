@@ -1185,7 +1185,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         PositionalBinding = $false,
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
-    [OutputType({$script:GitHubBranchPatternProtectionRuleTypeName})]
+    [OutputType( { $script:GitHubBranchPatternProtectionRuleTypeName })]
     param(
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
@@ -1258,7 +1258,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         RepositoryName = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"", owner: ""$OwnerName"") { id } }"}
+    $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"", owner: ""$OwnerName"") { id } }" }
 
     Write-Debug -Message "Querying Repository $RepositoryName, Owner $OwnerName"
 
@@ -1310,13 +1310,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         }
 
         if ($PSBoundParameters.ContainsKey('DismissalUsers') -or
-        $PSBoundParameters.ContainsKey('DismissalTeams'))
+            $PSBoundParameters.ContainsKey('DismissalTeams'))
         {
             $reviewDismissalActorIds = @()
 
             if ($PSBoundParameters.ContainsKey('DismissalUsers'))
             {
-                foreach($user in $DismissalUsers)
+                foreach ($user in $DismissalUsers)
                 {
                     $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
@@ -1347,10 +1347,11 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
             if ($PSBoundParameters.ContainsKey('DismissalTeams'))
             {
-                foreach($team in $DismissalTeams)
+                foreach ($team in $DismissalTeams)
                 {
                     $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
-                        "{ team(slug: ""$team"") { id } } }"}
+                        "{ team(slug: ""$team"") { id } } }"
+                    }
 
                     $description = "Querying $OrganizationName organization for team $team"
 
@@ -1375,8 +1376,12 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
                     if ([System.String]::IsNullOrEmpty($result.data.organization.team))
                     {
+                        $errorMessage = "Team $team not found in organization $OrganizationName"
+
+                        Write-Log -Level Error -Message ($errorMessage)
+
                         $newErrorRecordParms = @{
-                            ErrorMessage = "Team $team not found in organization $OrganizationName"
+                            ErrorMessage = $errorMessage
                             ErrorId = 'DismissalTeamNotFound'
                             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             TargetObject = $team
@@ -1463,7 +1468,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         {
             foreach ($user in $RestrictPushUsers)
             {
-                $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
+                $hashbody = @{query = "query user { user(login: ""$user"") { id } }" }
 
                 $description = "Querying User $user"
 
@@ -1492,10 +1497,11 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
         if ($PSBoundParameters.ContainsKey('RestrictPushTeams'))
         {
-            foreach($team in $RestrictPushTeams)
+            foreach ($team in $RestrictPushTeams)
             {
                 $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
-                    "{ team(slug: ""$team"") { id } } }"}
+                    "{ team(slug: ""$team"") { id } } }"
+                }
 
                 $description = "Querying $OrganizationName organization for team $team"
 
@@ -1564,7 +1570,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         {
             foreach ($app in $RestrictPushApps)
             {
-                $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }"}
+                $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }" }
 
                 $description = "Querying for app $app"
 
@@ -1620,9 +1626,10 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         $mutationList += 'allowsDeletions: ' + $AllowDeletions.ToBool().ToString().ToLower()
     }
 
-    $mutationInput = $mutationList -join(',')
+    $mutationInput = $mutationList -join (',')
     $hashbody = @{query = "mutation ProtectionRule { createBranchProtectionRule(input: { $mutationInput }) " +
-        "{ clientMutationId  } } " }
+        "{ clientMutationId  } } "
+    }
 
     $description = "Setting $BranchPatternName branch protection status for $RepositoryName"
     $body = ConvertTo-Json -InputObject $hashBody
@@ -1631,8 +1638,8 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     Write-Debug -Message "Query: $body"
 
     if (-not $PSCmdlet.ShouldProcess(
-        "Owner '$OwnerName', Repository '$RepositoryName'",
-        "Create '$BranchPatternName' branch pattern GitHub Repository Branch Protection Rule"))
+            "Owner '$OwnerName', Repository '$RepositoryName'",
+            "Create '$BranchPatternName' branch pattern GitHub Repository Branch Protection Rule"))
     {
         return
     }
@@ -1715,9 +1722,9 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
     [CmdletBinding(
         PositionalBinding = $false,
         DefaultParameterSetName = 'Elements')]
-    [OutputType({ $script:GitHubBranchProtectionRuleTypeName })]
+    [OutputType( { $script:GitHubBranchProtectionRuleTypeName })]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
+        Justification = "The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
@@ -1752,7 +1759,7 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
-    $branchProtectionRuleFields = 'allowsDeletions allowsForcePushes dismissesStaleReviews id ' +
+    $branchProtectionRuleFields = ('allowsDeletions allowsForcePushes dismissesStaleReviews id ' +
         'isAdminEnforced pattern requiredApprovingReviewCount requiredStatusCheckContexts ' +
         'requiresApprovingReviews requiresCodeOwnerReviews requiresCommitSignatures requiresLinearHistory ' +
         'requiresStatusChecks requiresStrictStatusChecks restrictsPushes restrictsReviewDismissals ' +
@@ -1760,7 +1767,7 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         '... on Team { __typename name } ... on User { __typename login } } } }' +
         'reviewDismissalAllowances(first: 100) { nodes { actor { ... on Team { __typename name } ' +
         '... on User { __typename login } } } } ' +
-        'repository { url }'
+        'repository { url }')
 
     $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
         "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { " +
@@ -1869,7 +1876,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         DefaultParameterSetName = 'Elements',
         ConfirmImpact = "High")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "",
-        Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
+        Justification = "The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     [Alias('Delete-GitHubRepositoryBranchPatternProtectionRule')]
     param(
         [Parameter(ParameterSetName = 'Elements')]
@@ -1908,7 +1915,8 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
     }
 
     $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
-        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { id pattern } } } }"}
+        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { id pattern } } } }"
+    }
 
     $description = "Querying $RepositoryName repository for branch protection rules"
 
@@ -1956,7 +1964,8 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
     }
 
     $hashbody = @{query = "mutation ProtectionRule { deleteBranchProtectionRule(input: " +
-        "{ branchProtectionRuleId: ""$ruleId"" } ) { clientMutationId } }" }
+        "{ branchProtectionRuleId: ""$ruleId"" } ) { clientMutationId } }"
+    }
 
     $description = "Removing $BranchPatternName branch protection rule for $RepositoryName"
     $body = ConvertTo-Json -InputObject $hashBody

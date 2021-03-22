@@ -1,6 +1,6 @@
 function Invoke-GHGraphQl
 {
-<#
+    <#
     .SYNOPSIS
         A wrapper around Invoke-WebRequest that understands the GitHub GraphQL API.
 
@@ -101,15 +101,16 @@ function Invoke-GHGraphQl
     }
 
     $timeOut = Get-GitHubConfiguration -Name WebRequestTimeoutSec
+    $method = 'Post'
 
     Write-Log -Message $Description -Level Verbose
-    Write-Log -Message "Accessing [$Method] $url [Timeout = $timeOut]" -Level Verbose
+    Write-Log -Message "Accessing [$method] $url [Timeout = $timeOut]" -Level Verbose
 
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
 
     $params = @{
         Uri = $url
-        Method = 'Post'
+        Method = $method
         Headers = $headers
         Body = $bodyAsBytes
         UseDefaultCredentials = $true
@@ -129,9 +130,10 @@ function Invoke-GHGraphQl
     $originalSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
 
     # Enforce TLS v1.2 Security Protocol
-    [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    try {
+    try
+    {
         $result = Invoke-WebRequest @params
     }
     catch
@@ -175,7 +177,7 @@ function Invoke-GHGraphQl
             {
                 Write-Debug -Message "Processing Error Details message '$errorDetailsMessage'"
 
-                try 
+                try
                 {
                     Write-Debug  -Message 'Checking Error Details message for JSON content'
 
@@ -195,8 +197,8 @@ function Invoke-GHGraphQl
                     Write-Debug -Message "Error Details Message: $($errorDetailsMessageJson.message)"
                     Write-Debug -Message "Error Details Documentation URL: $($errorDetailsMessageJson.documentation_url)"
 
-                    $errorMessage += $errorDetailsMessageJson.message.Trim() +
-                        ' | ' + $errorDetailsMessageJson.documentation_url.Trim()
+                    $errorMessage += ($errorDetailsMessageJson.message.Trim() +
+                        ' | ' + $errorDetailsMessageJson.documentation_url.Trim())
 
                     if ($errorDetailsMessageJson.details)
                     {
