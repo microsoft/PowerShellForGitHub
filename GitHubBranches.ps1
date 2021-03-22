@@ -1266,7 +1266,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         Body = ConvertTo-Json -InputObject $hashBody
         Description = "Querying $RepositoryName"
         AccessToken = $AccessToken
-        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryEventName = 'Get-GitHubRepositoryQ1'
         TelemetryProperties = $telemetryProperties
     }
 
@@ -1328,7 +1328,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         Body = ConvertTo-Json -InputObject $hashBody
                         Description = $description
                         AccessToken = $AccessToken
-                        TelemetryEventName = $MyInvocation.MyCommand.Name
+                        TelemetryEventName = 'Get-GitHubUserQ1'
                         TelemetryProperties = $telemetryProperties
                     }
 
@@ -1361,7 +1361,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         Body = ConvertTo-Json -InputObject $hashBody
                         Description = $description
                         AccessToken = $AccessToken
-                        TelemetryEventName = $MyInvocation.MyCommand.Name
+                        TelemetryEventName = 'GetGitHubTeamQ1'
                         TelemetryProperties = $telemetryProperties
                     }
 
@@ -1478,7 +1478,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     Body = ConvertTo-Json -InputObject $hashBody
                     Description = $description
                     AccessToken = $AccessToken
-                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryEventName = 'GetGitHubUserQ1'
                     TelemetryProperties = $telemetryProperties
                 }
 
@@ -1511,7 +1511,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     Body = ConvertTo-Json -InputObject $hashBody
                     Description = $description
                     AccessToken = $AccessToken
-                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryEventName = 'GetGitHubTeamQ1'
                     TelemetryProperties = $telemetryProperties
                 }
 
@@ -1580,7 +1580,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     Body = ConvertTo-Json -InputObject $hashBody
                     Description = $description
                     AccessToken = $AccessToken
-                    TelemetryEventName = $MyInvocation.MyCommand.Name
+                    TelemetryEventName = 'Get-GitHubAppQ1'
                     TelemetryProperties = $telemetryProperties
                 }
 
@@ -1926,7 +1926,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         Body = ConvertTo-Json -InputObject $hashBody
         Description = $description
         AccessToken = $AccessToken
-        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryEventName = 'Get-GitHubRepositoryQ1'
         TelemetryProperties = $telemetryProperties
     }
 
