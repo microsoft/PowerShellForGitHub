@@ -114,7 +114,7 @@ function Invoke-GHGraphQl
         Body = $bodyAsBytes
         UseDefaultCredentials = $true
         UseBasicParsing = $true
-        TimeoutSec = Get-GitHubConfiguration -Name WebRequestTimeoutSec
+        TimeoutSec = $timeOut
     }
 
     if (Get-GitHubConfiguration -Name LogRequestBody)
@@ -175,7 +175,8 @@ function Invoke-GHGraphQl
             {
                 Write-Debug -Message "Processing Error Details message '$errorDetailsMessage'"
 
-                try {
+                try 
+                {
                     Write-Debug  -Message 'Checking Error Details message for JSON content'
 
                     $errorDetailsMessageJson = $errorDetailsMessage | ConvertFrom-Json
@@ -194,8 +195,8 @@ function Invoke-GHGraphQl
                     Write-Debug -Message "Error Details Message: $($errorDetailsMessageJson.message)"
                     Write-Debug -Message "Error Details Documentation URL: $($errorDetailsMessageJson.documentation_url)"
 
-                    $errorMessage += ($($errorDetailsMessageJson.message.Trim()) +
-                        " | $($errorDetailsMessageJson.documentation_url.Trim())")
+                    $errorMessage += $errorDetailsMessageJson.message.Trim() +
+                        ' | ' + $errorDetailsMessageJson.documentation_url.Trim()
 
                     if ($errorDetailsMessageJson.details)
                     {
@@ -228,8 +229,8 @@ function Invoke-GHGraphQl
                 }
                 elseif ($ex.Response.PSTypeNames[0] -eq 'System.Net.HttpWebResponse')
                 {
-                    if ($ex.Response.Headers.Count -gt 0 -and
-                        -not [System.String]::IsNullOrEmpty($ex.Response.Headers['X-GitHub-Request-Id']))
+                    if (($ex.Response.Headers.Count -gt 0) -and
+                        (-not [System.String]::IsNullOrEmpty($ex.Response.Headers['X-GitHub-Request-Id'])))
                     {
                         $requestId = $ex.Response.Headers['X-GitHub-Request-Id']
                     }
@@ -278,7 +279,8 @@ function Invoke-GHGraphQl
             $PSCmdlet.ThrowTerminatingError($errorRecord)
         }
     }
-    finally {
+    finally
+    {
         Write-Debug -Message "Processing Invoke-WebRequest 'finally' block"
 
         # Restore original security protocol
@@ -302,18 +304,18 @@ function Invoke-GHGraphQl
         if (-not [System.String]::IsNullOrEmpty($graphQlResult.errors[0].type))
         {
             $errorId = $graphQlResult.errors[0].type
-            switch ($graphQlResult.errors[0].type)
+            switch ($errorId)
             {
                 'NOT_FOUND'
                 {
-                    Write-Debug -Message "GraphQl Error Type: $($graphQlResult.errors[0].type)"
+                    Write-Debug -Message "GraphQl Error Type: $errorId"
 
                     $errorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                 }
 
                 Default
                 {
-                    Write-Debug -Message "GraphQL Unknown Error Type: $($graphQlResult.errors[0].type)"
+                    Write-Debug -Message "GraphQL Unknown Error Type: $errorId"
 
                     $errorCategory = [System.Management.Automation.ErrorCategory]::InvalidOperation
                 }

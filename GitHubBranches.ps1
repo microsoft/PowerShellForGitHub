@@ -1185,7 +1185,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         PositionalBinding = $false,
         SupportsShouldProcess,
         DefaultParameterSetName = 'Elements')]
-    [OutputType({$script:GitHubBranchPatternProtectionRuleTypeName })]
+    [OutputType({$script:GitHubBranchPatternProtectionRuleTypeName})]
     param(
         [Parameter(ParameterSetName = 'Elements')]
         [string] $OwnerName,
@@ -1352,7 +1352,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                         "{ team(slug: ""$team"") { id } } }"}
 
-                    $description = "Querying $OrganizationName organisation for team $team"
+                    $description = "Querying $OrganizationName organization for team $team"
 
                     Write-Debug -Message $description
 
@@ -1394,7 +1394,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
                     $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
 
-                    if ($teamPermission.permissions.push -eq $true -or $teamPermission.permissions.maintain -eq $true)
+                    if (($teamPermission.permissions.push -eq $true) -or ($teamPermission.permissions.maintain -eq $true))
                     {
                         $reviewDismissalActorIds += $result.data.organization.team.id
                     }
@@ -1461,7 +1461,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
         if ($PSBoundParameters.ContainsKey('RestrictPushUsers'))
         {
-            foreach($user in $RestrictPushUsers)
+            foreach ($user in $RestrictPushUsers)
             {
                 $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
@@ -1497,7 +1497,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                     "{ team(slug: ""$team"") { id } } }"}
 
-                $description = "Querying $OrganizationName organisation for team $team"
+                $description = "Querying $OrganizationName organization for team $team"
 
                 Write-Debug -Message $description
 
@@ -2161,7 +2161,7 @@ filter Add-GitHubBranchPatternProtectionRuleAdditionalProperties
 
         $restrictPushApps = @()
         $restrictPushTeams = @()
-        $RestrictPushUsers = @()
+        $restrictPushUsers = @()
 
         foreach ($actor in $item.pushAllowances.nodes.actor)
         {
@@ -2175,11 +2175,11 @@ filter Add-GitHubBranchPatternProtectionRuleAdditionalProperties
             }
             elseif ($actor.__typename -eq 'User')
             {
-                $RestrictPushUsers += $actor.login
+                $restrictPushUsers += $actor.login
             }
             else
             {
-                Write-Warning "Unknown restrict push actor type found $($actor.__typename). Ignoring"
+                Write-Log -Message "Unknown restrict push actor type found $($actor.__typename). Ignoring" -Level Warning
             }
         }
 
@@ -2202,7 +2202,7 @@ filter Add-GitHubBranchPatternProtectionRuleAdditionalProperties
             }
             else
             {
-                Write-Warning "Unknown dismissal actor type found $($actor.__typename). Ignoring"
+                Write-Log -Message "Unknown dismissal actor type found $($actor.__typename). Ignoring" -Level Warning
             }
         }
 

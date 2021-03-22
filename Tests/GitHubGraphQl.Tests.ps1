@@ -20,8 +20,8 @@ try
     Describe 'GitHubCore/Invoke-GHGraphQl' {
         BeforeAll {
             $Description = 'description'
-            $AccessToken=''
-            $TelemetryEventName= $null
+            $AccessToken = ''
+            $TelemetryEventName = $null
             $TelemetryProperties = @{}
             $TelemetryExceptionBucket = $null
 
@@ -54,12 +54,14 @@ try
                 $testHostName = 'invalidhostname'
                 $testBody = 'testBody'
 
-                if ($PSVersionTable.PSEdition -eq 'Core') {
+                if ($PSVersionTable.PSEdition -eq 'Core')
+                {
                     $exceptionMessage = 'No such host is known'
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
                 }
-                else {
+                else
+                {
                     $exceptionMessage = "The remote name could not be resolved: '$testHostName'"
                     $categoryInfo = 'NotSpecified'
                     $targetName = $testBody
@@ -88,10 +90,12 @@ try
                 BeforeAll {
                     $testBody = 'InvalidJson'
 
-                    if ($PSVersionTable.PSEdition -eq 'Core') {
+                    if ($PSVersionTable.PSEdition -eq 'Core')
+                    {
                         $exceptionMessage1 = '*Response status code does not indicate success: 400 (Bad Request)*'
                     }
-                    else {
+                    else
+                    {
                         $exceptionMessage1 = '*The remote server returned an error: (400) Bad Request*'
                     }
 
@@ -118,10 +122,12 @@ try
                 BeforeAll {
                     $testBody = '{ "query": "query login { viewer { login } }" }'
 
-                    if ($PSVersionTable.PSEdition -eq 'Core') {
+                    if ($PSVersionTable.PSEdition -eq 'Core')
+                    {
                         $exceptionMessage1 = '*Response status code does not indicate success: 401 (Unauthorized)*'
                     }
-                    else {
+                    else
+                    {
                         $exceptionMessage1 = '*The remote server returned an error: (401) Unauthorized*'
                     }
 
