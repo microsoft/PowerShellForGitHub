@@ -1208,6 +1208,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             Position = 2)]
         [string] $BranchPatternName,
 
+        [ValidateNotNullOrEmpty()]
         [string[]] $StatusChecks,
 
         [switch] $RequireStrictStatusChecks,
