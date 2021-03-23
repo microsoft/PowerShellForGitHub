@@ -1652,11 +1652,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         TelemetryProperties = $telemetryProperties
     }
 
-    $result = Invoke-GHGraphQl @params
-
-    if ($result -is [System.Management.Automation.ErrorRecord])
+    try
     {
-        $PSCmdlet.ThrowTerminatingError($result)
+        $result = Invoke-GHGraphQl @params
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }
 
