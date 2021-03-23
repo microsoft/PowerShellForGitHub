@@ -5,6 +5,9 @@
     GitHubBranchTypeName = 'GitHub.Branch'
     GitHubBranchProtectionRuleTypeName = 'GitHub.BranchProtectionRule'
     GitHubBranchPatternProtectionRuleTypeName = 'GitHub.BranchPatternProtectionRule'
+    MaxProtectionRules = 100
+    MaxPushAllowances = 100
+    MaxReviewDismissalAllowances = 100
 }.GetEnumerator() | ForEach-Object {
     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
 }
@@ -1766,14 +1769,14 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         'isAdminEnforced pattern requiredApprovingReviewCount requiredStatusCheckContexts ' +
         'requiresApprovingReviews requiresCodeOwnerReviews requiresCommitSignatures requiresLinearHistory ' +
         'requiresStatusChecks requiresStrictStatusChecks restrictsPushes restrictsReviewDismissals ' +
-        'pushAllowances(first: 100) { nodes { actor { ... on App { __typename name } ' +
+        "pushAllowances(first: $script:MaxPushAllowances) { nodes { actor { ... on App { __typename name } " +
         '... on Team { __typename name } ... on User { __typename login } } } }' +
-        'reviewDismissalAllowances(first: 100) { nodes { actor { ... on Team { __typename name } ' +
-        '... on User { __typename login } } } } ' +
+        "reviewDismissalAllowances(first: $script:MaxReviewDismissalAllowances)" +
+        '{ nodes { actor { ... on Team { __typename name } ... on User { __typename login } } } } ' +
         'repository { url }')
 
     $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
-        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { " +
+        "owner: ""$OwnerName"") { branchProtectionRules(first: $script:MaxProtectionRules) { nodes { " +
         "$branchProtectionRuleFields } } } }"}
 
     $description = "Querying $RepositoryName repository for branch protection rules"
@@ -1918,7 +1921,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
     }
 
     $hashbody = @{query = "query branchProtectionRule { repository(name: ""$RepositoryName"", " +
-        "owner: ""$OwnerName"") { branchProtectionRules(first: 100) { nodes { id pattern } } } }"
+        "owner: ""$OwnerName"") { branchProtectionRules(first: $script:MaxProtectionRules) { nodes { id pattern } } } }"
     }
 
     $description = "Querying $RepositoryName repository for branch protection rules"
