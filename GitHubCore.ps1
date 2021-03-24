@@ -68,6 +68,10 @@ function Invoke-GHRestMethod
         be configured correctly automatically.  You should only specify this under advanced
         situations (like if the extension of InFile is of a type unknown to this module).
 
+    .PARAMETER AdditionalHeader
+        Allows the caller to specify any number of additional headers that should be added to
+        the request.
+
     .PARAMETER ExtendedResult
         If specified, the result will be a PSObject that contains the normal result, along with
         the response code and other relevant header detail content.
@@ -134,6 +138,8 @@ function Invoke-GHRestMethod
         [string] $InFile,
 
         [string] $ContentType = $script:defaultJsonBodyContentType,
+
+        [HashTable] $AdditionalHeader = @{},
 
         [switch] $ExtendedResult,
 
@@ -226,6 +232,12 @@ function Invoke-GHRestMethod
     $headers = @{
         'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
+    }
+
+    # Add any additional headers
+    foreach ($header in $AdditionalHeader.Keys.GetEnumerator())
+    {
+        $headers.Add($header, $AdditionalHeader.$header)
     }
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
@@ -588,6 +600,10 @@ function Invoke-GHRestMethodMultipleResult
         Specify the media type in the Accept header.  Different types of commands may require
         different media types.
 
+    .PARAMETER AdditionalHeader
+        Allows the caller to specify any number of additional headers that should be added to
+        all of the requests made.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -637,6 +653,8 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $AcceptHeader = $script:defaultAcceptHeader,
 
+        [hashtable] $AdditionalHeader = @{},
+
         [string] $AccessToken,
 
         [string] $TelemetryEventName = $null,
@@ -675,6 +693,7 @@ function Invoke-GHRestMethodMultipleResult
                 'Method' = 'Get'
                 'Description' = $currentDescription
                 'AcceptHeader' = $AcceptHeader
+                'AdditionalHeader' = $AdditionalHeader
                 'ExtendedResult' = $true
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
