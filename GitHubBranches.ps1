@@ -1294,6 +1294,21 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         "repositoryId: ""$repoId"", pattern: ""$BranchPatternName"""
     )
 
+    if ($PSBoundParameters.ContainsKey('DismissalTeam') -or
+        $PSBoundParameters.ContainsKey('RestrictPushTeam'))
+    {
+        Write-Debug -Message "Getting details for all GitHub Teams in Organization '$OrganizationName'"
+
+        try
+        {
+            $orgTeams = Get-GitHubTeam -OrganizationName $OrganizationName
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
+    }
+
     # Process 'Require pull request reviews before merging' properties
     if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount') -or
         $PSBoundParameters.ContainsKey('DismissStaleReviews') -or
@@ -1358,44 +1373,20 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             {
                 foreach ($team in $DismissalTeam)
                 {
-                    $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
-                        "{ team(slug: ""$team"") { id } } }"
-                    }
+                    $teamDetail = $orgTeams | Where-Object -Property Name -eq $RestrictPushTeam
 
-                    $description = "Querying $OrganizationName organization for team $team"
-
-                    Write-Debug -Message $description
-
-                    $params = @{
-                        Body = ConvertTo-Json -InputObject $hashBody
-                        Description = $description
-                        AccessToken = $AccessToken
-                        TelemetryEventName = 'GetGitHubTeamQ1'
-                        TelemetryProperties = $telemetryProperties
-                    }
-
-                    try
+                    if ($teamDetail.Count -eq 0)
                     {
-                        $result = Invoke-GHGraphQl @params
-                    }
-                    catch
-                    {
-                        $PSCmdlet.ThrowTerminatingError($_)
-                    }
-
-                    if ([System.String]::IsNullOrEmpty($result.data.organization.team))
-                    {
-                        $errorMessage = "Team $team not found in organization $OrganizationName"
-
-                        Write-Log -Level Error -Message ($errorMessage)
-
                         $newErrorRecordParms = @{
-                            ErrorMessage = $errorMessage
+                            ErrorMessage = "Team '$team' not found in organization '$OrganizationName'"
                             ErrorId = 'DismissalTeamNotFound'
                             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                             TargetObject = $team
                         }
                         $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                        Write-Log -Exception $errorRecor -Level Error
+                        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                         $PSCmdlet.ThrowTerminatingError($errorRecord)
                     }
@@ -1406,26 +1397,36 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         RepositoryName = $repositoryName
                     }
 
-                    $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+                    Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
+
+                    try
+                    {
+                        $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+                    }
+                    catch
+                    {
+                        Write-Debug -Message "Team '$team' has no permissions on Repository '$RepositoryName'"
+                    }
 
                     if (($teamPermission.permissions.push -eq $true) -or ($teamPermission.permissions.maintain -eq $true))
                     {
-                        $reviewDismissalActorIds += $result.data.organization.team.id
+                        $reviewDismissalActorIds += $teamDetail.node_id
                     }
                     else
                     {
                         $newErrorRecordParms = @{
-                            ErrorMessage = "Team $team does not have push or maintain permissions on repository $RepositoryName"
+                            ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$RepositoryName'"
                             ErrorId = 'DismissalTeamNoPermissions'
                             ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
                             TargetObject = $team
                         }
-
                         $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                        Write-Log -Exception $errorRecord -Level Error
+                        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                         $PSCmdlet.ThrowTerminatingError($errorRecord)
                     }
-
                 }
             }
 
@@ -1508,41 +1509,20 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         {
             foreach ($team in $RestrictPushTeam)
             {
-                $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
-                    "{ team(slug: ""$team"") { id } } }"
-                }
+                $teamDetail = $orgTeams | Where-Object -Property Name -eq $RestrictPushTeam
 
-                $description = "Querying $OrganizationName organization for team $team"
-
-                Write-Debug -Message $description
-
-                $params = @{
-                    Body = ConvertTo-Json -InputObject $hashBody
-                    Description = $description
-                    AccessToken = $AccessToken
-                    TelemetryEventName = 'GetGitHubTeamQ1'
-                    TelemetryProperties = $telemetryProperties
-                }
-
-                try
-                {
-                    $result = Invoke-GHGraphQl @params
-                }
-                catch
-                {
-                    $PSCmdlet.ThrowTerminatingError($_)
-                }
-
-                if ([System.String]::IsNullOrEmpty($result.data.organization.team))
+                if ($teamDetail.Count -eq 0)
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "Team $team not found in organization $OrganizationName"
-                        ErrorId = 'DismissalTeamNotFound'
+                        ErrorMessage = "Team '$team' not found in organization '$OrganizationName'"
+                        ErrorId = 'RestrictPushTeamNotFound'
                         ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                         TargetObject = $team
                     }
-
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                    Write-Log -Exception $errorRecord -Level Error
+                    Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
                 }
@@ -1553,22 +1533,32 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     RepositoryName = $repositoryName
                 }
 
-                $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+                Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
+                try
+                {
+                    $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+                }
+                catch
+                {
+                    Write-Debug -Message "Team '$team' has no permissions on Repository '$RepositoryName'"
+                }
 
                 if ($teamPermission.permissions.push -eq $true -or $teamPermission.permissions.maintain -eq $true)
                 {
-                    $restrictPushActorIds += $result.data.organization.team.id
+                    $restrictPushActorIds += $teamDetail.node_id
                 }
                 else
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "Team $team does not have push or maintain permissions on repository $RepositoryName"
-                        ErrorId = 'PushTeamNoPermissions'
+                        ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$RepositoryName'"
+                        ErrorId = 'RestrictPushTeamNoPermissions'
                         ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
                         TargetObject = $team
                     }
-
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                    Write-Log -Exception $errorRecord -Level Error
+                    Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
                 }
