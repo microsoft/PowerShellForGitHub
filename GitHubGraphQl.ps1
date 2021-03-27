@@ -103,16 +103,13 @@ function Invoke-GHGraphQl
     $timeOut = Get-GitHubConfiguration -Name WebRequestTimeoutSec
     $method = 'Post'
 
-    Write-Log -Message $Description -Level Verbose
-    Write-Log -Message "Accessing [$method] $url [Timeout = $timeOut]" -Level Verbose
+    Write-Log -Message $Description -Level Debug
+    Write-Log -Message "Accessing [$method] $url [Timeout = $timeOut]" -Level Debug
 
     if (Get-GitHubConfiguration -Name LogRequestBody)
     {
-        Write-Log -Message $Body -Level Verbose
+        Write-Log -Message $Body -Level Debug
     }
-
-    Write-Debug -Message $Description
-    Write-Debug -Message "Query: $Body"
 
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
 
@@ -250,7 +247,7 @@ function Invoke-GHGraphQl
                     $requestIdMessage += "RequestId: $requestId"
                     $errorMessage += $requestIdMessage
 
-                    Write-Log -Message $requestIdMessage -Level Verbose
+                    Write-Log -Message $requestIdMessage -Level Debug
                 }
             }
 
@@ -296,7 +293,7 @@ function Invoke-GHGraphQl
     if (-not [String]::IsNullOrEmpty($TelemetryEventName))
     {
         $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
-        Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
+        Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics -Verbose:$false
     }
 
     Write-Debug -Message "GraphQl result: '$($result.Content)'"
@@ -343,12 +340,10 @@ function Invoke-GHGraphQl
         {
             $requestId = $result.Headers['X-GitHub-Request-Id']
 
-            Write-Debug -Message "GitHub RequestID '$requestId' in response header"
-
             $requestIdMessage += "RequestId: $requestId"
             $errorMessage += $requestIdMessage
 
-            Write-Log -Message $requestIdMessage -Level Verbose
+            Write-Log -Message $requestIdMessage -Level Debug
         }
 
         $newErrorRecordParms = @{
