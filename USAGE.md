@@ -709,19 +709,19 @@ Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName
 #### Getting a repository branch pattern protection rule
 
 ```powershell
-Get-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
+Get-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
 ```
 
 #### Creating a repository branch pattern protection rule
 
 ```powershell
-New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*' -RequiredApprovingReviewCount 1 -DismissStaleReviews -RequireStrictStatusChecks -StatusChecks 'CICheck'
+New-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*' -RequiredApprovingReviewCount 1 -DismissStaleReviews -RequireStrictStatusChecks -StatusCheck 'CICheck'
 ```
 
 #### Removing a repository branch pattern protection rule
 
 ```powershell
-Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
+Remove-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
 ```
 
 ----------
