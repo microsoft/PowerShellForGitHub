@@ -1299,7 +1299,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
         try
         {
-            $orgTeams = Get-GitHubTeam -OrganizationName $OrganizationName
+            $orgTeams = Get-GitHubTeam -OrganizationName $OrganizationName -Verbose:$false
         }
         catch
         {
@@ -1388,6 +1388,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         TeamSlug = $teamDetail.TeamSlug
                         OwnerName = $ownerName
                         RepositoryName = $repositoryName
+                        Verbose = $false
                     }
 
                     Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
@@ -1518,6 +1519,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     TeamSlug = $teamDetail.TeamSlug
                     OwnerName = $ownerName
                     RepositoryName = $repositoryName
+                    Verbose = $false
                 }
 
                 Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
