@@ -1391,7 +1391,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         Verbose = $false
                     }
 
-                    Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
+                    Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$OwnerName/$RepositoryName'"
 
                     try
                     {
@@ -1399,7 +1399,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     }
                     catch
                     {
-                        Write-Debug -Message "Team '$team' has no permissions on Repository '$RepositoryName'"
+                        Write-Debug -Message "Team '$team' has no permissions on Repository '$OwnerName/$RepositoryName'"
                     }
 
                     if (($teamPermission.permissions.push -eq $true) -or ($teamPermission.permissions.maintain -eq $true))
@@ -1409,7 +1409,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     else
                     {
                         $newErrorRecordParms = @{
-                            ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$RepositoryName'"
+                            ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$OwnerName/$RepositoryName'"
                             ErrorId = 'DismissalTeamNoPermissions'
                             ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
                             TargetObject = $team
@@ -1522,14 +1522,14 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     Verbose = $false
                 }
 
-                Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$RepositoryName'"
+                Write-Debug -Message "Getting GitHub Permissions for Team '$team' on Repository '$OwnerName/$RepositoryName'"
                 try
                 {
                     $teamPermission = Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
                 }
                 catch
                 {
-                    Write-Debug -Message "Team '$team' has no permissions on Repository '$RepositoryName'"
+                    Write-Debug -Message "Team '$team' has no permissions on Repository '$OwnerName/$RepositoryName'"
                 }
 
                 if ($teamPermission.permissions.push -eq $true -or $teamPermission.permissions.maintain -eq $true)
@@ -1539,7 +1539,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 else
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$RepositoryName'"
+                        ErrorMessage = "Team '$team' does not have push or maintain permissions on repository '$OwnerName/$RepositoryName'"
                         ErrorId = 'RestrictPushTeamNoPermissions'
                         ErrorCategory = [System.Management.Automation.ErrorCategory]::PermissionDenied
                         TargetObject = $team
@@ -1619,15 +1619,15 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     $body = ConvertTo-Json -InputObject $hashBody
 
     if (-not $PSCmdlet.ShouldProcess(
-            "Owner '$OwnerName', Repository '$RepositoryName'",
-            "Create '$BranchPatternName' branch pattern GitHub Repository Branch Protection Rule"))
+            "$OwnerName/$RepositoryName",
+            "Create GitHub Repository Branch Pattern Protection Rule '$BranchPatternName'"))
     {
         return
     }
 
     $params = @{
         Body = $body
-        Description = "Creating $BranchPatternName branch protection rule for $RepositoryName"
+        Description = "Creating GitHub Repository Branch Pattern Protection Rule '$BranchPatternName' on $OwnerName/$RepositoryName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
@@ -1756,7 +1756,7 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
 
     $params = @{
         Body = ConvertTo-Json -InputObject $hashBody
-        Description = "Querying $RepositoryName repository for branch protection rules"
+        Description = "Querying $OwnerName/$RepositoryName repository for branch protection rules"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
@@ -1787,7 +1787,7 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
     if (!$rule -and $PSBoundParameters.ContainsKey('BranchPatternName'))
     {
         $newErrorRecordParms = @{
-            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$RepositoryName'"
+            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$OwnerName/$RepositoryName'"
             ErrorId = 'BranchProtectionRuleNotFound'
             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
             TargetObject = $BranchPatternName
@@ -1905,7 +1905,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
 
     $params = @{
         Body = ConvertTo-Json -InputObject $hashBody
-        Description = "Querying $RepositoryName repository for branch protection rules"
+        Description = "Querying $OwnerName/$RepositoryName repository for branch protection rules"
         AccessToken = $AccessToken
         TelemetryEventName = 'Get-GitHubRepositoryQ1'
         TelemetryProperties = $telemetryProperties
@@ -1929,7 +1929,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
     if (!$ruleId)
     {
         $newErrorRecordParms = @{
-            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$RepositoryName'"
+            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$OwnerName/$RepositoryName'"
             ErrorId = 'BranchProtectionRuleNotFound'
             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
             TargetObject = $BranchPatternName
@@ -1952,15 +1952,15 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
 
     $body = ConvertTo-Json -InputObject $hashBody
 
-    if (-not $PSCmdlet.ShouldProcess("'$BranchPatternName' branch of repository '$RepositoryName'",
-            'Remove GitHub Repository Branch Protection Rule'))
+    if (-not $PSCmdlet.ShouldProcess("$OwnerName/$RepositoryName",
+            "Remove GitHub Repository Branch Pattern Protection Rule '$BranchPatternName'"))
     {
         return
     }
 
     $params = @{
         Body = $body
-        Description = "Removing $BranchPatternName branch protection rule for $RepositoryName"
+        Description = "Removing GitHub Repository Branch Pattern Protection Rule '$BranchPatternName' from $OwnerName/$RepositoryName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
