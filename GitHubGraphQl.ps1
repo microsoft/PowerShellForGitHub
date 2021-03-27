@@ -116,16 +116,6 @@ function Invoke-GHGraphQl
 
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
 
-    $params = @{
-        Uri = $url
-        Method = $method
-        Headers = $headers
-        Body = $bodyAsBytes
-        UseDefaultCredentials = $true
-        UseBasicParsing = $true
-        TimeoutSec = $timeOut
-    }
-
     # Disable Progress Bar in function scope during Invoke-WebRequest
     $ProgressPreference = 'SilentlyContinue'
 
@@ -135,9 +125,20 @@ function Invoke-GHGraphQl
     # Enforce TLS v1.2 Security Protocol
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+    $invokeWebRequestParms = @{
+        Uri = $url
+        Method = $method
+        Headers = $headers
+        Body = $bodyAsBytes
+        UseDefaultCredentials = $true
+        UseBasicParsing = $true
+        TimeoutSec = $timeOut
+        Verbose = $false
+    }
+
     try
     {
-        $result = Invoke-WebRequest @params
+        $result = Invoke-WebRequest @invokeWebRequestParms
     }
     catch
     {
