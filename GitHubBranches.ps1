@@ -1269,11 +1269,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
     $hashbody = @{query = "query repo { repository(name: ""$RepositoryName"", owner: ""$OwnerName"") { id } }" }
 
-    Write-Debug -Message "Querying Repository $RepositoryName, Owner $OwnerName"
-
     $params = @{
         Body = ConvertTo-Json -InputObject $hashBody
-        Description = "Querying $RepositoryName"
+        Description = "Querying Repository $RepositoryName, Owner $OwnerName"
         AccessToken = $AccessToken
         TelemetryEventName = 'Get-GitHubRepositoryQ1'
         TelemetryProperties = $telemetryProperties
@@ -1344,13 +1342,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 {
                     $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
-                    $description = "Querying user $user"
-
-                    Write-Debug -Message $description
-
                     $params = @{
                         Body = ConvertTo-Json -InputObject $hashBody
-                        Description = $description
+                        Description = "Querying for user $user"
                         AccessToken = $AccessToken
                         TelemetryEventName = 'Get-GitHubUserQ1'
                         TelemetryProperties = $telemetryProperties
@@ -1373,7 +1367,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             {
                 foreach ($team in $DismissalTeam)
                 {
-                    $teamDetail = $orgTeams | Where-Object -Property Name -eq $RestrictPushTeam
+                    $teamDetail = $orgTeams | Where-Object -Property Name -eq $team
 
                     if ($teamDetail.Count -eq 0)
                     {
@@ -1385,8 +1379,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         }
                         $errorRecord = New-ErrorRecord @newErrorRecordParms
 
-                        Write-Log -Exception $errorRecor -Level Error
-                        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
+                        Write-Log -Exception $errorRecord -Level Error
 
                         $PSCmdlet.ThrowTerminatingError($errorRecord)
                     }
@@ -1423,7 +1416,6 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                         $errorRecord = New-ErrorRecord @newErrorRecordParms
 
                         Write-Log -Exception $errorRecord -Level Error
-                        Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                         $PSCmdlet.ThrowTerminatingError($errorRecord)
                     }
@@ -1480,13 +1472,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             {
                 $hashbody = @{query = "query user { user(login: ""$user"") { id } }" }
 
-                $description = "Querying User $user"
-
-                Write-Debug -Message $description
-
                 $params = @{
                     Body = ConvertTo-Json -InputObject $hashBody
-                    Description = $description
+                    Description = "Querying for User $user"
                     AccessToken = $AccessToken
                     TelemetryEventName = 'GetGitHubUserQ1'
                     TelemetryProperties = $telemetryProperties
@@ -1509,7 +1497,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         {
             foreach ($team in $RestrictPushTeam)
             {
-                $teamDetail = $orgTeams | Where-Object -Property Name -eq $RestrictPushTeam
+                $teamDetail = $orgTeams | Where-Object -Property Name -eq $team
 
                 if ($teamDetail.Count -eq 0)
                 {
@@ -1522,7 +1510,6 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
 
                     Write-Log -Exception $errorRecord -Level Error
-                    Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
                 }
@@ -1558,7 +1545,6 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
 
                     Write-Log -Exception $errorRecord -Level Error
-                    Set-TelemetryException -Exception $ex -ErrorBucket $errorBucket -Properties $localTelemetryProperties
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
                 }
@@ -1571,13 +1557,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             {
                 $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }" }
 
-                $description = "Querying for app $app"
-
-                Write-Debug -Message $description
-
                 $params = @{
                     Body = ConvertTo-Json -InputObject $hashBody
-                    Description = $description
+                    Description = "Querying for app $app"
                     AccessToken = $AccessToken
                     TelemetryEventName = 'Get-GitHubAppQ1'
                     TelemetryProperties = $telemetryProperties
@@ -1599,12 +1581,14 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 else
                 {
                     $newErrorRecordParms = @{
-                        ErrorMessage = "App $app not found in marketplace"
+                        ErrorMessage = "App '$app' not found in GitHub Marketplace"
                         ErrorId = 'RestictPushAppNotFound'
                         ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                         TargetObject = $app
                     }
                     $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+                    Write-Log -Exception $errorRecord -Level Error
 
                     $PSCmdlet.ThrowTerminatingError($errorRecord)
                 }
@@ -1630,11 +1614,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         "{ clientMutationId  } } "
     }
 
-    $description = "Setting $BranchPatternName branch protection status for $RepositoryName"
     $body = ConvertTo-Json -InputObject $hashBody
-
-    Write-Debug -Message $description
-    Write-Debug -Message "Query: $body"
 
     if (-not $PSCmdlet.ShouldProcess(
             "Owner '$OwnerName', Repository '$RepositoryName'",
@@ -1645,7 +1625,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
 
     $params = @{
         Body = $body
-        Description = $description
+        Description = "Creating $BranchPatternName branch protection rule for $RepositoryName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
@@ -1772,14 +1752,9 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         "owner: ""$OwnerName"") { branchProtectionRules(first: $script:MaxProtectionRules) { nodes { " +
         "$branchProtectionRuleFields } } } }"}
 
-    $description = "Querying $RepositoryName repository for branch protection rules"
-
-    Write-Debug -Message $description
-    Write-Debug -Message "Query: $($hashbody.query)"
-
     $params = @{
         Body = ConvertTo-Json -InputObject $hashBody
-        Description = $description
+        Description = "Querying $RepositoryName repository for branch protection rules"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties
@@ -1810,12 +1785,14 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
     if (!$rule -and $PSBoundParameters.ContainsKey('BranchPatternName'))
     {
         $newErrorRecordParms = @{
-            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository $RepositoryName"
+            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$RepositoryName'"
             ErrorId = 'BranchProtectionRuleNotFound'
             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
             TargetObject = $BranchPatternName
         }
         $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+        Write-Log -Exception $errorRecord -Level Error
 
         $PSCmdlet.ThrowTerminatingError($errorRecord)
     }
@@ -1924,13 +1901,9 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         "owner: ""$OwnerName"") { branchProtectionRules(first: $script:MaxProtectionRules) { nodes { id pattern } } } }"
     }
 
-    $description = "Querying $RepositoryName repository for branch protection rules"
-
-    Write-Debug -Message $description
-
     $params = @{
         Body = ConvertTo-Json -InputObject $hashBody
-        Description = $description
+        Description = "Querying $RepositoryName repository for branch protection rules"
         AccessToken = $AccessToken
         TelemetryEventName = 'Get-GitHubRepositoryQ1'
         TelemetryProperties = $telemetryProperties
@@ -1954,12 +1927,14 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
     if (!$ruleId)
     {
         $newErrorRecordParms = @{
-            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository $RepositoryName"
+            ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository '$RepositoryName'"
             ErrorId = 'BranchProtectionRuleNotFound'
             ErrorCategory = [System.Management.Automation.ErrorCategory]::ObjectNotFound
             TargetObject = $BranchPatternName
         }
         $errorRecord = New-ErrorRecord @newErrorRecordParms
+
+        Write-Log -Exception $errorRecord -Level Error
 
         $PSCmdlet.ThrowTerminatingError($errorRecord)
     }
@@ -1973,11 +1948,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
         "{ branchProtectionRuleId: ""$ruleId"" } ) { clientMutationId } }"
     }
 
-    $description = "Removing $BranchPatternName branch protection rule for $RepositoryName"
     $body = ConvertTo-Json -InputObject $hashBody
-
-    Write-Debug -Message $description
-    Write-Debug -Message "Query: $body"
 
     if (-not $PSCmdlet.ShouldProcess("'$BranchPatternName' branch of repository '$RepositoryName'",
             'Remove GitHub Repository Branch Protection Rule'))
@@ -1987,7 +1958,7 @@ filter Remove-GitHubRepositoryBranchPatternProtectionRule
 
     $params = @{
         Body = $body
-        Description = $description
+        Description = "Removing $BranchPatternName branch protection rule for $RepositoryName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
         TelemetryProperties = $telemetryProperties

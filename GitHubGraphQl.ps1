@@ -106,6 +106,14 @@ function Invoke-GHGraphQl
     Write-Log -Message $Description -Level Verbose
     Write-Log -Message "Accessing [$method] $url [Timeout = $timeOut]" -Level Verbose
 
+    if (Get-GitHubConfiguration -Name LogRequestBody)
+    {
+        Write-Log -Message $Body -Level Verbose
+    }
+
+    Write-Debug -Message $Description
+    Write-Debug -Message "Query: $Body"
+
     $bodyAsBytes = [System.Text.Encoding]::UTF8.GetBytes($Body)
 
     $params = @{
@@ -116,11 +124,6 @@ function Invoke-GHGraphQl
         UseDefaultCredentials = $true
         UseBasicParsing = $true
         TimeoutSec = $timeOut
-    }
-
-    if (Get-GitHubConfiguration -Name LogRequestBody)
-    {
-        Write-Log -Message $Body -Level Verbose
     }
 
     # Disable Progress Bar in function scope during Invoke-WebRequest
@@ -225,17 +228,17 @@ function Invoke-GHGraphQl
 
                 $requestId = ''
 
-                if ($ex.Response.PSTypeNames[0] -eq 'System.Net.Http.HttpResponseMessage')
-                {
-                    $requestId = ($ex.Response.Headers | Where-Object -Property Key -eq 'X-GitHub-Request-Id').Value
-                }
-                elseif ($ex.Response.PSTypeNames[0] -eq 'System.Net.HttpWebResponse')
+                if ($ex.Response.PSTypeNames[0] -eq 'System.Net.HttpWebResponse')
                 {
                     if (($ex.Response.Headers.Count -gt 0) -and
                         (-not [System.String]::IsNullOrEmpty($ex.Response.Headers['X-GitHub-Request-Id'])))
                     {
                         $requestId = $ex.Response.Headers['X-GitHub-Request-Id']
                     }
+                }
+                elseif ($ex.Response.PSTypeNames[0] -eq 'System.Net.Http.HttpResponseMessage')
+                {
+                    $requestId = ($ex.Response.Headers | Where-Object -Property Key -eq 'X-GitHub-Request-Id').Value
                 }
 
                 if (-not [System.String]::IsNullOrEmpty($requestId))
@@ -283,8 +286,6 @@ function Invoke-GHGraphQl
     }
     finally
     {
-        Write-Debug -Message "Processing Invoke-WebRequest 'finally' block"
-
         # Restore original security protocol
         [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
     }
@@ -296,6 +297,8 @@ function Invoke-GHGraphQl
         $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
         Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
     }
+
+    Write-Debug -Message "GraphQl result: '$($result.Content)'"
 
     $graphQlResult = $result.Content | ConvertFrom-Json
 
@@ -361,7 +364,6 @@ function Invoke-GHGraphQl
     }
     else
     {
-        Write-Debug -Message "Returning GraphQl result '$graphQLResult'"
         return $graphQlResult
     }
 }
