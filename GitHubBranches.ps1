@@ -1385,7 +1385,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                     }
 
                     $getGitHubRepositoryTeamPermissionParms = @{
-                        TeamName = $team
+                        TeamSlug = $teamDetail.TeamSlug
                         OwnerName = $ownerName
                         RepositoryName = $repositoryName
                     }
@@ -1515,7 +1515,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 }
 
                 $getGitHubRepositoryTeamPermissionParms = @{
-                    TeamName = $team
+                    TeamSlug = $teamDetail.TeamSlug
                     OwnerName = $ownerName
                     RepositoryName = $repositoryName
                 }
