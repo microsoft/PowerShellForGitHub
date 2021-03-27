@@ -611,7 +611,7 @@ try
                 $newGitHubRepositoryBranchProtectionParms = @{
                     Uri = $repo.svn_url
                     BranchName = $targetBranchName
-                    RestrictPushUsers = $script:OwnerName
+                    RestrictPushUser = $script:OwnerName
                 }
 
                 $rule = New-GitHubRepositoryBranchProtectionRule @newGitHubRepositoryBranchProtectionParms
@@ -853,8 +853,8 @@ try
                     RequireCommitSignatures = $true
                     RequireLinearHistory = $true
                     IsAdminEnforced = $true
-                    RestrictPushUsers = $script:OwnerName
-                    RestrictPushTeams = $TeamName
+                    RestrictPushUser = $script:OwnerName
+                    RestrictPushTeam = $TeamName
                     AllowForcePushes = $true
                     AllowDeletions = $true
                 }
@@ -901,8 +901,8 @@ try
                     RequiredApprovingReviewCount = 1
                     DismissStaleReviews = $true
                     RequireCodeOwnerReviews = $true
-                    DismissalUsers = $script:OwnerName
-                    DismissalTeams = $teamName
+                    DismissalUser = $script:OwnerName
+                    DismissalTeam = $teamName
                 }
                 New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
 
@@ -935,7 +935,7 @@ try
                     Uri = $repo.svn_url
                     BranchPatternName = $branchPatternName
                     RequireStrictStatusChecks = $true
-                    StatusChecks = $statusChecks
+                    StatusCheck = $statusChecks
                 }
                 New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms
 
@@ -1072,8 +1072,8 @@ try
                     RequireCommitSignatures = $true
                     RequireLinearHistory = $true
                     IsAdminEnforced = $true
-                    RestrictPushUsers = $script:OwnerName
-                    RestrictPushTeams = $pushTeamName
+                    RestrictPushUser = $script:OwnerName
+                    RestrictPushTeam = $pushTeamName
                     AllowForcePushes = $true
                     AllowDeletions = $true
                 }
@@ -1121,7 +1121,7 @@ try
                     $newGitHubRepositoryBranchPatternProtectionParms = @{
                         Uri = $repo.svn_url
                         BranchPatternName = $branchPatternName
-                        RestrictPushTeams = $mockTeamName
+                        RestrictPushTeam = $mockTeamName
                     }
                 }
 
@@ -1139,7 +1139,7 @@ try
                     $newGitHubRepositoryBranchPatternProtectionParms = @{
                         Uri = $repo.svn_url
                         BranchPatternName = $branchPatternName
-                        RestrictPushTeams = $pullTeamName
+                        RestrictPushTeam = $pullTeamName
                     }
                 }
 
@@ -1161,8 +1161,8 @@ try
                     RequiredApprovingReviewCount = 1
                     DismissStaleReviews = $true
                     RequireCodeOwnerReviews = $true
-                    DismissalUsers = $script:OwnerName
-                    DismissalTeams = $pushTeamName
+                    DismissalUser = $script:OwnerName
+                    DismissalTeam = $pushTeamName
                 }
             }
 
@@ -1195,7 +1195,7 @@ try
                     $newGitHubRepositoryBranchPatternProtectionParms = @{
                         Uri = $repo.svn_url
                         BranchPatternName = $branchPatternName
-                        DismissalTeams = $mockTeamName
+                        DismissalTeam = $mockTeamName
                     }
                 }
 
@@ -1213,7 +1213,7 @@ try
                     $newGitHubRepositoryBranchPatternProtectionParms = @{
                         Uri = $repo.svn_url
                         BranchPatternName = $branchPatternName
-                        DismissalTeams = $pullTeamName
+                        DismissalTeam = $pullTeamName
                     }
                 }
 
@@ -1228,13 +1228,13 @@ try
         Context 'When setting required status checks' {
             BeforeAll {
                 $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
-                $statusChecks = 'test'
+                $statusCheck = 'test'
 
                 $newGitHubRepositoryBranchPatternProtectionParms = @{
                     Uri = $repo.svn_url
                     BranchPatternName = $branchPatternName
                     RequireStrictStatusChecks = $true
-                    StatusChecks = $statusChecks
+                    StatusCheck = $statusCheck
                 }
             }
 
@@ -1251,7 +1251,7 @@ try
                 $rule.RepositoryUrl | Should -Be $repo.RepositoryUrl
                 $rule.requiresStatusChecks | Should -BeTrue
                 $rule.requiresStrictStatusChecks | Should -BeTrue
-                $rule.requiredStatusCheckContexts | Should -Contain $statusChecks
+                $rule.requiredStatusCheckContexts | Should -Contain $statusCheck
             }
         }
 

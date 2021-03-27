@@ -1107,7 +1107,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     .PARAMETER BranchPatternName
         The branch name pattern to create the protection rule on.
 
-    .PARAMETER StatusChecks
+    .PARAMETER StatusCheck
         The list of status checks to require in order to merge into the branch.
 
     .PARAMETER RequireStrictStatusChecks
@@ -1117,10 +1117,10 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     .PARAMETER IsAdminEnforced
         Enforce all configured restrictions for administrators.
 
-    .PARAMETER DismissalUsers
+    .PARAMETER DismissalUser
         Specify the user names of users who can dismiss pull request reviews.
 
-    .PARAMETER DismissalTeams
+    .PARAMETER DismissalTeam
         Specify which teams can dismiss pull request reviews. This can only be
         specified for organization-owned repositories.
 
@@ -1135,13 +1135,13 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         Specify the number of reviewers required to approve pull requests. Use a number between 1
         and 6.
 
-    .PARAMETER RestrictPushUsers
+    .PARAMETER RestrictPushUser
         Specify which users have push access.
 
-    .PARAMETER RestrictPushTeams
+    .PARAMETER RestrictPushTeam
         Specify which teams have push access.
 
-    .PARAMETER RestrictPushApps
+    .PARAMETER RestrictPushApp
         Specify which apps have push access.
 
     .PARAMETER RequireLinearHistory
@@ -1212,15 +1212,17 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         [string] $BranchPatternName,
 
         [ValidateNotNullOrEmpty()]
-        [string[]] $StatusChecks,
+        [string[]] $StatusCheck,
 
         [switch] $RequireStrictStatusChecks,
 
         [switch] $IsAdminEnforced,
 
-        [string[]] $DismissalUsers,
+        [ValidateNotNullOrEmpty()]
+        [string[]] $DismissalUser,
 
-        [string[]] $DismissalTeams,
+        [ValidateNotNullOrEmpty()]
+        [string[]] $DismissalTeam,
 
         [switch] $DismissStaleReviews,
 
@@ -1229,11 +1231,14 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
         [ValidateRange(1, 6)]
         [int] $RequiredApprovingReviewCount,
 
-        [string[]] $RestrictPushUsers,
+        [ValidateNotNullOrEmpty()]
+        [string[]] $RestrictPushUser,
 
-        [string[]] $RestrictPushTeams,
+        [ValidateNotNullOrEmpty()]
+        [string[]] $RestrictPushTeam,
 
-        [string[]] $RestrictPushApps,
+        [ValidateNotNullOrEmpty()]
+        [string[]] $RestrictPushApp,
 
         [switch] $RequireLinearHistory,
 
@@ -1293,8 +1298,8 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     if ($PSBoundParameters.ContainsKey('RequiredApprovingReviewCount') -or
         $PSBoundParameters.ContainsKey('DismissStaleReviews') -or
         $PSBoundParameters.ContainsKey('RequireCodeOwnerReviews') -or
-        $PSBoundParameters.ContainsKey('DismissalUsers') -or
-        $PSBoundParameters.ContainsKey('DismissalTeams'))
+        $PSBoundParameters.ContainsKey('DismissalUser') -or
+        $PSBoundParameters.ContainsKey('DismissalTeam'))
     {
         $mutationList += 'requiresApprovingReviews: true'
 
@@ -1313,14 +1318,14 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             $mutationList += 'requiresCodeOwnerReviews: ' + $RequireCodeOwnerReviews.ToBool().ToString().ToLower()
         }
 
-        if ($PSBoundParameters.ContainsKey('DismissalUsers') -or
-            $PSBoundParameters.ContainsKey('DismissalTeams'))
+        if ($PSBoundParameters.ContainsKey('DismissalUser') -or
+            $PSBoundParameters.ContainsKey('DismissalTeam'))
         {
             $reviewDismissalActorIds = @()
 
-            if ($PSBoundParameters.ContainsKey('DismissalUsers'))
+            if ($PSBoundParameters.ContainsKey('DismissalUser'))
             {
-                foreach ($user in $DismissalUsers)
+                foreach ($user in $DismissalUser)
                 {
                     $hashbody = @{query = "query user { user(login: ""$user"") { id } }"}
 
@@ -1349,9 +1354,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
                 }
             }
 
-            if ($PSBoundParameters.ContainsKey('DismissalTeams'))
+            if ($PSBoundParameters.ContainsKey('DismissalTeam'))
             {
-                foreach ($team in $DismissalTeams)
+                foreach ($team in $DismissalTeam)
                 {
                     $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                         "{ team(slug: ""$team"") { id } } }"
@@ -1430,7 +1435,7 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     }
 
     # Process 'Require status checks to pass before merging' properties
-    if ($PSBoundParameters.ContainsKey('StatusChecks') -or
+    if ($PSBoundParameters.ContainsKey('StatusCheck') -or
         $PSBoundParameters.ContainsKey('RequireStrictStatusChecks'))
     {
         $mutationList += 'requiresStatusChecks: true'
@@ -1440,9 +1445,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             $mutationList += 'requiresStrictStatusChecks: ' + $RequireStrictStatusChecks.ToBool().ToString().ToLower()
         }
 
-        if ($PSBoundParameters.ContainsKey('StatusChecks'))
+        if ($PSBoundParameters.ContainsKey('StatusCheck'))
         {
-            $mutationList += 'requiredStatusCheckContexts: [ "' + ($StatusChecks -join ('","')) + '" ]'
+            $mutationList += 'requiredStatusCheckContexts: [ "' + ($StatusCheck -join ('","')) + '" ]'
         }
     }
 
@@ -1462,15 +1467,15 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
     }
 
     # Process 'Restrict who can push to matching branches' properties
-    if ($PSBoundParameters.ContainsKey('RestrictPushUsers') -or
-        $PSBoundParameters.ContainsKey('RestrictPushTeams') -or
-        $PSBoundParameters.ContainsKey('RestrictPushApps'))
+    if ($PSBoundParameters.ContainsKey('RestrictPushUser') -or
+        $PSBoundParameters.ContainsKey('RestrictPushTeam') -or
+        $PSBoundParameters.ContainsKey('RestrictPushApp'))
     {
         $restrictPushActorIds = @()
 
-        if ($PSBoundParameters.ContainsKey('RestrictPushUsers'))
+        if ($PSBoundParameters.ContainsKey('RestrictPushUser'))
         {
-            foreach ($user in $RestrictPushUsers)
+            foreach ($user in $RestrictPushUser)
             {
                 $hashbody = @{query = "query user { user(login: ""$user"") { id } }" }
 
@@ -1499,9 +1504,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             }
         }
 
-        if ($PSBoundParameters.ContainsKey('RestrictPushTeams'))
+        if ($PSBoundParameters.ContainsKey('RestrictPushTeam'))
         {
-            foreach ($team in $RestrictPushTeams)
+            foreach ($team in $RestrictPushTeam)
             {
                 $hashbody = @{query = "query organization { organization(login: ""$OrganizationName"") " +
                     "{ team(slug: ""$team"") { id } } }"
@@ -1570,9 +1575,9 @@ filter New-GitHubRepositoryBranchPatternProtectionRule
             }
         }
 
-        if ($PSBoundParameters.ContainsKey('RestrictPushApps'))
+        if ($PSBoundParameters.ContainsKey('RestrictPushApp'))
         {
-            foreach ($app in $RestrictPushApps)
+            foreach ($app in $RestrictPushApp)
             {
                 $hashbody = @{query = "query app { marketplaceListing(slug: ""$app"") { app { id } } }" }
 
@@ -1746,9 +1751,7 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [Parameter(
-            Mandatory,
-            Position = 2)]
+        [Parameter(Position = 2)]
         [string] $BranchPatternName,
 
         [string] $AccessToken
@@ -1803,11 +1806,18 @@ filter Get-GitHubRepositoryBranchPatternProtectionRule
 
     if ($result.data.repository.branchProtectionRules)
     {
-        $rule = ($result.data.repository.branchProtectionRules.nodes |
-            Where-Object -Property pattern -eq $BranchPatternName)
+        if ($PSBoundParameters.ContainsKey('BranchPatternName'))
+        {
+            $rule = ($result.data.repository.branchProtectionRules.nodes |
+                Where-Object -Property pattern -eq $BranchPatternName)
+        }
+        else
+        {
+            $rule = $result.data.repository.branchProtectionRules.nodes
+        }
     }
 
-    if (!$rule)
+    if (!$rule -and $PSBoundParameters.ContainsKey('BranchPatternName'))
     {
         $newErrorRecordParms = @{
             ErrorMessage = "Branch Protection Rule '$BranchPatternName' not found on repository $RepositoryName"

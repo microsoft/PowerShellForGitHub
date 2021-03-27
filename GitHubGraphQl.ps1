@@ -287,14 +287,14 @@ function Invoke-GHGraphQl
 
         # Restore original security protocol
         [Net.ServicePointManager]::SecurityProtocol = $originalSecurityProtocol
+    }
 
-        # Record the telemetry for this event.
-        $stopwatch.Stop()
-        if (-not [String]::IsNullOrEmpty($TelemetryEventName))
-        {
-            $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
-            Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
-        }
+    # Record the telemetry for this event.
+    $stopwatch.Stop()
+    if (-not [String]::IsNullOrEmpty($TelemetryEventName))
+    {
+        $telemetryMetrics = @{ 'Duration' = $stopwatch.Elapsed.TotalSeconds }
+        Set-TelemetryEvent -EventName $TelemetryEventName -Properties $localTelemetryProperties -Metrics $telemetryMetrics
     }
 
     $graphQlResult = $result.Content | ConvertFrom-Json
