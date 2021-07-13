@@ -131,7 +131,7 @@ try
                         $exceptionMessage1 = '*The remote server returned an error: (401) Unauthorized*'
                     }
 
-                    $exceptionMessage2 = '*This endpoint requires you to be authenticated. | https://docs.github.com/v3/#authentication*'
+                    $exceptionMessage2 = '*This endpoint requires you to be authenticated.*'
 
                     Mock -CommandName Get-AccessToken -ModuleName $script:moduleName
                 }
