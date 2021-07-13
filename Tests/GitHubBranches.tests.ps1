@@ -1144,7 +1144,7 @@ try
                 }
 
                 It 'Should throw the correct exception' {
-                    $errorMessage = "Team '$pullTeamName' does not have push or maintain permissions on repository '$repoName'"
+                    $errorMessage = "Team '$pullTeamName' does not have push or maintain permissions on repository '$OrganizationName/$repoName'"
                     { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
                         Should -Throw $errorMessage
                 }
@@ -1218,7 +1218,7 @@ try
                 }
 
                 It 'Should throw the correct exception' {
-                    $errorMessage = "Team '$pullTeamName' does not have push or maintain permissions on repository '$repoName'"
+                    $errorMessage = "Team '$pullTeamName' does not have push or maintain permissions on repository '$OrganizationName/$repoName'"
                     { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
                         Should -Throw $errorMessage
                 }
