@@ -56,7 +56,14 @@ try
 
                 if ($PSVersionTable.PSEdition -eq 'Core')
                 {
-                    $exceptionMessage = "*$($testHostName)*"
+                    if ($IsWindows)
+                    {
+                        $exceptionMessage = "No such host is known. ($($testHostName):443)"
+                    }
+                    else
+                    {
+                        $exceptionMessage = "'nodename nor servname provided, or not known ($($testHostName):443)'"
+                    }
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
                 }
