@@ -62,7 +62,7 @@ try
                     }
                     else
                     {
-                        $exceptionMessage = "'nodename nor servname provided, or not known ($($testHostName):443)'"
+                        $exceptionMessage = "nodename nor servname provided, or not known ($($testHostName):443)"
                     }
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
