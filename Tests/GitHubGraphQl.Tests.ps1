@@ -56,7 +56,7 @@ try
 
                 if ($PSVersionTable.PSEdition -eq 'Core')
                 {
-                    $exceptionMessage = 'No such host is known'
+                    $exceptionMessage = "*$($testHostName)*"
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
                 }
