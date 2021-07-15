@@ -60,9 +60,13 @@ try
                     {
                         $exceptionMessage = "No such host is known. ($($testHostName):443)"
                     }
-                    else
+                    elseif ($IsMacOS)
                     {
                         $exceptionMessage = "nodename nor servname provided, or not known ($($testHostName):443)"
+                    }
+                    else
+                    {
+                        $exceptionMessage = "Resource temporarily unavailable ($($testHostName):443)"                    
                     }
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
