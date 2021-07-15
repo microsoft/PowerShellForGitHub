@@ -56,18 +56,13 @@ try
 
                 if ($PSVersionTable.PSEdition -eq 'Core')
                 {
-                    if ($IsWindows)
-                    {
-                        $exceptionMessage = "No such host is known. ($($testHostName):443)"
-                    }
-                    elseif ($IsMacOS)
-                    {
-                        $exceptionMessage = "nodename nor servname provided, or not known ($($testHostName):443)"
-                    }
-                    else
-                    {
-                        $exceptionMessage = "Resource temporarily unavailable ($($testHostName):443)"                    
-                    }
+                    # The exception message varies per platform.  We could special-case it, but the exact message
+                    # may change over time and the module itself doesn't care about the specific message.
+                    # We'll just do a best-case match.
+                    # Windows: "No such host is known. ($($testHostName):443)"
+                    # Mac: "nodename nor servname provided, or not known ($($testHostName):443)"
+                    # Linux: "Resource temporarily unavailable ($($testHostName):443)"
+                    $exceptionMessage = "*$testHostName*"
                     $categoryInfo = 'InvalidOperation'
                     $targetName = "*$testHostName*"
                 }
