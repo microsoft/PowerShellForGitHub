@@ -90,6 +90,7 @@ try
                 { Invoke-GHGraphQl @invokeGHGraphQlParms } |
                     Should -Throw $exceptionMessage
 
+                $Error[0].Exception.Message | Should -BeLike $exceptionMessage
                 $Error[0].CategoryInfo.Category | Should -Be $categoryInfo
                 $Error[0].CategoryInfo.TargetName | Should -BeLike $targetName
                 $Error[0].FullyQualifiedErrorId | Should -BeLike '*Invoke-GHGraphQl'
