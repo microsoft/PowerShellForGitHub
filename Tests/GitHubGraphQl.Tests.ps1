@@ -83,7 +83,7 @@ try
                     Body = $testBody
                 }
                 { Invoke-GHGraphQl @invokeGHGraphQlParms } |
-                    Should -Throw $exceptionMessage
+                    Should -Throw
 
                 $Error[0].Exception.Message | Should -BeLike $exceptionMessage
                 $Error[0].CategoryInfo.Category | Should -Be $categoryInfo
