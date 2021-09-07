@@ -346,7 +346,7 @@ filter Set-GitHubContent
 
         [switch] $PassThru,
 
-        [string] $AccessToken,
+        [string] $AccessToken
     )
 
     Write-InvocationLog
