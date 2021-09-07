@@ -231,6 +231,9 @@ filter Set-GitHubContent
     .PARAMETER Content
         The new file content.
 
+    .PARAMETER ContentPath
+        The local path to file content.
+
     .PARAMETER Sha
         The SHA value of the current file if present. If this parameter is not provided, and the
         file currently exists in the specified branch of the repo, it will be read to obtain this
@@ -322,7 +325,6 @@ filter Set-GitHubContent
         [string] $CommitMessage,
 
         [Parameter(
-            Mandatory,
             Position = 4)]
         [string] $Content,
 
@@ -340,9 +342,11 @@ filter Set-GitHubContent
 
         [string] $AuthorEmail,
 
+        [string] $ContentPath,
+
         [switch] $PassThru,
 
-        [string] $AccessToken
+        [string] $AccessToken,
     )
 
     Write-InvocationLog
@@ -358,7 +362,12 @@ filter Set-GitHubContent
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
 
-    $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Content))
+    if ($ContentPath) {
+        $encodedContent = [Convert]::ToBase64String((Get-Content -path $ContentPath -AsByteStream -Raw))
+    }
+    else {
+        $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Content))
+    }
 
     $hashBody = @{
         message = $CommitMessage
