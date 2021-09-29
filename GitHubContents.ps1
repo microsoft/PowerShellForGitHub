@@ -362,10 +362,12 @@ filter Set-GitHubContent
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
 
-    if ($ContentPath) {
-        $encodedContent = [Convert]::ToBase64String((Get-Content -path $ContentPath -AsByteStream -Raw))
+    if ($ContentPath)
+    {
+        $encodedContent = [Convert]::ToBase64String((Get-Content -Path $ContentPath -AsByteStream -Raw))
     }
-    else {
+    else
+    {
         $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Content))
     }
 
