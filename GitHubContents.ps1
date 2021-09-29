@@ -325,8 +325,16 @@ filter Set-GitHubContent
         [string] $CommitMessage,
 
         [Parameter(
-            Position = 4)]
+            Mandatory,
+            Position = 4,
+            ParameterSetName = 'Content')]
         [string] $Content,
+
+        [Parameter(
+            Mandatory,
+            Position = 4,
+            ParameterSetName = 'Content')]
+        [string] $ContentPath,
 
         [Parameter(ValueFromPipelineByPropertyName)]
         [string] $Sha,
@@ -341,8 +349,6 @@ filter Set-GitHubContent
         [string] $AuthorName,
 
         [string] $AuthorEmail,
-
-        [string] $ContentPath,
 
         [switch] $PassThru,
 
