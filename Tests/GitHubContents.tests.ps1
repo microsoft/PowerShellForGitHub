@@ -335,6 +335,67 @@ try
             }
         }
 
+        Context 'When setting new file content by path' {
+            BeforeAll {
+                $filePath = 'notes'
+                $fileName = 'hello.txt'
+                $commitMessage = 'Commit Message'
+                $content = 'This is the content for test.txt'
+                $branchName = 'master'
+                $committerName = 'John Doe'
+                $committerEmail = 'john.doe@testdomain.com'
+                $authorName = 'Jane Doe'
+                $authorEmail = 'jane.doe@testdomain.com'
+
+                $contentPath = New-TemporaryFile
+                $content | Out-File -FilePath $contentPath
+
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    CommitMessage = $commitMessage
+                    Branch = $branchName
+                    ContentPath = $contentPath
+                    Uri = $repo.svn_url
+                    CommitterName = $committerName
+                    CommitterEmail = $committerEmail
+                    authorName = $authorName
+                    authorEmail = $authorEmail
+                }
+
+                $result = Set-GitHubContent @setGitHubContentParms -PassThru
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $result.PSObject.TypeNames[0] | Should -Be 'GitHub.Content'
+                $result.content.name | Should -Be $fileName
+                $result.content.path | Should -Be "$filePath/$fileName"
+                $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +
+                    "/$repoName/contents/$filePath/$($fileName)?ref=$BranchName")
+                $result.commit.author.name | Should -Be $authorName
+                $result.commit.author.email | Should -Be $authorEmail
+                $result.commit.committer.name | Should -Be $committerName
+                $result.commit.committer.email | Should -Be $committerEmail
+                $result.commit.message | Should -Be $commitMessage
+            }
+
+            It 'Should have written the correct content' {
+                $getGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                    MediaType = 'Raw'
+                    ResultAsString = $true
+                }
+
+                $writtenContent = Get-GitHubContent @getGitHubContentParms
+
+                $content | Should -Be $writtenContent
+            }
+
+            AfterAll {
+                Remove-Item -Path $contentPath
+            }
+        }
+
         Context 'When overwriting file content' {
             BeforeAll {
                 $filePath = 'notes'
