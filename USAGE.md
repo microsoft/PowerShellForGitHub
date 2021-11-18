@@ -735,7 +735,7 @@ Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHu
 
 #### Create a new fork
 ```powershell
-New-GitHubRepositoryForm -OwnerName microsoft -RepositoryName PowerShellForGitHub
+New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------
