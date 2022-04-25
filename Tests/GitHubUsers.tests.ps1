@@ -5,18 +5,18 @@
 .Synopsis
    Tests for GitHubIssues.ps1 module
 #>
-
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
-    Justification='Suppress false positives in Pester code blocks')]
+    Justification = 'Suppress false positives in Pester code blocks')]
 param()
+
+BeforeAll {
 
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Getting a user' {
         Context 'Current user when additional properties are enabled' {
             BeforeAll {
@@ -107,8 +107,10 @@ try
         }
 
         Context 'Checking context on an issue with the pipeline' {
+            BeforeAll {
             $issue = New-GitHubIssue -Uri $repo.RepositoryUrl -Title ([guid]::NewGuid().Guid)
             $context = $issue | Get-GitHubUserContextualInformation -UserName $script:ownerName
+            }
 
             It 'Should indicate the user created the issue' {
                 $context.contexts[0].octicon | Should -Be 'issue-opened'
@@ -122,9 +124,7 @@ try
             }
         }
     }
-}
-finally
-{
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
