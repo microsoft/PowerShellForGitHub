@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+BeforeAll {
+    # This is common test code setup logic for all Pester test files
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readonly, hidden variables.
     @{
         repoGuid = [Guid]::NewGuid().Guid
@@ -32,6 +31,7 @@ try
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
+}
 
     Describe 'Getting file and folder content' {
         BeforeAll {
@@ -44,7 +44,9 @@ try
         }
 
         Context 'For getting folder contents with parameters' {
-            $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
+            BeforeAll {
+                $folderOutput = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name
+            }
 
             It "Should have the expected name" {
                 $folderOutput.name | Should -BeNullOrEmpty
@@ -74,7 +76,9 @@ try
         }
 
         Context 'For getting folder contents via URL' {
-            $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
+            BeforeAll {
+                $folderOutput = Get-GitHubContent -Uri "https://github.com/$($script:ownerName)/$($repo.name)"
+            }
 
             It "Should have the expected name" {
                 $folderOutput.name | Should -BeNullOrEmpty
@@ -104,7 +108,9 @@ try
         }
 
         Context 'For getting folder contents with the repo on the pipeline' {
-            $folderOutput = $repo | Get-GitHubContent
+            BeforeAll {
+                $folderOutput = $repo | Get-GitHubContent
+            }
 
             It "Should have the expected name" {
                 $folderOutput.name | Should -BeNullOrEmpty
@@ -134,8 +140,10 @@ try
         }
 
         Context 'For getting raw (byte) file contents' {
-            $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw
-            $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
+            BeforeAll {
+                $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw
+                $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
+            }
 
             It "Should have the expected content" {
                 $readmeFileString | Should -Be $rawOutput
@@ -148,7 +156,9 @@ try
         }
 
         Context 'For getting raw (string) file contents' {
-            $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw -ResultAsString
+            BeforeAll {
+                $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Raw -ResultAsString
+            }
 
             It "Should have the expected content" {
                 $readmeFileString | Should -Be $rawOutput
@@ -161,11 +171,14 @@ try
         }
 
         Context 'For getting html (byte) file contents' {
-            $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html
-            $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
+            BeforeAll {
+                $readmeFileBytes = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html
+                $readmeFileString = [System.Text.Encoding]::UTF8.GetString($readmeFileBytes)
 
-            # Replace newlines with empty for comparison purposes
-            $readmeNoBreaks = $readmeFileString.Replace("`n", "").Replace("`r", "")
+                # Replace newlines with empty for comparison purposes
+                $readmeNoBreaks = $readmeFileString.Replace("`n", "").Replace("`r", "")
+            }
+
             It "Should have the expected content" {
                 # GitHub changes the syntax for this file too frequently, so we'll just do some
                 # partial matches to make sure we're getting HTML output for the right repo.
@@ -180,10 +193,13 @@ try
         }
 
         Context 'For getting html (string) file contents' {
-            $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html -ResultAsString
+            BeforeAll {
+                $readmeFileString = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Html -ResultAsString
 
-            # Replace newlines with empty for comparison purposes
-            $readmeNoBreaks = $readmeFileString.Replace("`n", "").Replace("`r", "")
+                # Replace newlines with empty for comparison purposes
+                $readmeNoBreaks = $readmeFileString.Replace("`n", "").Replace("`r", "")
+            }
+
             It "Should have the expected content" {
                 # GitHub changes the syntax for this file too frequently, so we'll just do some
                 # partial matches to make sure we're getting HTML output for the right repo.
@@ -198,7 +214,9 @@ try
         }
 
         Context 'For getting object (default) file result' {
-            $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName
+            BeforeAll {
+                $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName
+            }
 
             It "Should have the expected name" {
                 $readmeFileObject.name | Should -Be $readmeFileName
@@ -229,7 +247,9 @@ try
         }
 
         Context 'For getting object file result as string' {
-            $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Object -ResultAsString
+            BeforeAll {
+                $readmeFileObject = Get-GitHubContent -OwnerName $script:ownerName -RepositoryName $repo.name -Path $readmeFileName -MediaType Object -ResultAsString
+            }
 
             It "Should have the expected name" {
                 $readmeFileObject.name | Should -Be $readmeFileName
@@ -390,13 +410,25 @@ try
         }
 
         Context 'When Specifying only one Committer parameter' {
-            $setGitHubContentParms = @{
-                Path = "$filePath/$fileName"
-                CommitMessage = $commitMessage
-                BranchName = $branchName
-                Content = $content
-                Uri = $repo.svn_url
-                CommitterName = $committerName
+            BeforeAll {
+                $filePath = 'notes'
+                $fileName = 'hello.txt'
+                $commitMessage = 'Commit Message 2'
+                $content = 'This is the new content for test.txt'
+                $branchName = 'master'
+                $committerName = 'John Doe'
+                $committerEmail = 'john.doe@testdomain.com'
+                $authorName = 'Jane Doe'
+                $authorEmail = 'jane.doe@testdomain.com'
+
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    CommitMessage = $commitMessage
+                    BranchName = $branchName
+                    Content = $content
+                    Uri = $repo.svn_url
+                    CommitterName = $committerName
+                }
             }
 
             It 'Shoud throw the correct exception' {
@@ -406,13 +438,25 @@ try
         }
 
         Context 'When Specifying only one Author parameter' {
-            $setGitHubContentParms = @{
-                Path = "$filePath/$fileName"
-                Uri = $repo.svn_url
-                CommitMessage = $commitMessage
-                BranchName = $branchName
-                Content = $content
-                AuthorName = $authorName
+            BeforeAll {
+                $filePath = 'notes'
+                $fileName = 'hello.txt'
+                $commitMessage = 'Commit Message 2'
+                $content = 'This is the new content for test.txt'
+                $branchName = 'master'
+                $committerName = 'John Doe'
+                $committerEmail = 'john.doe@testdomain.com'
+                $authorName = 'Jane Doe'
+                $authorEmail = 'jane.doe@testdomain.com'
+
+                $setGitHubContentParms = @{
+                    Path = "$filePath/$fileName"
+                    Uri = $repo.svn_url
+                    CommitMessage = $commitMessage
+                    BranchName = $branchName
+                    Content = $content
+                    AuthorName = $authorName
+                }
             }
 
             It 'Shoud throw the correct exception' {
@@ -422,6 +466,17 @@ try
         }
 
         Context 'When Invoke-GHRestMethod returns an unexpected error' {
+        BeforeAll {
+            $filePath = 'notes'
+            $fileName = 'hello.txt'
+            $commitMessage = 'Commit Message 2'
+            $content = 'This is the new content for test.txt'
+            $branchName = 'master'
+            $committerName = 'John Doe'
+            $committerEmail = 'john.doe@testdomain.com'
+            $authorName = 'Jane Doe'
+            $authorEmail = 'jane.doe@testdomain.com'
+}
             It 'Should throw' {
                 $setGitHubContentParms = @{
                     Path = "$filePath/$fileName"
@@ -440,9 +495,8 @@ try
             Remove-GitHubRepository -Uri $repo.svn_url -Force
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
