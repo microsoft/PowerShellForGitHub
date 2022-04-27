@@ -11,17 +11,20 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+BeforeAll {
+    # This is common test code setup logic for all Pester test files
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Testing ConvertTo-SmarterObject behavior' {
         InModuleScope PowerShellForGitHub {
+            BeforeAll {
             $jsonConversionDepth = 20
+            }
 
             Context 'When a property is a simple type' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'prop1' = 'value1'
                     'prop2' = 3
@@ -29,6 +32,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should return the same values' {
                     $originalJson = (ConvertTo-Json -InputObject $original -Depth $jsonConversionDepth)
@@ -38,6 +42,7 @@ try
             }
 
             Context 'When a property is a PSCustomObject' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'prop1' = [PSCustomObject]@{
                         'prop1' = 'value1'
@@ -49,6 +54,7 @@ try
             }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+        }
 
                 It 'Should return the correct values' {
                     $originalJson = (ConvertTo-Json -InputObject $original -Depth $jsonConversionDepth)
@@ -58,6 +64,7 @@ try
             }
 
             Context 'When a known date property has a date string' {
+                BeforeAll {
                 $date = Get-Date
                 $dateString = $date.ToUniversalTime().ToString('o')
                 $original = [PSCustomObject]@{
@@ -81,6 +88,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should convert the value to a [DateTime]' {
                     $converted.closed_at -is [DateTime] | Should -Be $true
@@ -107,6 +115,7 @@ try
             }
 
             Context 'When a known date property has a null, empty or invalid date string' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'closed_at' = $null
                     'committed_at' = '123'
@@ -127,6 +136,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should keep the existing value' {
                     $original.closed_at -eq $converted.closed_at | Should -Be $true
@@ -149,6 +159,7 @@ try
             }
 
             Context 'When an object has an empty array' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'prop1' = 'value1'
                     'prop2' = 3
@@ -157,6 +168,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should still be an empty array after conversion' {
                     $originalJson = (ConvertTo-Json -InputObject $original -Depth $jsonConversionDepth)
@@ -166,6 +178,7 @@ try
             }
 
             Context 'When an object has a single item array' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'prop1' = 'value1'
                     'prop2' = 3
@@ -174,6 +187,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should still be a single item array after conversion' {
                     $originalJson = (ConvertTo-Json -InputObject $original -Depth $jsonConversionDepth)
@@ -183,6 +197,7 @@ try
             }
 
             Context 'When an object has a multi-item array' {
+                BeforeAll {
                 $original = [PSCustomObject]@{
                     'prop1' = 'value1'
                     'prop2' = 3
@@ -191,6 +206,7 @@ try
                 }
 
                 $converted = ConvertTo-SmarterObject -InputObject $original
+            }
 
                 It 'Should still be a multi item array after conversion' {
                     $originalJson = (ConvertTo-Json -InputObject $original -Depth $jsonConversionDepth)
@@ -245,9 +261,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
