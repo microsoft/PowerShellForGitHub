@@ -11,14 +11,14 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+BeforeAll {
+    # This is common test code setup logic for all Pester test files
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
 Set-StrictMode -Version 1.0
 
-try
-{
     Describe 'Getting branches for repository' {
         BeforeAll {
             $repositoryName = [guid]::NewGuid().Guid
@@ -31,7 +31,9 @@ try
         }
 
         Context 'Getting all branches for a repository with parameters' {
-            $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
+            BeforeAll {
+                $branches = @(Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName)
+            }
 
             It 'Should return expected number of repository branches' {
                 $branches.Count | Should -Be 1
@@ -50,7 +52,9 @@ try
         }
 
         Context 'Getting all branches for a repository with the repo on the pipeline' {
-            $branches = @($repo | Get-GitHubRepositoryBranch)
+            BeforeAll {
+                $branches = @($repo | Get-GitHubRepositoryBranch)
+            }
 
             It 'Should return expected number of repository branches' {
                 $branches.Count | Should -Be 1
@@ -69,7 +73,9 @@ try
         }
 
         Context 'Getting a specific branch for a repository with parameters' {
-            $branch = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName -BranchName $branchName
+            BeforeAll {
+                $branch = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName -BranchName $branchName
+            }
 
             It 'Should return the expected branch name' {
                 $branch.name | Should -Be $branchName
@@ -84,7 +90,9 @@ try
         }
 
         Context 'Getting a specific branch for a repository with the repo on the pipeline' {
-            $branch = $repo | Get-GitHubRepositoryBranch -BranchName $branchName
+            BeforeAll {
+                $branch = $repo | Get-GitHubRepositoryBranch -BranchName $branchName
+            }
 
             It 'Should return the expected branch name' {
                 $branch.name | Should -Be $branchName
@@ -99,8 +107,10 @@ try
         }
 
         Context 'Getting a specific branch for a repository with the branch object on the pipeline' {
-            $branch = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName -BranchName $branchName
-            $branchAgain = $branch | Get-GitHubRepositoryBranch
+            BeforeAll {
+                $branch = Get-GitHubRepositoryBranch -OwnerName $script:ownerName -RepositoryName $repositoryName -BranchName $branchName
+                $branchAgain = $branch | Get-GitHubRepositoryBranch
+            }
 
             It 'Should return the expected branch name' {
                 $branchAgain.name | Should -Be $branchName
@@ -279,6 +289,7 @@ try
             Context 'When the origin branch cannot be found' {
                 BeforeAll -Scriptblock {
                     $missingOriginBranchName = 'Missing-Branch'
+                    $newBranchName = 'sha2'
                 }
 
                 It 'Should throw the correct exception' {
@@ -306,7 +317,7 @@ try
                     }
 
                     { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
-                        Should -Throw 'Not Found'
+                        Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
                 }
             }
         }
@@ -721,7 +732,6 @@ try
     }
 
     Describe 'GitHubBranches\Remove-GitHubRepositoryBranchProtectionRule' {
-        Context 'When removing GitHub repository branch protection' {
             BeforeAll {
                 $repoName = [Guid]::NewGuid().Guid
                 $branchName = 'master'
@@ -731,6 +741,7 @@ try
                     Out-Null
             }
 
+            Context 'When removing GitHub repository branch protection' {
             It 'Should not throw' {
                 { Remove-GitHubRepositoryBranchProtectionRule -Uri $repo.svn_url -BranchName $branchName -Force } |
                     Should -Not -Throw
@@ -773,18 +784,19 @@ try
                 }
             }
 
-            AfterAll -ScriptBlock {
-                if ($repo)
-                {
-                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-                }
-            }
         }
+    AfterAll -ScriptBlock {
+        if ($repo)
+        {
+            Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+        }
+    }
     }
 
     Describe 'GitHubBranches\Get-GitHubRepositoryBranchPatternProtectionRule' {
         BeforeAll {
             $repoName = [Guid]::NewGuid().Guid
+            $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
 
             $newGitHubRepositoryParms = @{
                 OrganizationName = $script:organizationName
@@ -928,7 +940,6 @@ try
 
         Context 'When getting required status checks' {
             BeforeAll {
-                $branchPatternName = [Guid]::NewGuid().Guid + '/**/*'
                 $statusChecks = 'test'
 
                 $newGitHubRepositoryBranchPatternProtectionParms = @{
@@ -1267,7 +1278,7 @@ try
             }
 
             It 'Should throw the correct exception' {
-                $errorMessage = "Name already protected: $branchPatternName"
+                $errorMessage = "GraphQl Error: Name already protected: $branchPatternName"
                 { New-GitHubRepositoryBranchPatternProtectionRule @newGitHubRepositoryBranchPatternProtectionParms } |
                     Should -Throw $errorMessage
             }
@@ -1360,9 +1371,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
