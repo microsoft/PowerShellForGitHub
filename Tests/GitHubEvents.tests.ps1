@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+BeforeAll {
+    # This is common test code setup logic for all Pester test files
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Getting events from repository' {
         BeforeAll {
             $repositoryName = [Guid]::NewGuid()
@@ -28,25 +28,28 @@ try
         }
 
         Context 'For getting events from a new repository (via parameter)' {
-            $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have no events (via parameter)' {
+                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
                 $events.Count | Should -Be 0
             }
         }
 
         Context 'For getting events from a new repository (via pipeline)' {
-            $events = @($repo | Get-GitHubEvent)
 
             It 'Should have no events (via parameter)' {
+                $events = @($repo | Get-GitHubEvent)
                 $events.Count | Should -Be 0
             }
         }
 
         Context 'For getting Issue events from a repository' {
+
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title 'New Issue'
             $issue = $issue | Set-GitHubIssue -State Closed -PassThru
             $events = @($repo | Get-GitHubEvent)
+            }
 
             It 'Should have an event from closing an issue' {
                 $events.Count | Should -Be 1
@@ -74,19 +77,20 @@ try
         }
 
         Context 'For getting events from a new issue' {
-            $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
 
             It 'Should have no events' {
+                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number)
                 $events.Count | Should -Be 0
             }
         }
 
         Context 'For getting events from an issue' {
-            $issue = $issue | Set-GitHubIssue -State Closed -PassThru
-            $issue = $issue | Set-GitHubIssue -State Open -PassThru
-            $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
 
             It 'Should have two events from closing and opening the issue' {
+                $issue = $issue | Set-GitHubIssue -State Closed -PassThru
+                $issue = $issue | Set-GitHubIssue -State Open -PassThru
+                $events = @(Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName)
+
                 $events.Count | Should -Be 2
             }
         }
@@ -108,15 +112,18 @@ try
         }
 
         Context 'For getting a single event directly by parameter'{
-            $singleEvent = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -EventID $events[0].id
 
             It 'Should have the correct event type' {
+                $singleEvent = Get-GitHubEvent -OwnerName $ownerName -RepositoryName $repositoryName -EventID $events[0].id
                 $singleEvent.event | Should -Be 'reopened'
             }
         }
 
         Context 'For getting a single event directly by pipeline'{
+
+            BeforeAll {
             $singleEvent = $events[0] | Get-GitHubEvent
+            }
 
             It 'Should have the expected event type' {
                 $singleEvent.event | Should -Be $events[0].event
@@ -134,9 +141,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
