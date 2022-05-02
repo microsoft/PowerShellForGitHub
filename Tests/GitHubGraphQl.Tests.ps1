@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
-. (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+BeforeAll {
+    # This is common test code setup logic for all Pester test files
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+    . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'GitHubCore/Invoke-GHGraphQl' {
         BeforeAll {
             $Description = 'description'
@@ -33,11 +33,14 @@ try
                 $testBody = '{ "query": "query login { viewer { login } }" }'
             }
 
-            It 'Should return the expected result' {
+            BeforeEach {
                 $invokeGHGraphQLParms = @{
                     Body = $testBody
                 }
                 $result = Invoke-GHGraphQl @invokeGHGraphQLParms
+            }
+
+            It 'Should return the expected result' {
 
                 $result.data.viewer.login | Should -Be $script:ownerName
             }
@@ -164,6 +167,7 @@ try
             BeforeAll {
                 $testWebRequestTimeoutSec = 'invalid'
                 $testBody = 'testBody'
+                $errorMsg = 'Cannot bind parameter ''TimeoutSec''. Cannot convert value "invalid" to type "System.Int32". Error: "Input string was not in a correct format."'
 
                 Mock -CommandName Get-GitHubConfiguration -ModuleName $script:moduleName `
                     -ParameterFilter { $Name -eq 'WebRequestTimeoutSec' } `
@@ -175,7 +179,7 @@ try
                     Body = $testBody
                 }
                 { Invoke-GHGraphQl @invokeGHGraphQlParms } |
-                    Should -Throw "Cannot convert value ""$testWebRequestTimeoutSec"""
+                    Should -Throw $errorMsg
 
                 $Error[0].CategoryInfo.Category | Should -Be 'InvalidArgument'
                 $Error[0].CategoryInfo.TargetName | Should -Be $testBody
@@ -225,9 +229,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+    AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
