@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Getting issues for a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
@@ -27,6 +27,7 @@ try
         }
 
         Context 'Getting all issues for a repository with parameters' {
+        It 'Should return expected number of issues' {
             $currentIssues = @(Get-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name)
 
             $numIssues = 2
@@ -35,12 +36,12 @@ try
                 Out-Null
 
             $issues = @(Get-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name)
-            It 'Should return expected number of issues' {
                 $issues.Count | Should -Be ($numIssues + $currentIssues.Count)
             }
         }
 
         Context 'Getting all issues for a repository with the repo on the pipeline' {
+        It 'Should return expected number of issues' {
             $currentIssues = @($repo | Get-GitHubIssue)
 
             $numIssues = 2
@@ -49,15 +50,17 @@ try
                 Out-Null
 
             $issues = @($repo | Get-GitHubIssue)
-            It 'Should return expected number of issues' {
                 $issues.Count | Should -Be ($numIssues + $currentIssues.Count)
             }
         }
 
         Context 'Getting a specific issue with parameters' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
 
             $result = Get-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number
+            }
+
             It 'Should be the expected Issue' {
                 $result.id | Should -Be $issue.id
             }
@@ -82,9 +85,12 @@ try
         }
 
         Context 'Getting a specific issue with the repo on the pipeline' {
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid)
 
             $result = $repo | Get-GitHubIssue -Issue $issue.number
+            }
+
             It 'Should be the expected Issue' {
                 $result.id | Should -Be $issue.id
             }
@@ -109,9 +115,12 @@ try
         }
 
         Context 'Getting a specific issue with the issue on the pipeline' {
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid)
 
             $result = $issue | Get-GitHubIssue -Issue $issue.number
+            }
+
             It 'Should be the expected Issue' {
                 $result.id | Should -Be $issue.id
             }
@@ -136,10 +145,10 @@ try
         }
 
         Context 'When issues are retrieved with a specific MediaTypes' {
+        It 'Should return an issue with body_html' {
             $newIssue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repo.name -Title ([guid]::NewGuid()) -Body ([Guid]::NewGuid())
 
             $issues = @(Get-GitHubIssue -Uri $repo.svn_url -Issue $newIssue.number -MediaType 'Html')
-            It 'Should return an issue with body_html' {
                 $issues[0].body_html | Should -Not -Be $null
             }
         }
@@ -155,6 +164,7 @@ try
         }
 
         Context 'Date specific scenarios' {
+            BeforeAll {
             $existingIssues = @($repo | Get-GitHubIssue -State All)
 
             $newIssues = @()
@@ -169,29 +179,30 @@ try
             $existingOpenIssues = @($existingIssues | Where-Object { $_.state -eq 'open' })
             $newOpenIssues = @($newIssues | Where-Object { $_.state -eq 'open' })
             $issues = @($repo | Get-GitHubIssue)
+        }
             It 'Should return only open issues' {
                 $issues.Count | Should -Be ($newOpenIssues.Count + $existingOpenIssues.Count)
             }
 
-            $issues = @($repo | Get-GitHubIssue -State All)
             It 'Should return all issues' {
+                $issues = @($repo | Get-GitHubIssue -State All)
                 $issues.Count | Should -Be ($newIssues.Count + $existingIssues.Count)
             }
 
+
+            It 'Smart object date conversion works for comparing dates' {
             $createdOnOrAfterDate = Get-Date -Date $newIssues[0].created_at
             $createdOnOrBeforeDate = Get-Date -Date $newIssues[2].created_at
             $issues = @(($repo | Get-GitHubIssue) |
                 Where-Object { ($_.created_at -ge $createdOnOrAfterDate) -and ($_.created_at -le $createdOnOrBeforeDate) })
-
-            It 'Smart object date conversion works for comparing dates' {
                 $issues.Count | Should -Be 2
             }
 
+            It 'Able to filter based on date and state' {
             $createdDate = Get-Date -Date $newIssues[1].created_at
             $issues = @(Get-GitHubIssue -Uri $repo.svn_url -State All |
                 Where-Object { ($_.created_at -ge $createdDate) -and ($_.state -eq 'closed') })
 
-            It 'Able to filter based on date and state' {
                 $issues.Count | Should -Be 1
             }
         }
@@ -207,6 +218,7 @@ try
         }
 
         Context 'Creating an Issue with parameters' {
+            BeforeAll {
             $params = @{
                 'OwnerName' = $script:ownerName
                 'RepositoryName' = $repo.name
@@ -219,6 +231,7 @@ try
             }
 
             $issue = New-GitHubIssue @params
+        }
 
             It 'Should have the expected property values' {
                 $issue.title | Should -Be $params.Title
@@ -245,6 +258,7 @@ try
         }
 
         Context 'Creating an Issue with the repo on the pipeline' {
+            BeforeAll {
             $params = @{
                 'Title' = '-issue title-'
                 'Body' = '-issue body-'
@@ -255,6 +269,7 @@ try
             }
 
             $issue = $repo | New-GitHubIssue @params
+        }
 
             It 'Should have the expected property values' {
                 $issue.title | Should -Be $params.Title
@@ -293,7 +308,10 @@ try
         }
 
         Context 'Updating an Issue with parameters' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title $title
+            }
+
             It 'Should have the expected property values' {
                 $issue.title | Should -Be $title
                 $issue.body | Should -BeNullOrEmpty
@@ -303,7 +321,9 @@ try
                 $issue.labels | Should -BeNullOrEmpty
             }
 
-            $params = @{
+            Context 'Update issue' {
+                BeforeAll {
+                $params = @{
                 'OwnerName' = $script:ownerName
                 'RepositoryName' = $repo.name
                 'Issue' = $issue.number
@@ -316,6 +336,8 @@ try
             }
 
             $updated = Set-GitHubIssue @params -PassThru
+        }
+
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -341,9 +363,13 @@ try
                 $updated.labels[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Label'
             }
         }
+        }
 
         Context 'Updating an Issue with the repo on the pipeline' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title $title
+            }
+
             It 'Should have the expected property values' {
                 $issue.title | Should -Be $title
                 $issue.body | Should -BeNullOrEmpty
@@ -353,6 +379,8 @@ try
                 $issue.labels | Should -BeNullOrEmpty
             }
 
+        Context 'Update issue' {
+            BeforeAll {
             $params = @{
                 'Issue' = $issue.number
                 'Title' = '-new title-'
@@ -364,6 +392,8 @@ try
             }
 
             $updated = $repo | Set-GitHubIssue @params -PassThru
+        }
+
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -389,9 +419,13 @@ try
                 $updated.labels[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Label'
             }
         }
+        }
 
         Context 'Updating an Issue with the issue on the pipeline' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title $title
+            }
+
             It 'Should have the expected property values' {
                 $issue.title | Should -Be $title
                 $issue.body | Should -BeNullOrEmpty
@@ -401,6 +435,8 @@ try
                 $issue.labels | Should -BeNullOrEmpty
             }
 
+            Context 'Update issue' {
+                BeforeAll {
             $params = @{
                 'Title' = '-new title-'
                 'Body' = '-new body-'
@@ -411,6 +447,8 @@ try
             }
 
             $updated = $issue | Set-GitHubIssue @params -PassThru
+        }
+
             It 'Should have the expected property values' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
@@ -437,6 +475,7 @@ try
             }
         }
     }
+    }
 
     Describe 'Locking and unlocking issues' {
         BeforeAll {
@@ -448,25 +487,28 @@ try
         }
 
         Context 'Locking and unlocking an Issue with parameters' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
+            }
+
             It 'Should be unlocked' {
                 $issue.locked | Should -BeFalse
                 $issue.active_lock_reason | Should -BeNullOrEmpty
             }
 
+            It 'Should be locked' {
             $reason = 'Resolved'
             Lock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number -Reason $reason
             $updated = Get-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
-            It 'Should be locked' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeTrue
                 $updated.active_lock_reason | Should -Be $reason
             }
 
+            It 'Should be unlocked again' {
             Unlock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
             $updated = Get-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
-            It 'Should be unlocked again' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeFalse
@@ -475,25 +517,28 @@ try
         }
 
         Context 'Locking and unlocking an Issue with the repo on the pipeline' {
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid)
+            }
+
             It 'Should be unlocked' {
                 $issue.locked | Should -BeFalse
                 $issue.active_lock_reason | Should -BeNullOrEmpty
             }
 
+            It 'Should be locked' {
             $reason = 'Resolved'
             $repo | Lock-GitHubIssue -Issue $issue.number -Reason $reason
             $updated = $repo | Get-GitHubIssue -Issue $issue.number
-            It 'Should be locked' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeTrue
                 $updated.active_lock_reason | Should -Be $reason
             }
 
+            It 'Should be unlocked again' {
             $repo | Unlock-GitHubIssue -Issue $issue.number
             $updated = $repo | Get-GitHubIssue -Issue $issue.number
-            It 'Should be unlocked again' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeFalse
@@ -502,25 +547,28 @@ try
         }
 
         Context 'Locking and unlocking an Issue with the issue on the pipeline' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
+            }
+
             It 'Should be unlocked' {
                 $issue.locked | Should -BeFalse
                 $issue.active_lock_reason | Should -BeNullOrEmpty
             }
 
+            It 'Should be locked' {
             $reason = 'Resolved'
             $issue | Lock-GitHubIssue -Reason $reason
             $updated = $issue | Get-GitHubIssue
-            It 'Should be locked' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeTrue
                 $updated.active_lock_reason | Should -Be $reason
             }
 
+            It 'Should be unlocked again' {
             $issue | Unlock-GitHubIssue
             $updated = $issue | Get-GitHubIssue
-            It 'Should be unlocked again' {
                 $updated.id | Should -Be $issue.id
                 $updated.number | Should -Be $issue.number
                 $updated.locked | Should -BeFalse
@@ -539,15 +587,22 @@ try
         }
 
         Context 'Getting the Issue timeline with parameters' {
+            BeforeAll {
             $issue = New-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Title ([Guid]::NewGuid().Guid)
             $timeline = @(Get-GitHubIssueTimeline -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number)
+            }
+
             It 'Should have no events so far' {
                 $timeline.Count | Should -Be 0
             }
 
+            Context 'Lock issue' {
+                BeforeAll {
             Lock-GitHubIssue -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number
 
             $timeline = @(Get-GitHubIssueTimeline -OwnerName $script:OwnerName -RepositoryName $repo.name -Issue $issue.number)
+                }
+
             It 'Should have an event now' {
                 $timeline.Count | Should -Be 1
                 $timeline[0].event | Should -Be 'locked'
@@ -559,17 +614,25 @@ try
                 $timeline[0].EventId | Should -Be $timeline[0].id
                 $timeline[0].actor.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
+        }
         }
 
         Context 'Getting the Issue timeline with the repo on the pipeline' {
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid)
             $timeline = @($repo | Get-GitHubIssueTimeline -Issue $issue.number)
+            }
+
             It 'Should have no events so far' {
                 $timeline.Count | Should -Be 0
             }
 
+            Context 'Lock Issue' {
+                BeforeAll {
             $repo | Lock-GitHubIssue -Issue $issue.number
             $timeline = @($repo | Get-GitHubIssueTimeline -Issue $issue.number)
+                }
+
             It 'Should have an event now' {
                 $timeline.Count | Should -Be 1
                 $timeline[0].event | Should -Be 'locked'
@@ -581,17 +644,25 @@ try
                 $timeline[0].EventId | Should -Be $timeline[0].id
                 $timeline[0].actor.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
+        }
         }
 
         Context 'Getting the Issue timeline with the issue on the pipeline' {
+            BeforeAll {
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid)
             $timeline = @($issue | Get-GitHubIssueTimeline)
+            }
+
             It 'Should have no events so far' {
                 $timeline.Count | Should -Be 0
             }
 
+            Context 'Lock Issue' {
+                BeforeAll {
             $issue | Lock-GitHubIssue
             $timeline = @($issue | Get-GitHubIssueTimeline)
+                }
+
             It 'Should have an event now' {
                 $timeline.Count | Should -Be 1
                 $timeline[0].event | Should -Be 'locked'
@@ -604,10 +675,10 @@ try
                 $timeline[0].actor.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
         }
+        }
     }
-}
-finally
-{
+
+    AfterAll    {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
