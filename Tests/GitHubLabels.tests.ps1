@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
      $defaultLabels = @(
         @{
             'name' = 'pri:lowest'
@@ -75,6 +74,7 @@ try
             'color' = '145912'
         }
     )
+}
 
     Describe 'Getting labels from a repository' {
         BeforeAll {
@@ -87,9 +87,13 @@ try
             $repo | Remove-GitHubRepository -Force
         }
 
-        Context 'When querying for all labels' {
+        Context 'Querying all labels' {
+            BeforeAll {
             $labels = @(Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName)
+            }
 
+
+        Context 'When querying for all labels' {
             It 'Should return expected number of labels' {
                 $labels.Count | Should -Be $defaultLabels.Count
             }
@@ -104,9 +108,12 @@ try
                 }
             }
         }
+        }
 
         Context 'When querying for all labels (via repo on pipeline)' {
-            $labels = @($repo | Get-GitHubLabel)
+            BeforeAll {
+                $labels = @($repo | Get-GitHubLabel)
+            }
 
             It 'Should return expected number of labels' {
                 $labels.Count | Should -Be $defaultLabels.Count
@@ -149,8 +156,10 @@ try
         }
 
         Context 'When querying for a specific label' {
+            BeforeAll {
             $labelName = 'bug'
             $label = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelName
+            }
 
             It 'Should return expected label' {
                 $label.name | Should -Be $labelName
@@ -165,8 +174,10 @@ try
         }
 
         Context 'When querying for a specific label (via repo on pipeline)' {
+            BeforeAll {
             $labelName = 'bug'
             $label = $repo | Get-GitHubLabel -Label $labelName
+            }
 
             It 'Should return expected label' {
                 $label.name | Should -Be $labelName
@@ -184,8 +195,10 @@ try
         # for Get-GitHubLabel pipelining to still support Label this way.
         #
         # Context 'When querying for a specific label (via Label on pipeline)' {
+        #     BeforeAll {
         #     $labelName = 'bug'
         #     $label = $labelName | Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName
+        #     }
 
         #     It 'Should return expected label' {
         #         $label.name | Should -Be $labelName
@@ -211,9 +224,11 @@ try
         }
 
         Context 'On a repo with parameters' {
+            BeforeAll {
             $labelName = [Guid]::NewGuid().Guid
             $color = 'AAAAAA'
             $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelName -Color $color
+            }
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -229,9 +244,11 @@ try
         }
 
         Context 'On a repo with and color starts with a #' {
+            BeforeAll {
             $labelName = [Guid]::NewGuid().Guid
             $color = '#AAAAAA'
             $label = New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelName -Color $color
+            }
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -248,10 +265,12 @@ try
         }
 
         Context 'On a repo with the repo on the pipeline' {
+            BeforeAll {
             $labelName = [Guid]::NewGuid().Guid
             $color = 'BBBBBB'
             $description = 'test description'
             $label = $repo | New-GitHubLabel -Label $labelName -Color $color -Description $description
+            }
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -268,9 +287,11 @@ try
         }
 
         Context 'On a repo with the name on the pipeline' {
+            BeforeAll {
             $labelName = [Guid]::NewGuid().Guid
             $color = 'CCCCCC'
             $label = $labelName | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Color $color
+            }
 
             It 'New label should be created' {
                 $label.name | Should -Be $labelName
@@ -286,9 +307,11 @@ try
         }
 
         Context 'On a repo with three names on the pipeline' {
+            BeforeAll {
             $labelNames = @(([Guid]::NewGuid().Guid), ([Guid]::NewGuid().Guid), ([Guid]::NewGuid().Guid))
             $color = 'CCCCCC'
             $labels = @($labelNames | New-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Color $color)
+            }
 
             It 'Has the right count of labels' {
                 $labels.Count | Should -Be $labelNames.Count
@@ -325,37 +348,37 @@ try
         }
 
         Context 'Removing a label with parameters' {
-            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Force
 
             It 'Should be gone after being removed by parameter' {
+            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+            Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Force
                 { $label | Get-GitHubLabel } | Should -Throw
             }
         }
 
         Context 'Removing a label with the repo on the pipeline' {
-            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            $repo | Remove-GitHubLabel -Label $label.name -Confirm:$false
 
             It 'Should be gone after being removed by parameter' {
+            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+            $repo | Remove-GitHubLabel -Label $label.name -Confirm:$false
                 { $label | Get-GitHubLabel } | Should -Throw
             }
         }
 
         Context 'Removing a label with the name on the pipeline' {
-            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            $label.name | Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Force
 
             It 'Should be gone after being removed by parameter' {
+            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+            $label.name | Remove-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Force
                 { $label | Get-GitHubLabel } | Should -Throw
             }
         }
 
         Context 'Removing a label with the label object on the pipeline' {
-            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
-            $label | Remove-GitHubLabel -Force
 
             It 'Should be gone after being removed by parameter' {
+            $label = $repo | New-GitHubLabel -Label 'test' -Color 'CCCCCC'
+            $label | Remove-GitHubLabel -Force
                 { $label | Get-GitHubLabel } | Should -Throw
             }
         }
@@ -372,10 +395,12 @@ try
         }
 
         Context 'Updating label color with parameters' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
             $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor -PassThru
+            }
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -392,10 +417,12 @@ try
         }
 
         Context 'Updating label color (with #) with parameters' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = '#AAAAAA'
             $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Color $newColor -PassThru
+            }
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -412,10 +439,12 @@ try
         }
 
         Context 'Updating label name with parameters' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
             $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -PassThru
+            }
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -432,10 +461,12 @@ try
         }
 
         Context 'Updating label description with parameters' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newDescription = [Guid]::NewGuid().Guid
             $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -Description $newDescription -PassThru
+            }
 
             It 'Label should have different name' {
                 $result.name | Should -Be $label.name
@@ -452,12 +483,14 @@ try
         }
 
         Context 'Updating label name, color and description with parameters' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
             $result = Set-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $label.name -NewName $newName -Color $newColor -Description $newDescription -PassThru
+            }
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -476,10 +509,12 @@ try
         }
 
         Context 'Updating label color with repo on the pipeline' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newColor = 'AAAAAA'
             $result = $repo | Set-GitHubLabel -Label $label.name -Color $newColor -PassThru
+            }
 
             It 'Label should have different color' {
                 $result.name | Should -Be $label.name
@@ -496,10 +531,12 @@ try
         }
 
         Context 'Updating label name with the label on the pipeline' {
+            BeforeAll {
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB'
 
             $newName = [Guid]::NewGuid().Guid
             $result = $label | Set-GitHubLabel -NewName $newName -PassThru
+            }
 
             It 'Label should have different name' {
                 $result.name | Should -Be $newName
@@ -516,12 +553,14 @@ try
         }
 
         Context 'Updating label name, color and description with the label on the pipeline' {
+            BeforeAll{
             $label = $repo | New-GitHubLabel -Label ([Guid]::NewGuid().Guid) -Color 'BBBBBB' -Description 'test description'
 
             $newName = [Guid]::NewGuid().Guid
             $newColor = 'AAAAAA'
             $newDescription = [Guid]::NewGuid().Guid
             $result = $label | Set-GitHubLabel -NewName $newName -Color $newColor -Description $newDescription -PassThru
+            }
 
             It 'Label should have different everything' {
                 $result.name | Should -Be $newName
@@ -549,9 +588,11 @@ try
         }
 
         Context 'Applying a default set of labels' {
+            BeforeAll {
             Initialize-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $defaultLabels
 
             $labels = @($repo | Get-GitHubLabel)
+            }
 
             It 'Should return the expected number of labels' {
                 $labels.Count | Should -Be $defaultLabels.Count
@@ -568,6 +609,7 @@ try
         }
 
         Context 'Applying an overlapping set of labels' {
+            BeforeAll {
             $newLabels = @(
                 @{ 'name' = $defaultLabels[0].name; 'color' = 'aaaaaa' },
                 @{ 'name' = $defaultLabels[1].name; 'color' = 'bbbbbb' }
@@ -579,6 +621,7 @@ try
             $originalLabels = @($repo | Get-GitHubLabel)
             $null = $repo | Initialize-GitHubLabel -Label $newLabels
             $labels = @($repo | Get-GitHubLabel)
+            }
 
             It 'Should return the expected number of labels' {
                 $labels.Count | Should -Be $newLabels.Count
@@ -624,9 +667,12 @@ try
         }
 
         Context 'Adding labels to an issue' {
+            BeforeAll {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $result = @(Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -LabelName $expectedLabels -PassThru)
+            $issueLabels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
+            }
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -648,8 +694,6 @@ try
                     $label.LabelName | Should -Be $label.name
                 }
             }
-
-            $issueLabels = Get-GitHubLabel -OwnerName $ownerName -RepositoryName $repositoryName -Issue $issue.number
 
             It 'Should return the number of labels that were just added from querying the issue again' {
                 $issueLabels.Count | Should -Be $expectedLabels.Count
@@ -667,9 +711,12 @@ try
         }
 
         Context 'Adding labels to an issue with the repo on the pipeline' {
+            BeforeAll {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $result = @($repo | Add-GitHubIssueLabel -Issue $issue.number -LabelName $expectedLabels -PassThru)
+            $issueLabels = $repo | Get-GitHubLabel -Issue $issue.number
+            }
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -691,8 +738,6 @@ try
                     $label.LabelName | Should -Be $label.name
                 }
             }
-
-            $issueLabels = $repo | Get-GitHubLabel -Issue $issue.number
 
             It 'Should return the number of labels that were just added from querying the issue again' {
                 $issueLabels.Count | Should -Be $expectedLabels.Count
@@ -710,9 +755,12 @@ try
         }
 
         Context 'Adding labels to an issue with the issue on the pipeline' {
+            BeforeAll {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $result = @($issue | Add-GitHubIssueLabel -LabelName $expectedLabels -PassThru)
+            $issueLabels = $issue | Get-GitHubLabel
+            }
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -734,8 +782,6 @@ try
                     $label.LabelName | Should -Be $label.name
                 }
             }
-
-            $issueLabels = $issue | Get-GitHubLabel
 
             It 'Should return the number of labels that were just added from querying the issue again' {
                 $issueLabels.Count | Should -Be $expectedLabels.Count
@@ -753,9 +799,12 @@ try
         }
 
         Context 'Adding labels to an issue with the label names on the pipeline' {
+            BeforeAll {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $result = @($expectedLabels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
+            $issueLabels = $issue | Get-GitHubLabel
+            }
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -777,8 +826,6 @@ try
                     $label.LabelName | Should -Be $label.name
                 }
             }
-
-            $issueLabels = $issue | Get-GitHubLabel
 
             It 'Should return the number of labels that were just added from querying the issue again' {
                 $issueLabels.Count | Should -Be $expectedLabels.Count
@@ -796,10 +843,13 @@ try
         }
 
         Context 'Adding labels to an issue with the label object on the pipeline' {
+            BeforeAll {
             $expectedLabels = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[3].name)
             $issue = $repo | New-GitHubIssue -Title 'test issue'
             $labels = @($expectedLabels | ForEach-Object { Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $_ } )
             $result = @($labels | Add-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
+            $issueLabels = $issue | Get-GitHubLabel
+            }
 
             It 'Should return the number of labels that were just added' {
                 $result.Count | Should -Be $expectedLabels.Count
@@ -821,8 +871,6 @@ try
                     $label.LabelName | Should -Be $label.name
                 }
             }
-
-            $issueLabels = $issue | Get-GitHubLabel
 
             It 'Should return the number of labels that were just added from querying the issue again' {
                 $issueLabels.Count | Should -Be $expectedLabels.Count
@@ -852,9 +900,11 @@ try
         }
 
         Context 'When creating a new issue using parameters' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issueLabels = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = New-GitHubIssue -OwnerName $script:ownerName -RepositoryName $repositoryName -Title $issueName -Label $issueLabels
+            }
 
             It 'Should return the number of labels that were just added' {
                 $issue.labels.Count | Should -Be $issueLabels.Count
@@ -879,9 +929,11 @@ try
         }
 
         Context 'When creating a new issue using the repo on the pipeline' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issueLabels = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = $repo | New-GitHubIssue -Title $issueName -Label $issueLabels
+            }
 
             It 'Should return the number of labels that were just added' {
                 $issue.labels.Count | Should -Be $issueLabels.Count
@@ -918,6 +970,7 @@ try
         }
 
         Context 'For removing an individual issue with parameters' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -925,22 +978,25 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
+            }
+
             It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed all labels from the issue' {
             # Doing this manually instead of in a loop to try out different combinations of -Confirm:$false and -Force
             Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelsToAdd[0] -Issue $issue.number -Confirm:$false
             Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelsToAdd[1] -Issue $issue.number -Force
             Remove-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Label $labelsToAdd[2] -Issue $issue.number -Confirm:$false -Force
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed all labels from the issue' {
                 $issueLabels.Count | Should -Be 0
             }
         }
 
         Context 'For removing an individual issue using the repo on the pipeline' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -948,21 +1004,24 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
+            }
+
             It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed the expected label from the issue' {
             $labelToRemove = $labelsToAdd[0]
             $repo | Remove-GitHubIssueLabel -Label $labelToRemove -Issue $issue.number -Confirm:$false
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed the expected label from the issue' {
                 $issueLabels.Count | Should -Be ($labelsToAdd.Count - 1)
                 $issueLabels.name | Should -Not -Contain $labelToRemove
             }
         }
 
         Context 'For removing an individual issue using the issue on the pipeline' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -970,15 +1029,17 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
+            }
+
             It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed the expected label from the issue' {
             $labelToRemove = $labelsToAdd[1]
             $issue | Remove-GitHubIssueLabel -Label $labelToRemove -Confirm:$false
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed the expected label from the issue' {
                 $issueLabels.Count | Should -Be ($labelsToAdd.Count - 1)
                 $issueLabels.name | Should -Not -Contain $labelToRemove
             }
@@ -988,28 +1049,30 @@ try
         # sort out some complication issues with the ParameterSets
         #
         # Context 'For removing an individual issue using the label name on the pipeline' {
-        #     $issueName = [Guid]::NewGuid().Guid
+            #    BeforeAll {
+            #     $issueName = [Guid]::NewGuid().Guid
         #     $issue = $repo | New-GitHubIssue -Title $issueName
 
         #     $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name, $defaultLabels[2].name, $defaultLabels[3].name)
         #     $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
-        #     $issueLabels = @($issue | Get-GitHubLabel)
+        #     $issueLabels = @($issue | Get-GitHubLabel)}
         #     It 'Should have the expected number of labels' {
         #         $issueLabels.Count | Should -Be $labelsToAdd.Count
         #     }
 
-        #     $labelToRemove = $labelsToAdd[2]
-        #     $labelToRemove | Remove-GitHubIssueLabel  -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Confirm:$false
-
-        #     $issueLabels = @($issue | Get-GitHubLabel)
         #     It 'Should have removed the expected label from the issue' {
+    #     $labelToRemove = $labelsToAdd[2]
+    #     $labelToRemove | Remove-GitHubIssueLabel  -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Confirm:$false
+
+    #     $issueLabels = @($issue | Get-GitHubLabel)
         #         $issueLabels.Count | Should -Be ($labelsToAdd.Count - 1)
         #         $issueLabels.name | Should -Not -Contain $labelToRemove
         #     }
         # }
 
         Context 'For removing an individual issue using the label object on the pipeline' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -1017,22 +1080,24 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
+        }
             It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed the expected label from the issue' {
             $labelToRemove = $labelsToAdd[0]
             $label = $repo | Get-GitHubLabel -Label $labelToRemove
             $label | Remove-GitHubIssueLabel -Issue $issue.number -Confirm:$false
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed the expected label from the issue' {
                 $issueLabels.Count | Should -Be ($labelsToAdd.Count - 1)
                 $issueLabels.name | Should -Not -Contain $labelToRemove
             }
         }
 
         Context 'For removing all issues' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -1040,19 +1105,22 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have the expected number of labels' {
+        }
+
+        It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed all labels from the issue' {
             $issue | Remove-GitHubIssueLabel -Confirm:$false
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed all labels from the issue' {
                 $issueLabels.Count | Should -Be 0
             }
         }
 
         Context 'For removing all issues using Set-GitHubIssueLabel with the Issue on the pipeline' {
+            BeforeAll {
             $issueName = [Guid]::NewGuid().Guid
             $issue = $repo | New-GitHubIssue -Title $issueName
 
@@ -1060,14 +1128,15 @@ try
             $issue | Add-GitHubIssueLabel -LabelName $labelsToAdd -PassThru
 
             $issueLabels = @($issue | Get-GitHubLabel)
+        }
             It 'Should have the expected number of labels' {
                 $issueLabels.Count | Should -Be $labelsToAdd.Count
             }
 
+            It 'Should have removed all labels from the issue' {
             $issue | Set-GitHubIssueLabel -Confirm:$false
 
             $issueLabels = @($issue | Get-GitHubLabel)
-            It 'Should have removed all labels from the issue' {
                 $issueLabels.Count | Should -Be 0
             }
         }
@@ -1085,8 +1154,12 @@ try
         }
 
         Context 'Change the set of labels with parameters' {
+            BeforeAll {
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid) -Label $labelsToAdd
+            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
+            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $newIssueLabels -PassThru)
+        }
 
             It 'Should have assigned the expected labels' {
                 $issue.labels.Count | Should -Be $labelsToAdd.Count
@@ -1096,8 +1169,6 @@ try
                 }
             }
 
-            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @(Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1119,8 +1190,12 @@ try
         }
 
         Context 'Change the set of labels with the repo on the pipeline' {
+            BeforeAll {
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid) -Label $labelsToAdd
+            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
+            $result = @($repo | Set-GitHubIssueLabel -Issue $issue.number -Label $newIssueLabels -PassThru)
+        }
 
             It 'Should have assigned the expected labels' {
                 $issue.labels.Count | Should -Be $labelsToAdd.Count
@@ -1129,9 +1204,6 @@ try
                     $issue.labels.name | Should -Contain $label
                 }
             }
-
-            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @($repo | Set-GitHubIssueLabel -Issue $issue.number -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1153,8 +1225,13 @@ try
         }
 
         Context 'Change the set of labels with the issue on the pipeline' {
+            BeforeAll {
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid) -Label $labelsToAdd
+
+            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
+            $result = @($issue | Set-GitHubIssueLabel -Label $newIssueLabels -PassThru)
+        }
 
             It 'Should have assigned the expected labels' {
                 $issue.labels.Count | Should -Be $labelsToAdd.Count
@@ -1163,9 +1240,6 @@ try
                     $issue.labels.name | Should -Contain $label
                 }
             }
-
-            $newIssueLabels = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $result = @($issue | Set-GitHubIssueLabel -Label $newIssueLabels -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabels.Count
@@ -1187,8 +1261,13 @@ try
         }
 
         Context 'Change the set of labels with parameters with the labels on the pipeline' {
+            BeforeAll {
             $labelsToAdd = @($defaultLabels[0].name, $defaultLabels[1].name)
             $issue = $repo | New-GitHubIssue -Title ([Guid]::NewGuid().Guid) -Label $labelsToAdd
+            $newIssueLabelNames = @($defaultLabels[0].name, $defaultLabels[5].name)
+            $issueLabels = @($newIssueLabelNames | ForEach-Object { $repo | Get-GitHubLabel -Label $_ })
+            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
+        }
 
             It 'Should have assigned the expected labels' {
                 $issue.labels.Count | Should -Be $labelsToAdd.Count
@@ -1198,9 +1277,6 @@ try
                 }
             }
 
-            $newIssueLabelNames = @($defaultLabels[0].name, $defaultLabels[5].name)
-            $issueLabels = @($newIssueLabelNames | ForEach-Object { $repo | Get-GitHubLabel -Label $_ })
-            $result = @($issueLabels | Set-GitHubIssueLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Issue $issue.number -PassThru)
 
             It 'Should have the expected labels' {
                 $result.labels.Count | Should -Be $newIssueLabelNames.Count
@@ -1235,6 +1311,8 @@ try
 
             $issueLabels2 = @($defaultLabels[4].name, $defaultLabels[5].name)
             $issue2 = $milestone | New-GitHubIssue -Title 'test issue' -Label $issueLabels2
+
+            $milestoneLabels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Milestone $milestone.number
         }
 
         AfterAll {
@@ -1246,8 +1324,6 @@ try
                 $issue.labels.Count | Should -Be $issueLabels.Count
                 $issue2.labels.Count | Should -Be $issueLabels2.Count
             }
-
-            $milestoneLabels = Get-GitHubLabel -OwnerName $script:ownerName -RepositoryName $repositoryName -Milestone $milestone.number
 
             It 'Should return the same number of labels in the issue that were assigned to the milestone' {
                 $milestoneLabels.Count | Should -Be ($issue.labels.Count + $issue2.labels.Count)
@@ -1273,12 +1349,14 @@ try
         }
 
         Context 'Getting labels for issues in a milestone with the repo on the pipeline' {
+            BeforeAll {
+            $milestoneLabels = $repo | Get-GitHubLabel -Milestone $milestone.number
+            }
+
             It 'Should return the number of labels that were just added to the issue' {
                 $issue.labels.Count | Should -Be $issueLabels.Count
                 $issue2.labels.Count | Should -Be $issueLabels2.Count
             }
-
-            $milestoneLabels = $repo | Get-GitHubLabel -Milestone $milestone.number
 
             It 'Should return the same number of labels in the issues that were assigned to the milestone' {
                 $milestoneLabels.Count | Should -Be ($issue.labels.Count + $issue2.labels.Count)
@@ -1288,7 +1366,7 @@ try
                 $allLabels = $issue.labels.name + $issue2.labels.name
                 foreach ($label in $allLabels)
                 {
-                    $milestoneLabels.name | Should -Contain $label
+                   $milestoneLabels.name | Should -Contain $label
                 }
             }
 
@@ -1304,12 +1382,14 @@ try
         }
 
         Context 'Getting labels for issues in a milestone on the pipeline' {
+            BeforeAll {
+            $milestoneLabels = $milestone | Get-GitHubLabel
+            }
+
             It 'Should return the number of labels that were just added to the issue' {
                 $issue.labels.Count | Should -Be $issueLabels.Count
                 $issue2.labels.Count | Should -Be $issueLabels2.Count
             }
-
-            $milestoneLabels = $milestone | Get-GitHubLabel
 
             It 'Should return the same number of labels in the issue that is assigned to the milestone' {
                 $milestoneLabels.Count | Should -Be ($issue.labels.Count + $issue2.labels.Count)
@@ -1334,9 +1414,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
