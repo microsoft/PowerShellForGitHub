@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readOnly, hidden variables.
     @{
         defaultProject = "TestProject_$([Guid]::NewGuid().Guid)"
@@ -40,7 +39,7 @@ try
     $columntwo = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumnTwo
 
     $issue = New-GitHubIssue -Owner $script:ownerName -RepositoryName $repo.name -Title $defaultIssue
-
+}
     Describe 'Getting Project Cards' {
         BeforeAll {
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
@@ -53,7 +52,10 @@ try
         }
 
         Context 'Get cards for a column' {
+
+            BeforeAll {
             $results = @(Get-GitHubProjectCard -Column $column.id)
+        }
 
             It 'Should get cards' {
                 $results | Should -Not -BeNullOrEmpty
@@ -80,7 +82,9 @@ try
         }
 
         Context 'Get all cards for a column' {
+            BeforeAll {
             $results = @(Get-GitHubProjectCard -Column $column.id -State All)
+        }
 
             It 'Should get all cards' {
                 $results.Count | Should -Be 2
@@ -102,7 +106,10 @@ try
         }
 
         Context 'Get archived cards for a column' {
+            BeforeAll {
             $result = Get-GitHubProjectCard -Column $column.id -State Archived
+        }
+
             It 'Should get archived card' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -128,7 +135,9 @@ try
         }
 
         Context 'Get non-archived cards for a column (with column on pipeline)' {
+            BeforeAll {
             $result = $column | Get-GitHubProjectCard -State NotArchived
+        }
 
             It 'Should get non-archived card' {
                 $result | Should -Not -BeNullOrEmpty
@@ -167,8 +176,10 @@ try
         }
 
         Context 'Modify card note' {
+            BeforeAll {
             Set-GitHubProjectCard -Card $card.id -Note $defaultCardUpdated
             $result = Get-GitHubProjectCard -Card $card.id
+        }
 
             It 'Should get card' {
                 $result | Should -Not -BeNullOrEmpty
@@ -191,20 +202,23 @@ try
         }
 
         Context 'Modify card note (via card on pipeline)' {
+            BeforeAll {
             $result = $card | Get-GitHubProjectCard
+            $card | Set-GitHubProjectCard -Note $defaultCard
+        }
 
             It 'Should have the expected Note value' {
                 $result.note | Should -Be $defaultCardUpdated
             }
 
-            $card | Set-GitHubProjectCard -Note $defaultCard
-            $result = $card | Get-GitHubProjectCard
 
             It 'Should have the updated Note' {
+            $result = $card | Get-GitHubProjectCard
                 $result.note | Should -Be $defaultCard
             }
 
             It 'Has the expected type and additional properties' {
+            $result = $card | Get-GitHubProjectCard
                 $result.PSObject.TypeNames[0] | Should -Be 'GitHub.ProjectCard'
                 $result.CardId | Should -Be $result.id
                 $result.ProjectId | Should -Be $project.id
@@ -217,8 +231,10 @@ try
         }
 
         Context 'Archive a card' {
+            BeforeAll {
             Set-GitHubProjectCard -Card $cardArchived.id -Archive
             $result = Get-GitHubProjectCard -Card $cardArchived.id
+        }
 
             It 'Should get card' {
                 $result | Should -Not -BeNullOrEmpty
@@ -230,8 +246,10 @@ try
         }
 
         Context 'Restore a card' {
+            BeforeAll {
             $cardArchived | Set-GitHubProjectCard -Restore
             $result = Get-GitHubProjectCard -Card $cardArchived.id
+        }
 
             It 'Should get card' {
                 $result | Should -Not -BeNullOrEmpty
@@ -243,8 +261,10 @@ try
         }
 
         Context 'Move card position within column' {
+            BeforeAll {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top
             $results = @(Get-GitHubProjectCard -Column $column.id)
+        }
 
             It 'Card is now top' {
                 $results[0].note | Should -Be $defaultCardTwo
@@ -263,8 +283,10 @@ try
         }
 
         Context 'Move card using after parameter' {
+            BeforeAll {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -After $card.id
             $results = @(Get-GitHubProjectCard -Column $column.id)
+        }
 
             It 'Card now exists in new column' {
                 $results[1].note | Should -Be $defaultCardTwo
@@ -283,8 +305,10 @@ try
         }
 
         Context 'Move card using before parameter (card on pipeline)' {
+            BeforeAll {
             $null = $cardTwo | Move-GitHubProjectCard -After $card.id
             $results = @($column | Get-GitHubProjectCard)
+        }
 
             It 'Card now exists in new column' {
                 $results[1].note | Should -Be $defaultCardTwo
@@ -303,8 +327,10 @@ try
         }
 
         Context 'Move card to another column' {
+            BeforeAll {
             $null = Move-GitHubProjectCard -Card $cardTwo.id -Top -ColumnId $columnTwo.id
             $results = @(Get-GitHubProjectCard -Column $columnTwo.id)
+        }
 
             It 'Card now exists in new column' {
                 $results[0].note | Should -Be $defaultCardTwo
@@ -323,8 +349,10 @@ try
         }
 
         Context 'Move card to another column (with column on pipeline)' {
+            BeforeAll {
             $null = ($column | Move-GitHubProjectCard -Card $cardTwo.id -Top)
             $result = $cardTwo | Get-GitHubProjectCard
+        }
 
             It 'Card now exists in new column' {
                 $result.ColumnId | Should -Be $column.ColumnId
@@ -353,15 +381,15 @@ try
         Context 'Create project card with note' {
             BeforeAll {
                 $card = @{id = 0}
+
+            $card.id = (New-GitHubProjectCard -Column $column.id -Note $defaultCard).id
+            $result = Get-GitHubProjectCard -Card $card.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
                 Remove-Variable -Name card
             }
-
-            $card.id = (New-GitHubProjectCard -Column $column.id -Note $defaultCard).id
-            $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Card exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -386,16 +414,16 @@ try
         Context 'Create project card with note (with column object via pipeline)' {
             BeforeAll {
                 $card = @{id = 0}
+
+            $newCard = $column | New-GitHubProjectCard -Note $defaultCard
+            $card.id = $newCard.id
+            $result = $newCard | Get-GitHubProjectCard
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
                 Remove-Variable -Name card
             }
-
-            $newCard = $column | New-GitHubProjectCard -Note $defaultCard
-            $card.id = $newCard.id
-            $result = $newCard | Get-GitHubProjectCard
 
             It 'Card exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -420,15 +448,15 @@ try
         Context 'Create project card from issue' {
             BeforeAll {
                 $card = @{id = 0}
+
+            $card.id = (New-GitHubProjectCard -Column $column.id -IssueId $issue.id).id
+            $result = Get-GitHubProjectCard -Card $card.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Force
                 Remove-Variable -Name card
             }
-
-            $card.id = (New-GitHubProjectCard -Column $column.id -IssueId $issue.id).id
-            $result = Get-GitHubProjectCard -Card $card.id
 
             It 'Card exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -453,16 +481,16 @@ try
         Context 'Create project card from issue (with issue object on pipeline)' {
             BeforeAll {
                 $card = @{id = 0}
+
+            $newCard = $issue | New-GitHubProjectCard -Column $column.id
+            $card.id = $newCard.id
+            $result = $newCard | Get-GitHubProjectCard
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectCard -Card $card.id -Force
                 Remove-Variable -Name card
             }
-
-            $newCard = $issue | New-GitHubProjectCard -Column $column.id
-            $card.id = $newCard.id
-            $result = $newCard | Get-GitHubProjectCard
 
             It 'Card exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -491,9 +519,9 @@ try
         Context 'Remove card' {
             BeforeAll {
                 $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
+            $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
             }
 
-            $null = Remove-GitHubProjectCard -Card $card.id -Confirm:$false
             It 'Project card should be removed' {
                 {Get-GitHubProjectCard -Card $card.id} | Should -Throw
             }
@@ -502,19 +530,18 @@ try
         Context 'Remove card (via pipeline)' {
             BeforeAll {
                 $card = $column | New-GitHubProjectCard -Note $defaultCard
+            $null = $card | Remove-GitHubProjectCard -Force
             }
 
-            $null = $card | Remove-GitHubProjectCard -Force
             It 'Project card should be removed' {
                 {$card | Get-GitHubProjectCard} | Should -Throw
             }
         }
     }
 
+AfterAll {
     Remove-GitHubProject -Project $project.id -Confirm:$false
-}
-finally
-{
+
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
