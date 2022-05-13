@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readOnly, hidden variables.
     @{
         defaultUserProject = "TestProject_$([Guid]::NewGuid().Guid)"
@@ -38,18 +37,20 @@ try
     }
 
     $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
+}
 
     Describe 'Getting Project' {
         Context 'Get User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc
+
+            $results = @(Get-GitHubProject -UserName $script:ownerName | Where-Object Name -eq $defaultUserProject)
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $results = @(Get-GitHubProject -UserName $script:ownerName | Where-Object Name -eq $defaultUserProject)
             It 'Should get project' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -76,13 +77,14 @@ try
         Context 'Get Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -ProjectName $defaultOrgProject -Description $defaultOrgProjectDesc
+
+            $results = @(Get-GitHubProject -OrganizationName $script:organizationName | Where-Object Name -eq $defaultOrgProject)
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $results = @(Get-GitHubProject -OrganizationName $script:organizationName | Where-Object Name -eq $defaultOrgProject)
             It 'Should get project' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -112,13 +114,14 @@ try
         Context 'Get Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
+
+            $results = @(Get-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name | Where-Object Name -eq $defaultRepoProject)
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $results = @(Get-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name | Where-Object Name -eq $defaultRepoProject)
             It 'Should get project' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -147,13 +150,14 @@ try
             BeforeAll {
                 $project = $repo | New-GitHubProject -ProjectName $defaultProjectClosed -Description $defaultProjectClosedDesc
                 Set-GitHubProject -Project $project.id -State Closed
+
+            $results = @($repo | Get-GitHubProject -State 'Closed')
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $results = @($repo | Get-GitHubProject -State 'Closed')
             It 'Should get project' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -185,13 +189,14 @@ try
         Context 'Get a specific project (by parameter)' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
+
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -215,13 +220,14 @@ try
         Context 'Get a specific project (by pipeline object)' {
             BeforeAll {
                 $project = $repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
+
+            $result = $project | Get-GitHubProject
             }
 
             AfterAll {
                 $project | Remove-GitHubProject -Force
             }
 
-            $result = $project | Get-GitHubProject
             It 'Should get the right project' {
                 $result.id | Should -Be $project.id
             }
@@ -237,13 +243,14 @@ try
         Context 'Get a specific project (with ID via pipeline)' {
             BeforeAll {
                 $project = $repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
+
+            $result = $project.id | Get-GitHubProject
             }
 
             AfterAll {
                 $project | Remove-GitHubProject -Force
             }
 
-            $result = $project.id | Get-GitHubProject
             It 'Should get the right project' {
                 $result.id | Should -Be $project.id
             }
@@ -261,14 +268,15 @@ try
         Context 'Modify User projects' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc
+
+            Set-GitHubProject -Project $project.id -Description $modifiedUserProjectDesc
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            Set-GitHubProject -Project $project.id -Description $modifiedUserProjectDesc
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -292,14 +300,15 @@ try
         Context 'Modify User projects (via ID in pipeline)' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc
+
+            $project.id | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $project.id | Set-GitHubProject -Description $modifiedUserProjectDesc
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -323,14 +332,15 @@ try
         Context 'Modify User projects (via object in pipeline)' {
             BeforeAll {
                 $project = New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc
+
+            $project | Set-GitHubProject -Description $modifiedUserProjectDesc
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            $project | Set-GitHubProject -Description $modifiedUserProjectDesc
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -354,14 +364,15 @@ try
         Context 'Modify Organization projects' {
             BeforeAll {
                 $project = New-GitHubProject -OrganizationName $script:organizationName -ProjectName $defaultOrgProject -Description $defaultOrgProjectDesc
+
+            Set-GitHubProject -Project $project.id -Description $modifiedOrgProjectDesc -Private:$false -OrganizationPermission Admin
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            Set-GitHubProject -Project $project.id -Description $modifiedOrgProjectDesc -Private:$false -OrganizationPermission Admin
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -396,14 +407,15 @@ try
         Context 'Modify Repo projects' {
             BeforeAll {
                 $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
+
+            Set-GitHubProject -Project $project.id -Description $modifiedRepoProjectDesc
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProject -Project $project.id -Confirm:$false
             }
 
-            Set-GitHubProject -Project $project.id -Description $modifiedRepoProjectDesc
-            $result = Get-GitHubProject -Project $project.id
             It 'Should get project' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -429,6 +441,9 @@ try
         Context 'Create User projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+            $project.id = (New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
@@ -436,8 +451,6 @@ try
                 Remove-Variable project
             }
 
-            $project.id = (New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc).id
-            $result = Get-GitHubProject -Project $project.id
             It 'Project exists' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -461,6 +474,9 @@ try
         Context 'Create User project (title on pipeline)' {
             BeforeAll {
                 $project = @{id = 0}
+
+            $project.id = ($defaultUserProject | New-GitHubProject -UserProject -Description $defaultUserProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
@@ -468,8 +484,6 @@ try
                 Remove-Variable project
             }
 
-            $project.id = ($defaultUserProject | New-GitHubProject -UserProject -Description $defaultUserProjectDesc).id
-            $result = Get-GitHubProject -Project $project.id
             It 'Project exists' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -493,6 +507,9 @@ try
         Context 'Create Organization projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+            $project.id = (New-GitHubProject -OrganizationName $script:organizationName -ProjectName $defaultOrgProject -Description $defaultOrgProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
@@ -500,8 +517,6 @@ try
                 Remove-Variable project
             }
 
-            $project.id = (New-GitHubProject -OrganizationName $script:organizationName -ProjectName $defaultOrgProject -Description $defaultOrgProjectDesc).id
-            $result = Get-GitHubProject -Project $project.id
             It 'Project exists' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -528,6 +543,9 @@ try
         Context 'Create Repo projects' {
             BeforeAll {
                 $project = @{id = 0}
+
+            $project.id = (New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
@@ -535,8 +553,6 @@ try
                 Remove-Variable project
             }
 
-            $project.id = (New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc).id
-            $result = Get-GitHubProject -Project $project.id
             It 'Project Exists' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -560,6 +576,9 @@ try
         Context 'Create Repo project (via pipeline)' {
             BeforeAll {
                 $project = @{id = 0}
+
+            $project.id = ($repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc).id
+            $result = Get-GitHubProject -Project $project.id
             }
 
             AfterAll {
@@ -567,8 +586,6 @@ try
                 Remove-Variable project
             }
 
-            $project.id = ($repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc).id
-            $result = Get-GitHubProject -Project $project.id
             It 'Project Exists' {
                 $result | Should -Not -BeNullOrEmpty
             }
@@ -592,35 +609,36 @@ try
 
     Describe 'Remove Project' {
         Context 'Remove User projects' {
+            It 'Project should be removed' {
             $project = New-GitHubProject -UserProject -ProjectName $defaultUserProject -Description $defaultUserProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Force
-            It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
 
         Context 'Remove Organization projects' {
+            It 'Project should be removed' {
             $project = New-GitHubProject -OrganizationName $script:organizationName -ProjectName $defaultOrgProject -Description $defaultOrgProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Force
-            It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
 
         Context 'Remove Repo projects' {
+
+            It 'Project should be removed' {
             $project = New-GitHubProject -OwnerName $script:ownerName -RepositoryName $repo.name -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
             $null = Remove-GitHubProject -Project $project.id -Confirm:$false
 
             # Despite using StateChangeDelaySeconds during tests, we still appear to need more time
             # for projects to be removed before testing that they were properly deleted.
             Start-Sleep -Seconds 5
-
-            It 'Project should be removed' {
                 {Get-GitHubProject -Project $project.id} | Should -Throw
             }
         }
 
         Context 'Remove Repo project via pipeline' {
+            It 'Project should be removed' {
             $project = $repo | New-GitHubProject -ProjectName $defaultRepoProject -Description $defaultRepoProjectDesc
             $project | Remove-GitHubProject -Force
 
@@ -628,16 +646,14 @@ try
             # for projects to be removed before testing that they were properly deleted.
             Start-Sleep -Seconds 5
 
-            It 'Project should be removed' {
                 {$project | Get-GitHubProject} | Should -Throw
             }
         }
     }
 
+AfterAll {
     Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
-}
-finally
-{
+
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
