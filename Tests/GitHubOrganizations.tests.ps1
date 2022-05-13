@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     # TODO once more capabilities exist in the module's API set
 
     # TODO: Re-enable these tests once the module has sufficient support getting the Organization
@@ -46,9 +46,8 @@ try
     #         @($members).Count | Should -Be 1
     #     }
     # }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
