@@ -11,20 +11,22 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
-    Describe 'Getting pull request from repository' {
+Describe 'Getting pull request from repository' {
         BeforeAll {
             $repo = Get-GitHubRepository -OwnerName 'microsoft' -RepositoryName 'PowerShellForGitHub'
         }
 
         Context 'When getting a pull request' {
+            BeforeAll {
             $pullRequestNumber = 39
             $pullRequest = Get-GitHubPullRequest -OwnerName 'microsoft' -RepositoryName 'PowerShellForGitHub' -PullRequest $pullRequestNumber
+        }
 
             It 'Should be the expected pull request' {
                 $pullRequest.number | Should -Be $pullRequestNumber
@@ -69,16 +71,17 @@ try
         }
 
         Context 'All closed' {
+            BeforeAll {
             $pullRequests = @(Get-GitHubPullRequest -OwnerName $ownerName -RepositoryName $repositoryName -State 'Closed')
+        }
 
             It 'Should return expected number of PRs' {
                 $pullRequests.Count | Should -BeGreaterOrEqual 140
             }
         }
     }
-}
-finally
-{
+
+    AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
