@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readOnly, hidden variables.
     @{
         defaultProject = "TestProject_$([Guid]::NewGuid().Guid)"
@@ -28,6 +27,7 @@ try
     }
 
     $project = New-GitHubProject -UserProject -ProjectName $defaultProject
+}
 
     Describe 'Getting Project Columns' {
         BeforeAll {
@@ -39,7 +39,10 @@ try
         }
 
         Context 'Get columns for a project' {
+            BeforeAll {
             $results = @(Get-GitHubProjectColumn -Project $project.id)
+        }
+
             It 'Should get column' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -61,7 +64,10 @@ try
         }
 
         Context 'Get columns for a project (via pipeline)' {
+            BeforeAll {
             $results = @($project | Get-GitHubProjectColumn)
+        }
+
             It 'Should get column' {
                 $results | Should -Not -BeNullOrEmpty
             }
@@ -83,7 +89,9 @@ try
         }
 
         Context 'Get specific column' {
+            BeforeAll {
             $result = Get-GitHubProjectColumn -Column $column.id
+        }
 
             It 'Should be the right column' {
                 $result.id | Should -Be $column.id
@@ -98,7 +106,9 @@ try
         }
 
         Context 'Get specific column (via pipeline)' {
+            BeforeAll {
             $result = $column | Get-GitHubProjectColumn
+        }
 
             It 'Should be the right column' {
                 $result.id | Should -Be $column.id
@@ -125,8 +135,10 @@ try
         }
 
         Context 'Modify column name' {
+            BeforeAll {
             Set-GitHubProjectColumn -Column $column.id -ColumnName $defaultColumnUpdate
             $result = Get-GitHubProjectColumn -Column $column.id
+        }
 
             It 'Should get column' {
                 $result | Should -Not -BeNullOrEmpty
@@ -145,8 +157,10 @@ try
         }
 
         Context 'Move column to first position' {
+            BeforeAll {
             $null = Move-GitHubProjectColumn -Column $columntwo.id -First
             $results = @(Get-GitHubProjectColumn -Project $project.id)
+        }
 
             It 'Should still have more than one column in the project' {
                 $results.Count | Should -Be 2
@@ -165,8 +179,10 @@ try
         }
 
         Context 'Move column using after parameter' {
+            BeforeAll {
             $null = Move-GitHubProjectColumn -Column $columntwo.id -After $column.id
             $results = @(Get-GitHubProjectColumn -Project $project.id)
+        }
 
             It 'Column is now not in the first position' {
                 $results[1].name | Should -Be $defaultColumnTwo
@@ -191,15 +207,15 @@ try
         Context 'Create project column' {
             BeforeAll {
                 $column = @{id = 0}
+
+            $column.id = (New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn).id
+            $result = Get-GitHubProjectColumn -Column $column.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectColumn -Column $column.id -Force
                 Remove-Variable -Name column
             }
-
-            $column.id = (New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn).id
-            $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -220,15 +236,15 @@ try
         Context 'Create project column (object via pipeline)' {
             BeforeAll {
                 $column = @{id = 0}
+
+            $column.id = ($project | New-GitHubProjectColumn -ColumnName $defaultColumn).id
+            $result = Get-GitHubProjectColumn -Column $column.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectColumn -Column $column.id -Force
                 Remove-Variable -Name column
             }
-
-            $column.id = ($project | New-GitHubProjectColumn -ColumnName $defaultColumn).id
-            $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -249,15 +265,15 @@ try
         Context 'Create project column (name via pipeline)' {
             BeforeAll {
                 $column = @{id = 0}
+
+            $column.id = ($defaultColumn | New-GitHubProjectColumn -Project $project.id).id
+            $result = Get-GitHubProjectColumn -Column $column.id
             }
 
             AfterAll {
                 $null = Remove-GitHubProjectColumn -Column $column.id -Force
                 Remove-Variable -Name column
             }
-
-            $column.id = ($defaultColumn | New-GitHubProjectColumn -Project $project.id).id
-            $result = Get-GitHubProjectColumn -Column $column.id
 
             It 'Column exists' {
                 $result | Should -Not -BeNullOrEmpty
@@ -280,9 +296,9 @@ try
         Context 'Remove project column' {
             BeforeAll {
                 $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
+            $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
             }
 
-            $null = Remove-GitHubProjectColumn -Column $column.id -Confirm:$false
             It 'Project column should be removed' {
                 {Get-GitHubProjectColumn -Column $column.id} | Should -Throw
             }
@@ -291,19 +307,18 @@ try
         Context 'Remove project column (via pipeline)' {
             BeforeAll {
                 $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
+            $column | Remove-GitHubProjectColumn -Force
             }
 
-            $column | Remove-GitHubProjectColumn -Force
             It 'Project column should be removed' {
                 {$column | Get-GitHubProjectColumn} | Should -Throw
             }
         }
     }
 
+    AfterAll {
     Remove-GitHubProject -Project $project.id -Confirm:$false
-}
-finally
-{
+
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
