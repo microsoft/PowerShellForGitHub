@@ -208,46 +208,6 @@ Describe 'Get-GitHubCodeOfConduct' {
         $script:originalConfigFile = $null
     }
 
-    Context 'Can get the code of conduct for a repo with parameters' {
-        BeforeAll {
-            $result = Get-GitHubCodeOfConduct -OwnerName 'PowerShell' -RepositoryName 'PowerShell'
-        }
-
-        It 'Has the expected result' {
-            $result.key | Should -Be 'other'
-        }
-
-        It 'Has the expected type and additional properties' {
-            $result.PSObject.TypeNames[0] | Should -Be 'GitHub.CodeOfConduct'
-            $result.CodeOfConductKey | Should -Be $result.key
-        }
-    }
-
-    Context 'Will fail if not provided both OwnerName and RepositoryName' {
-        It 'Should fail if only OwnerName is specified' {
-            { Get-GitHubCodeOfConduct -OwnerName 'PowerShell' } | Should -Throw
-        }
-
-        It 'Should fail if only RepositoryName is specified' {
-            { Get-GitHubCodeOfConduct -RepositoryName 'PowerShell' } | Should -Throw
-        }
-    }
-
-    Context 'Can get the code of conduct for a repo with the repo on the pipeline' {
-        BeforeAll {
-            $result = Get-GitHubRepository -OwnerName 'PowerShell' -RepositoryName 'PowerShell' | Get-GitHubCodeOfConduct
-        }
-
-        It 'Has the expected result' {
-            $result.key | Should -Be 'other'
-        }
-
-        It 'Has the expected type and additional properties' {
-            $result.PSObject.TypeNames[0] | Should -Be 'GitHub.CodeOfConduct'
-            $result.CodeOfConductKey | Should -Be $result.key
-        }
-    }
-
     Context 'Can get all of the codes of conduct' {
         BeforeAll {
             $results = @(Get-GitHubCodeOfConduct)
