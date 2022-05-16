@@ -49,8 +49,9 @@ try
                 }
 
                 It 'Should return the first release from the full releases list' {
-                    $latest[0].url | Should -Be $releases[0].url
-                    $latest[0].name | Should -Be $releases[0].name
+                    $first = $releases | Where-Object prerelease -eq $false | Select-Object -First 1
+                    $latest[0].url | Should -Be $first[0].url
+                    $latest[0].name | Should -Be $first[0].name
                 }
 
                 It 'Should have expected type and additional properties' {
@@ -72,8 +73,9 @@ try
                 }
 
                 It 'Should return the first release from the full releases list' {
-                    $latest[0].url | Should -Be $releases[0].url
-                    $latest[0].name | Should -Be $releases[0].name
+                    $first = $releases | Where-Object prerelease -eq $false | Select-Object -First 1
+                    $latest[0].url | Should -Be $first[0].url
+                    $latest[0].name | Should -Be $first[0].name
                 }
 
                 It 'Should have expected type and additional properties' {
