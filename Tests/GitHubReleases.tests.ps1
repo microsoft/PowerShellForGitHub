@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Getting releases from repository' {
         Context 'Common test state' {
             BeforeAll {
@@ -42,7 +42,9 @@ try
             }
 
             Context 'When getting the latest releases' {
+                BeforeAll {
                 $latest = @(Get-GitHubRelease -OwnerName $dotNetOwnerName -RepositoryName $repositoryName -Latest)
+            }
 
                 It 'Should return one value' {
                     $latest.Count | Should -Be 1
@@ -65,8 +67,10 @@ try
             }
 
             Context 'When getting the latest releases via the pipeline' {
+                BeforeAll {
                 $latest = @(Get-GitHubRepository -OwnerName $dotNetOwnerName -RepositoryName $repositoryName |
                     Get-GitHubRelease -Latest)
+                }
 
                 It 'Should return one value' {
                     $latest.Count | Should -Be 1
@@ -87,15 +91,17 @@ try
                     $latest[0].ReleaseId | Should -Be $latest[0].id
                 }
 
-                $latestAgain = @($latest | Get-GitHubRelease)
                 It 'Should be the same release' {
+                    $latestAgain = @($latest | Get-GitHubRelease)
                     $latest[0].ReleaseId | Should -Be $latestAgain[0].ReleaseId
                 }
             }
 
             Context 'When getting a specific release' {
+                BeforeAll {
                 $specificIndex = 5
                 $specific = @(Get-GitHubRelease -OwnerName $dotNetOwnerName -RepositoryName $repositoryName -ReleaseId $releases[$specificIndex].id)
+            }
 
                 It 'Should return one value' {
                     $specific.Count | Should -Be 1
@@ -116,8 +122,10 @@ try
             }
 
             Context 'When getting a tagged release' {
+                BeforeAll {
                 $taggedIndex = 8
                 $tagged = @(Get-GitHubRelease -OwnerName $dotNetOwnerName -RepositoryName $repositoryName -Tag $releases[$taggedIndex].tag_name)
+            }
 
                 It 'Should return one value' {
                     $tagged.Count | Should -Be 1
@@ -155,9 +163,9 @@ try
             }
 
             Context 'When getting all releases' {
-                $releases = @(Get-GitHubRelease)
-
                 It 'Should return multiple releases' {
+                    $releases = @(Get-GitHubRelease)
+
                     $releases.Count | Should -BeGreaterThan 1
                 }
             }
@@ -378,15 +386,18 @@ try
                 $release | Remove-GitHubRelease -Force
             }
 
-            $assets = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
             It 'Should have no assets so far' {
+                $assets = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
                 $assets.Count | Should -Be 0
             }
 
-            @($zipFile, $txtFile) | ForEach-Object {
-                $fileName = (Get-Item -Path $_).Name
+            Context 'Add zip asset' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $zipFile).Name
                 $finalLabel = "$labelBase-$fileName"
-                $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $_ -Label $finalLabel
+                $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $zipFile -Label $finalLabel
+                }
+
                 It "Can add a release asset" {
                     $assetId = $asset.id
 
@@ -405,7 +416,36 @@ try
                 }
             }
 
+            Context 'Add txt asset' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $txtFile).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile -Label $finalLabel
+            }
+
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            Context 'Retrieve Assets' {
+                BeforeAll {
             $assets = @(Get-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id)
+        }
+
             It 'Should have both assets now' {
                 $assets.Count | Should -Be 2
             }
@@ -423,9 +463,14 @@ try
                 }
             }
 
+
+            Context 'Retrieve txt asset' {
+                BeforeAll {
             $txtFileName = (Get-Item -Path $txtFile).Name
             $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
             $asset = Get-GitHubReleaseAsset -Uri $repo.svn_url -Asset $txtFileAsset.id
+        }
+
             It 'Should be able to query for a single asset' {
                 $asset.id | Should -Be $txtFileAsset.id
             }
@@ -444,6 +489,8 @@ try
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
             }
 
+            Context 'Dowload parameters' {
+                BeforeAll {
             $downloadParams = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repo.name
@@ -452,6 +499,8 @@ try
             }
 
             $null = Get-GitHubReleaseAsset @downloadParams
+        }
+
             It 'Should be able to download the asset file' {
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
             }
@@ -480,6 +529,9 @@ try
                 Compare-Object @compareParams | Should -BeNullOrEmpty
             }
         }
+            }
+        }
+}
 
         Context 'Using the repo on the pipeline' {
             BeforeAll {
@@ -487,21 +539,25 @@ try
 
                 # We want to make sure we start out without the file being there.
                 Remove-Item -Path $saveFile -ErrorAction SilentlyContinue | Out-Null
+
+                $assets = @($repo | Get-GitHubReleaseAsset -Release $release.id)
             }
 
             AfterAll {
                 $release | Remove-GitHubRelease -Force
             }
 
-            $assets = @($repo | Get-GitHubReleaseAsset -Release $release.id)
             It 'Should have no assets so far' {
                 $assets.Count | Should -Be 0
             }
 
-            @($zipFile, $txtFile) | ForEach-Object {
-                $fileName = (Get-Item -Path $_).Name
+            Context 'Add zip file' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $zipFile).Name
                 $finalLabel = "$labelBase-$fileName"
-                $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $_ -Label $finalLabel
+                $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $zipFile -Label $finalLabel
+            }
+
                 It "Can add a release asset" {
                     $assetId = $asset.id
 
@@ -520,7 +576,36 @@ try
                 }
             }
 
+            Context 'Add txtFile' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $txtFile).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $txtFile -Label $finalLabel
+            }
+
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            Context 'Retrieve Assets' {
+                BeforeAll {
             $assets = @($repo | Get-GitHubReleaseAsset -Release $release.id)
+        }
+
             It 'Should have both assets now' {
                 $assets.Count | Should -Be 2
             }
@@ -538,9 +623,13 @@ try
                 }
             }
 
+            Context 'Retrieve txt assets' {
+                BeforeAll {
             $txtFileName = (Get-Item -Path $txtFile).Name
             $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
             $asset = $repo | Get-GitHubReleaseAsset -Asset $txtFileAsset.id
+        }
+
             It 'Should be able to query for a single asset' {
                 $asset.id | Should -Be $txtFileAsset.id
             }
@@ -559,12 +648,16 @@ try
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
             }
 
+            Context 'Download parameters' {
+                BeforeAll {
             $downloadParams = @{
                 Asset = $txtFileAsset.id
                 Path = $saveFile
             }
 
             $null = $repo | Get-GitHubReleaseAsset @downloadParams
+        }
+
             It 'Should be able to download the asset file' {
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
             }
@@ -592,7 +685,10 @@ try
 
                 Compare-Object @compareParams | Should -BeNullOrEmpty
             }
+            }
+}
         }
+}
 
         Context 'Using the release on the pipeline' {
             BeforeAll {
@@ -600,21 +696,25 @@ try
 
                 # We want to make sure we start out without the file being there.
                 Remove-Item -Path $saveFile -ErrorAction SilentlyContinue | Out-Null
+
+                $assets = @($release | Get-GitHubReleaseAsset)
             }
 
             AfterAll {
                 $release | Remove-GitHubRelease -Force
             }
 
-            $assets = @($release | Get-GitHubReleaseAsset)
             It 'Should have no assets so far' {
                 $assets.Count | Should -Be 0
             }
 
-            @($zipFile, $txtFile) | ForEach-Object {
-                $fileName = (Get-Item -Path $_).Name
+            Context 'Add zip file' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $zipFile).Name
                 $finalLabel = "$labelBase-$fileName"
-                $asset = $release | New-GitHubReleaseAsset -Path $_ -Label $finalLabel
+                $asset = $release | New-GitHubReleaseAsset -Path $zipFile -Label $finalLabel
+            }
+
                 It "Can add a release asset" {
                     $assetId = $asset.id
 
@@ -633,7 +733,36 @@ try
                 }
             }
 
+            Context 'Add txt file' {
+                BeforeAll {
+                $fileName = (Get-Item -Path $txtFile).Name
+                $finalLabel = "$labelBase-$fileName"
+                $asset = $release | New-GitHubReleaseAsset -Path $txtFile -Label $finalLabel
+            }
+
+                It "Can add a release asset" {
+                    $assetId = $asset.id
+
+                    $asset.name | Should -BeExactly $fileName
+                    $asset.label | Should -BeExactly $finalLabel
+                }
+
+                It 'Should have expected type and additional properties' {
+                    $elements = Split-GitHubUri -Uri $asset.url
+                    $repositoryUrl = Join-GitHubUri @elements
+
+                    $asset.PSObject.TypeNames[0] | Should -Be 'GitHub.ReleaseAsset'
+                    $asset.RepositoryUrl | Should -Be $repositoryUrl
+                    $asset.AssetId | Should -Be $asset.id
+                    $asset.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
+                }
+            }
+
+            Context 'Retrieve assets' {
+                BeforeAll {
             $assets = @($release | Get-GitHubReleaseAsset)
+        }
+
             It 'Should have both assets now' {
                 $assets.Count | Should -Be 2
             }
@@ -651,9 +780,13 @@ try
                 }
             }
 
+        Context 'Retrieve txt file' {
+            BeforeAll {
             $txtFileName = (Get-Item -Path $txtFile).Name
             $txtFileAsset = $assets | Where-Object { $_.name -eq $txtFileName }
             $asset = $release | Get-GitHubReleaseAsset -Asset $txtFileAsset.id
+        }
+
             It 'Should be able to query for a single asset' {
                 $asset.id | Should -Be $txtFileAsset.id
             }
@@ -672,12 +805,15 @@ try
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeFalse
             }
 
-            $downloadParams = @{
+        Context 'Download file' {
+            BeforeAll {
+                $downloadParams = @{
                 Asset = $txtFileAsset.id
                 Path = $saveFile
             }
+                $null = $release | Get-GitHubReleaseAsset @downloadParams
+        }
 
-            $null = $release | Get-GitHubReleaseAsset @downloadParams
             It 'Should be able to download the asset file' {
                 Test-Path -Path $saveFile -PathType Leaf | Should -BeTrue
             }
@@ -706,6 +842,9 @@ try
                 Compare-Object @compareParams | Should -BeNullOrEmpty
             }
         }
+            }
+        }
+}
 
         Context 'Verifying a zip file' {
             BeforeAll {
@@ -719,6 +858,8 @@ try
                 $tempFile = New-TemporaryFile
                 $downloadedZipFile = "$($tempFile.FullName).zip"
                 Move-Item -Path $tempFile -Destination $downloadedZipFile
+
+                $asset = $release | New-GitHubReleaseAsset -Path $zipFile -ContentType 'application/zip'
             }
 
             AfterAll {
@@ -731,7 +872,6 @@ try
                 }
             }
 
-            $asset = $release | New-GitHubReleaseAsset -Path $zipFile -ContentType 'application/zip'
             It "Has the expected content inside" {
                 $result = $asset | Get-GitHubReleaseAsset -Path $downloadedZipFile -Force
                 Expand-Archive -Path $downloadedZipFile -DestinationPath $tempPath
@@ -772,14 +912,18 @@ try
         }
 
         Context 'Using parameters' {
+            BeforeAll {
             $fileName = (Get-Item -Path $txtFile).Name
             $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile -Label $label
+        }
 
             It 'Has the expected initial property values' {
                 $asset.name | Should -BeExactly $fileName
                 $asset.label | Should -BeExactly $label
             }
 
+            Context 'Update release asset' {
+                BeforeAll {
             $setParams = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repo.name
@@ -788,6 +932,8 @@ try
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
+        }
+
             It 'Should have the original property values' {
                 $updated.name | Should -BeExactly $fileName
                 $updated.label | Should -BeExactly $label
@@ -802,8 +948,10 @@ try
                 $updated.AssetId | Should -Be $updated.id
                 $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
+}
 
-            $updatedFileName = 'updated1.txt'
+            It 'Should have a new name and the original label' {
+        $updatedFileName = 'updated1.txt'
             $setParams = @{
                 OwnerName = $script:ownerName
                 RepositoryName = $repo.name
@@ -813,11 +961,12 @@ try
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and the original label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $label
             }
 
+            It 'Should have the current name and a new label' {
+            $updatedFileName = 'updated1.txt'
             $updatedLabel = 'updatedLabel2'
             $setParams = @{
                 OwnerName = $script:ownerName
@@ -828,11 +977,11 @@ try
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
-            It 'Should have the current name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
 
+            It 'Should have a new name and a new label' {
             $updatedFileName = 'updated3parameter.txt'
             $updatedLabel = 'updatedLabel3parameter'
             $setParams = @{
@@ -845,27 +994,32 @@ try
             }
 
             $updated = Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
         }
 
         Context 'Using the repo on the pipeline' {
+            BeforeAll {
             $fileName = (Get-Item -Path $txtFile).Name
             $asset = $repo | New-GitHubReleaseAsset -Release $release.id -Path $txtFile -Label $label
+}
 
             It 'Has the expected initial property values' {
                 $asset.name | Should -BeExactly $fileName
                 $asset.label | Should -BeExactly $label
             }
 
+            Context 'Update the release asset' {
+                BeforeAll {
             $setParams = @{
                 Asset = $asset.id
                 PassThru = $true
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
+}
+
             It 'Should have the original property values' {
                 $updated.name | Should -BeExactly $fileName
                 $updated.label | Should -BeExactly $label
@@ -880,8 +1034,10 @@ try
                 $updated.AssetId | Should -Be $updated.id
                 $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
+        }
 
-            $updatedFileName = 'updated1.txt'
+            It 'Should have a new name and the original label' {
+        $updatedFileName = 'updated1.txt'
             $setParams = @{
                 Asset = $asset.id
                 Name = $updatedFileName
@@ -889,11 +1045,12 @@ try
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and the original label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $label
             }
 
+            It 'Should have the current name and a new label' {
+            $updatedFileName = 'updated1.txt'
             $updatedLabel = 'updatedLabel2'
             $setParams = @{
                 Asset = $asset.id
@@ -902,11 +1059,11 @@ try
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
-            It 'Should have the current name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
 
+            It 'Should have a new name and a new label' {
             $updatedFileName = 'updated3repo.txt'
             $updatedLabel = 'updatedLabel3repo'
             $setParams = @{
@@ -917,27 +1074,32 @@ try
             }
 
             $updated = $repo | Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
         }
 
         Context 'Using the release on the pipeline' {
+            BeforeAll {
             $fileName = (Get-Item -Path $txtFile).Name
             $asset = $release | New-GitHubReleaseAsset -Path $txtFile -Label $label
+        }
 
             It 'Has the expected initial property values' {
                 $asset.name | Should -BeExactly $fileName
                 $asset.label | Should -BeExactly $label
             }
 
+            Context 'Update release' {
+                BeforeAll {
             $setParams = @{
                 Asset = $asset.id
                 PassThru = $true
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
+        }
+
             It 'Should have the original property values' {
                 $updated.name | Should -BeExactly $fileName
                 $updated.label | Should -BeExactly $label
@@ -952,7 +1114,9 @@ try
                 $updated.AssetId | Should -Be $updated.id
                 $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
+        }
 
+            It 'Should have a new name and the original label' {
             $updatedFileName = 'updated1.txt'
             $setParams = @{
                 Asset = $asset.id
@@ -961,11 +1125,12 @@ try
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and the original label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $label
             }
 
+            It 'Should have the current name and a new label' {
+            $updatedFileName = 'updated1.txt'
             $updatedLabel = 'updatedLabel2'
             $setParams = @{
                 Asset = $asset.id
@@ -974,11 +1139,11 @@ try
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
-            It 'Should have the current name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
 
+            It 'Should have a new name and a new label' {
             $updatedFileName = 'updated3release.txt'
             $updatedLabel = 'updatedLabel3release'
             $setParams = @{
@@ -989,22 +1154,23 @@ try
             }
 
             $updated = $release | Set-GitHubReleaseAsset @setParams
-            It 'Should have a new name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
         }
 
         Context 'Using the asset on the pipeline' {
+            BeforeAll {
             $fileName = (Get-Item -Path $txtFile).Name
             $asset = $release | New-GitHubReleaseAsset -Path $txtFile -Label $label
+            $updated = $asset | Set-GitHubReleaseAsset -PassThru
+        }
 
             It 'Has the expected initial property values' {
                 $asset.name | Should -BeExactly $fileName
                 $asset.label | Should -BeExactly $label
             }
 
-            $updated = $asset | Set-GitHubReleaseAsset -PassThru
             It 'Should have the original property values' {
                 $updated.name | Should -BeExactly $fileName
                 $updated.label | Should -BeExactly $label
@@ -1020,24 +1186,25 @@ try
                 $updated.uploader.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
 
+            It 'Should have a new name and the original label' {
             $updatedFileName = 'updated1.txt'
             $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -PassThru
-            It 'Should have a new name and the original label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $label
             }
 
+            It 'Should have the current name and a new label' {
+            $updatedFileName = 'updated1.txt'
             $updatedLabel = 'updatedLabel2'
             $updated = $asset | Set-GitHubReleaseAsset -Label $updatedLabel -PassThru
-            It 'Should have the current name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
 
+            It 'Should have a new name and a new label' {
             $updatedFileName = 'updated3asset.txt'
             $updatedLabel = 'updatedLabel3asset'
             $updated = $asset | Set-GitHubReleaseAsset -Name $updatedFileName -Label $updatedLabel -PassThru
-            It 'Should have a new name and a new label' {
                 $updated.name | Should -BeExactly $updatedFileName
                 $updated.label | Should -BeExactly $updatedLabel
             }
@@ -1063,6 +1230,7 @@ try
         }
 
         Context 'Using parameters' {
+            BeforeAll {
             $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
 
             $params = @{
@@ -1073,41 +1241,42 @@ try
             }
 
             Remove-GitHubReleaseAsset @params
+        }
+
             It 'Should be successfully deleted' {
                 { Remove-GitHubReleaseAsset @params } | Should -Throw
             }
         }
 
         Context 'Using the repo on the pipeline' {
+            It 'Should be successfully deleted' {
             $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
 
             $repo | Remove-GitHubReleaseAsset -Asset $asset.id -Force
-            It 'Should be successfully deleted' {
                 { $repo | Remove-GitHubReleaseAsset -Asset $asset.id -Force } | Should -Throw
             }
         }
 
         Context 'Using the release on the pipeline' {
+            It 'Should be successfully deleted' {
             $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
 
             $release | Remove-GitHubReleaseAsset -Asset $asset.id -Force
-            It 'Should be successfully deleted' {
                 { $release | Remove-GitHubReleaseAsset -Asset $asset.id -Force } | Should -Throw
             }
         }
 
         Context 'Using the asset on the pipeline' {
+            It 'Should be successfully deleted' {
             $asset = New-GitHubReleaseAsset -Uri $repo.svn_url -Release $release.id -Path $txtFile
 
             $asset | Remove-GitHubReleaseAsset -Force
-            It 'Should be successfully deleted' {
                 { $asset | Remove-GitHubReleaseAsset -Force } | Should -Throw
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
