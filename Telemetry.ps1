@@ -4,6 +4,9 @@
 # Maintain a consistent ID for this PowerShell session that we'll use as our telemetry's session ID.
 $script:TelemetrySessionId = [System.GUID]::NewGuid().ToString()
 
+# Tracks if we've seen the telemetry reminder this session.
+$script:SeenTelemetryReminder = $false
+
 function Get-PiiSafeString
 {
 <#
@@ -74,9 +77,11 @@ function Get-BaseTelemetryEvent
     [CmdletBinding()]
     param()
 
-    if (-not (Get-GitHubConfiguration -Name SuppressTelemetryReminder))
+    if ($script:SeenTelemetryReminder -or
+        (-not (Get-GitHubConfiguration -Name SuppressTelemetryReminder)))
     {
         Write-Log -Message 'Telemetry is currently enabled.  It can be disabled by calling "Set-GitHubConfiguration -DisableTelemetry". Refer to USAGE.md#telemetry for more information. Stop seeing this message in the future by calling "Set-GitHubConfiguration -SuppressTelemetryReminder".'
+        $script:SeenTelemetryReminder = $true
     }
 
     $username = Get-PiiSafeString -PlainText $env:USERNAME
