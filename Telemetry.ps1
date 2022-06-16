@@ -77,7 +77,7 @@ function Get-BaseTelemetryEvent
     [CmdletBinding()]
     param()
 
-    if ($script:SeenTelemetryReminder -or
+    if ((-not $script:SeenTelemetryReminder) -and
         (-not (Get-GitHubConfiguration -Name SuppressTelemetryReminder)))
     {
         Write-Log -Message 'Telemetry is currently enabled.  It can be disabled by calling "Set-GitHubConfiguration -DisableTelemetry". Refer to USAGE.md#telemetry for more information. Stop seeing this message in the future by calling "Set-GitHubConfiguration -SuppressTelemetryReminder".'
