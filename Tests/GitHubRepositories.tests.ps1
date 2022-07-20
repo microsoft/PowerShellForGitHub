@@ -12,11 +12,10 @@
 param()
 
 # This is common test code setup logic for all Pester test files
-$moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
+BeforeAll {
+    $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readonly, hidden variables.
     @{
         defaultRepoDesc = "This is a description."
@@ -25,7 +24,7 @@ try
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
-
+}
     Describe 'GitHubRepositories\New-GitHubRepository' {
 
         Context -Name 'When creating a repository for the authenticated user' -Fixture {
@@ -608,6 +607,7 @@ try
 
             Context 'When specifying the Owner and RepositoryName parameters' {
                 BeforeAll {
+                    $uriRepo = Get-GitHubRepository -Uri $repo.svn_url
                     $elementsRepo = Get-GitHubRepository -OwnerName $repo.owner.login -RepositoryName $repo.name
                 }
 
@@ -1388,13 +1388,11 @@ try
             $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
         }
 
-        foreach ($allowedAction in $allowedActions)
-        {
-            Context "When the AllowedAction is $allowedAction" {
+            Context "Checking AllowedActions" -ForEach @('All', 'LocalOnly', 'Selected', 'Disabled') {
                 BeforeAll {
                     $setGitHubRepositoryActionsPermissionParms = @{
                         Uri = $repo.svn_url
-                        AllowedActions = $allowedAction
+                        AllowedActions = $_
                     }
 
                     Set-GitHubRepositoryActionsPermission @setGitHubRepositoryActionsPermissionParms
@@ -1402,24 +1400,23 @@ try
                     $permissions = Get-GitHubRepositoryActionsPermission -Uri $repo.svn_url
                 }
 
-                It 'Should return the correct type and properties' {
+                It "Should return the correct type and properties for $_" {
                     $permissions.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryActionsPermission'
 
                     $permissions.RepositoryName | Should -Be $repoName
                     $permissions.RepositoryUrl | Should -Be $repo.svn_url
 
-                    if ($allowedAction -eq 'Disabled')
+                    if ($_ -eq 'Disabled')
                     {
                         $permissions.Enabled | Should -BeFalse
                     }
                     else
                     {
                         $permissions.Enabled | Should -BeTrue
-                        $permissions.AllowedActions | Should -Be $allowedAction
+                        $permissions.AllowedActions | Should -Be $_
                     }
                 }
             }
-        }
 
         Context "When specifiying the 'URI' Parameter from the Pipeline" {
             BeforeAll {
@@ -1446,33 +1443,30 @@ try
             $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
         }
 
-        foreach ($allowedAction in $allowedActions)
-        {
-            Context "When the AllowedAction Parameter is $allowedAction" {
+            Context "Checking the AllowedAction Parameter" -ForEach @('All', 'LocalOnly', 'Selected', 'Disabled') {
                 BeforeAll {
                     $setGitHubRepositoryActionsPermissionParms = @{
                         Uri = $repo.svn_url
-                        AllowedActions = $allowedAction
+                        AllowedActions = $_
                     }
 
                     Set-GitHubRepositoryActionsPermission @setGitHubRepositoryActionsPermissionParms
                 }
 
-                It 'Should have set the expected permissions' {
+                It "Should have set the expected permissions for $_" {
                     $permissions = Get-GitHubRepositoryActionsPermission -Uri $repo.svn_url
 
-                    if ($allowedAction -eq 'Disabled')
+                    if ($_ -eq 'Disabled')
                     {
                         $permissions.Enabled | Should -BeFalse
                     }
                     else
                     {
                         $permissions.Enabled | Should -BeTrue
-                        $permissions.AllowedActions | Should -Be $allowedAction
+                        $permissions.AllowedActions | Should -Be $_
                     }
                 }
             }
-        }
 
         Context "When specifiying the 'URI' Parameter from the Pipeline" {
             It 'Should not throw' {
@@ -1513,13 +1507,12 @@ try
             $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
         }
 
-        Foreach ($permission in $permissions) {
-            Context "When the Team Permission is $permission" {
+            Context "Checking the Team Permissions" -ForEach @('Push', 'Pull', 'Maintain', 'Triage', 'Admin') {
                 BeforeAll {
                     $setGitHubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
                         TeamSlug = $team.slug
-                        Permission = $permission
+                        Permission = $_
                     }
 
                     Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
@@ -1532,17 +1525,16 @@ try
                     $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
                 }
 
-                It 'Should have the expected type and additional properties' {
+                It "Should have the expected type and additional properties for $_" {
                     $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
                     $repoPermission.RepositoryName | Should -Be $repo.full_name
                     $repoPermission.RepositoryUrl | Should -Be $repo.svn_url
                     $repoPermission.RepositoryId | Should -Be $repo.RepositoryId
                     $repoPermission.TeamName | Should -Be $team.TeamName
                     $repoPermission.TeamSlug | Should -Be $team.TeamSlug
-                    $repoPermission.Permission | Should -Be $permission
+                    $repoPermission.Permission | Should -Be $_
                 }
             }
-        }
 
         Context "When specifying the 'TeamName' parameter" {
             BeforeAll {
@@ -1660,13 +1652,12 @@ try
             $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
         }
 
-        Foreach ($permission in $permissions) {
-            Context "When the Team Permission is specified as $permission" {
+            Context "Checking the Team Permission" -ForEach @('Push', 'Pull', 'Maintain', 'Triage', 'Admin'){
                 BeforeAll {
                     $setGitHubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
                         TeamSlug = $team.slug
-                        Permission = $permission
+                        Permission = $_
                     }
 
                 }
@@ -1677,7 +1668,7 @@ try
 
                 }
 
-                It 'Should have set the correct Team permission' {
+                It "Should have set the correct Team permission of $_" {
                     $getGithubRepositoryTeamPermissionParms = @{
                         Uri = $repo.svn_url
                         TeamSlug = $team.slug
@@ -1685,10 +1676,10 @@ try
 
                     $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
 
-                    $repoPermission.Permission | Should -Be $permission
+                    $repoPermission.Permission | Should -Be $_
                 }
             }
-        }
+
 
         Context "When specifying the 'TeamName' parameter" {
             BeforeAll {
@@ -1832,7 +1823,7 @@ try
                 }
 
                 { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
-                    Should -Throw 'Not Found'
+                    Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
             }
         }
 
@@ -1865,7 +1856,7 @@ try
                 }
 
                 { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
-                    Should -Throw 'Not Found'
+                    Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
             }
 
             Context 'When the specified TeamName does not exist' {
@@ -1926,9 +1917,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
