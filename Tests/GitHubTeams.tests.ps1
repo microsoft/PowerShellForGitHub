@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readonly, hidden variables.
     @{
         defaultRepoDesc = "This is a description."
@@ -25,7 +24,7 @@ try
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
-
+}
     Describe 'GitHubTeams\Get-GitHubTeam' {
         BeforeAll {
             $organizationName = $script:organizationName
@@ -788,9 +787,9 @@ try
         Context 'When renaming a GitHub team with the TeamName' {
             BeforeAll {
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+                $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName -PassThru
             }
 
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamName $teamName -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
@@ -819,9 +818,9 @@ try
         Context 'When renaming a GitHub team with the TeamSlug' {
             BeforeAll {
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+                $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName -PassThru
             }
 
-            $updatedTeam = Rename-GitHubTeam -OrganizationName $organizationName -TeamSlug $team.slug -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
@@ -850,9 +849,9 @@ try
         Context 'When renaming a GitHub team with the TeamSlug on the pipeline' {
             BeforeAll {
                 $team = New-GitHubTeam -OrganizationName $organizationName -TeamName $teamName
+                $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName -PassThru
             }
 
-            $updatedTeam = $team | Rename-GitHubTeam -NewTeamName $newTeamName -PassThru
             It 'Should have the expected type and additional properties' {
                 $updatedTeam.PSObject.TypeNames[0] | Should -Be 'GitHub.Team'
                 $updatedTeam.name | Should -Be $newTeamName
@@ -959,7 +958,9 @@ try
         }
 
         Context 'Getting team members using TeamName' {
+            BeforeAll {
             $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamName $teamName)
+            }
 
             It 'Should have the expected type number of members' {
                 $members.Count | Should -Be 1
@@ -971,7 +972,9 @@ try
         }
 
         Context 'Getting team members using TeamSlug' {
+            BeforeAll {
             $members = @(Get-GitHubTeamMember -OrganizationName $organizationName -TeamSlug $team.slug)
+            }
 
             It 'Should have the expected type number of members' {
                 $members.Count | Should -Be 1
@@ -983,7 +986,9 @@ try
         }
 
         Context 'Getting team members using TeamSlug on the pipeline' {
+            BeforeAll {
             $members = @($team | Get-GitHubTeamMember)
+            }
 
             It 'Should have the expected type number of members' {
                 $members.Count | Should -Be 1
@@ -994,9 +999,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
