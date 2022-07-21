@@ -11,12 +11,12 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
+BeforeAll {
 # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
+}
 
-try
-{
     Describe 'Testing the referrer traffic on a repository' {
         BeforeAll {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
@@ -104,9 +104,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
