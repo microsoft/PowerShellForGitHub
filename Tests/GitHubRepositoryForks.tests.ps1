@@ -11,12 +11,11 @@
     Justification='Suppress false positives in Pester code blocks')]
 param()
 
-# This is common test code setup logic for all Pester test files
+ BeforeAll {
+    # This is common test code setup logic for all Pester test files
 $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 
-try
-{
     # Define Script-scoped, readonly, hidden variables.
     @{
         upstreamOwnerName = 'octocat'
@@ -24,19 +23,19 @@ try
     }.GetEnumerator() | ForEach-Object {
         Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
     }
-
+}
     Describe 'Creating a new fork for user' {
         Context 'When a new fork is created' {
             BeforeAll {
                 $repo = New-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName
+                $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+                $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
             }
 
             AfterAll {
                 $repo | Remove-GitHubRepository -Force
             }
 
-            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
-            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
 
             It 'Should be in the list' {
                 # Doing this syntax, because due to odd timing with GitHub, it's possible it may
@@ -54,14 +53,14 @@ try
             BeforeAll {
                 $upstream = Get-GitHubRepository -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName
                 $repo = $upstream | New-GitHubRepositoryFork
+                $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+                $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
             }
 
             AfterAll {
                 $repo | Remove-GitHubRepository -Force
             }
 
-            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
-            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:ownerName }
 
             It 'Should be in the list' {
                 # Doing this syntax, because due to odd timing with GitHub, it's possible it may
@@ -80,14 +79,14 @@ try
         Context 'When a new fork is created' {
             BeforeAll {
                 $repo = New-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -OrganizationName $script:organizationName
+                $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
+                $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:organizationName }
             }
 
             AfterAll {
                 $repo | Remove-GitHubRepository -Force
             }
 
-            $newForks = @(Get-GitHubRepositoryFork -OwnerName $script:upstreamOwnerName -RepositoryName $script:upstreamRepositoryName -Sort Newest)
-            $ourFork = $newForks | Where-Object { $_.owner.login -eq $script:organizationName }
 
             It 'Should be in the list' {
                 # Doing this syntax, because due to odd timing with GitHub, it's possible it may
@@ -96,9 +95,8 @@ try
             }
         }
     }
-}
-finally
-{
+
+AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
     {
         # Restore the user's configuration to its pre-test state
