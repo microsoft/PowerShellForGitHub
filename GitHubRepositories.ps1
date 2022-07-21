@@ -217,7 +217,7 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
-    if ($PSBoundParameters.ContainsKey('UseSquashPrTitleAsDefault')) { $hashBody['use_squash_pr_title_as_default'] = $UsqSquashPrTitleAsDefault.ToBool() }
+    if ($PSBoundParameters.ContainsKey('UseSquashPrTitleAsDefault')) { $hashBody['use_squash_pr_title_as_default'] = $UseSquashPrTitleAsDefault.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
@@ -1228,7 +1228,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
-    if ($PSBoundParameters.ContainsKey('UseSquashPrTitleAsDefault')) { $hashBody['use_squash_pr_title_as_default'] = $UsqSquashPrTitleAsDefault.ToBool() }
+    if ($PSBoundParameters.ContainsKey('UseSquashPrTitleAsDefault')) { $hashBody['use_squash_pr_title_as_default'] = $UseSquashPrTitleAsDefault.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
