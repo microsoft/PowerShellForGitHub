@@ -3925,13 +3925,13 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
         {
             $permission = 'admin'
         }
-        elseif ($result.permissions.push)
-        {
-            $permission = 'push'
-        }
         elseif ($result.permissions.maintain)
         {
             $permission = 'maintain'
+        }
+        elseif ($result.permissions.push)
+        {
+            $permission = 'push'
         }
         elseif ($result.permissions.triage)
         {
