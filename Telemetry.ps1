@@ -1,10 +1,11 @@
 ﻿# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# Singleton. Don't directly access this though....always get it
-# by calling Get-BaseTelemetryEvent to ensure that it has been initialized and that you're always
-# getting a fresh copy.
-$script:GHBaseTelemetryEvent = $null
+# Maintain a consistent ID for this PowerShell session that we'll use as our telemetry's session ID.
+$script:TelemetrySessionId = [System.GUID]::NewGuid().ToString()
+
+# Tracks if we've seen the telemetry reminder this session.
+$script:SeenTelemetryReminder = $false
 
 function Get-PiiSafeString
 {
@@ -76,40 +77,37 @@ function Get-BaseTelemetryEvent
     [CmdletBinding()]
     param()
 
-    if ($null -eq $script:GHBaseTelemetryEvent)
+    if ((-not $script:SeenTelemetryReminder) -and
+        (-not (Get-GitHubConfiguration -Name SuppressTelemetryReminder)))
     {
-        if (-not (Get-GitHubConfiguration -Name SuppressTelemetryReminder))
-        {
-            Write-Log -Message 'Telemetry is currently enabled.  It can be disabled by calling "Set-GitHubConfiguration -DisableTelemetry". Refer to USAGE.md#telemetry for more information. Stop seeing this message in the future by calling "Set-GitHubConfiguration -SuppressTelemetryReminder".'
+        Write-Log -Message 'Telemetry is currently enabled.  It can be disabled by calling "Set-GitHubConfiguration -DisableTelemetry". Refer to USAGE.md#telemetry for more information. Stop seeing this message in the future by calling "Set-GitHubConfiguration -SuppressTelemetryReminder".'
+        $script:SeenTelemetryReminder = $true
+    }
+
+    $username = Get-PiiSafeString -PlainText $env:USERNAME
+
+    return [PSCustomObject] @{
+        'name' = 'Microsoft.ApplicationInsights.66d83c523070489b886b09860e05e78a.Event'
+        'time' = (Get-Date).ToUniversalTime().ToString("O")
+        'iKey' = (Get-GitHubConfiguration -Name ApplicationInsightsKey)
+        'tags' = [PSCustomObject] @{
+            'ai.user.id' = $username
+            'ai.session.id' = $script:TelemetrySessionId
+            'ai.application.ver' = $MyInvocation.MyCommand.Module.Version.ToString()
+            'ai.internal.sdkVersion' = '2.0.1.33027' # The version this schema was based off of.
         }
 
-        $username = Get-PiiSafeString -PlainText $env:USERNAME
-
-        $script:GHBaseTelemetryEvent = [PSCustomObject] @{
-            'name' = 'Microsoft.ApplicationInsights.66d83c523070489b886b09860e05e78a.Event'
-            'time' = (Get-Date).ToUniversalTime().ToString("O")
-            'iKey' = (Get-GitHubConfiguration -Name ApplicationInsightsKey)
-            'tags' = [PSCustomObject] @{
-                'ai.user.id' = $username
-                'ai.session.id' = [System.GUID]::NewGuid().ToString()
-                'ai.application.ver' = $MyInvocation.MyCommand.Module.Version.ToString()
-                'ai.internal.sdkVersion' = '2.0.1.33027' # The version this schema was based off of.
-            }
-
-            'data' = [PSCustomObject] @{
-                'baseType' = 'EventData'
-                'baseData' = [PSCustomObject] @{
-                    'ver' = 2
-                    'properties' = [PSCustomObject] @{
-                        'DayOfWeek' = (Get-Date).DayOfWeek.ToString()
-                        'Username' = $username
-                    }
+        'data' = [PSCustomObject] @{
+            'baseType' = 'EventData'
+            'baseData' = [PSCustomObject] @{
+                'ver' = 2
+                'properties' = [PSCustomObject] @{
+                    'DayOfWeek' = (Get-Date).DayOfWeek.ToString()
+                    'Username' = $username
                 }
             }
         }
     }
-
-    return $script:GHBaseTelemetryEvent.PSObject.Copy() # Get a new instance, not a reference
 }
 
 function Invoke-SendTelemetryEvent
