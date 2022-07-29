@@ -87,7 +87,7 @@ filter New-GitHubRepository
         Specifies whether to allow auto-merge on pull requests.
 
     .PARAMETER UseSquashPrTitleAsDefault
-        Specifies whether to use the pull requeset title for squash-merge commits rather than the
+        Specifies whether to use the pull request title for squash-merge commits rather than the
         commit message.
 
     .PARAMETER DeleteBranchOnMerge
@@ -1074,7 +1074,7 @@ filter Set-GitHubRepository
         Specifies whether to allow auto-merge on pull requests.
 
     .PARAMETER UseSquashPrTitleAsDefault
-        Specifies whether to use the pull requeset title for squash-merge commits rather than the
+        Specifies whether to use the pull request title for squash-merge commits rather than the
         commit message.
 
     .PARAMETER DeleteBranchOnMerge
