@@ -297,19 +297,30 @@ filter Set-GitHubContent
     param(
         [Parameter(
             Mandatory,
-            ParameterSetName = 'Elements')]
+            ParameterSetName = 'ElementsContent')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'ElementsContentPath')]
         [string] $OwnerName,
 
         [Parameter(
             Mandatory,
-            ParameterSetName = 'Elements')]
+            ParameterSetName = 'ElementsContent')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'ElementsContentPath')]
         [string] $RepositoryName,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName,
             Position = 1,
-            ParameterSetName='Uri')]
+            ParameterSetName='UriContent')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            Position = 1,
+            ParameterSetName='UriContentPath')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
@@ -327,13 +338,19 @@ filter Set-GitHubContent
         [Parameter(
             Mandatory,
             Position = 4,
-            ParameterSetName = 'Content')]
+            ParameterSetName = 'ElementsContent')]
+        [Parameter(
+            Mandatory,
+            Position = 4,
+            ParameterSetName = 'UriContent')]
         [string] $Content,
 
         [Parameter(
             Mandatory,
-            Position = 4,
-            ParameterSetName = 'Content')]
+            ParameterSetName = 'ElementsContentPath')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'UriContentPath')]
         [string] $ContentPath,
 
         [Parameter(ValueFromPipelineByPropertyName)]
