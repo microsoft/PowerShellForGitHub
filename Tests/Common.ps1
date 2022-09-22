@@ -18,7 +18,7 @@ $script:originalConfigFile = $null
 
 function Initialize-CommonTestSetup
 {
-<#
+    <#
     .SYNOPSIS
         Configures the tests to run with the authentication information stored in the project's
         Azure DevOps pipeline (if that information exists in the environment).
@@ -38,7 +38,7 @@ function Initialize-CommonTestSetup
         This method is invoked immediately after the declaration.
 #>
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in Azure DevOps.")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification = "Needed to configure with the stored, encrypted string value in Azure DevOps.")]
     param()
 
     $script:moduleName = 'PowerShellForGitHub'

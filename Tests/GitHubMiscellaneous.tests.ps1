@@ -8,7 +8,7 @@
 
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
-    Justification='Suppress false positives in Pester code blocks')]
+    Justification = 'Suppress false positives in Pester code blocks')]
 param()
 
 Describe 'Get-GitHubRateLimit' {

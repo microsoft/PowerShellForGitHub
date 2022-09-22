@@ -8,7 +8,7 @@
 
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
-    Justification='Suppress false positives in Pester code blocks')]
+    Justification = 'Suppress false positives in Pester code blocks')]
 param()
 
 BeforeAll {
@@ -17,7 +17,7 @@ BeforeAll {
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
 }
 
-    # TODO
+# TODO
 
 AfterAll {
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
