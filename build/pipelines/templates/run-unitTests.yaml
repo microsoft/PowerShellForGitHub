@@ -36,7 +36,7 @@ steps:
       workingDirectory: '$(System.DefaultWorkingDirectory)'
       targetType: 'inline'
       script: |
-        Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 4.10.1 -Force -Verbose
+        Install-Module -Name Pester -Repository PSGallery -Scope CurrentUser -AllowClobber -SkipPublisherCheck -RequiredVersion 5.3.3 -Force -Verbose
 
   - task: PowerShell@2
     displayName: 'Run Unit Tests via Pester'
