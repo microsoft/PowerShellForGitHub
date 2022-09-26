@@ -70,6 +70,10 @@
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
+    *   [Autolink](#autolink)
+        *   [Get all the autolinks for a repository](#get-all-the-autolinks-for-a-repository)
+        *   [Create a new autolink](#create-a-new-autolink)
+        *   [Remove a repository autolink](#remove-a-repository-autolink)
     *   [Content](#content)
         *   [Get html output for a file](#get-html-output-for-a-file)
         *   [Get raw output for a file](#get-raw-output-for-a-file)
@@ -736,6 +740,25 @@ Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHu
 #### Create a new fork
 ```powershell
 New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+----------
+
+### Autolinks
+
+#### Get all the autolinks for a repository
+```powershell
+Get-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub
+```
+
+#### Create a new autolink
+```powershell
+New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -UriPrefix JIRA-123 -Urltemplate https://psg.jira.com/browse/jira-<num>
+```
+
+#### Removing a repository autolink
+```powershell
+Remove-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -AutolinkId 1
 ```
 
 ----------
