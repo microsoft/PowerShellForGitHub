@@ -384,7 +384,7 @@ This module supports testing using the [Pester UT framework](https://github.com/
 To install it:
 
 ```powershell
-Install-Module -Name Pester -RequiredVersion 4.10.1 -AllowClobber -SkipPublisherCheck -Force
+Install-Module -Name Pester -RequiredVersion 5.3.3 -AllowClobber -SkipPublisherCheck -Force
 ```
 
 #### Configuring Your Environment
@@ -421,21 +421,30 @@ Please keep in mind some tests may fail on your machine, as they test private it
 Pester can also be used to test code-coverage, like so:
 
 ```powershell
-Invoke-Pester -CodeCoverage "$root\GitHubLabels.ps1" -TestName "*"
+$pesterConfig = @{ 
+  CodeCoverage = @{ 
+    Path = "$root\GitHubLabels.ps1" 
+  } 
+}
+Invoke-Pester -Configuration $pesterConfig
 ```
 
 This command tells Pester to check the `GitHubLabels.ps1` file for code-coverage.
-The `-TestName` parameter tells Pester to run any `Describe` blocks with a `Name` like
-`"*"` (which in this case, is every test, but can be made more specific).
 
 The code-coverage object can be captured and interacted with, like so:
 
 ```powershell
-$cc = (Invoke-Pester -CodeCoverage "$root\GitHubLabels.ps1" -TestName "*" -PassThru -Quiet).CodeCoverage
+$pesterConfig = @{ 
+  CodeCoverage = @{ 
+    Path = "$root\GitHubLabels.ps1" 
+  } 
+}
+
+$cc = (Invoke-Pester -Configuration $pesterConfig-PassThru -Quiet).CodeCoverage
 ```
 
 There are many more nuances to code-coverage, see
-[its documentation](https://github.com/pester/Pester/wiki/Code-Coverage) for more details.
+[its documentation](https://pester.dev/docs/usage/code-coverage) for more details.
 
 #### Automated Tests
 [![Build status](https://dev.azure.com/ms/PowerShellForGitHub/_apis/build/status/PowerShellForGitHub-CI?branchName=master)](https://dev.azure.com/ms/PowerShellForGitHub/_build/latest?definitionId=109&branchName=master)
