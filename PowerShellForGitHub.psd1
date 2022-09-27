@@ -52,6 +52,7 @@
         'GitHubReactions.ps1',
         'GitHubReleases.ps1',
         'GitHubRepositories.ps1',
+        'GitHubRepositoryAutolink.ps1',
         'GitHubRepositoryForks.ps1',
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
