@@ -1,5 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+@{
+    GitHubRepositoryAutolinkTypeName = 'GitHub.RepositoryAutolink'
+ }.GetEnumerator() | ForEach-Object {
+     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
+ }
 
 filter Get-GitHubRepositoryAutolink
 {
@@ -50,7 +55,7 @@ filter Get-GitHubRepositoryAutolink
         GitHub.Repository
 
     .OUTPUTS
-        GitHub.Autolink
+        GitHub.RepositoryAutolink
 
     .EXAMPLE
         Get-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub
@@ -58,7 +63,7 @@ filter Get-GitHubRepositoryAutolink
         Gets all of the autolink references for the microsoft\PowerShellForGitHub repository.
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
-    [OutputType({$script:GitHubRepositoryTypeName})]
+    [OutputType({$script:GitHubRepositoryAutolinkTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
     param(
         [Parameter(ParameterSetName='Elements')]
@@ -104,10 +109,10 @@ filter Get-GitHubRepositoryAutolink
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params )
+    return (Invoke-GHRestMethodMultipleResult @params | Add-GitHubRepositoryAutolinkAdditionalProperties)
 }
 
-function New-GitHubRepositoryAutolink
+filter New-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
@@ -167,7 +172,7 @@ function New-GitHubRepositoryAutolink
         GitHub.Repository
 
     .OUTPUTS
-        GitHub.Autolink
+        GitHub.RepositoryAutolink
 
     .EXAMPLE
         New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -UriPrefix PRJ- -Urltemplate https://company.issuetracker.com/browse/prj-<num>
@@ -182,7 +187,7 @@ function New-GitHubRepositoryAutolink
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements')]
-    [OutputType({$script:GitHubRepositoryTypeName})]
+    [OutputType({$script:GitHubRepositoryAutolinkTypeName})]
     param(
         [Parameter(ParameterSetName='Elements')]
         [string] $OwnerName,
@@ -199,13 +204,16 @@ function New-GitHubRepositoryAutolink
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
+        [Alias('AutolinkUriPrefix')]
         [string] $UriPrefix,
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[<num>]$') { $true } else { throw "Target URL is missing a <num> token." }})]
+        [Alias('AutolinkUrltemplate')]
         [string] $Urltemplate,
 
-        [switch] $IsNumericOnly,
+        [Alias('AutlinkIsNumeric')]
+        [switch] $IsNumeric,
 
         [string] $AccessToken
     )
@@ -227,7 +235,7 @@ function New-GitHubRepositoryAutolink
         'is_alphanumeric' = $true
     }
 
-    if ($PSBoundParameters.ContainsKey('IsNumericOnly')) { $hashBody['is_alphanumeric'] = $false }
+    if ($PSBoundParameters.ContainsKey('IsNumeric')) { $hashBody['is_alphanumeric'] = $false }
 
     if (-not $PSCmdlet.ShouldProcess($UriPrefix, 'Create Repository Autolink'))
     {
@@ -245,11 +253,10 @@ function New-GitHubRepositoryAutolink
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params)
+    return (Invoke-GHRestMethod @params | Add-GitHubRepositoryAutolinkAdditionalProperties)
 }
 
-
-function Remove-GitHubRepositoryAutolink
+filter Remove-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
@@ -349,7 +356,7 @@ function Remove-GitHubRepositoryAutolink
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
-        [string] $AutolinkId,
+        [int64] $AutolinkId,
 
         [switch] $Force,
 
@@ -390,3 +397,70 @@ function Remove-GitHubRepositoryAutolink
     return Invoke-GHRestMethod @params
 }
 
+
+filter Add-GitHubRepositoryAutolinkAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Autolink objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER RepositoryUrl
+        Optionally supplied if the Autolink object doesn't have this value already.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        [PSCustomObject]
+
+    .OUTPUTS
+        GitHub.Label
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [string] $RepositoryUrl,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryAutolinkTypeName
+    )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            if (-not [System.String]::IsNullOrEmpty($item.url))
+            {
+                $elements = Split-GitHubUri -Uri $item.url
+                $RepositoryUrl = Join-GitHubUri @elements
+            }
+
+            if ($null -ne $item.id)
+            {
+                Add-Member -InputObject $item -Name 'AutolinkId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
+            Add-Member -InputObject $item -Name 'AutolinkKeyPrefix' -Value $item.key_prefix -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'AutolinkUrlTemplate' -Value $item.url_template -MemberType NoteProperty -Force
+
+            if(!$item.is_alphanumeric)
+            {
+                Add-Member -InputObject $item -Name 'AutolinkIsNumeric' -Value $true -MemberType NoteProperty -Force
+            }
+        }
+
+        Write-Output $item
+    }
+}
