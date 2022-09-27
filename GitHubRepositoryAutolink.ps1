@@ -104,10 +104,10 @@ filter Get-GitHubRepositoryAutolink
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethodMultipleResult @params  | Add-GitHubRepositoryAdditionalProperties)
+    return (Invoke-GHRestMethodMultipleResult @params )
 }
 
-filter New-GitHubRepositoryAutolink
+function New-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
@@ -199,12 +199,10 @@ filter New-GitHubRepositoryAutolink
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
-        [Alias('UriPrefix')]
         [string] $UriPrefix,
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[<num>]$') { $true } else { throw "Target URL is missing a <num> token." }})]
-        [Alias('Urltemplate')]
         [string] $Urltemplate,
 
         [switch] $IsNumericOnly,
@@ -226,6 +224,7 @@ filter New-GitHubRepositoryAutolink
     $hashBody = @{
         'key_prefix' = $UriPrefix
         'url_template' = $Urltemplate
+        'is_alphanumeric' = $true
     }
 
     if ($PSBoundParameters.ContainsKey('IsNumericOnly')) { $hashBody['is_alphanumeric'] = $false }
@@ -246,11 +245,11 @@ filter New-GitHubRepositoryAutolink
         'TelemetryProperties' = $telemetryProperties
     }
 
-    return (Invoke-GHRestMethod @params | Add-GitHubLabelAdditionalProperties)
+    return (Invoke-GHRestMethod @params)
 }
 
 
-filter Remove-GitHubRepositoryAutolink
+function Remove-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
@@ -350,7 +349,6 @@ filter Remove-GitHubRepositoryAutolink
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
-        [Alias('AutolinkId')]
         [string] $AutolinkId,
 
         [switch] $Force,
