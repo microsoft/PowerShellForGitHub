@@ -70,7 +70,7 @@
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
-    *   [Autolink](#autolink)
+    *   [Autolinks](#autolinks)
         *   [Get all the autolinks for a repository](#get-all-the-autolinks-for-a-repository)
         *   [Create a new autolink](#create-a-new-autolink)
         *   [Remove a repository autolink](#remove-a-repository-autolink)
