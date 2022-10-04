@@ -417,7 +417,7 @@ filter Add-GitHubRepositoryAutolinkAdditionalProperties
         [PSCustomObject]
 
     .OUTPUTS
-        GitHub.Label
+        GitHub.RepositoryAutolink
 #>
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="Internal helper that is definitely adding more than one property.")]
