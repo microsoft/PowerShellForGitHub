@@ -614,6 +614,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Giuseppe Campanelli (@themilanfan)](https://github.com/themilanfan)**
 - **[Christoph Bergmeister (@bergmeister)](https://github.com/bergmeister)**
 - **[Simon Heather (@X-Guardian)](https://github.com/X-Guardian)**
+- **[Henk Meulekamp (@henkmeulekamp)](https://github.com/henkmeulekamp)**
 
 ----------
 
