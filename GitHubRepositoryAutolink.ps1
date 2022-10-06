@@ -201,14 +201,12 @@ filter New-GitHubRepositoryAutolink
             Mandatory,
             ValueFromPipelineByPropertyName)]
         #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
-        [Alias('AutolinkKeyPrefix')]
         [string] $KeyPrefix,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName)]
         #todo [ValidateScript({if ($_ -match '^#?[<num>]$') { $true } else { throw "Target URL is missing a <num> token." }})]
-        [Alias('AutolinkUrlTemplate')]
         [string] $UrlTemplate,
 
         [Parameter(
@@ -454,8 +452,8 @@ filter Add-GitHubRepositoryAutolinkAdditionalProperties
                 Add-Member -InputObject $item -Name 'AutolinkId' -Value $item.id -MemberType NoteProperty -Force
             }
 
-            Add-Member -InputObject $item -Name 'AutolinkKeyPrefix' -Value $item.key_prefix -MemberType NoteProperty -Force
-            Add-Member -InputObject $item -Name 'AutolinkUrlTemplate' -Value $item.url_template -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'KeyPrefix' -Value $item.key_prefix -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'UrlTemplate' -Value $item.url_template -MemberType NoteProperty -Force
 
             Add-Member -InputObject $item -Name 'IsNumericOnly' -Value (-not $item.is_alphanumeric) -MemberType NoteProperty -Force
         }

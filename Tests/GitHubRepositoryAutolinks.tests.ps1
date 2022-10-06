@@ -17,14 +17,6 @@ $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
 
 try
 {
-    # Define Script-scoped, readonly, hidden variables.
-    @{
-        defaultRepoDesc = "This is a description."
-        defaultRepoHomePage = "https://www.microsoft.com/"
-        defaultRepoTopic = "microsoft"
-    }.GetEnumerator() | ForEach-Object {
-        Set-Variable -Force -Scope Script -Option ReadOnly -Visibility Private -Name $_.Key -Value $_.Value
-    }
 
     Describe 'GitHubRepositoryAutolink\Get-GitHubRepositoryAutolink' {
         BeforeAll {
@@ -55,15 +47,15 @@ try
             }
 
             It 'Should have the expected type and additional properties' {
-                $team.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryAutolink'
-                $team.AutolinkKeyPrefix | Should -Be $keyPrefix
-                $team.AutolinkUrlTemplate | Should -Be $urlTemplate
-                $team.IsNumericOnly | Should -BeTrue
-                $team.AutolinkId | Should -BeGreaterThan 0
-                $team.KeyPrefix | Should -Be $autolink.keyPrefix
-                $team.UrlTemplate | Should -Be $autolink.urlTemplate
-                $team.AutolinkId | Should -Be $autolink.id
-                $team.OrganizationName | Should -Be $organizationName
+                $autolink.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryAutolink'
+                $autolink.KeyPrefix | Should -Be $keyPrefix
+                $autolink.UrlTemplate | Should -Be $urlTemplate
+                $autolink.IsNumericOnly | Should -BeTrue
+                $autolink.AutolinkId | Should -BeGreaterThan 0
+                $autolink.KeyPrefix | Should -Be $autolink.keyPrefix
+                $autolink.UrlTemplate | Should -Be $autolink.urlTemplate
+                $autolink.AutolinkId | Should -Be $autolink.id
+                $autolink.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {
