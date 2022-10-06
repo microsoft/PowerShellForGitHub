@@ -239,13 +239,13 @@ filter New-GitHubRepositoryAutolink
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'IsNumericOnly' = $IsNumericOnly.IsPresent()
+        'IsNumericOnly' = $IsNumericOnly.IsPresent
     }
 
     $hashBody = @{
         'key_prefix' = $KeyPrefix
         'url_template' = $UrlTemplate
-        'is_alphanumeric' = (-not $IsNumericOnly.IsPresent())
+        'is_alphanumeric' = (-not $IsNumericOnly.IsPresent)
     }
 
     if (-not $PSCmdlet.ShouldProcess($KeyPrefix, 'Create Repository Autolink'))
