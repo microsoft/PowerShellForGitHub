@@ -37,31 +37,31 @@ try
 
                 $repo = New-GitHubRepository -RepositoryName $repoName -OrganizationName $organizationName
 
-                $uriPrefix = 'PRJ-'
-                $urltemplate = 'https://company.issuetracker.com/browse/prj-<num>'
+                $keyPrefix = 'PRJ-'
+                $urlTemplate = 'https://company.issuetracker.com/browse/prj-<num>'
                 $isNumericOnly = $true
 
                 $newGitHubRepositoryAutolinkParms = @{
                     OrganizationName = $organizationName
-                    UriPrefix = $uriPrefix
-                    UrlTemplate = $urltemplate
+                    KeyPrefix = $keyPrefix
+                    UrlTemplate = $urlTemplate
                     IsNumericOnly = $isNumericOnly
                 }
 
                 New-GitHubRepositoryAutolink @newGitHubRepositoryAutolinkParms | Out-Null
 
                 $autoLinks = Get-GitHubRepositoryAutolink -OwnerName $organizationName -RepositoryName $repoName
-                $autolink = $autoLinks | Where-Object -Property AutolinkKeyPrefix -eq $uriPrefix
+                $autolink = $autoLinks | Where-Object -Property AutolinkKeyPrefix -eq $keyPrefix
             }
 
             It 'Should have the expected type and additional properties' {
                 $team.PSObject.TypeNames[0] | Should -Be 'GitHub.RepositoryAutolink'
-                $team.AutolinkKeyPrefix | Should -Be $uriPrefix
-                $team.AutolinkUrlTemplate | Should -Be $urltemplate
+                $team.AutolinkKeyPrefix | Should -Be $keyPrefix
+                $team.AutolinkUrlTemplate | Should -Be $urlTemplate
                 $team.AutolinkIsNumeric | Should -BeTrue
                 $team.AutolinkId | Should -BeGreaterThan 0
-                $team.UriPrefix | Should -Be $autolink.uriPrefix
-                $team.Urltemplate | Should -Be $autolink.urltemplate
+                $team.KeyPrefix | Should -Be $autolink.keyPrefix
+                $team.UrlTemplate | Should -Be $autolink.urlTemplate
                 $team.AutolinkId | Should -Be $autolink.id
                 $team.OrganizationName | Should -Be $organizationName
             }

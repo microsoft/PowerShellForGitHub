@@ -753,7 +753,7 @@ Get-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForG
 
 #### Create a new autolink
 ```powershell
-New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -UriPrefix PRJ- -Urltemplate https://company.issuetracker.com/browse/prj-<num>
+New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -KeyPrefix 'PRJ-' -UrlTemplate 'https://company.issuetracker.com/browse/prj-<num>'
 ```
 
 #### Removing a repository autolink

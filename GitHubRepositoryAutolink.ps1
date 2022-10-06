@@ -136,11 +136,11 @@ filter New-GitHubRepositoryAutolink
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER UriPrefix
+    .PARAMETER KeyPrefix
         This prefix appended by certain characters will generate a link any time it is found in
         an issue, pull request, or commit.
 
-    .PARAMETER Urltemplate
+    .PARAMETER UrlTemplate
         The URL must contain <num> for the reference number. <num> matches different characters
         depending on the value of is_alphanumeric.
 
@@ -175,12 +175,12 @@ filter New-GitHubRepositoryAutolink
         GitHub.RepositoryAutolink
 
     .EXAMPLE
-        New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -UriPrefix PRJ- -Urltemplate https://company.issuetracker.com/browse/prj-<num>
+        New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -KeyPrefix 'PRJ-' -UrlTemplate 'https://company.issuetracker.com/browse/prj-<num>'
 
         Creates an autlink reference on this repository under the current authenticated user's account.
 
     .EXAMPLE
-        New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs -UriPrefix PRJ- -Urltemplate https://company.issuetracker.com/browse/prj-<num> -IsNumericOnly
+        New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs -KeyPrefix 'PRJ-' -UrlTemplate 'https://company.issuetracker.com/browse/prj-<num>' -IsNumericOnly
 
         Creates an autlink reference on this repository under the OctoLabs organization.
 #>
@@ -204,13 +204,13 @@ filter New-GitHubRepositoryAutolink
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
-        [Alias('AutolinkUriPrefix')]
-        [string] $UriPrefix,
+        [Alias('AutolinkKeyPrefix')]
+        [string] $KeyPrefix,
 
         [Parameter(Mandatory)]
         #todo [ValidateScript({if ($_ -match '^#?[<num>]$') { $true } else { throw "Target URL is missing a <num> token." }})]
-        [Alias('AutolinkUrltemplate')]
-        [string] $Urltemplate,
+        [Alias('AutolinkUrlTemplate')]
+        [string] $UrlTemplate,
 
         [Alias('AutlinkIsNumeric')]
         [switch] $IsNumeric,
@@ -230,14 +230,14 @@ filter New-GitHubRepositoryAutolink
     }
 
     $hashBody = @{
-        'key_prefix' = $UriPrefix
-        'url_template' = $Urltemplate
+        'key_prefix' = $KeyPrefix
+        'url_template' = $UrlTemplate
         'is_alphanumeric' = $true
     }
 
     if ($PSBoundParameters.ContainsKey('IsNumeric')) { $hashBody['is_alphanumeric'] = $false }
 
-    if (-not $PSCmdlet.ShouldProcess($UriPrefix, 'Create Repository Autolink'))
+    if (-not $PSCmdlet.ShouldProcess($KeyPrefix, 'Create Repository Autolink'))
     {
         return
     }
@@ -246,7 +246,7 @@ filter New-GitHubRepositoryAutolink
         'UriFragment' = "repos/$OwnerName/$RepositoryName/autolinks"
         'Body' = (ConvertTo-Json -InputObject $hashBody)
         'Method' = 'Post'
-        'Description' = "Repository Autolink $UriPrefix in $RepositoryName"
+        'Description' = "Repository Autolink $KeyPrefix in $RepositoryName"
         'AcceptHeader' = $script:symmetraAcceptHeader
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
