@@ -30,9 +30,6 @@ filter Get-GitHubRepositoryAutolink
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
-    .PARAMETER Sort
-        The sort order for results.
-
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -82,9 +79,6 @@ filter Get-GitHubRepositoryAutolink
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
-        [ValidateSet('Newest', 'Oldest', 'Stargazers')]
-        [string] $Sort = 'Newest',
-
         [string] $AccessToken
     )
 
@@ -97,12 +91,7 @@ filter Get-GitHubRepositoryAutolink
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
-        'Sort' = $Sort
     }
-
-    $getParams = @(
-        "sort=$($Sort.ToLower())"
-    )
 
     $params = @{
         'UriFragment' = "repos/$OwnerName/$RepositoryName/autolinks`?" +  ($getParams -join '&')
