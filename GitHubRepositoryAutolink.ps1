@@ -61,6 +61,9 @@ filter Get-GitHubRepositoryAutolink
         Get-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Gets all of the autolink references for the microsoft\PowerShellForGitHub repository.
+
+    .NOTES
+        Information about autolinks are only available to repository administrators.
 #>
     [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryAutolinkTypeName})]
@@ -183,6 +186,9 @@ filter New-GitHubRepositoryAutolink
         New-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -OrganizationName OctoLabs -KeyPrefix 'PRJ-' -UrlTemplate 'https://company.issuetracker.com/browse/prj-<num>' -IsNumericOnly
 
         Creates an autlink reference on this repository under the OctoLabs organization.
+
+    .NOTES
+        Only users with admin access to the repository can create an autolink.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
@@ -330,6 +336,9 @@ filter Remove-GitHubRepositoryAutolink
 
         Removes the autolink reference with autolinkId 1 from the PowerShellForGitHub project.
         Will not prompt for confirmation, as -Force was specified.
+
+    .NOTES
+        Only users with admin access to the repository can delete an autolink.
 #>
     [CmdletBinding(
         SupportsShouldProcess,
