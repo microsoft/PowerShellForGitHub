@@ -228,10 +228,8 @@ filter New-GitHubRepositoryAutolink
     $hashBody = @{
         'key_prefix' = $KeyPrefix
         'url_template' = $UrlTemplate
-        'is_alphanumeric' = $true
+        'is_alphanumeric' = (-not $IsNumericOnly.IsPresent())
     }
-
-    if ($PSBoundParameters.ContainsKey('IsNumericOnly')) { $hashBody['is_alphanumeric'] = $false }
 
     if (-not $PSCmdlet.ShouldProcess($KeyPrefix, 'Create Repository Autolink'))
     {
