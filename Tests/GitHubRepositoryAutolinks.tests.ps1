@@ -55,7 +55,6 @@ try
                 $autolink.KeyPrefix | Should -Be $autolink.keyPrefix
                 $autolink.UrlTemplate | Should -Be $autolink.urlTemplate
                 $autolink.AutolinkId | Should -Be $autolink.id
-                $autolink.OrganizationName | Should -Be $organizationName
             }
 
             AfterAll {

@@ -441,12 +441,6 @@ filter Add-GitHubRepositoryAutolinkAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if (-not [System.String]::IsNullOrEmpty($item.url))
-            {
-                $elements = Split-GitHubUri -Uri $item.url
-                $RepositoryUrl = Join-GitHubUri @elements
-            }
-
             if ($null -ne $item.id)
             {
                 Add-Member -InputObject $item -Name 'AutolinkId' -Value $item.id -MemberType NoteProperty -Force
