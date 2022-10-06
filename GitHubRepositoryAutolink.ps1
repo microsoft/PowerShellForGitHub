@@ -108,7 +108,7 @@ filter Get-GitHubRepositoryAutolink
     }
 
     $uriFragment = [String]::Empty
-    if ($AutolinkId.IsPresent()) {
+    if ($AutolinkId -gt 0) {
         $uriFragment = "repos/$OwnerName/$RepositoryName/autolinks/$AutolinkId"
     } else {
         $uriFragment = "repos/$OwnerName/$RepositoryName/autolinks"
