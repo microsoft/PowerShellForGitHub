@@ -108,10 +108,10 @@ filter New-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
-        Creates a new autolink on given repository on GitHub.
+        Creates a new autolink on given GitHub repository.
 
     .DESCRIPTION
-        Creates a new autolink on given repository on GitHub.
+        Creates a new autolink on given GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
