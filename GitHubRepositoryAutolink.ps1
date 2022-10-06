@@ -213,13 +213,6 @@ filter New-GitHubRepositoryAutolink
 
         [Parameter(
             Mandatory,
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Uri')]
-        [Alias('RepositoryUrl')]
-        [string] $Uri,
-
-        [Parameter(
-            Mandatory,
             ValueFromPipelineByPropertyName)]
         #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
         [string] $KeyPrefix,
