@@ -207,8 +207,8 @@ filter New-GitHubRepositoryAutolink
         [Alias('AutolinkUrlTemplate')]
         [string] $UrlTemplate,
 
-        [Alias('AutlinkIsNumeric')]
-        [switch] $IsNumeric,
+        [Alias('AutlinkIsNumericOnly')]
+        [switch] $IsNumericOnly,
 
         [string] $AccessToken
     )
@@ -222,6 +222,7 @@ filter New-GitHubRepositoryAutolink
     $telemetryProperties = @{
         'OwnerName' = (Get-PiiSafeString -PlainText $OwnerName)
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
+        'IsNumericOnly' = $IsNumericOnly.IsPresent()
     }
 
     $hashBody = @{
@@ -230,7 +231,7 @@ filter New-GitHubRepositoryAutolink
         'is_alphanumeric' = $true
     }
 
-    if ($PSBoundParameters.ContainsKey('IsNumeric')) { $hashBody['is_alphanumeric'] = $false }
+    if ($PSBoundParameters.ContainsKey('IsNumericOnly')) { $hashBody['is_alphanumeric'] = $false }
 
     if (-not $PSCmdlet.ShouldProcess($KeyPrefix, 'Create Repository Autolink'))
     {
@@ -455,7 +456,7 @@ filter Add-GitHubRepositoryAutolinkAdditionalProperties
 
             if(!$item.is_alphanumeric)
             {
-                Add-Member -InputObject $item -Name 'AutolinkIsNumeric' -Value $true -MemberType NoteProperty -Force
+                Add-Member -InputObject $item -Name 'AutolinkIsNumericOnly' -Value $true -MemberType NoteProperty -Force
             }
         }
 
