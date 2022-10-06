@@ -10,10 +10,10 @@ filter Get-GitHubRepositoryAutolink
 {
 <#
     .SYNOPSIS
-        Gets the list of autolinks of the specified repository on GitHub.
+        Gets the list of autolinks of the specified GitHub repository.
 
     .DESCRIPTION
-        Gets the list of autolinks of the specified repository on GitHub.
+        Gets the list of autolinks of the specified GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
