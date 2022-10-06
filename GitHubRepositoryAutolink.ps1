@@ -30,6 +30,9 @@ filter Get-GitHubRepositoryAutolink
         The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
+    .PARAMETER AutolinkId
+        Optional, the unique identifier of the autolink to be retrieved
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -59,6 +62,11 @@ filter Get-GitHubRepositoryAutolink
 
         Gets all of the autolink references for the microsoft\PowerShellForGitHub repository.
 
+    .EXAMPLE
+        Get-GitHubRepositoryAutolink -OwnerName microsoft -RepositoryName PowerShellForGitHub -AutolinkId 42
+
+        Gets autolink reference with autolinkId 42 from the microsoft\PowerShellForGitHub repository.
+
     .NOTES
         Information about autolinks are only available to repository administrators.
 #>
@@ -79,6 +87,12 @@ filter Get-GitHubRepositoryAutolink
         [Alias('RepositoryUrl')]
         [string] $Uri,
 
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [int64] $AutolinkId,
+
         [string] $AccessToken
     )
 
@@ -93,8 +107,15 @@ filter Get-GitHubRepositoryAutolink
         'RepositoryName' = (Get-PiiSafeString -PlainText $RepositoryName)
     }
 
+    $uriFragment = [String]::Empty
+    if ($AutolinkId.IsPresent()) {
+        $uriFragment = "repos/$OwnerName/$RepositoryName/autolinks/$AutolinkId"
+    } else {
+        $uriFragment = "repos/$OwnerName/$RepositoryName/autolinks"
+    }
+
     $params = @{
-        'UriFragment' = "repos/$OwnerName/$RepositoryName/autolinks`?" +  ($getParams -join '&')
+        'UriFragment' = $uriFragment + "?" +  ($getParams -join '&')
         'Description' = "Getting all autolinks of $RepositoryName"
         'AccessToken' = $AccessToken
         'TelemetryEventName' = $MyInvocation.MyCommand.Name
@@ -428,8 +449,6 @@ filter Add-GitHubRepositoryAutolinkAdditionalProperties
         [AllowNull()]
         [AllowEmptyCollection()]
         [PSCustomObject[]] $InputObject,
-
-        [string] $RepositoryUrl,
 
         [ValidateNotNullOrEmpty()]
         [string] $TypeName = $script:GitHubRepositoryAutolinkTypeName
