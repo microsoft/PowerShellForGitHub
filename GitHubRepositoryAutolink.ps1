@@ -214,13 +214,12 @@ filter New-GitHubRepositoryAutolink
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName)]
-        #todo [ValidateScript({if ($_ -match '^#?[a-zA-Z0-9.-_+=:\/#]$') { $true } else { throw "Reference prefix must only contain letters, numbers, or .-_+=:/#." }})]
         [string] $KeyPrefix,
 
         [Parameter(
             Mandatory,
             ValueFromPipelineByPropertyName)]
-        #todo [ValidateScript({if ($_ -match '^#?[<num>]$') { $true } else { throw "Target URL is missing a <num> token." }})]
+        [ValidateScript({if ($_ -match '^https?://([^\s,]+<num>)') { $true } else { throw "Target URL invalid or is missing a <num> token." }})]
         [string] $UrlTemplate,
 
         [Parameter(
