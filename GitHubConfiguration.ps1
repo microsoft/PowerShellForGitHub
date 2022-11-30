@@ -202,6 +202,11 @@ function Set-GitHubConfiguration
 
         Sets all requests to connect to a GitHub Enterprise server running at
         github.contoso.com.
+
+    .EXAMPLE
+        Set-GitHubConfiguration -ApiVersion "2022-11-28"
+
+        Sets the API version used to the version changed last on November 28th 2022.
 #>
     [CmdletBinding(
         PositionalBinding = $false,
