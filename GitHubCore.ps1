@@ -232,6 +232,7 @@ function Invoke-GHRestMethod
     $headers = @{
         'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
+        'X-GitHub-Api-Version' = Get-GitHubConfiguration -Name "ApiVersion"
     }
 
     # Add any additional headers

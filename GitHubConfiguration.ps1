@@ -71,6 +71,9 @@ function Set-GitHubConfiguration
         different hostname when using a GitHub Enterprise server. Do not include the HTTP/S prefix,
         and do not include 'api'. For example, use "github.contoso.com".
 
+    .PARAMETER ApiVersion
+        Version of the GitApi to use. Format is: yyyy-MM-dd
+
     .PARAMETER ApplicationInsightsKey
         Change the Application Insights instance that telemetry will be reported to (if telemetry
         hasn't been disabled via DisableTelemetry).
@@ -207,6 +210,8 @@ function Set-GitHubConfiguration
         [ValidatePattern('^(?!https?:)(?!api\.)(?!www\.).*')]
         [string] $ApiHostName,
 
+        [datetime] $ApiVersion = "2022-11-28",
+
         [string] $ApplicationInsightsKey,
 
         [string] $DefaultOwnerName,
@@ -316,6 +321,7 @@ function Get-GitHubConfiguration
         [Parameter(Mandatory)]
         [ValidateSet(
             'ApiHostName',
+            'ApiVersion',
             'ApplicationInsightsKey',
             'DefaultOwnerName',
             'DefaultPassThru',
@@ -675,6 +681,7 @@ function Import-GitHubConfiguration
 
     $config = [PSCustomObject]@{
         'apiHostName' = 'github.com'
+        'apiVersion' = "2022-11-28"
         'applicationInsightsKey' = '66d83c52-3070-489b-886b-09860e05e78a'
         'disableLogging' = ([String]::IsNullOrEmpty($logPath))
         'disablePiiProtection' = $false
