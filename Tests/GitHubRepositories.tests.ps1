@@ -51,8 +51,6 @@ try
                     $repo.has_issues | Should -BeTrue
                     $repo.has_projects | Should -BeTrue
                     $repo.has_Wiki | Should -BeTrue
-                    $repo.has_pages | Should -BeTrue
-                    $repo.has_discussions | Should -BeTrue
                     $repo.allow_squash_merge | Should -BeTrue
                     $repo.allow_merge_commit | Should -BeTrue
                     $repo.allow_rebase_merge | Should -BeTrue
@@ -90,8 +88,6 @@ try
                     $repo.has_issues | Should -BeTrue
                     $repo.has_projects | Should -BeTrue
                     $repo.has_Wiki | Should -BeTrue
-                    $repo.has_pages | Should -BeTrue
-                    $repo.has_discussions | Should -BeTrue
                     $repo.allow_squash_merge | Should -BeTrue
                     $repo.allow_merge_commit | Should -BeTrue
                     $repo.allow_rebase_merge | Should -BeTrue
@@ -120,8 +116,6 @@ try
                         NoIssues = $true
                         NoProjects = $true
                         NoWiki = $true
-                        NoPages = $true
-                        NoDiscussions = $true
                         DisallowSquashMerge = $true
                         DisallowMergeCommit = $true
                         DisallowRebaseMerge = $false
@@ -144,8 +138,6 @@ try
                     $repo.homepage | Should -Be $defaultRepoHomePage
                     $repo.has_issues | Should -BeFalse
                     $repo.has_projects | Should -BeFalse
-                    $repo.has_pages | Should -BeFalse
-                    $repo.has_discussions | Should -BeFalse
                     $repo.has_Wiki | Should -BeFalse
                     $repo.allow_squash_merge | Should -BeFalse
                     $repo.allow_merge_commit | Should -BeFalse
@@ -733,8 +725,6 @@ try
                         NoIssues = $true
                         NoProjects = $true
                         NoWiki = $true
-                        NoPages = $true
-                        NoDiscussions = $true
                         DisallowSquashMerge = $true
                         DisallowMergeCommit = $true
                         DisallowRebaseMerge = $false
@@ -757,8 +747,6 @@ try
                     $updatedRepo.has_issues | Should -BeFalse
                     $updatedRepo.has_projects | Should -BeFalse
                     $updatedRepo.has_Wiki | Should -BeFalse
-                    $repo.has_pages | Should -BeFalse
-                    $repo.has_discussions | Should -BeFalse
                     $updatedRepo.allow_squash_merge | Should -BeFalse
                     $updatedRepo.allow_merge_commit | Should -BeFalse
                     $updatedRepo.allow_rebase_merge | Should -BeTrue
