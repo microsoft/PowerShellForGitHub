@@ -101,6 +101,9 @@ function Invoke-GHRestMethod
         used as the exception bucket value in the event of an exception.  If neither is specified,
         no bucket value will be used.
 
+    .PARAMETER ApiVersion
+        Version of the GitApi to use. Format is: yyyy-MM-dd
+
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
         [FileInfo] - The temporary file created for the downloaded file if -Save was specified.
@@ -151,7 +154,10 @@ function Invoke-GHRestMethod
 
         [hashtable] $TelemetryProperties = @{},
 
-        [string] $TelemetryExceptionBucket = $null
+        [string] $TelemetryExceptionBucket = $null,
+
+        [ValidatePattern("\d\d\d\d-\d\d-\d\d")]
+        [string]$ApiVersion = "2022-11-28"
     )
 
     Invoke-UpdateCheck
@@ -232,7 +238,7 @@ function Invoke-GHRestMethod
     $headers = @{
         'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
-        'X-GitHub-Api-Version' = Get-GitHubConfiguration -Name "ApiVersion"
+        'X-GitHub-Api-Version' = $ApiVersion
     }
 
     # Add any additional headers
@@ -633,6 +639,9 @@ function Invoke-GHRestMethodMultipleResult
         followed.
         WARNING: This might take a while depending on how many results there are.
 
+    .PARAMETER ApiVersion
+        Version of the GitApi to use. Format is: yyyy-MM-dd
+
     .OUTPUTS
         [PSCustomObject[]] - The result of the REST operation, in whatever form it comes in.
 
@@ -664,7 +673,10 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $TelemetryExceptionBucket = $null,
 
-        [switch] $SinglePage
+        [switch] $SinglePage,
+
+        [ValidatePattern("\d\d\d\d-\d\d-\d\d")]
+        [string]$ApiVersion = "2022-11-28"
     )
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
@@ -699,6 +711,7 @@ function Invoke-GHRestMethodMultipleResult
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
+                'ApiVersion' = $ApiVersion
             }
 
             $result = Invoke-GHRestMethod @params
