@@ -3070,7 +3070,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3104,7 +3104,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamSlug'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug -AccessToken $AccessToken
 
         $TeamName = $team.name
     }
@@ -3253,7 +3253,7 @@ filter Set-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3426,7 +3426,7 @@ filter Remove-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
