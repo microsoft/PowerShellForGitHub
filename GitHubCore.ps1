@@ -713,10 +713,10 @@ function Invoke-GHRestMethodMultipleResult
                 'AcceptHeader' = $AcceptHeader
                 'AdditionalHeader' = $AdditionalHeader
                 'ExtendedResult' = $true
+                'ApiVersion' = $ApiVersion
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
-                'ApiVersion' = $ApiVersion
             }
 
             $result = Invoke-GHRestMethod @params
