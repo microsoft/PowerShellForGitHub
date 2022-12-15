@@ -156,7 +156,7 @@ function Invoke-GHRestMethod
 
         [string] $TelemetryExceptionBucket = $null,
 
-        [ValidatePattern("\d\d\d\d-\d\d-\d\d")]
+        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
         [string]$ApiVersion = "2022-11-28"
     )
 
