@@ -671,7 +671,7 @@ function Invoke-GHRestMethodMultipleResult
         [hashtable] $AdditionalHeader = @{},
 
         [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
-        [string]$ApiVersion = "2022-11-28",
+        [string] $ApiVersion = "2022-11-28",
 
         [string] $AccessToken,
 
