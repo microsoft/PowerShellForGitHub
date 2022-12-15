@@ -316,8 +316,7 @@ Describe 'GitHubBranches\New-GitHubRepositoryBranch' {
                     TargetBranchName = 'test'
                 }
 
-                { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } |
-                Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
+                { New-GitHubRepositoryBranch @newGitHubRepositoryBranchParms } | Should -Throw
             }
         }
     }
