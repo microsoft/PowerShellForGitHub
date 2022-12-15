@@ -81,7 +81,7 @@ function Invoke-GHRestMethod
         temporary file.
 
     .PARAMETER ApiVersion
-        Version of the GitHub API to use. Format is: yyyy-MM-dd
+         Indicates the version of this API that should be used. Format is: 'yyyy-MM-dd'.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -617,7 +617,7 @@ function Invoke-GHRestMethodMultipleResult
         all of the requests made.
 
     .PARAMETER ApiVersion
-        Version of the GitHub API to use. Format is: yyyy-MM-dd
+         Indicates the version of this API that should be used. Format is: 'yyyy-MM-dd'.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
