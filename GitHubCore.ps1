@@ -80,6 +80,9 @@ function Invoke-GHRestMethod
         If specified, this will save the result to a temporary file and return the FileInfo of that
         temporary file.
 
+    .PARAMETER ApiVersion
+        Version of the GitHub API to use. Format is: yyyy-MM-dd
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -100,9 +103,6 @@ function Invoke-GHRestMethod
         isn't provided, but TelemetryEventName *is* provided, then TelemetryEventName will be
         used as the exception bucket value in the event of an exception.  If neither is specified,
         no bucket value will be used.
-
-    .PARAMETER ApiVersion
-        Version of the GitApi to use. Format is: yyyy-MM-dd
 
     .OUTPUTS
         [PSCustomObject] - The result of the REST operation, in whatever form it comes in.
@@ -148,16 +148,16 @@ function Invoke-GHRestMethod
 
         [switch] $Save,
 
+        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+        [string]$ApiVersion = "2022-11-28",
+
         [string] $AccessToken,
 
         [string] $TelemetryEventName = $null,
 
         [hashtable] $TelemetryProperties = @{},
 
-        [string] $TelemetryExceptionBucket = $null,
-
-        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
-        [string]$ApiVersion = "2022-11-28"
+        [string] $TelemetryExceptionBucket = $null
     )
 
     Invoke-UpdateCheck
@@ -611,6 +611,9 @@ function Invoke-GHRestMethodMultipleResult
         Allows the caller to specify any number of additional headers that should be added to
         all of the requests made.
 
+    .PARAMETER ApiVersion
+        Version of the GitHub API to use. Format is: yyyy-MM-dd
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -639,9 +642,6 @@ function Invoke-GHRestMethodMultipleResult
         followed.
         WARNING: This might take a while depending on how many results there are.
 
-    .PARAMETER ApiVersion
-        Version of the GitApi to use. Format is: yyyy-MM-dd
-
     .OUTPUTS
         [PSCustomObject[]] - The result of the REST operation, in whatever form it comes in.
 
@@ -665,6 +665,9 @@ function Invoke-GHRestMethodMultipleResult
 
         [hashtable] $AdditionalHeader = @{},
 
+        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+        [string]$ApiVersion = "2022-11-28",
+
         [string] $AccessToken,
 
         [string] $TelemetryEventName = $null,
@@ -673,10 +676,7 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $TelemetryExceptionBucket = $null,
 
-        [switch] $SinglePage,
-
-        [ValidatePattern("\d\d\d\d-\d\d-\d\d")]
-        [string]$ApiVersion = "2022-11-28"
+        [switch] $SinglePage
     )
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
