@@ -358,7 +358,7 @@ filter Set-GitHubContent
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
 
-    $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($Content))
+    $encodedContent = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($Content))
 
     $hashBody = @{
         message = $CommitMessage

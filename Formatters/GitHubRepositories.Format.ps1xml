@@ -204,5 +204,29 @@
         </ListEntries>
       </ListControl>
     </View>
+    <!--=============== GitHub.RepositoryTeamPermission Type View ===============-->
+    <View>
+      <Name>GitHub.RepositoryTeamPermission</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.RepositoryTeamPermission</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>RepositoryName</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>TeamName</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Permission</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>

@@ -238,7 +238,7 @@ try
                 }
             }
 
-            $since = (Get-Date -Date '01/01/2016')
+            $since = $gists.updated_At | Sort-Object | Select-Object -Last 1
             $sinceGists = Get-GitHubGist -UserName $username -Since $since
             It 'Should have fewer results with using the since parameter' {
                 $sinceGists.Count | Should -BeGreaterThan 0

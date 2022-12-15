@@ -32,6 +32,7 @@ steps:
     displayName: Initialize Package ES
     inputs:
       productName: $(ModuleName)
+      useDfs: false
       disableWorkspace: true
     env:
       XES_DISABLEPROV: true

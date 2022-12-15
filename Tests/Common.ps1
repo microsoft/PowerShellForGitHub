@@ -41,6 +41,7 @@ function Initialize-CommonTestSetup
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="Needed to configure with the stored, encrypted string value in Azure DevOps.")]
     param()
 
+    $script:moduleName = 'PowerShellForGitHub'
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     $settingsPath = Join-Path -Path $moduleRootPath -ChildPath 'Tests/Config/Settings.ps1'
     . $settingsPath

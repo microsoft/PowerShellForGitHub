@@ -55,12 +55,18 @@
         *   [Disable repository automatic security fixes](#disable-repository-automatic-security-fixes)
         *   [Get repository GitHub Actions permissions](#get-repository-github-actions-permissions)
         *   [Set repository GitHub Actions permissions](#set-repository-github-actions-permissions)
+        *   [Get a repository team permission](#get-a-repository-team-permission)
+        *   [Set a repository team permission](#set-a-repository-team-permission)
+        *   [Remove a repository team permission](#remove-a-repository-team-permission)
     *   [Branches](#branches)
         *   [Adding a new Branch to a Repository](#adding-a-new-branch-to-a-repository)
         *   [Removing a Branch from a Repository](#removing-a-branch-from-a-repository)
         *   [Getting a repository branch protection rule](#getting-a-repository-branch-protection-rule)
         *   [Creating a repository branch protection rule](#creating-a-repository-branch-protection-rule)
         *   [Removing a repository branch protection rule](#removing-a-repository-branch-protection-rule)
+        *   [Getting a repository branch pattern protection rule](#getting-a-repository-branch-pattern-protection-rule)
+        *   [Creating a repository branch pattern protection rule](#creating-a-repository-branch-pattern-protection-rule)
+        *   [Removing a repository branch pattern protection rule](#removing-a-repository-branch-pattern-protection-rule)
     *   [Forks](#forks)
         *   [Get all the forks for a repository](#get-all-the-forks-for-a-repository)
         *   [Create a new fork](#create-a-new-fork)
@@ -615,7 +621,7 @@ New-GitHubRepository -RepositoryName TestRepo -OrganizationName MyOrg -TeamId $m
 #### Create a repository from a template repository
 
 ```powershell
-New-GitHubRepositoryFromTemplate -OwnerName MyOrg  -RepositoryName MyNewRepo-TemplateOwnerName MyOrg -TemplateRepositoryName MyTemplateRepo
+New-GitHubRepositoryFromTemplate -OwnerName MyOrg -RepositoryName TemplateRepoName -TargetRepositoryName MyNewRepo -TargetOwnerName MyUserName
 ```
 
 #### Get repository vulnerability alert status
@@ -660,6 +666,24 @@ Get-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName Power
 Set-GitHubRepositoryActionsPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -AllowedActions All
 ```
 
+#### Get a repository team permission
+
+```powershell
+Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+```
+
+#### Set a repository team permission
+
+```powershell
+Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
+```
+
+#### Remove a repository team permission
+
+```powershell
+Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+```
+
 ----------
 
 ### Branches
@@ -682,6 +706,24 @@ New-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName Po
 Remove-GitHubRepositoryBranchProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchName master
 ```
 
+#### Getting a repository branch pattern protection rule
+
+```powershell
+Get-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
+```
+
+#### Creating a repository branch pattern protection rule
+
+```powershell
+New-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*' -RequiredApprovingReviewCount 1 -DismissStaleReviews -RequireStrictStatusChecks -StatusCheck 'CICheck'
+```
+
+#### Removing a repository branch pattern protection rule
+
+```powershell
+Remove-GitHubRepositoryBranchPatternProtectionRule -OwnerName microsoft -RepositoryName PowerShellForGitHub -BranchPatternName 'Release/**/*'
+```
+
 ----------
 
 ### Forks
@@ -693,7 +735,7 @@ Get-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHu
 
 #### Create a new fork
 ```powershell
-New-GitHubRepositoryForm -OwnerName microsoft -RepositoryName PowerShellForGitHub
+New-GitHubRepositoryFork -OwnerName microsoft -RepositoryName PowerShellForGitHub
 ```
 
 ----------

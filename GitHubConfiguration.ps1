@@ -87,7 +87,7 @@ function Set-GitHubConfiguration
         -PassThru:$false on an individual command.
 
     .PARAMETER DefaultRepositoryName
-        The owner name that should be used with a command that takes RepositoryName as a parameter
+        The repository name that should be used with a command that takes RepositoryName as a parameter
         when no value has been supplied.
 
     .PARAMETER DisableLogging

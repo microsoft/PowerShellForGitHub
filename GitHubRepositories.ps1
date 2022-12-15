@@ -10,6 +10,7 @@
     GitHubRepositoryContributorStatisticsTypeName = 'GitHub.RepositoryContributorStatistics'
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
+    GitHubRepositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -2979,6 +2980,527 @@ filter Set-GitHubRepositoryActionsPermission
     Invoke-GHRestMethod @params | Out-Null
 }
 
+filter Get-GitHubRepositoryTeamPermission
+{
+<#
+    .SYNOPSIS
+        Retrieve team permissions for a repository on GitHub.
+
+    .DESCRIPTION
+        Retrieve team permissions for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER TeamName
+        The name of the team.
+        Note: This will be slower than querying by TeamSlug since it requires retrieving
+        all teams first.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the team.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.Organization
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Reaction
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+        GitHub.Team
+
+    .OUTPUTS
+        GitHub.RepositoryTeamPermission
+
+    .EXAMPLE
+        Get-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
+
+        Gets permission for the Devs team on the microsoft/PowerShellForGitHub repository.
+
+    .EXAMPLE
+        Get-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+
+        Gets permission for the Admin team on the microsoft/PowerShellForGitHub repository.
+#>
+    [CmdletBinding(DefaultParameterSetName = 'TeamNameElements')]
+    [OutputType(
+        { $script:GitHubRepositoryTeamTypeName })]
+    param
+    (
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamNameUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamSlug,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $telemetryProperties = @{}
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    if ($PSBoundParameters.ContainsKey('TeamName'))
+    {
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
+            Where-Object -Property name -eq $TeamName
+
+        if ($null -eq $team)
+        {
+            $message = "Team '$TeamName' not found"
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+        else
+        {
+            $TeamSlug = $team.slug
+        }
+    }
+
+    $telemetryProperties['TeamSlug'] = Get-PiiSafeString -PlainText $TeamSlug
+
+    $uriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+    $description = "Getting team $TeamSlug permissions for repository $RepositoryName"
+
+    $params = @{
+        UriFragment = $uriFragment
+        Description =  $description
+        AcceptHeader = $script:repositoryAcceptHeader
+        Method = 'Get'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHRestMethod @params
+
+    if ($PSBoundParameters.ContainsKey('TeamSlug'))
+    {
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug -AccessToken $AccessToken
+
+        $TeamName = $team.name
+    }
+
+    return ($result |
+        Add-GitHubRepositoryTeamPermissionAdditionalProperties -TeamName $TeamName -TeamSlug $TeamSlug)
+}
+
+filter Set-GitHubRepositoryTeamPermission
+{
+<#
+    .SYNOPSIS
+        Sets team permission for a repository on GitHub.
+
+    .DESCRIPTION
+        Sets team permission for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER TeamName
+        The name of the specific team to retrieve.
+        Note: This will be slower than querying by TeamSlug since it requires retrieving
+        all teams first.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the specific team to retrieve.
+
+    .PARAMETER Permission
+        The permission to grant the team on this repository.
+        Can be one of:
+        * Pull - team members can pull, but not push to or administer this repository.
+        * Push - team members can pull and push, but not administer this repository.
+        * Admin - team members can pull, push and administer this repository.
+        * Maintain - team members can manage the repository without access to sensitive or
+          destructive actions. Recommended for project managers. Only applies to repositories owned
+          by organizations.
+        * Triage - team members can proactively manage issues and pull requests without write access.
+          Recommended for contributors who triage a repository. Only applies to repositories owned
+          by organizations.
+        If no permission is specified, the team's permission attribute will be used to determine
+        what permission to grant the team on this repository.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.Organization
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Reaction
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+        GitHub.Team
+
+    .EXAMPLE
+        Set-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs -Permission Push
+
+        Sets the Push permission for the Devs team on the microsoft/PowerShellForGitHub repository.
+
+    .EXAMPLE
+        Set-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins -Permission Admin
+
+        Sets the Admin permission for the Admin team on the microsoft/PowerShellForGitHub repository.
+#>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        DefaultParameterSetName = 'TeamNameElements')]
+    param(
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamNameUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamSlug,
+
+        [Parameter()]
+        [ValidateSet('Pull', 'Push', 'Admin', 'Maintain', 'Triage')]
+        [string]$Permission,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $telemetryProperties = @{}
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    if ($PSBoundParameters.ContainsKey('TeamName'))
+    {
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
+            Where-Object -Property name -eq $TeamName
+
+        if ($null -eq $team)
+        {
+            $message = "Team '$TeamName' not found"
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+        else
+        {
+            $TeamSlug = $team.slug
+        }
+    }
+
+    $telemetryProperties['TeamSlug'] = Get-PiiSafeString -PlainText $TeamSlug
+
+    $hashBody = @{}
+    if ($PSBoundParameters.ContainsKey('Permission'))
+    {
+        $hashBody = @{
+            permission = $Permission.ToLower()
+        }
+    }
+
+    if (-not $PSCmdlet.ShouldProcess(
+        $RepositoryName, "Set GitHub $Permission Repository Permissions for Team $TeamSlug"))
+    {
+        return
+    }
+
+    $params = @{
+        UriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+        Description =  "Setting team $TeamSlug $Permission permissions for repository $RepositoryName"
+        Body = (ConvertTo-Json -InputObject $hashBody)
+        Method = 'Put'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    Invoke-GHRestMethod @params | Out-Null
+}
+
+filter Remove-GitHubRepositoryTeamPermission
+{
+<#
+    .SYNOPSIS
+        Removes team permission for a repository on GitHub.
+
+    .DESCRIPTION
+        Removes team permission for a repository on GitHub.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the repository.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the repository.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER TeamName
+        The name of the specific team to remove.
+        Note: This will be slower than querying by TeamSlug since it requires retrieving
+        all teams first.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the specific team to remove.
+
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Branch
+        GitHub.Content
+        GitHub.Event
+        GitHub.Issue
+        GitHub.IssueComment
+        GitHub.Label
+        GitHub.Milestone
+        GitHub.Organization
+        GitHub.PullRequest
+        GitHub.Project
+        GitHub.ProjectCard
+        GitHub.ProjectColumn
+        GitHub.Reaction
+        GitHub.Release
+        GitHub.ReleaseAsset
+        GitHub.Repository
+        GitHub.Team
+
+    .EXAMPLE
+        Remove-GitHubRepositoryTeamPermission -Uri https://github.com/microsoft/PowerShellForGitHub -TeamName Devs
+
+        Removes the permission for the Devs team on the microsoft/PowerShellForGitHub repository.
+
+    .EXAMPLE
+        Remove-GitHubRepositoryTeamPermission -OwnerName microsoft -RepositoryName PowerShellForGitHub -TeamName Admins
+
+        Removes the permission for the Admin team on the microsoft/PowerShellForGitHub repository.
+
+#>
+[CmdletBinding(
+    SupportsShouldProcess,
+    DefaultParameterSetName = 'TeamNameElements',
+    ConfirmImpact='High')]
+    [Alias('Delete-GitHubRepositoryTeamPermission')]
+    param(
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $OwnerName,
+
+        [Parameter(ParameterSetName = 'TeamNameElements')]
+        [Parameter(ParameterSetName = 'TeamSlugElements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamNameUri')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameElements')]
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'TeamNameUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugElements')]
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'TeamSlugUri')]
+        [ValidateNotNullOrEmpty()]
+        [string] $TeamSlug,
+
+        [switch] $Force,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $telemetryProperties = @{}
+
+    $elements = Resolve-RepositoryElements
+    $OwnerName = $elements.ownerName
+    $RepositoryName = $elements.repositoryName
+
+    if ($PSBoundParameters.ContainsKey('TeamName'))
+    {
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
+            Where-Object -Property name -eq $TeamName
+
+        if ($null -eq $team)
+        {
+            $message = "Team '$TeamName' not found"
+            Write-Log -Message $message -Level Error
+            throw $message
+        }
+        else
+        {
+            $TeamSlug = $team.slug
+        }
+    }
+
+    $telemetryProperties['TeamSlug'] = Get-PiiSafeString -PlainText $TeamSlug
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if (-not $PSCmdlet.ShouldProcess(
+        $RepositoryName, "Remove GitHub Repository Permissions for Team $TeamSlug"))
+    {
+        return
+    }
+
+    $params = @{
+        UriFragment = "/orgs/$OwnerName/teams/$TeamSlug/repos/$OwnerName/$RepositoryName"
+        Description =  "Removing team $TeamSlug permissions from repository $RepositoryName"
+        Method = 'Delete'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    Invoke-GHRestMethod @params | Out-Null
+}
+
 filter Add-GitHubRepositoryAdditionalProperties
 {
 <#
@@ -3326,6 +3848,136 @@ filter Add-GitHubRepositoryActionsPermissionAdditionalProperties
         }
 
         Add-Member -InputObject $item -Name 'AllowedActions' -Value $allowedActions -MemberType NoteProperty -Force
+
+        Write-Output $item
+    }
+}
+
+filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
+{
+<#
+    .SYNOPSIS
+        Adds type name and additional properties to ease pipelining to GitHub Repository Team Permission objects.
+
+    .PARAMETER InputObject
+        The GitHub object to add additional properties to.
+
+    .PARAMETER OwnerName
+        Owner of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER RepositoryName
+        Name of the repository.  This information might be obtainable from InputObject, so this
+        is optional based on what InputObject contains.
+
+    .PARAMETER TeamName
+        The name of the team.
+
+    .PARAMETER TeamSlug
+        The slug (a unique key based on the team name) of the team.
+
+    .PARAMETER TypeName
+        The type that should be assigned to the object.
+
+    .INPUTS
+        PSCustomObject
+
+    .OUTPUTS
+        GitHub.RepositoryTeamPermission
+#>
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "",
+        Justification="Internal helper that is definitely adding more than one property.")]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline)]
+        [AllowNull()]
+        [AllowEmptyCollection()]
+        [PSCustomObject[]] $InputObject,
+
+        [string] $OwnerName,
+
+        [string] $RepositoryName,
+
+        [Parameter(Mandatory)]
+        [string] $TeamName,
+
+        [Parameter(Mandatory)]
+        [string] $TeamSlug,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $TypeName = $script:GitHubRepositoryTeamPermissionTypeName
+        )
+
+    foreach ($item in $InputObject)
+    {
+        $item.PSObject.TypeNames.Insert(0, $TypeName)
+
+        if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
+        {
+            $repositoryUrl = [String]::Empty
+            if ([String]::IsNullOrEmpty($item.html_url))
+            {
+                if ($PSBoundParameters.ContainsKey('OwnerName') -and
+                    $PSBoundParameters.ContainsKey('RepositoryName'))
+                {
+                    $repositoryUrl = (Join-GitHubUri -OwnerName $OwnerName -RepositoryName $RepositoryName)
+                }
+            }
+            else
+            {
+                $elements = Split-GitHubUri -Uri $item.html_url
+                $repositoryUrl = Join-GitHubUri @elements
+            }
+
+            if (-not [String]::IsNullOrEmpty($repositoryUrl))
+            {
+                Add-Member -InputObject $item -Name 'RepositoryUrl' -Value $repositoryUrl -MemberType NoteProperty -Force
+            }
+
+            if ($item.id -gt 0)
+            {
+                Add-Member -InputObject $item -Name 'RepositoryId' -Value $item.id -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.owner)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.owner
+            }
+
+            if ($null -ne $item.organization)
+            {
+                $null = Add-GitHubOrganizationAdditionalProperties -InputObject $item.organization
+            }
+
+            Add-Member -InputObject $item -Name 'RepositoryName' -Value $item.full_name -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'TeamName' -Value $TeamName -MemberType NoteProperty -Force
+            Add-Member -InputObject $item -Name 'TeamSlug' -Value $TeamSlug -MemberType NoteProperty -Force
+        }
+
+        if ($result.permissions.admin)
+        {
+            $permission = 'admin'
+        }
+        elseif ($result.permissions.maintain)
+        {
+            $permission = 'maintain'
+        }
+        elseif ($result.permissions.push)
+        {
+            $permission = 'push'
+        }
+        elseif ($result.permissions.triage)
+        {
+            $permission = 'triage'
+        }
+        elseif ($result.permissions.pull)
+        {
+            $permission = 'pull'
+        }
+
+        Add-Member -InputObject $item -Name 'Permission' -Value $permission -MemberType NoteProperty -Force
 
         Write-Output $item
     }

@@ -3,6 +3,7 @@
 
 @{
     GitHubEventTypeName = 'GitHub.Event'
+    GitHubLabelSummaryTypeName = 'GitHub.LabelSummary'
  }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
@@ -237,12 +238,12 @@ filter Add-GitHubEventAdditionalProperties
 
             if ($null -ne $item.label)
             {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.label -TypeName $script:GitHubLabelSummaryTypeName -RepositoryUrl $repositoryUrl
             }
 
             if ($null -ne $item.labels)
             {
-                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels
+                $null = Add-GitHubLabelAdditionalProperties -InputObject $item.labels -TypeName $script:GitHubLabelSummaryTypeName -RepositoryUrl $repositoryUrl
             }
 
             if ($null -ne $item.milestone)

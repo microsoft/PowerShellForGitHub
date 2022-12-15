@@ -15,6 +15,7 @@
     mercyAcceptHeader = 'application/vnd.github.mercy-preview+json'
     mockingbirdAcceptHeader = 'application/vnd.github.mockingbird-preview'
     nebulaAcceptHeader = 'application/vnd.github.nebula-preview+json'
+    repositoryAcceptHeader = 'application/vnd.github.v3.repository+json'
     sailorVAcceptHeader = 'application/vnd.github.sailor-v-preview+json'
     scarletWitchAcceptHeader = 'application/vnd.github.scarlet-witch-preview+json'
     squirrelGirlAcceptHeader = 'application/vnd.github.squirrel-girl-preview'
@@ -66,6 +67,10 @@ function Invoke-GHRestMethod
         Specifies the value for the MIME Content-Type header of the request.  This will usually
         be configured correctly automatically.  You should only specify this under advanced
         situations (like if the extension of InFile is of a type unknown to this module).
+
+    .PARAMETER AdditionalHeader
+        Allows the caller to specify any number of additional headers that should be added to
+        the request.
 
     .PARAMETER ExtendedResult
         If specified, the result will be a PSObject that contains the normal result, along with
@@ -133,6 +138,8 @@ function Invoke-GHRestMethod
         [string] $InFile,
 
         [string] $ContentType = $script:defaultJsonBodyContentType,
+
+        [HashTable] $AdditionalHeader = @{},
 
         [switch] $ExtendedResult,
 
@@ -225,6 +232,12 @@ function Invoke-GHRestMethod
     $headers = @{
         'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
+    }
+
+    # Add any additional headers
+    foreach ($header in $AdditionalHeader.Keys.GetEnumerator())
+    {
+        $headers.Add($header, $AdditionalHeader.$header)
     }
 
     $AccessToken = Get-AccessToken -AccessToken $AccessToken
@@ -537,8 +550,13 @@ function Invoke-GHRestMethod
 
         if ($statusCode -eq 404)
         {
-            $explanation = @('This typically happens when the current user isn''t properly authenticated.',
-              'You may need an Access Token with additional scopes checked.')
+            $explanation = @('This error will usually happen for one of the following reasons:',
+                '(1) The item you are requesting truly doesn''t exist (so make sure you don''t have',
+                'a typo) or ',
+                '(2) The item _does_ exist, but you don''t currently have permission to access it. ',
+                'If you think the item does exist and that you _should_ have access to it, then make',
+                'sure that you are properly authenticated with Set-GitHubAuthentication and that',
+                'your access token has the appropriate scopes checked.')
             $output += ($explanation -join ' ')
         }
 
@@ -586,6 +604,10 @@ function Invoke-GHRestMethodMultipleResult
     .PARAMETER AcceptHeader
         Specify the media type in the Accept header.  Different types of commands may require
         different media types.
+
+    .PARAMETER AdditionalHeader
+        Allows the caller to specify any number of additional headers that should be added to
+        all of the requests made.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
@@ -636,6 +658,8 @@ function Invoke-GHRestMethodMultipleResult
 
         [string] $AcceptHeader = $script:defaultAcceptHeader,
 
+        [hashtable] $AdditionalHeader = @{},
+
         [string] $AccessToken,
 
         [string] $TelemetryEventName = $null,
@@ -674,6 +698,7 @@ function Invoke-GHRestMethodMultipleResult
                 'Method' = 'Get'
                 'Description' = $currentDescription
                 'AcceptHeader' = $AcceptHeader
+                'AdditionalHeader' = $AdditionalHeader
                 'ExtendedResult' = $true
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties

@@ -1,16 +1,72 @@
 # PowerShellForGitHub PowerShell Module
 # Changelog
 
+## [0.16.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.16.1) - (2021/05/26)
+
+### Features
+
++ `Invoke-GHRestMethodMultipleResult` now allows callers to specify `AdditionalHeader`, just like
+  `Invoke-GHRestMethod`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/319) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/a2329d67302c55c42bae7fab2c78e63e1abdb656)
+
+### Fixes
+
+- Fixes encoding issues when calling `Set-GitHubContent`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/328) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1200b5b36aa94d96906802ddc04f8604ab83d83c)
+
+### Authors
+
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@jing8956**](https://github.com/jing8956)
+
+------
+
+## [0.16.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.16.0) - (2021/01/06)
+
+### Features
+
++ Added the ability to retrieve and modify team permissions on a repository with
+  `Get-GitHubRepositoryTeamPermission`, `Set-GitHubRepositoryTeamPermission` and
+  `Remove-GitHubRepositoryTeamPermission`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/300) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/22e3d7bdf6c3b33fdead74dac831e0bb43beb2c4)
+
++ Added the ability to retrieve and modify the GitHub Actions permissions policy for repositories
+  with `Get-GitHubRepositoryActionsPermission` and `Set-GitHubRepositoryActionsPermission`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/301) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d4997057f8b1234ea1aabeb4fb6742148d3afaaf)
+
+### Fixes
+
+- Added missing `.SYNOPSIS` to a number of functions throughout the module.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/293) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ab536c772a7656f92166d13f5df9ef7bf6627a3f)
+
+- Fixed an error in `Set-GitHubContent` which caused it to ignore requested changes to
+  `AuthorName`/`AuthorEmail`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/295) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/ec7950c02c1e52af2a6edc30331982d172f6e7ff)
+
+- Fixed `Get-GitHubEvent`, which was erroring out when its result contained any labels.  (The labels
+  were being post-processed incorrectly when adding support for pipelining).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/306) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/8fd42010209edaf10936751b8eb190655a2bdb38)
+
+### Authors
+
+   * [**@HowardWolosky**](https://github.com/HowardWolosky)
+   * [**@X-Guardian**](https://github.com/X-Guardian)
+   * [**@johnlokerse**](https://github.com/johnlokerse)
+   * [**@joseartrivera**](https://github.com/joseartrivera)
+
+------
+
 ## [0.15.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.15.1) - (2020/09/09)
 
-### Fixes:
+### Fixes
 
 - Fixed the default `LogPath` when no user profile is available (like in the situation of running
   within the context of an Azure Function App).  The alternate default log path in this scenario
   will now be the `LocalApplicationDataFolder`.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/283) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/e9a6810b3c1a3c6b2ec798bc06f4fa50be154e87)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
@@ -157,7 +213,7 @@ existing users need to be made aware of.
 * `Get-GitHubTeam` and `Get-GitHubTeamMember` no longer support the `TeamId` parameter, as that
   functionality has been deprecated by GitHub.  You can use `TeamSlug` instead.
 
-### Features:
+### Features
 
 + Complete pipeline support has been added to the module.  You can now pipe the output of almost
   any command as input to almost any command.  Every command output now has a specific `GitHub.*`
@@ -260,7 +316,7 @@ existing users need to be made aware of.
   `DefaultPassThru`.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/276) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/9600fc21120e17241e60606c5de3459d973026bb)
 
-### Fixes:
+### Fixes
 
 - Module update check needs to be able to handle when the module in use is newer than the published
   version (since publication to PowerShellGallery happens a few hours after the version is updated
@@ -319,7 +375,8 @@ existing users need to be made aware of.
   status is handled in the module.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/274) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/db111559f9844e9a30b666ec069a5dc462643c63)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
    * [**@X-Guardian**](https://github.com/X-Guardian)
    * [**@themilfan**](https://github.com/themilfan)
@@ -329,7 +386,7 @@ Authors:
 
 ## [0.14.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.14.0) - (2020/05/30)
 
-### Features:
+### Features
 
 + The module will now asynchronously check for updates up to once per day.  This can be disabled
   if desired with the `Set-GitHubConfiguration -DisableUpdateCheck`.
@@ -338,7 +395,7 @@ Authors:
   exported.  Now it is.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/180) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b7e1ea1cb912493e110b9854b0ec7700462254a0)
 
-### Fixes:
+### Fixes
 
 - Fixes the behavior of `Get-GitHubRepository`.  It actually had a number of issues:
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/179) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/c4c1ec344a357489d248b9cf1bc2837484d4915f)
@@ -370,19 +427,21 @@ Authors:
 - Documentation updates around configuring unattended authentication.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/173) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3440909f5f1264865ccfca85ce2364af3ce85425)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.13.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.13.1) - (2020/05/12)
 
-### Fixes:
+### Fixes
 
 - Ensure progress bar for Wait-JobWithAnimation gets marked as Completed
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/169) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/bb2ad45f61f4e55ba763d5eb402c80de5991bb6b)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
@@ -394,14 +453,15 @@ Authors:
 - Migrate REST API progress status to use Write-Progress
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/167) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/992f67871cd659dac20833487b326bdad7b85bd8)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.12.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.12.0) - (2020/05/12)
 
-### Features:
+### Features
 
 + Added core support for Projects
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/160) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1cdaac1a5af873589458bd0b40b3651187ec7e19)
@@ -412,14 +472,15 @@ Authors:
 + Added sample usage documentation for the new Project API's
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/164) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1556b8b39cd61735aad14be0fb237c14e763f696)
 
-### Fixes:
+### Fixes
 
 - Minor spelling fixes in documentation throughout module
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/165) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/6735ba57a5a43b61a37ef09d4021296dcd417dba)
 - Fixed confirmation message for `Rename-GitHubRepository`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/161) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/3fab72464e38cb573408add7e99d5a6bb0db2ea1)
 
-Authors:
+### Authors
+
    * [**@jpomfret**](https://github.com/jpomfret)
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
@@ -427,18 +488,20 @@ Authors:
 
 ## [0.11.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.11.0) - (2020/04/03)
 
-### Features:
+### Features
 
 + Added `Get-GitHubContents`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/146) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/9a45908dc65b3e8dd0227083fab281099cf07b1b)
 
-Author: [**@Shazwazza**](https://github.com/Shazwazza)
+### Authors
+
+[**@Shazwazza**](https://github.com/Shazwazza)
 
 ------
 
 ## [0.10.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.10.0) - (2020/03/02)
 
-### Features:
+### Features
 
 + Added `Rename-GitHubRepository`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/145) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/536b762425d51a181166c2c47ad2b00014911d1d)
@@ -449,18 +512,20 @@ Author: [**@mtboren**](https://github.com/mtboren)
 
 ## [0.9.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.2) - (2019/11/11)
 
-### Fixes:
+### Fixes
 
 - Reduces the warning noise seen during execution of the unit tests.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/130) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/89f69f1132505f04e6b2ac38b6f5a93aef6ac947)
 
-Author: [**@smaglio81**](https://github.com/smaglio81)
+### Authors
+
+[**@smaglio81**](https://github.com/smaglio81)
 
 ------
 
 ## [0.9.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.1) - (2019/09/24)
 
-### Fixes:
+### Fixes
 
 - Ensure Milestone `due_on` always gets set to the desired date.
   (Attempts to work around odd GitHub behavior which uses PST/PDT's midnight to determine the date instead of UTC.)
@@ -471,27 +536,30 @@ Author: [**@smaglio81**](https://github.com/smaglio81)
   - The `Archived` switch's value was being incorrectly inverted
     [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/135) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/9bdb37c053f98f108d346050622b609d8488fd45)
 
-Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+### Authors
+
+[**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.9.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.9.0) - (2019/09/19)
 
-### Features:
+### Features
 
 + Added `Get-GitHubRelease`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/125) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/7ea773c715525273dddd451d2a05f429e7fe69e1)
 + Added `New-GitHubPullRequest`
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/111) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/788465faec1b6d6331537aa87c2d94039682e373)
 
-### Fixes:
+### Fixes
 - Updates the GitHub Enterprise support to use the `http(s)://[hostname]/api/v3` syntax
   instead of the non-standard `http(s)://api.[hostname]/` syntax.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/118) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/f7b956da4ae169ec6ec1bb6582ce742372677f5c)
 - Minor Comment Based Help (CBH) update for Get-GitHubRepository
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/120) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/220333a71214fb88a33093b5e907d431dcfdb4c8)
 
-Authors:
+### Authors
+
    * [**@smaglio81**](https://github.com/smaglio81)
    * [**@rjmholt**](https://github.com/rjmholt)
    * [**@v2kiran**](https://github.com/v2kiran)
@@ -501,19 +569,20 @@ Authors:
 
 ## [0.8.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.8.0) - (2019/04/12)
 
-### Features:
+### Features
 
 + Added support for GitHub Enterprise users by adding a new `ApiHostName` configuration value.
   ([more info](https://github.com/Microsoft/PowerShellForGitHub/blob/master/README.md#github-enterprise))
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/101) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/d5acd0f73d97f6692914976ce9366456a59cbf70)
 
-### Fixes:
+### Fixes
 
 - Renamed `ConvertFrom-Markdown` to `ConvertFrom-GitHubMarkdown` to avoid a conflict with
   PSCore's new `ConvertFrom-Markdown` command.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/100) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/088f95b5a1340c7ce570e6e68a41967fd5760c46)
 
-Authors:
+### Authors
+
    * [**@Cellivar**](https://github.com/Cellivar)
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
@@ -521,14 +590,14 @@ Authors:
 
 ## [0.7.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.7.0) - (2019/03/15)
 
-### Features:
+### Features
 
 + Added `Test-GitHubOrganizationMember` to test if a user is in an organization.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/90) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/c60bb29ac02e7ab9fcd2e29db865b63876cb0125)
 + Updated `Get-GitHubTeamMember` to optionally work directly with a TeamId.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/90) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/c60bb29ac02e7ab9fcd2e29db865b63876cb0125)
 
-### Fixes:
+### Fixes
 
 - Modified all [int] parameters to be [int64] to avoid out of bounds issues with large ID's.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/94) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/a22739e7f535faf4c5f486694bd213782437e82a)
@@ -536,44 +605,51 @@ Authors:
   the REST responses.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/88) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/592167de9b3f07635c49365e291082fd3f712586)
 
-Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+### Authors
+
+[**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.6.4](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.4) - (2019/01/16)
 
-### Fixes:
+### Fixes
 
 - Updated the `*-GitHubIssue` functions to support specifying the `MediaType` that should be used
   for the returned result.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/83) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/e3b6c53017abd36fc70253e1a49c31046c885ad1)
 
-Author: [**@joseartrivera**](https://github.com/joseartrivera)
+### Authors
+
+[**@joseartrivera**](https://github.com/joseartrivera)
 
 ------
 
 ## [0.6.3](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.3) - (2019/01/07)
 
-### Fixes:
+### Fixes
 
 - Updated all parameter sets to use `CamelCase` for the permitted options, and stopped
   any use of abbreviation, to be more consistent with the rest of PowerShell.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/81) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/185441078efeb0e6693eafeb023785388a1a5a69)
 
-Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+### Authors
+
+[**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.6.2](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.2) - (2018/12/13)
 
-### Fixes:
+### Fixes
 
 - Fixes a bug preventing Labels from being correctly added at the time of new Issue creation or
   modified when updating an issue.
   {[[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/76) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/3b6e84cbafaf044e2154a06612b1c43a873cd002) and
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/78) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/577f07bd219e9b5c03d481e562fd7f2fc3586474)}
 
-Authors:
+### Authors
+
    * [**@lazywinadmin**](https://github.com/lazywinadmin)
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
 
@@ -581,20 +657,21 @@ Authors:
 
 ## [0.6.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.1) - (2018/12/13)
 
-### Fixes:
+### Fixes
 
 - Fixes a bug with checking Issues.  When trying to list all issues, it tried to speficially look
   for Issue 0.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/73) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/bf6764080ce1291cfe2530a39ffd292f38b37440)
 
-Authors:
+### Authors
+
    * [**@joseartrivera**](https://github.com/joseartrivera)
 
 ------
 
 ## [0.6.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.6.0) - (2018/12/13)
 
-### Features:
+### Features
 
 + Completes all support for GitHub Issue API's:
   + Added support for the [Issue Event](https://developer.github.com/v3/issues/events/) API's.
@@ -607,7 +684,8 @@ Authors:
   exact body of the REST request being sent before it is sent over the wire.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/60) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/98aec29d61bf013a153705079703ae027cc25c9f)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
    * [**@joseartrivera**](https://github.com/joseartrivera)
    * [**@etgottli**](https://github.com/etgottli)
@@ -616,20 +694,21 @@ Authors:
 
 ## [0.5.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.5.0) - (2018/11/30)
 
-### Features:
+### Features
 
 + Added support for the [Issue Comment](https://developer.github.com/v3/issues/comments/) API's.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/53) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/28b314bd7c0a810848e1acb3df43a1d83291be7b)
 + Added support for the [Issue Assignee](https://developer.github.com/v3/issues/assignees/) API's.
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/54) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/680696a833b3cc753e961fc8c723b0be9b39ecc2)
 
-### Fixes:
+### Fixes
 
 - Fixed bug that caused single or empty arrays returned within objects to be flattened
   (instead of remaining as arrays)
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/56) | [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/6cf344fb38485275f94b1e85c1a5f932e1b519c3)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
    * [**@joseartrivera**](https://github.com/joseartrivera)
 
@@ -637,12 +716,12 @@ Authors:
 
 ## [0.4.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.4.0) - (2018/11/16)
 
-### Features:
+### Features
 
 + Added support for the [Repository Traffic API's](https://developer.github.com/v3/repos/traffic/).
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/49) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/8d2e76f9059f0939b892d08386fe43f0e2722bb0)
 
-### Fixes:
+### Fixes
 
 - Made NuGet dll retrieval more robust by preventing potential file access problems from being
   written to the error stream.
@@ -651,7 +730,8 @@ Authors:
   if explicitly passed-in
   [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/50) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/c6835f4cb1ef0e78e23a8195949eb9ad2555fd4a)
 
-Authors:
+### Authors
+
    * [**@HowardWolosky**](https://github.com/HowardWolosky)
    * [**@joseartrivera**](https://github.com/joseartrivera)
 
@@ -659,7 +739,7 @@ Authors:
 
 ## [0.3.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.1) - (2018/11/13)
 
-### Fixes:
+### Fixes
 
 - Minor static analysis issues fixed.
 - Corrected name of the test file for `GitHubRepositoryForks`
@@ -673,24 +753,26 @@ Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ## [0.3.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.3.0) - (2018/11/13)
 
-### Features:
+### Features
 
 + Added support for querying forks and creating new ones.
 
-### Fixes:
+### Fixes
 
 - Will only perform a retry when receiving a `202` response on a `GET` request.  Previously, it would
   retry regardless of the method of the request.
 
 More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/41) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/1076239d7639497984a6e0b04df1e69019c4ec28)
 
-Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+### Authors
+
+[**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.2.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.2.0) - (2018/11/13)
 
-### Features:
+### Features
 
 + Significant restructing and refactoring of entire module to make future expansion easier.
 + Significant documentation updates ([CHANGELOG](./CHANGELOG.md), [CONTRIBUTING.md](./CONTRIBUTING.md),
@@ -710,7 +792,7 @@ Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
     get tags, get/set topic and current used programming languages.
   + Enhanced user query support as well as being able update information for the current user.
 
-### Fixes:
+### Fixes
 
 - Made parameter ordering consistent across all functions (OwnerName is now first, then RepositoryName)
 - Normalized all parameters to use SentenceCase
@@ -755,16 +837,20 @@ Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
 
 More Info: [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/39) | [[cl]](https://github.com/PowerShell/PowerHellForGitHub/commit/eb33688e5b8d688d28e8582b76b526da3c4428be)
 
-Author: [**@HowardWolosky**](https://github.com/HowardWolosky)
+### Authors
+
+[**@HowardWolosky**](https://github.com/HowardWolosky)
 
 ------
 
 ## [0.1.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.1.0) - (2016/11/29)
 
-### Features:
+### Features
 
 + Initial public release
 
 More Info: [[cl]](https://github.com/PowerShell/PowerShellForGitHub/commit/6a3b400019d6a97ccc2f08a951fd4b2d09282eb5)
 
-Author: [**@KarolKaczmarek**](https://github.com/KarolKaczmarek)
+### Authors
+
+[**@KarolKaczmarek**](https://github.com/KarolKaczmarek)

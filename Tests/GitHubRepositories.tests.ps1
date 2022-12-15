@@ -1565,6 +1565,444 @@ try
             }
         }
     }
+
+    Describe 'GitHubRepositories\Get-GitHubRepositoryTeamPermission' {
+        BeforeAll {
+            $repositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName $repoName
+
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $MaintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $MaintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
+        }
+
+        Foreach ($permission in $permissions) {
+            Context "When the Team Permission is $permission" {
+                BeforeAll {
+                    $setGitHubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamSlug = $team.slug
+                        Permission = $permission
+                    }
+
+                    Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+
+                    $getGithubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamSlug = $team.slug
+                    }
+
+                    $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
+                }
+
+                It 'Should have the expected type and additional properties' {
+                    $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
+                    $repoPermission.RepositoryName | Should -Be $repo.full_name
+                    $repoPermission.RepositoryUrl | Should -Be $repo.svn_url
+                    $repoPermission.RepositoryId | Should -Be $repo.RepositoryId
+                    $repoPermission.TeamName | Should -Be $team.TeamName
+                    $repoPermission.TeamSlug | Should -Be $team.TeamSlug
+                    $repoPermission.Permission | Should -Be $permission
+                }
+            }
+        }
+
+        Context "When specifying the 'TeamName' parameter" {
+            BeforeAll {
+                $permission = 'Pull'
+
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                    Permission = $permission
+                }
+
+                Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+
+                $getGithubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamName = $teamName
+                }
+
+                $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
+                $repoPermission.RepositoryName | Should -Be $repo.full_name
+                $repoPermission.RepositoryUrl | Should -Be $repo.svn_url
+                $repoPermission.RepositoryId | Should -Be $repo.RepositoryId
+                $repoPermission.TeamName | Should -Be $team.TeamName
+                $repoPermission.TeamSlug | Should -Be $team.TeamSlug
+                $repoPermission.Permission | Should -Be $permission
+            }
+
+            Context 'When the specified TeamName does not exist' {
+                BeforeAll {
+                    $nonExistingTeamName = [Guid]::NewGuid().Guid
+
+                    $getGithubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamName = $nonExistingTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
+                        Should -Throw "Team '$nonExistingTeamName' not found"
+                }
+            }
+        }
+
+        Context "When specifying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $getGitHubRepositoryTeamPermissionParms = @{
+                    TeamName = $teamName
+                }
+                $repoPermission = $repo |
+                    Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
+                $repoPermission.RepositoryName | Should -Be $repo.full_name
+                $repoPermission.TeamName | Should -Be $teamName
+            }
+        }
+
+        Context "When specifying the 'TeamSlug' and 'OrganizationName' Parameters from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $getGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                }
+                $repoPermission = $team |
+                    Get-GitHubRepositoryTeamPermission @getGitHubRepositoryTeamPermissionParms
+            }
+
+            It 'Should have the expected type and additional properties' {
+                $repoPermission.PSObject.TypeNames[0] | Should -Be $repositoryTeamPermissionTypeName
+                $repoPermission.RepositoryName | Should -Be $repo.full_name
+                $repoPermission.TeamName | Should -Be $teamName
+                $repoPermission.TeamSlug | Should -Be $team.TeamSlug
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+            {
+                $team | Remove-GitHubTeam -Force
+            }
+
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
+
+    Describe 'GitHubRepositories\Set-GitHubRepositoryTeamPermission' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName $repoName
+
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $MaintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $MaintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
+        }
+
+        Foreach ($permission in $permissions) {
+            Context "When the Team Permission is specified as $permission" {
+                BeforeAll {
+                    $setGitHubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamSlug = $team.slug
+                        Permission = $permission
+                    }
+
+                }
+
+                It 'Should not throw' {
+                    { Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms }  |
+                        Should -Not -Throw
+
+                }
+
+                It 'Should have set the correct Team permission' {
+                    $getGithubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamSlug = $team.slug
+                    }
+
+                    $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
+
+                    $repoPermission.Permission | Should -Be $permission
+                }
+            }
+        }
+
+        Context "When specifying the 'TeamName' parameter" {
+            BeforeAll {
+                $permission = 'Pull'
+
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamName = $teamName
+                    Permission = $permission
+                }
+            }
+
+            It 'Should not throw' {
+                { Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have set the correct Team permission' {
+                $getGithubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                }
+
+                $repoPermission = Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms
+
+                $repoPermission.Permission | Should -Be $permission
+            }
+
+            Context 'When the specified TeamName does not exist' {
+                BeforeAll {
+                    $nonExistingTeamName = [Guid]::NewGuid().Guid
+
+                    $setGithubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamName = $nonExistingTeamName
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    { Set-GitHubRepositoryTeamPermission @setGithubRepositoryTeamPermissionParms } |
+                        Should -Throw "Team '$nonExistingTeamName' not found"
+                }
+            }
+        }
+
+        Context "When specifying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    TeamName = $teamName
+                }
+            }
+
+            It 'Should not throw' {
+                { $repo | Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+        }
+
+        Context "When specifying the 'TeamSlug' and 'OrganizationName' Parameters from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                }
+            }
+
+            It 'Should not throw' {
+                { $team | Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+            {
+                $team | Remove-GitHubTeam -Force
+            }
+
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
+
+    Describe 'GitHubRepositories\Remove-GitHubRepositoryTeamPermission' {
+        BeforeAll {
+            $repoName = [Guid]::NewGuid().Guid
+            $repo = New-GitHubRepository -OrganizationName $script:organizationName -RepositoryName $repoName
+
+            $teamName = [Guid]::NewGuid().Guid
+            $description = 'Team Description'
+            $privacy = 'closed'
+            $MaintainerName = $script:ownerName
+
+            $newGithubTeamParms = @{
+                OrganizationName = $script:organizationName
+                TeamName = $teamName
+                Description = $description
+                Privacy = $privacy
+                MaintainerName = $MaintainerName
+            }
+
+            $team = New-GitHubTeam @newGithubTeamParms
+
+            $setGitHubRepositoryTeamPermissionParms = @{
+                Uri = $repo.svn_url
+                TeamSlug = $team.slug
+                Permission = 'Pull'
+            }
+
+            Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+        }
+
+        Context "When specifying the 'TeamSlug' parameter" {
+            BeforeAll {
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                    Permission = 'Pull'
+                }
+
+                Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+            }
+
+            It 'Should not throw' {
+                $removeGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                    Force = $true
+                }
+
+                { Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+
+            }
+
+            It 'Should have removed the Team permission' {
+                $getGithubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                }
+
+                { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
+                    Should -Throw 'Not Found'
+            }
+        }
+
+        Context "When specifying the 'TeamName' parameter" {
+            BeforeAll {
+                $setGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                    Permission = 'Pull'
+                }
+
+                Set-GitHubRepositoryTeamPermission @setGitHubRepositoryTeamPermissionParms
+            }
+
+            It 'Should not throw' {
+                $removeGitHubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamName = $teamName
+                    Force = $true
+                }
+
+                { Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+
+            It 'Should have removed the Team permission' {
+                $getGithubRepositoryTeamPermissionParms = @{
+                    Uri = $repo.svn_url
+                    TeamSlug = $team.slug
+                }
+
+                { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
+                    Should -Throw 'Not Found'
+            }
+
+            Context 'When the specified TeamName does not exist' {
+                BeforeAll {
+                    $nonExistingTeamName = [Guid]::NewGuid().Guid
+
+                    $removeGithubRepositoryTeamPermissionParms = @{
+                        Uri = $repo.svn_url
+                        TeamName = $nonExistingTeamName
+                        Force = $true
+                    }
+                }
+
+                It 'Should throw the correct exception' {
+                    { Remove-GitHubRepositoryTeamPermission @removeGithubRepositoryTeamPermissionParms } |
+                        Should -Throw "Team '$nonExistingTeamName' not found"
+                }
+            }
+        }
+
+        Context "When specifying the 'URI' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $removeGitHubRepositoryTeamPermissionParms = @{
+                    TeamName = $teamName
+                    Force = $true
+                }
+            }
+
+            It 'Should not throw' {
+                { $repo | Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+        }
+
+        Context "When specifying the 'TeamSlug' and 'Organization' Parameter from the Pipeline" {
+            BeforeAll -ScriptBlock {
+                $removeGitHubRepositoryTeamPermissionParms = @{
+                    RepositoryUrl = $repo.svn_url
+                    Force = $true
+                }
+            }
+
+            It 'Should not throw' {
+                { $team | Remove-GitHubRepositoryTeamPermission @removeGitHubRepositoryTeamPermissionParms } |
+                    Should -Not -Throw
+            }
+        }
+
+        AfterAll {
+            if (Get-Variable -Name team -ErrorAction SilentlyContinue)
+            {
+                $team | Remove-GitHubTeam -Force
+            }
+
+            if (Get-Variable -Name repo -ErrorAction SilentlyContinue)
+            {
+                $repo | Remove-GitHubRepository -Force
+            }
+        }
+    }
 }
 finally
 {
