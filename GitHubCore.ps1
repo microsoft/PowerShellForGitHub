@@ -557,8 +557,13 @@ function Invoke-GHRestMethod
 
         if ($statusCode -eq 404)
         {
-            $explanation = @('This typically happens when the current user isn''t properly authenticated.',
-              'You may need an Access Token with additional scopes checked.')
+            $explanation = @('This error will usually happen for one of the following reasons:',
+                '(1) The item you are requesting truly doesn''t exist (so make sure you don''t have',
+                'a typo) or ',
+                '(2) The item _does_ exist, but you don''t currently have permission to access it. ',
+                'If you think the item does exist and that you _should_ have access to it, then make',
+                'sure that you are properly authenticated with Set-GitHubAuthentication and that',
+                'your access token has the appropriate scopes checked.')
             $output += ($explanation -join ' ')
         }
 
