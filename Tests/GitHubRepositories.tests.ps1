@@ -118,6 +118,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
+                    AllowAutoMerge = $true
+                    UseSquashPrTitleAsDefault = $true                    
                     DeleteBranchOnMerge = $true
                     GitIgnoreTemplate = $testGitIgnoreTemplate
                     LicenseTemplate = $testLicenseTemplate
@@ -141,6 +143,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.allow_squash_merge | Should -BeFalse
                 $repo.allow_merge_commit | Should -BeFalse
                 $repo.allow_rebase_merge | Should -BeTrue
+                $repo.allow_auto_merge | Should -BeTrue
+                $repo.use_squash_pr_title_as_default | Should -BeTrue                
                 $repo.delete_branch_on_merge | Should -BeTrue
                 $repo.is_template | Should -BeTrue
             }
@@ -169,6 +173,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $false
                     DisallowRebaseMerge = $true
+                    AllowAutoMerge = $false
+                    UseSquashPrTitleAsDefault = $false                    
                 }
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
             }
@@ -182,6 +188,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.allow_squash_merge | Should -BeFalse
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeFalse
+                $repo.allow_auto_merge | Should -BeFalse
+                $repo.use_squash_pr_title_as_default | Should -BeFalse                
             }
 
             AfterAll -ScriptBlock {
@@ -670,7 +678,6 @@ Describe 'GitHubRepositories\Delete-GitHubRepository' {
 }
 
 Describe 'GitHubRepositories\Rename-GitHubRepository' {
-
     Context -Name 'When renaming a repository' -Fixture {
         BeforeEach -Scriptblock {
             $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid) -AutoInit
@@ -729,6 +736,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
                     DeleteBranchOnMerge = $true
+                    AllowAutoMerge = $true
+                    UseSquashPrTitleAsDefault = $true                    
                     IsTemplate = $true
                 }
 
@@ -750,6 +759,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.allow_squash_merge | Should -BeFalse
                 $updatedRepo.allow_merge_commit | Should -BeFalse
                 $updatedRepo.allow_rebase_merge | Should -BeTrue
+                $updatedRepo.allow_auto_merge | Should -BeTrue
+                $updatedRepo.use_squash_pr_title_as_default | Should -BeTrue                
                 $updatedRepo.delete_branch_on_merge | Should -BeTrue
                 $updatedRepo.is_template | Should -BeTrue
             }
@@ -763,6 +774,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $false
                     DisallowRebaseMerge = $true
+                    AllowAutoMerge = $false
+                    UseSquashPrTitleAsDefault = $false                    
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -777,6 +790,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.allow_squash_merge | Should -BeFalse
                 $updatedRepo.allow_merge_commit | Should -BeTrue
                 $updatedRepo.allow_rebase_merge | Should -BeFalse
+                $updatedRepo.use_squash_pr_title_as_default | Should -BeFalse
+                $updatedRepo.delete_branch_on_merge | Should -BeFalse                
             }
         }
 
