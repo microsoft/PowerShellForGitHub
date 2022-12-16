@@ -249,7 +249,7 @@ Describe 'Adding and Removing Assignees from an Issue' {
             }
         }
 
-        Context "Add assignee with the issue on the pipeline" {
+        Context "Remove assignee with the issue on the pipeline" {
             BeforeAll {
                 $updatedIssue = $issue | Remove-GitHubAssignee -Assignee $owner.login -Force
             }

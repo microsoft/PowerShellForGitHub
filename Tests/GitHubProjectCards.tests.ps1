@@ -203,8 +203,8 @@ Describe 'Modify card' {
 
     Context 'Modify card note (via card on pipeline)' {
         BeforeAll {
-            $result = $card | Get-GitHubProjectCard
             $card | Set-GitHubProjectCard -Note $defaultCard
+            $result = $card | Get-GitHubProjectCard
         }
 
         It 'Should have the expected Note value' {

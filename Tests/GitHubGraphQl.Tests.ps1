@@ -167,7 +167,6 @@ Describe 'GitHubCore/Invoke-GHGraphQl' {
         BeforeAll {
             $testWebRequestTimeoutSec = 'invalid'
             $testBody = 'testBody'
-            $errorMsg = 'Cannot bind parameter ''TimeoutSec''. Cannot convert value "invalid" to type "System.Int32". Error: "Input string was not in a correct format."'
 
             Mock -CommandName Get-GitHubConfiguration -ModuleName $script:moduleName `
                 -ParameterFilter { $Name -eq 'WebRequestTimeoutSec' } `
@@ -179,7 +178,7 @@ Describe 'GitHubCore/Invoke-GHGraphQl' {
                 Body = $testBody
             }
             { Invoke-GHGraphQl @invokeGHGraphQlParms } |
-            Should -Throw $errorMsg
+            Should -Throw
 
             $Error[0].CategoryInfo.Category | Should -Be 'InvalidArgument'
             $Error[0].CategoryInfo.TargetName | Should -Be $testBody

@@ -268,7 +268,8 @@ Describe 'Getting milestones' {
                 $returned.MilestoneNumber | Should -Be $returned.number
                 $returned.creator.PSObject.TypeNames[0] | Should -Be 'GitHub.User'
             }
-        } }
+        }
+     }
 
     Context 'Getting multiple milestones' {
         BeforeAll {
