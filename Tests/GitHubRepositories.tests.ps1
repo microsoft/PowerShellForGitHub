@@ -1385,7 +1385,6 @@ Describe 'GitHubRepositories\Get-GitHubRepositoryActionsPermission' {
         $repoName = [Guid]::NewGuid().Guid
         $repo = New-GitHubRepository -RepositoryName $repoName
 
-        $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
     }
 
     Context "Checking AllowedActions" -ForEach @('All', 'LocalOnly', 'Selected', 'Disabled') {
@@ -1440,7 +1439,6 @@ Describe 'GitHubRepositories\Set-GitHubRepositoryActionsPermission' {
     BeforeAll {
         $repo = New-GitHubRepository -RepositoryName ([Guid]::NewGuid().Guid)
 
-        $allowedActions = 'All', 'LocalOnly', 'Selected', 'Disabled'
     }
 
     Context "Checking the AllowedAction Parameter" -ForEach @('All', 'LocalOnly', 'Selected', 'Disabled') {
@@ -1504,7 +1502,6 @@ Describe 'GitHubRepositories\Get-GitHubRepositoryTeamPermission' {
 
         $team = New-GitHubTeam @newGithubTeamParms
 
-        $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
     }
 
     Context "Checking the Team Permissions" -ForEach @('Push', 'Pull', 'Maintain', 'Triage', 'Admin') {
@@ -1649,7 +1646,6 @@ Describe 'GitHubRepositories\Set-GitHubRepositoryTeamPermission' {
 
         $team = New-GitHubTeam @newGithubTeamParms
 
-        $permissions = 'Push', 'Pull', 'Maintain', 'Triage', 'Admin'
     }
 
     Context "Checking the Team Permission" -ForEach @('Push', 'Pull', 'Maintain', 'Triage', 'Admin') {

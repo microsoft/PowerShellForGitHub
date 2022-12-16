@@ -384,7 +384,7 @@ This module supports testing using the [Pester UT framework](https://github.com/
 To install it:
 
 ```powershell
-Install-Module -Name Pester -RequiredVersion 5.3.3 -AllowClobber -SkipPublisherCheck -Force
+Install-Module -Name Pester -MinimumVersion 5.3.3 -AllowClobber -SkipPublisherCheck -Force
 ```
 
 #### Configuring Your Environment
@@ -421,12 +421,12 @@ Please keep in mind some tests may fail on your machine, as they test private it
 Pester can also be used to test code-coverage, like so:
 
 ```powershell
-$pesterConfig = @{ 
-  CodeCoverage = @{ 
-    Path = "$root\GitHubLabels.ps1" 
-  } 
-}
+$pesterConfig = New-PesterConfiguration
+$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1") 
+$pesterConfig.CodeCoverage.Enabled = $true
+
 Invoke-Pester -Configuration $pesterConfig
+# Be sure you're not passing this in to -PesterOption, since that's different than the configuration.
 ```
 
 This command tells Pester to check the `GitHubLabels.ps1` file for code-coverage.
@@ -434,13 +434,12 @@ This command tells Pester to check the `GitHubLabels.ps1` file for code-coverage
 The code-coverage object can be captured and interacted with, like so:
 
 ```powershell
-$pesterConfig = @{ 
-  CodeCoverage = @{ 
-    Path = "$root\GitHubLabels.ps1" 
-  } 
-}
+$pesterConfig = New-PesterConfiguration
+$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1") 
+$pesterConfig.CodeCoverage.Enabled = $true
+$pesterConfig.Run.PassThru = $true
 
-$cc = (Invoke-Pester -Configuration $pesterConfig-PassThru -Quiet).CodeCoverage
+$cc = (Invoke-Pester -Configuration $pesterConfig).CodeCoverage
 ```
 
 There are many more nuances to code-coverage, see
