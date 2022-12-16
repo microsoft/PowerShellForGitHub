@@ -11,7 +11,22 @@
     Justification = 'Suppress false positives in Pester code blocks')]
 param()
 
+<#
+
+The Projects tests have been disabled because GitHub has deprecated the ability to create
+classic Projects, so these tests will fail when trying to create the project that they test
+against.
+
+There's still value in the rest of the functions as they can still manipulate existing
+classic Projects, however we can no longer easily validate that these functions still work
+correctly since we have no classic Project to test against.
+
+For more info, see: https://github.com/microsoft/PowerShellForGitHub/issues/380
+
+#>
+
 BeforeAll {
+<#
     # This is common test code setup logic for all Pester test files
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -27,9 +42,10 @@ BeforeAll {
     }
 
     $project = New-GitHubProject -UserProject -ProjectName $defaultProject
+#>
 }
 
-Describe 'Getting Project Columns' {
+Describe 'Getting Project Columns' -Skip {
     BeforeAll {
         $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
     }
@@ -123,7 +139,7 @@ Describe 'Getting Project Columns' {
     }
 }
 
-Describe 'Modify Project Column' {
+Describe 'Modify Project Column' -Skip {
     BeforeAll {
         $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
         $columntwo = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumnTwo
@@ -203,7 +219,7 @@ Describe 'Modify Project Column' {
     }
 }
 
-Describe 'Create Project Column' {
+Describe 'Create Project Column' -Skip {
     Context 'Create project column' {
         BeforeAll {
             $column = @{id = 0 }
@@ -292,7 +308,7 @@ Describe 'Create Project Column' {
     }
 }
 
-Describe 'Remove project column' {
+Describe 'Remove project column' -Skip {
     Context 'Remove project column' {
         BeforeAll {
             $column = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumn
@@ -317,6 +333,7 @@ Describe 'Remove project column' {
 }
 
 AfterAll {
+<#
     Remove-GitHubProject -Project $project.id -Confirm:$false
 
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
@@ -325,4 +342,5 @@ AfterAll {
         Restore-GitHubConfiguration -Path $script:originalConfigFile
         $script:originalConfigFile = $null
     }
+#>
 }
