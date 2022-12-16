@@ -623,6 +623,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Giuseppe Campanelli (@themilanfan)](https://github.com/themilanfan)**
 - **[Christoph Bergmeister (@bergmeister)](https://github.com/bergmeister)**
 - **[Simon Heather (@X-Guardian)](https://github.com/X-Guardian)**
+- **[Neil White (@variableresistor)](https://github.com/variableresistor)**
 - **[Mark Curole(@tigerfansga)](https://github.com/tigerfansga)**
 
 ----------

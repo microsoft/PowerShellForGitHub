@@ -80,6 +80,9 @@ function Invoke-GHRestMethod
         If specified, this will save the result to a temporary file and return the FileInfo of that
         temporary file.
 
+    .PARAMETER ApiVersion
+         Indicates the version of this API that should be used. Format is: 'yyyy-MM-dd'.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -144,6 +147,9 @@ function Invoke-GHRestMethod
         [switch] $ExtendedResult,
 
         [switch] $Save,
+
+        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+        [string] $ApiVersion = "2022-11-28",
 
         [string] $AccessToken,
 
@@ -232,6 +238,7 @@ function Invoke-GHRestMethod
     $headers = @{
         'Accept' = $AcceptHeader
         'User-Agent' = 'PowerShellForGitHub'
+        'X-GitHub-Api-Version' = $ApiVersion
     }
 
     # Add any additional headers
@@ -609,6 +616,9 @@ function Invoke-GHRestMethodMultipleResult
         Allows the caller to specify any number of additional headers that should be added to
         all of the requests made.
 
+    .PARAMETER ApiVersion
+         Indicates the version of this API that should be used. Format is: 'yyyy-MM-dd'.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api as opposed to requesting a new one.
@@ -660,6 +670,9 @@ function Invoke-GHRestMethodMultipleResult
 
         [hashtable] $AdditionalHeader = @{},
 
+        [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
+        [string] $ApiVersion = "2022-11-28",
+
         [string] $AccessToken,
 
         [string] $TelemetryEventName = $null,
@@ -700,6 +713,7 @@ function Invoke-GHRestMethodMultipleResult
                 'AcceptHeader' = $AcceptHeader
                 'AdditionalHeader' = $AdditionalHeader
                 'ExtendedResult' = $true
+                'ApiVersion' = $ApiVersion
                 'AccessToken' = $AccessToken
                 'TelemetryProperties' = $telemetryProperties
                 'TelemetryExceptionBucket' = $errorBucket
