@@ -11,7 +11,22 @@
     Justification = 'Suppress false positives in Pester code blocks')]
 param()
 
+<#
+
+The Projects tests have been disabled because GitHub has deprecated the ability to create
+classic Projects, so these tests will fail when trying to create the project that they test
+against.
+
+There's still value in the rest of the functions as they can still manipulate existing
+classic Projects, however we can no longer easily validate that these functions still work
+correctly since we have no classic Project to test against.
+
+For more info, see: https://github.com/microsoft/PowerShellForGitHub/issues/380
+
+#>
+
 BeforeAll {
+<#
     # This is common test code setup logic for all Pester test files
     $moduleRootPath = Split-Path -Path $PSScriptRoot -Parent
     . (Join-Path -Path $moduleRootPath -ChildPath 'Tests\Common.ps1')
@@ -39,8 +54,10 @@ BeforeAll {
     $columntwo = New-GitHubProjectColumn -Project $project.id -ColumnName $defaultColumnTwo
 
     $issue = New-GitHubIssue -Owner $script:ownerName -RepositoryName $repo.name -Title $defaultIssue
+#>
 }
-Describe 'Getting Project Cards' {
+
+Describe 'Getting Project Cards' -Skip {
     BeforeAll {
         $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
         $cardArchived = New-GitHubProjectCard -Column $column.id -Note $defaultArchivedCard
@@ -164,7 +181,7 @@ Describe 'Getting Project Cards' {
     }
 }
 
-Describe 'Modify card' {
+Describe 'Modify card' -Skip {
     BeforeAll {
         $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
         $cardTwo = New-GitHubProjectCard -Column $column.id -Note $defaultCardTwo
@@ -377,7 +394,7 @@ Describe 'Modify card' {
     }
 }
 
-Describe 'Create Project Cards' {
+Describe 'Create Project Cards' -Skip {
     Context 'Create project card with note' {
         BeforeAll {
             $card = @{id = 0 }
@@ -515,7 +532,7 @@ Describe 'Create Project Cards' {
     # TODO: Create a test that verifies cards created based on a pull request
 }
 
-Describe 'Remove card' {
+Describe 'Remove card' -Skip {
     Context 'Remove card' {
         BeforeAll {
             $card = New-GitHubProjectCard -Column $column.id -Note $defaultCard
@@ -540,6 +557,7 @@ Describe 'Remove card' {
 }
 
 AfterAll {
+<#
     Remove-GitHubProject -Project $project.id -Confirm:$false
 
     if (Test-Path -Path $script:originalConfigFile -PathType Leaf)
@@ -548,4 +566,5 @@ AfterAll {
         Restore-GitHubConfiguration -Path $script:originalConfigFile
         $script:originalConfigFile = $null
     }
+#>
 }
