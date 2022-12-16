@@ -1823,7 +1823,7 @@ Describe 'GitHubRepositories\Remove-GitHubRepositoryTeamPermission' {
             }
 
             { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
-            Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
+            Should -Throw
         }
     }
 
@@ -1856,7 +1856,7 @@ Describe 'GitHubRepositories\Remove-GitHubRepositoryTeamPermission' {
             }
 
             { Get-GitHubRepositoryTeamPermission @getGithubRepositoryTeamPermissionParms } |
-            Should -Throw 'Response status code does not indicate success: 404 (Not Found).'
+            Should -Throw
         }
 
         Context 'When the specified TeamName does not exist' {
