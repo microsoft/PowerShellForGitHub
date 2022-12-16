@@ -46,7 +46,7 @@ steps:
       workingDirectory: '$(System.DefaultWorkingDirectory)'
       targetType: 'inline'
       script: |
-        # Import the module as otherwise GitHubCore.tests.ps1 has problems since it's testing things in moduls scope.
+        # Import the module, otherwise GitHubCore.tests.ps1 has problems since it's testing things in module scope.
         Import-Module -Global ./
       
         $null = New-Item -Path ../ -Name Pester -ItemType Directory -Force
