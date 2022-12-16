@@ -46,8 +46,23 @@ steps:
       workingDirectory: '$(System.DefaultWorkingDirectory)'
       targetType: 'inline'
       script: |
-        $null = New-Item -Path ..\ -Name Pester -ItemType Directory -Force
-        Invoke-Pester -CodeCoverage .\*.ps*1 -CodeCoverageOutputFile ../Pester/coverage.xml -CodeCoverageOutputFileFormat JaCoCo -EnableExit -Strict -OutputFile ../Pester/test-results.xml -OutputFormat NUnitXml
+        # Import the module as otherwise GitHubCore.tests.ps1 has problems since it's testing things in moduls scope.
+        Import-Module -Global ./
+      
+        $null = New-Item -Path ../ -Name Pester -ItemType Directory -Force
+
+        $pesterConfig = New-PesterConfiguration
+        $pesterConfig.CodeCoverage.Enabled = $true
+        $pesterConfig.CodeCoverage.Path = @('.\*.ps*1')
+        $pesterConfig.CodeCoverage.OutputPath = '../Pester/coverage.xml'
+        $pesterConfig.CodeCoverage.OutputFormat = 'JaCoCo'
+        $pesterConfig.Run.Exit = $true
+        $pesterConfig.TestResult.Enabled = $true
+        $pesterConfig.TestResult.OutputPath = '../Pester/test-results.xml'
+        $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
+        $pesterConfig.Output.CIFormat = 'AzureDevops'
+        
+        Invoke-Pester -Configuration $pesterConfig
     env:
       ciAccessToken: ${{ parameters.gitHubAccessToken }}
       ciOwnerName: ${{ parameters.gitHubOwnerName }}
