@@ -279,20 +279,20 @@ Describe 'GitHubContents/Set-GitHubContent' {
     BeforeAll {
         $repoName = [Guid]::NewGuid().Guid
         $repo = New-GitHubRepository -RepositoryName $repoName -AutoInit
+
+        $filePath = 'notes'
+        $fileName = 'hello.txt'
+        $commitMessage = 'Commit Message 2'
+        $content = 'This is the new content for test.txt'
+        $branchName = 'master'
+        $committerName = 'John Doe'
+        $committerEmail = 'john.doe@testdomain.com'
+        $authorName = 'Jane Doe'
+        $authorEmail = 'jane.doe@testdomain.com'
     }
 
     Context 'When setting new file content' {
         BeforeAll {
-            $filePath = 'notes'
-            $fileName = 'hello.txt'
-            $commitMessage = 'Commit Message'
-            $content = 'This is the content for test.txt'
-            $branchName = 'master'
-            $committerName = 'John Doe'
-            $committerEmail = 'john.doe@testdomain.com'
-            $authorName = 'Jane Doe'
-            $authorEmail = 'jane.doe@testdomain.com'
-
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
@@ -357,16 +357,6 @@ Describe 'GitHubContents/Set-GitHubContent' {
 
     Context 'When overwriting file content' {
         BeforeAll {
-            $filePath = 'notes'
-            $fileName = 'hello.txt'
-            $commitMessage = 'Commit Message 2'
-            $content = 'This is the new content for test.txt'
-            $branchName = 'master'
-            $committerName = 'John Doe'
-            $committerEmail = 'john.doe@testdomain.com'
-            $authorName = 'Jane Doe'
-            $authorEmail = 'jane.doe@testdomain.com'
-
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
@@ -411,16 +401,6 @@ Describe 'GitHubContents/Set-GitHubContent' {
 
     Context 'When Specifying only one Committer parameter' {
         BeforeAll {
-            $filePath = 'notes'
-            $fileName = 'hello.txt'
-            $commitMessage = 'Commit Message 2'
-            $content = 'This is the new content for test.txt'
-            $branchName = 'master'
-            $committerName = 'John Doe'
-            $committerEmail = 'john.doe@testdomain.com'
-            $authorName = 'Jane Doe'
-            $authorEmail = 'jane.doe@testdomain.com'
-
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
@@ -439,16 +419,6 @@ Describe 'GitHubContents/Set-GitHubContent' {
 
     Context 'When Specifying only one Author parameter' {
         BeforeAll {
-            $filePath = 'notes'
-            $fileName = 'hello.txt'
-            $commitMessage = 'Commit Message 2'
-            $content = 'This is the new content for test.txt'
-            $branchName = 'master'
-            $committerName = 'John Doe'
-            $committerEmail = 'john.doe@testdomain.com'
-            $authorName = 'Jane Doe'
-            $authorEmail = 'jane.doe@testdomain.com'
-
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 Uri = $repo.svn_url
@@ -466,17 +436,6 @@ Describe 'GitHubContents/Set-GitHubContent' {
     }
 
     Context 'When Invoke-GHRestMethod returns an unexpected error' {
-        BeforeAll {
-            $filePath = 'notes'
-            $fileName = 'hello.txt'
-            $commitMessage = 'Commit Message 2'
-            $content = 'This is the new content for test.txt'
-            $branchName = 'master'
-            $committerName = 'John Doe'
-            $committerEmail = 'john.doe@testdomain.com'
-            $authorName = 'Jane Doe'
-            $authorEmail = 'jane.doe@testdomain.com'
-        }
         It 'Should throw' {
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
