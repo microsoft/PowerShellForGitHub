@@ -38,7 +38,6 @@ Describe 'Creating, modifying and deleting comments' {
 
     Context 'With parameters' {
         BeforeAll {
-            # fail
             $comment = New-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Body $defaultCommentBody
             $result = Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $comment.id
             $commentId = $result.id
@@ -168,7 +167,6 @@ Describe 'Creating, modifying and deleting comments' {
     Context 'With the issue on the pipeline' {
         BeforeAll {
             $comment = $issue | New-GitHubIssueComment -Body $defaultCommentBody
-            # fail
             $result = Get-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Comment $comment.id
             $commentId = $result.id
         }
@@ -232,7 +230,6 @@ Describe 'Creating, modifying and deleting comments' {
 
     Context 'With the comment object on the pipeline' {
         BeforeAll {
-            # fail
             $comment = New-GitHubIssueComment -OwnerName $script:ownerName -RepositoryName $repo.name -Issue $issue.number -Body $defaultCommentBody
             $result = $comment | Get-GitHubIssueComment
         }
