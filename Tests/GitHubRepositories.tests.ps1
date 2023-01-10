@@ -193,6 +193,230 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
             }
         }
 
+        Context -Name 'When creating a repository with Squash Merge Commit PR Title' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'BLANK'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_squash_merge | Should -BeTrue
+                $repo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $repo.squash_merge_commit_message | Should -Be 'BLANK'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Squash Merge Commit PR Title and Commit details' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_squash_merge | Should -BeTrue
+                $repo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $repo.squash_merge_commit_message | Should -Be 'COMMIT_MESSAGES'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Squash Merge Commit PR Title and Description' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'PR_BODY'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_squash_merge | Should -BeTrue
+                $repo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $repo.squash_merge_commit_message | Should -Be 'PR_BODY'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Squash Merge Commit default message' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'COMMIT_OR_PR_TITLE'
+                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_squash_merge | Should -BeTrue
+                $repo.squash_merge_commit_title | Should -Be 'COMMIT_OR_PR_TITLE'
+                $repo.squash_merge_commit_message | Should -Be 'COMMIT_MESSAGES'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Merge Commit PR Title' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'PR_TITLE'
+                    MergeCommitMessage = 'BLANK'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_merge_commit | Should -BeTrue
+                $repo.merge_commit_title | Should -Be 'PR_TITLE'
+                $repo.merge_commit_message | Should -Be 'BLANK'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Merge Commit PR Title and Description' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'PR_TITLE'
+                    MergeCommitMessage = 'PR_BODY'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_merge_commit | Should -BeTrue
+                $repo.merge_commit_title | Should -Be 'PR_TITLE'
+                $repo.merge_commit_message | Should -Be 'PR_BODY'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
+        Context -Name 'When creating a repository with Merge Commit default message' {
+            BeforeAll -ScriptBlock {
+                $repoName = ([Guid]::NewGuid().Guid)
+                $newGithubRepositoryParms = @{
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'MERGE_MESSAGE'
+                    MergeCommitMessage = 'PR_TITLE'
+                }
+
+                $repo = New-GitHubRepository @newGithubRepositoryParms
+            }
+
+            It 'Should return an object of the correct type' {
+                $repo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $repo.name | Should -Be $repoName
+                $repo.allow_merge_commit | Should -BeTrue
+                $repo.merge_commit_title | Should -Be 'MERGE_MESSAGE'
+                $repo.merge_commit_message | Should -Be 'PR_TITLE'
+            }
+
+            AfterAll -ScriptBlock {
+                if ($repo)
+                {
+                    Remove-GitHubRepository -Uri $repo.svn_url -Confirm:$false
+                }
+            }
+        }
+
         Context -Name 'When a TeamID is specified' -Fixture {
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
@@ -777,6 +1001,181 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.allow_squash_merge | Should -BeFalse
                 $updatedRepo.allow_merge_commit | Should -BeTrue
                 $updatedRepo.allow_rebase_merge | Should -BeFalse
+            }
+        }
+
+        Context -Name 'When updating a repository with Squash Merge Commit PR Title' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'BLANK'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_squash_merge | Should -BeTrue
+                $updatedRepo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $updatedRepo.squash_merge_commit_message | Should -Be 'BLANK'
+            }
+        }
+
+        Context -Name 'When updating a repository with Squash Merge Commit PR Title and Commit details' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_squash_merge | Should -BeTrue
+                $updatedRepo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $updatedRepo.squash_merge_commit_message | Should -Be 'COMMIT_MESSAGES'
+            }
+        }
+
+        Context -Name 'When updating a repository with Squash Merge Commit PR Title and Description' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'PR_TITLE'
+                    SquashMergeCommitMessage = 'PR_BODY'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_squash_merge | Should -BeTrue
+                $updatedRepo.squash_merge_commit_title | Should -Be 'PR_TITLE'
+                $updatedRepo.squash_merge_commit_message | Should -Be 'PR_BODY'
+            }
+        }
+
+        Context -Name 'When updating a repository with Squash Merge Commit default message' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowSquashMerge = $false
+                    SquashMergeCommitTitle = 'COMMIT_OR_PR_TITLE'
+                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_squash_merge | Should -BeTrue
+                $updatedRepo.squash_merge_commit_title | Should -Be 'COMMIT_OR_PR_TITLE'
+                $updatedRepo.squash_merge_commit_message | Should -Be 'COMMIT_MESSAGES'
+            }
+        }
+
+        Context -Name 'When updating a repository with Merge Commit PR Title' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'PR_TITLE'
+                    MergeCommitMessage = 'BLANK'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_merge_commit | Should -BeTrue
+                $updatedRepo.merge_commit_title | Should -Be 'PR_TITLE'
+                $updatedRepo.merge_commit_message | Should -Be 'BLANK'
+            }
+        }
+
+        Context -Name 'When updating a repository with Merge Commit PR Title and Description' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'PR_TITLE'
+                    MergeCommitMessage = 'PR_BODY'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_merge_commit | Should -BeTrue
+                $updatedRepo.merge_commit_title | Should -Be 'PR_TITLE'
+                $updatedRepo.merge_commit_message | Should -Be 'PR_BODY'
+            }
+        }
+
+        Context -Name 'When updating a repository with Merge Commit default message' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    DisallowMergeCommit = $false
+                    MergeCommitTitle = 'MERGE_MESSAGE'
+                    MergeCommitMessage = 'PR_TITLE'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_merge_commit | Should -BeTrue
+                $updatedRepo.merge_commit_title | Should -Be 'MERGE_MESSAGE'
+                $updatedRepo.merge_commit_message | Should -Be 'PR_TITLE'
             }
         }
 

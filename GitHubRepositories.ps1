@@ -83,6 +83,34 @@ filter New-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER SquashMergeCommitTitle
+        Specifies the default value for a squash merge commit title. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - COMMIT_OR_PR_TITLE - default to the commit's title (if only one commit) or the pull
+          request's title (when more than one commit).
+
+    .PARAMETER SquashMergeCommitMessage
+        Specifies the default vaule for a squash merge commit message. This can be one of the
+        following values:
+        - PR_BODY - default to the pull request's body.
+        - COMMIT_MESSAGES - default to the branch's commit messages.
+        - BLANK - default to a blank commit message.
+
+    .PARAMETER MergeCommitTitle
+        Specifies the default value for a merge commit title. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - MERGE_MESSAGE - default to the classic title for a merge message (e.g., Merge pull request
+          #123 from branch-name).
+
+    .PARAMETER MergeCommitMessage
+        Specifies the default vaule for a merge commit message. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - PR_BODY - default to the pull request's body.
+        - BLANK - default to a blank commit message.
+
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
@@ -160,6 +188,18 @@ filter New-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [ValidateSet('PR_TITLE', 'COMMIT_OR_PR_TITLE')]
+        [string] $SquashMergeCommitTitle,
+
+        [ValidateSet('PR_BODY', 'COMMIT_MESSAGES', 'BLANK')]
+        [string] $SquashMergeCommitMessage,
+
+        [ValidateSet('PR_TITLE', 'MERGE_MESSAGE')]
+        [string] $MergeCommitTitle,
+
+        [ValidateSet('PR_TITLE', 'PR_BODY', 'BLANK')]
+        [string] $MergeCommitMessage,
+
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
@@ -205,6 +245,10 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $SquashMergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $SquashMergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $MergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $MergeCommitMessage }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
@@ -1057,6 +1101,34 @@ filter Set-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER SquashMergeCommitTitle
+        Specifies the default value for a squash merge commit title. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - COMMIT_OR_PR_TITLE - default to the commit's title (if only one commit) or the pull
+          request's title (when more than one commit).
+
+    .PARAMETER SquashMergeCommitMessage
+        Specifies the default vaule for a squash merge commit message. This can be one of the
+        following values:
+        - PR_BODY - default to the pull request's body.
+        - COMMIT_MESSAGES - default to the branch's commit messages.
+        - BLANK - default to a blank commit message.
+
+    .PARAMETER MergeCommitTitle
+        Specifies the default value for a merge commit title. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - MERGE_MESSAGE - default to the classic title for a merge message (e.g., Merge pull request
+          #123 from branch-name).
+
+    .PARAMETER MergeCommitMessage
+        Specifies the default vaule for a merge commit message. This can be one of the
+        following values:
+        - PR_TITLE - default to the pull request's title.
+        - PR_BODY - default to the pull request's body.
+        - BLANK - default to a blank commit message.
+
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
@@ -1159,6 +1231,18 @@ filter Set-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [ValidateSet('PR_TITLE', 'COMMIT_OR_PR_TITLE')]
+        [string] $SquashMergeCommitTitle,
+
+        [ValidateSet('PR_BODY', 'COMMIT_MESSAGES', 'BLANK')]
+        [string] $SquashMergeCommitMessage,
+
+        [ValidateSet('PR_TITLE', 'MERGE_MESSAGE')]
+        [string] $MergeCommitTitle,
+
+        [ValidateSet('PR_TITLE', 'PR_BODY', 'BLANK')]
+        [string] $MergeCommitMessage,
+
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
@@ -1203,6 +1287,10 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $SquashMergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $SquashMergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $MergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $MergeCommitMessage }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
