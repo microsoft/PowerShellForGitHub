@@ -83,6 +83,9 @@ filter New-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
+
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
@@ -160,6 +163,8 @@ filter New-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [switch] $AllowAutoMerge,
+
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
@@ -205,6 +210,7 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
@@ -1057,6 +1063,9 @@ filter Set-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
+
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
@@ -1159,6 +1168,8 @@ filter Set-GitHubRepository
 
         [switch] $DisallowRebaseMerge,
 
+        [switch] $AllowAutoMerge,
+
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
@@ -1203,6 +1214,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
