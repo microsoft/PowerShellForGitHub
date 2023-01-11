@@ -1063,6 +1063,9 @@ filter Set-GitHubRepository
     .PARAMETER IsTemplate
         Specifies whether the repository is made available as a template.
 
+    .PARAMETER WebCommitSignoffRequired
+        Specifies whether to require contributors to sign off on web-based commits.
+
     .PARAMETER Archived
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
@@ -1163,6 +1166,8 @@ filter Set-GitHubRepository
 
         [switch] $IsTemplate,
 
+        [switch] $WebCommitSignoffRequired,
+
         [switch] $Archived,
 
         [switch] $Force,
@@ -1205,6 +1210,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
+    if ($PSBoundParameters.ContainsKey('WebCommitSignoffRequired')) { $hashBody['web_commit_signoff_required'] = $WebCommitSignoffRequired.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     if ($Force -and (-not $Confirm))

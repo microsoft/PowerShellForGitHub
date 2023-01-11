@@ -730,6 +730,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     DisallowRebaseMerge = $false
                     DeleteBranchOnMerge = $true
                     IsTemplate = $true
+                    WebCommitSignoffRequired = $true
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -752,6 +753,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.allow_rebase_merge | Should -BeTrue
                 $updatedRepo.delete_branch_on_merge | Should -BeTrue
                 $updatedRepo.is_template | Should -BeTrue
+                $updatedRepo.web_commit_signoff_required | Should -BeTrue
             }
         }
 
