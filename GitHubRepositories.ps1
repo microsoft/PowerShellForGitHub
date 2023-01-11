@@ -1063,6 +1063,9 @@ filter Set-GitHubRepository
     .PARAMETER IsTemplate
         Specifies whether the repository is made available as a template.
 
+    .PARAMETER SecretScanning
+        Specifies whether to enable or disable secret scanning for the repository.
+
     .PARAMETER Archived
         Specify this to archive this repository.
         NOTE: You cannot unarchive repositories through the API / this module.
@@ -1163,6 +1166,9 @@ filter Set-GitHubRepository
 
         [switch] $IsTemplate,
 
+        [ValidateSet('Enabled', 'Disabled')]
+        [string] $SecretScanning,
+
         [switch] $Archived,
 
         [switch] $Force,
@@ -1206,6 +1212,14 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
+
+    $securityAndAnalysis = @{}
+    if ($PSBoundParameters.ContainsKey('SecretScanning')) {
+        $securityAndAnalysis['secret_scanning'] = @{ 'status' = $SecretScanning.ToLower()}
+    }
+    if ($securityAndAnalysis.count -ne 0) {
+        $hashBody['security_and_analysis'] = $securityAndAnalysis
+    }
 
     if ($Force -and (-not $Confirm))
     {
