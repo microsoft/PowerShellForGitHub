@@ -1068,7 +1068,7 @@ filter Set-GitHubRepository
         Specifies whether to always allow a pull request head branch that is behind its base branch
         to be updated even if it is not required to be up to date before merging.
 
-        .PARAMETER DeleteBranchOnMerge
+    .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
     .PARAMETER IsTemplate
