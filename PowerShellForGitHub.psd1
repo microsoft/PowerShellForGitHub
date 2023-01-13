@@ -56,6 +56,7 @@
         'GitHubRepositoryTraffic.ps1',
         'GitHubTeams.ps1',
         'GitHubUsers.ps1',
+        'GitHubDeployments.ps1',
         'Telemetry.ps1',
         'UpdateCheck.ps1')
 
@@ -80,6 +81,7 @@
         'Get-GitHubCodeOfConduct',
         'Get-GitHubConfiguration',
         'Get-GitHubContent',
+        'Get-GitHubDeploymentEnvironment',
         'Get-GitHubEmoji',
         'Get-GitHubEvent',
         'Get-GitHubGist',
@@ -131,6 +133,7 @@
         'Move-GitHubProjectCard',
         'Move-GitHubProjectColumn',
         'Move-GitHubRepositoryOwnership',
+        'New-GitHubDeploymentEnvironment',
         'New-GitHubGist',
         'New-GitHubGistComment',
         'New-GitHubIssue',
@@ -152,6 +155,7 @@
         'New-GitHubTeam',
         'Remove-GitHubAssignee',
         'Remove-GitHubComment',
+        'Remove-GitHubDeploymentEnvironment'
         'Remove-GitHubGist',
         'Remove-GitHubGistComment',
         'Remove-GitHubGistFile',
@@ -215,6 +219,7 @@
         'Delete-GitHubAsset',
         'Delete-GitHubBranch',
         'Delete-GitHubComment',
+        'Delete-GitHubDeploymentEnvironment',
         'Delete-GitHubGist',
         'Delete-GitHubGistComment',
         'Delete-GitHubGistFile',
@@ -246,6 +251,7 @@
         'Remove-GitHubComment',
         'Set-GitHubAsset',
         'Set-GitHubComment',
+        'Set-GitHubDeploymentEnvironment',
         'Star-GitHubGist',
         'Transfer-GitHubRepositoryOwnership'
         'Unstar-GitHubGist'

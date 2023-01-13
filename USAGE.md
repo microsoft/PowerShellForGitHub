@@ -134,6 +134,11 @@
         *   [Adding a gist comment](#adding-a-gist-comment)
         *   [Changing a gist comment](#changing-a-gist-comment)
         *   [Removing a gist comment](#removing-a-gist-comment)
+    *   [Deployments Environments](#deployment-environments)
+        * [Adding a new environment](#adding-a-new-environment)
+        * [Getting details of an environment](#getting-details-of-an-environment)
+        * [Updating an environment](#updating-an-environment)
+        * [Removing an environment](#removing-an-environment)
     *   [Advanced](#advanced)
         *   [Migrating blog comments to GitHub issues](#migrating-blog-comments-to-github-issues)
 
@@ -1237,6 +1242,31 @@ Remove-GitHubGistComment -Gist $gistId -Comment $commentId -Force
 
 # or with the pipeline
 Get-GitHubGist -Gist $gistId -Comment $commentId | Remove-GitHubGistComment -Force
+```
+
+----------
+
+### Deployment Environments
+
+#### Adding a new environment
+```powershell
+New-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -Environment Test
+```
+
+#### Getting details of an environment
+```powershell
+Get-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -Environment Test
+```
+
+#### Updating an environment
+```powershell
+Set-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -Environment Test -DeploymentBranchPolicy ProtectedBranches
+```
+
+#### Removing an environment
+```powershell
+Remove-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -Environment Test
+
 ```
 
 ----------
