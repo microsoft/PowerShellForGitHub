@@ -68,7 +68,7 @@ filter New-GitHubRepository
     .PARAMETER NoWiki
         By default, this repository will have a Wiki.  Specify this to disable the Wiki.
 
-    .PARAMETER Discussions
+    .PARAMETER HasDiscussions
         By default, this repository will not have Discussions.  Specify this to enable Discussions.
 
     .PARAMETER AutoInit
@@ -155,7 +155,7 @@ filter New-GitHubRepository
 
         [switch] $NoWiki,
 
-        [switch] $Discussions,
+        [switch] $HasDiscussions,
 
         [switch] $AutoInit,
 
@@ -206,7 +206,7 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
-    if ($PSBoundParameters.ContainsKey('Discussions')) { $hashBody['has_discussions'] = ( $Discussions.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('HasDiscussions')) { $hashBody['has_discussions'] = ( $HasDiscussions.ToBool()) }
     if ($PSBoundParameters.ContainsKey('AutoInit')) { $hashBody['auto_init'] = $AutoInit.ToBool() }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
