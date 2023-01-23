@@ -118,7 +118,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     NoIssues = $true
                     NoProjects = $true
                     NoWiki = $true
-                    Discussions = $true
+                    HasDiscussions = $true
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
