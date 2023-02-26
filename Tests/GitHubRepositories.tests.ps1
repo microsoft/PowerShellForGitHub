@@ -51,6 +51,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -88,6 +89,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -116,6 +118,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     NoIssues = $true
                     NoProjects = $true
                     NoWiki = $true
+                    HasDiscussions = $true
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
@@ -140,6 +143,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeFalse
                 $repo.has_projects | Should -BeFalse
                 $repo.has_Wiki | Should -BeFalse
+                $repo.has_discussions | Should -BeTrue
                 $repo.allow_squash_merge | Should -BeFalse
                 $repo.allow_merge_commit | Should -BeFalse
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -239,6 +243,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -771,6 +776,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     NoIssues = $true
                     NoProjects = $true
                     NoWiki = $true
+                    HasDiscussions = $true
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
@@ -793,6 +799,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.has_issues | Should -BeFalse
                 $updatedRepo.has_projects | Should -BeFalse
                 $updatedRepo.has_Wiki | Should -BeFalse
+                $updatedRepo.has_discussions | Should -BeTrue
                 $updatedRepo.allow_squash_merge | Should -BeFalse
                 $updatedRepo.allow_merge_commit | Should -BeFalse
                 $updatedRepo.allow_rebase_merge | Should -BeTrue
