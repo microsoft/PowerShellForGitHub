@@ -1042,6 +1042,9 @@ filter Set-GitHubRepository
     .PARAMETER DefaultBranch
         Update the default branch for this repository.
 
+    .PARAMETER SecretScanning
+        Specifies whether to enable or disable secret scanning for the repository.
+
     .PARAMETER Private
         Specify this to make the repository private.
         To change a repository to be public, specify -Private:$false
@@ -1080,9 +1083,6 @@ filter Set-GitHubRepository
 
     .PARAMETER IsTemplate
         Specifies whether the repository is made available as a template.
-
-    .PARAMETER SecretScanning
-        Specifies whether to enable or disable secret scanning for the repository.
 
     .PARAMETER Archived
         Specify this to archive this repository.
@@ -1166,6 +1166,9 @@ filter Set-GitHubRepository
 
         [string] $DefaultBranch,
 
+        [ValidateSet('Enabled', 'Disabled')]
+        [string] $SecretScanning,
+
         [switch] $Private,
 
         [switch] $NoIssues,
@@ -1187,9 +1190,6 @@ filter Set-GitHubRepository
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
-
-        [ValidateSet('Enabled', 'Disabled')]
-        [string] $SecretScanning,
 
         [switch] $Archived,
 
