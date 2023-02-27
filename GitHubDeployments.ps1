@@ -176,10 +176,10 @@ filter New-GitHubDeploymentEnvironment
         $PSBoundParameters.ContainsKey('ReviewerUserId'))
     {
         $reviewers = @()
-        Foreach ($teamId in $ReviewerTeamId) {
+        foreach ($teamId in $ReviewerTeamId) {
             $reviewers += @{ 'type' = 'Team'; 'id' = $teamId}
         }
-        Foreach ($userId in $ReviewerUserId) {
+        foreach ($userId in $ReviewerUserId) {
             $reviewers += @{ 'type' = 'User'; 'id' = $userId}
         }
         $hashBody['reviewers'] = $reviewers
@@ -216,7 +216,7 @@ filter Remove-GitHubDeploymentEnvironment
 {
 <#
     .SYNOPSIS
-        Removes a deployment environment from a GitHub repository
+        Removes a deployment environment from a GitHub repository.
 
     .DESCRIPTION
         Removes a team from an organization on GitHub.

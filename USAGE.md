@@ -1266,7 +1266,6 @@ Set-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -E
 #### Removing an environment
 ```powershell
 Remove-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName TestRepo -Environment Test
-
 ```
 
 ----------

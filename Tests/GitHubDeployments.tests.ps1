@@ -28,7 +28,7 @@ BeforeAll {
     $teamName = [Guid]::NewGuid().Guid
     $description = 'Team Description'
     $privacy = 'closed'
-    $MaintainerName = $script:ownerName
+    $maintainerName = $script:ownerName
 
     $newGithubTeamParms = @{
         OrganizationName = $script:organizationName
