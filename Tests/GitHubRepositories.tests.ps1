@@ -51,6 +51,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -88,6 +89,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -103,7 +105,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
             }
         }
 
-        Context -Name 'When creating a repository with all possible settings' -Fixture {
+        Context -Name 'When creating a public repository with all possible settings' -Fixture {
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $testGitIgnoreTemplate = (Get-GitHubGitIgnore)[0]
@@ -116,9 +118,11 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     NoIssues = $true
                     NoProjects = $true
                     NoWiki = $true
+                    HasDiscussions = $true
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
+                    AllowAutoMerge = $true
                     AllowUpdateBranch = $true
                     DeleteBranchOnMerge = $true
                     GitIgnoreTemplate = $testGitIgnoreTemplate
@@ -140,9 +144,11 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeFalse
                 $repo.has_projects | Should -BeFalse
                 $repo.has_Wiki | Should -BeFalse
+                $repo.has_discussions | Should -BeTrue
                 $repo.allow_squash_merge | Should -BeFalse
                 $repo.allow_merge_commit | Should -BeFalse
                 $repo.allow_rebase_merge | Should -BeTrue
+                $repo.allow_auto_merge | Should -BeTrue
                 $repo.allow_update_branch | Should -BeTrue
                 $repo.delete_branch_on_merge | Should -BeTrue
                 $repo.is_template | Should -BeTrue
@@ -164,7 +170,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
             }
         }
 
-        Context -Name 'When creating a repository with alternative Merge settings' -Fixture {
+        Context -Name 'When creating a public repository with alternative Merge settings' -Fixture {
             BeforeAll -ScriptBlock {
                 $repoName = ([Guid]::NewGuid().Guid)
                 $newGitHubRepositoryParms = @{
@@ -172,6 +178,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $false
                     DisallowRebaseMerge = $true
+                    AllowAutoMerge = $false
                 }
                 $repo = New-GitHubRepository @newGitHubRepositoryParms
             }
@@ -185,6 +192,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.allow_squash_merge | Should -BeFalse
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeFalse
+                $repo.allow_auto_merge | Should -BeFalse
             }
 
             AfterAll -ScriptBlock {
@@ -237,6 +245,7 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
                 $repo.has_Wiki | Should -BeTrue
+                $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
@@ -716,6 +725,48 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
             $repo = New-GitHubRepository -RepositoryName $repoName
         }
 
+        Context -Name 'When updating a public repository with auto-merge set to true' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    AllowAutoMerge = $true
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_auto_merge | Should -BeTrue
+            }
+        }
+
+        Context -Name 'When updating a public repository with auto-merge set to false' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    AllowAutoMerge = $false
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.allow_auto_merge | Should -BeFalse
+            }
+        }
+
         Context -Name 'When updating a repository with all possible settings' {
             BeforeAll -ScriptBlock {
                 $updateGithubRepositoryParms = @{
@@ -727,6 +778,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     NoIssues = $true
                     NoProjects = $true
                     NoWiki = $true
+                    HasDiscussions = $true
                     DisallowSquashMerge = $true
                     DisallowMergeCommit = $true
                     DisallowRebaseMerge = $false
@@ -750,6 +802,7 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                 $updatedRepo.has_issues | Should -BeFalse
                 $updatedRepo.has_projects | Should -BeFalse
                 $updatedRepo.has_Wiki | Should -BeFalse
+                $updatedRepo.has_discussions | Should -BeTrue
                 $updatedRepo.allow_squash_merge | Should -BeFalse
                 $updatedRepo.allow_merge_commit | Should -BeFalse
                 $updatedRepo.allow_rebase_merge | Should -BeTrue
