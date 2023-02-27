@@ -22,32 +22,36 @@ BeforeAll {
     $newGitHubRepositoryParms = @{
         RepositoryName = $repoName
         OrganizationName = $script:organizationName
+        Private = $false
     }
     $repo = New-GitHubRepository @newGitHubRepositoryParms
 
-    $teamName = [Guid]::NewGuid().Guid
+    $team1Name = [Guid]::NewGuid().Guid
+    $team2Name = [Guid]::NewGuid().Guid
     $description = 'Team Description'
     $privacy = 'closed'
     $maintainerName = $script:ownerName
 
     $newGithubTeamParms = @{
         OrganizationName = $script:organizationName
-        TeamName = $teamName
         Description = $description
         Privacy = $privacy
         MaintainerName = $MaintainerName
     }
 
-    $reviewerTeam = New-GitHubTeam @newGithubTeamParms
+    $reviewerTeam1 = New-GitHubTeam @newGithubTeamParms -TeamName $team1Name
+    $reviewerTeam2 = New-GitHubTeam @newGithubTeamParms -TeamName $team2Name
+    $reviewerTeamId = $reviewerTeam1.TeamId, $reviewerTeam2.TeamId
     $reviewerUser = Get-GitHubUser -UserName $script:ownerName
 
-    $repo | Set-GitHubRepositoryTeamPermission -TeamSlug $reviewerTeam.TeamSlug -Permission Push
+    $repo | Set-GitHubRepositoryTeamPermission -TeamSlug $reviewerTeam1.TeamSlug -Permission Push
+    $repo | Set-GitHubRepositoryTeamPermission -TeamSlug $reviewerTeam2.TeamSlug -Permission Push
 }
 
 Describe 'GitHubDeployments\New-GitHubDeploymentEnvironment' {
     Context -Name 'When creating a new deployment environment' -Fixture {
         BeforeAll -ScriptBlock {
-            $environmentName = 'testenv'
+            $environmentName = [Guid]::NewGuid().Guid
             $waitTimer = 50
             $deploymentBranchPolicy = 'ProtectedBranches'
 
@@ -55,7 +59,7 @@ Describe 'GitHubDeployments\New-GitHubDeploymentEnvironment' {
                 EnvironmentName = $environmentName
                 WaitTimer = $waitTimer
                 DeploymentBranchPolicy = $deploymentBranchPolicy
-                ReviewerTeamId = $reviewerTeam.id
+                ReviewerTeamId = $reviewerTeamId
                 ReviewerUserId = $reviewerUser.UserId
             }
             $environment = $repo | New-GitHubDeploymentEnvironment @newGitHubDeploymentEnvironmentParms
@@ -69,16 +73,15 @@ Describe 'GitHubDeployments\New-GitHubDeploymentEnvironment' {
             $environment.name | Should -Be $environmentName
             $environment.RepositoryUrl | Should -Be $repo.RepositoryUrl
             $environment.EnvironmentName | Should -Be $environmentName
-            (($environment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'Team').reviewer.name | Should -Be $reviewerTeam.TeamName
-            (($environment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'User').reviewer.login | Should -Be $reviewerUser.UserName
-            ($environment.protection_rules |
-                Where-Object -Property type -eq 'wait_timer').wait_timer | Should -Be $waitTimer
-            $environment.deployment_branch_policy.protected_branches | Should -BeTrue
-            $environment.deployment_branch_policy.custom_branch_policies | Should -BeFalse
+            $environment.ReviewerUser[0].UserName | Should -Be $reviewerUser.UserName
+            $environment.ReviewerUser[0].UserId | Should -Be $reviewerUser.UserId
+            $environment.ReviewerTeam.count | Should -Be $reviewerTeamId.count
+            $environment.ReviewerTeam[0].TeamName | Should -Be $reviewerTeam1.TeamName
+            $environment.ReviewerTeam[0].TeamId | Should -Be $reviewerTeam1.TeamId
+            $environment.ReviewerTeam[1].TeamName | Should -Be $reviewerTeam2.TeamName
+            $environment.ReviewerTeam[1].TeamId | Should -Be $reviewerTeam2.TeamId
+            $environment.WaitTimer | Should -Be $waitTimer
+            $environment.DeploymentBranchPolicy | Should -Be $deploymentBranchPolicy
         }
     }
 }
@@ -86,7 +89,7 @@ Describe 'GitHubDeployments\New-GitHubDeploymentEnvironment' {
 Describe 'GitHubDeployments\Set-GitHubDeploymentEnvironment' {
     Context -Name 'When updating a deployment environment' -Fixture {
         BeforeAll -ScriptBlock {
-            $environmentName = 'testenv'
+            $environmentName = [Guid]::NewGuid().Guid
             $waitTimer = 50
             $deploymentBranchPolicy = 'ProtectedBranches'
 
@@ -96,7 +99,7 @@ Describe 'GitHubDeployments\Set-GitHubDeploymentEnvironment' {
                 EnvironmentName = $environmentName
                 WaitTimer = $waitTimer
                 DeploymentBranchPolicy = $deploymentBranchPolicy
-                ReviewerTeamId = $reviewerTeam.id
+                ReviewerTeamId = $reviewerTeam1.TeamId, $reviewerTeam2.TeamId
                 ReviewerUserId = $reviewerUser.UserId
                 PassThru = $true
             }
@@ -111,16 +114,15 @@ Describe 'GitHubDeployments\Set-GitHubDeploymentEnvironment' {
             $updatedEnvironment.name | Should -Be $environmentName
             $updatedEnvironment.RepositoryUrl | Should -Be $repo.RepositoryUrl
             $updatedEnvironment.EnvironmentName | Should -Be $environmentName
-            (($updatedEnvironment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'Team').reviewer.name | Should -Be $reviewerTeam.TeamName
-            (($updatedEnvironment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'User').reviewer.login | Should -Be $reviewerUser.UserName
-            ($updatedEnvironment.protection_rules |
-                Where-Object -Property type -eq 'wait_timer').wait_timer | Should -Be $waitTimer
-            $updatedEnvironment.deployment_branch_policy.protected_branches | Should -BeTrue
-            $updatedEnvironment.deployment_branch_policy.custom_branch_policies | Should -BeFalse
+            $updatedenvironment.ReviewerUser[0].UserName | Should -Be $reviewerUser.UserName
+            $updatedenvironment.ReviewerUser[0].UserId | Should -Be $reviewerUser.UserId
+            $updatedenvironment.ReviewerTeam.count | Should -Be $reviewerTeamId.count
+            $updatedenvironment.ReviewerTeam[0].TeamName | Should -Be $reviewerTeam1.TeamName
+            $updatedenvironment.ReviewerTeam[0].TeamId | Should -Be $reviewerTeam1.TeamId
+            $updatedenvironment.ReviewerTeam[1].TeamName | Should -Be $reviewerTeam2.TeamName
+            $updatedenvironment.ReviewerTeam[1].TeamId | Should -Be $reviewerTeam2.TeamId
+            $updatedenvironment.WaitTimer | Should -Be $waitTimer
+            $updatedenvironment.DeploymentBranchPolicy | Should -Be $deploymentBranchPolicy
         }
     }
 }
@@ -129,7 +131,7 @@ Describe 'GitHubDeployments\Get-GitHubDeploymentEnvironment' {
 
     Context -Name 'When getting a deployment environment' -Fixture {
         BeforeAll -ScriptBlock {
-            $environmentName = 'testenv'
+            $environmentName = [Guid]::NewGuid().Guid
             $waitTimer = 50
             $deploymentBranchPolicy = 'ProtectedBranches'
 
@@ -137,7 +139,7 @@ Describe 'GitHubDeployments\Get-GitHubDeploymentEnvironment' {
                 EnvironmentName = $environmentName
                 WaitTimer = $waitTimer
                 DeploymentBranchPolicy = $deploymentBranchPolicy
-                ReviewerTeamId = $reviewerTeam.id
+                ReviewerTeamId = $reviewerTeamId
                 ReviewerUserId = $reviewerUser.UserId
             }
             $repo | New-GitHubDeploymentEnvironment @newGitHubDeploymentEnvironmentParms | Out-Null
@@ -153,16 +155,15 @@ Describe 'GitHubDeployments\Get-GitHubDeploymentEnvironment' {
             $environment.name | Should -Be $environmentName
             $environment.RepositoryUrl | Should -Be $repo.RepositoryUrl
             $environment.EnvironmentName | Should -Be $environmentName
-            (($environment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'Team').reviewer.name | Should -Be $reviewerTeam.TeamName
-            (($environment.protection_rules |
-                Where-Object -Property type -eq 'required_reviewers').reviewers |
-                Where-Object -Property type -eq 'User').reviewer.login | Should -Be $reviewerUser.UserName
-            ($environment.protection_rules |
-                Where-Object -Property type -eq 'wait_timer').wait_timer | Should -Be $waitTimer
-            $environment.deployment_branch_policy.protected_branches | Should -BeTrue
-            $environment.deployment_branch_policy.custom_branch_policies | Should -BeFalse
+            $environment.ReviewerUser[0].UserName | Should -Be $reviewerUser.UserName
+            $environment.ReviewerUser[0].UserId | Should -Be $reviewerUser.UserId
+            $environment.ReviewerTeam.count | Should -Be $reviewerTeamId.count
+            $environment.ReviewerTeam[0].TeamName | Should -Be $reviewerTeam1.TeamName
+            $environment.ReviewerTeam[0].TeamId | Should -Be $reviewerTeam1.TeamId
+            $environment.ReviewerTeam[1].TeamName | Should -Be $reviewerTeam2.TeamName
+            $environment.ReviewerTeam[1].TeamId | Should -Be $reviewerTeam2.TeamId
+            $environment.WaitTimer | Should -Be $waitTimer
+            $environment.DeploymentBranchPolicy | Should -Be $deploymentBranchPolicy
         }
     }
 }
@@ -171,7 +172,7 @@ Describe 'GitHubDeployments\Remove-GitHubDeploymentEnvironment' {
 
     Context -Name 'When removing a deployment environment' -Fixture {
         BeforeAll -ScriptBlock {
-            $environmentName = 'testenv'
+            $environmentName = [Guid]::NewGuid().Guid
             $waitTimer = 50
             $deploymentBranchPolicy = 'ProtectedBranches'
 
@@ -179,7 +180,7 @@ Describe 'GitHubDeployments\Remove-GitHubDeploymentEnvironment' {
                 EnvironmentName = $environmentName
                 WaitTimer = $waitTimer
                 DeploymentBranchPolicy = $deploymentBranchPolicy
-                ReviewerTeamId = $reviewerTeam.id
+                ReviewerTeamId = $reviewerTeam1.id
                 ReviewerUserId = $reviewerUser.UserId
             }
             $environment = $repo | New-GitHubDeploymentEnvironment @newGitHubDeploymentEnvironmentParms
@@ -190,7 +191,8 @@ Describe 'GitHubDeployments\Remove-GitHubDeploymentEnvironment' {
         }
 
         It 'Should have removed the deployment environment' {
-            { $repo | Get-GitHubDeploymentEnvironment -EnvironmentName $environmentName } | Should -Throw
+            { $repo | Get-GitHubDeploymentEnvironment -EnvironmentName $environmentName } | `
+                Should -Throw '*Not Found*'
         }
     }
 }
@@ -201,8 +203,13 @@ AfterAll -ScriptBlock {
         $repo | Remove-GitHubRepository -Confirm:$false
     }
 
-    if ($reviewerTeam)
+    if ($reviewerTeam1)
     {
-        $reviewerTeam | Remove-GitHubTeam -Confirm:$false
+        $reviewerTeam1 | Remove-GitHubTeam -Confirm:$false
+    }
+
+    if ($reviewerTeam2)
+    {
+        $reviewerTeam2 | Remove-GitHubTeam -Confirm:$false
     }
 }

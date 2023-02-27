@@ -11,10 +11,10 @@ filter New-GitHubDeploymentEnvironment
 {
     <#
     .SYNOPSIS
-        Creates a new deployment environment on a GitHub repository.
+        Creates or updates a deployment environment on a GitHub repository.
 
     .DESCRIPTION
-        Creates a new deployment environment on a GitHub repository.
+        Creates or updates a deployment environment on a GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
@@ -44,13 +44,13 @@ filter New-GitHubDeploymentEnvironment
 
     .PARAMETER ReviewerTeamId
         The teams that may review jobs that reference the environment.
-        You can list up to six users or teams as reviewers.
+        You can list up to six users and/or teams as reviewers.
         The reviewers must have at least read access to the repository.
         Only one of the required reviewers needs to approve the job for it to proceed.
 
     .PARAMETER ReviewerUserId
         The users that may review jobs that reference the environment.
-        You can list up to six users or teams as reviewers.
+        You can list up to six users and/or teams as reviewers.
         The reviewers must have at least read access to the repository.
         Only one of the required reviewers needs to approve the job for it to proceed.
 
@@ -67,6 +67,7 @@ filter New-GitHubDeploymentEnvironment
     .INPUTS
         GitHub.Branch
         GitHub.Content
+        GitHub.DeploymentEnvironment
         GitHub.Event
         GitHub.Issue
         GitHub.IssueComment
@@ -87,7 +88,7 @@ filter New-GitHubDeploymentEnvironment
     .EXAMPLE
         New-GitHubDeploymentEnvironment -OwnerName microsoft -RepositoryName PowerShellForGitHub -EnvironmentName 'Test'
 
-        Creates a new deployment environment called 'Test' for the specified repo.
+        Creates or updates a deployment environment called 'Test' for the specified repo.
 #>
 
     [CmdletBinding(
@@ -123,9 +124,9 @@ filter New-GitHubDeploymentEnvironment
         [ValidateSet('ProtectedBranches', 'CustomBranchPolicies', 'None')]
         [string] $DeploymentBranchPolicy,
 
-        [array] $ReviewerTeamId,
+        [int64[]] $ReviewerTeamId,
 
-        [array] $ReviewerUserId,
+        [int64[]] $ReviewerUserId,
 
         [switch] $PassThru,
 
@@ -249,6 +250,7 @@ filter Remove-GitHubDeploymentEnvironment
     .INPUTS
         GitHub.Branch
         GitHub.Content
+        GitHub.DeploymentEnvironment
         GitHub.Event
         GitHub.Issue
         GitHub.IssueComment
@@ -387,6 +389,7 @@ filter Get-GitHubDeploymentEnvironment
     .INPUTS
         GitHub.Branch
         GitHub.Content
+        GitHub.DeploymentEnvironment
         GitHub.Event
         GitHub.Issue
         GitHub.IssueComment
@@ -434,11 +437,6 @@ filter Get-GitHubDeploymentEnvironment
             ParameterSetName='Uri')]
         [Alias('RepositoryUrl')]
         [string] $Uri,
-
-        [Parameter(
-            ValueFromPipelineByPropertyName,
-            ParameterSetName='Organization')]
-        [string] $OrganizationName,
 
         [string] $EnvironmentName,
 
@@ -561,6 +559,60 @@ filter Add-GitHubDeploymentEnvironmentAdditionalProperties
         }
 
         Add-Member -InputObject $item -Name 'EnvironmentName' -Value $item.name -MemberType NoteProperty -Force
+
+        # Add additional properties for any user or team reviewers
+        if ($null -ne $item.protection_rules)
+        {
+            foreach ($protectionRule in $item.protection_rules)
+            {
+                if ($protectionRule.type -eq 'required_reviewers')
+                {
+                    $reviewerUser = @()
+                    $reviewerTeam = @()
+
+                    foreach ($reviewer in $protectionRule.reviewers)
+                    {
+                        if ($reviewer.type -eq 'User')
+                        {
+                            $reviewerUser += Add-GitHubUserAdditionalProperties -InputObject $reviewer.reviewer
+                        }
+                        if ($reviewer.type -eq 'Team')
+                        {
+                            $reviewerTeam += Add-GitHubTeamAdditionalProperties -InputObject $reviewer.reviewer
+                        }
+                    }
+
+                    if ($reviewerUser.count -gt 0)
+                    {
+                        Add-Member -InputObject $item -Name 'ReviewerUser' -Value $reviewerUser -MemberType NoteProperty -Force
+                    }
+
+                    if ($reviewerTeam.count -gt 0)
+                    {
+                        Add-Member -InputObject $item -Name 'ReviewerTeam' -Value $reviewerTeam -MemberType NoteProperty -Force
+                    }
+                }
+
+                if ($protectionRule.type -eq 'wait_timer')
+                {
+                    Add-Member -InputObject $item -Name 'WaitTimer' -Value $protectionRule.wait_timer -MemberType NoteProperty -Force
+                }
+            }
+        }
+
+        if ($null -eq $item.deployment_branch_policy)
+        {
+            $deploymentBranchPolicy = 'None'
+        }
+        elseif ($item.deployment_branch_policy.protected_branches -eq $true)
+        {
+            $deploymentBranchPolicy = 'ProtectedBranches'
+        }
+        elseif ($item.deployment_branch_policy.custom_branch_policies -eq $true)
+        {
+            $deploymentBranchPolicy = 'CustomBranchPolicies'
+        }
+        Add-Member -InputObject $item -Name 'DeploymentBranchPolicy' -Value $deploymentBranchPolicy -MemberType NoteProperty -Force
 
         Write-Output $item
     }
