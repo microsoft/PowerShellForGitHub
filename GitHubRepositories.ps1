@@ -68,6 +68,9 @@ filter New-GitHubRepository
     .PARAMETER NoWiki
         By default, this repository will have a Wiki.  Specify this to disable the Wiki.
 
+    .PARAMETER HasDiscussions
+        By default, this repository will not have Discussions.  Specify this to enable Discussions.
+
     .PARAMETER AutoInit
         Specify this to create an initial commit with an empty README.
 
@@ -82,6 +85,9 @@ filter New-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
 
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
@@ -152,6 +158,8 @@ filter New-GitHubRepository
 
         [switch] $NoWiki,
 
+        [switch] $HasDiscussions,
+
         [switch] $AutoInit,
 
         [switch] $DisallowSquashMerge,
@@ -159,6 +167,8 @@ filter New-GitHubRepository
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
+
+        [switch] $AllowAutoMerge,
 
         [switch] $DeleteBranchOnMerge,
 
@@ -201,10 +211,12 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('HasDiscussions')) { $hashBody['has_discussions'] = ( $HasDiscussions.ToBool()) }
     if ($PSBoundParameters.ContainsKey('AutoInit')) { $hashBody['auto_init'] = $AutoInit.ToBool() }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
@@ -1045,6 +1057,9 @@ filter Set-GitHubRepository
     .PARAMETER NoWiki
         By default, this repository will have a Wiki.  Specify this to disable the Wiki.
 
+    .PARAMETER HasDiscussions
+        By default, this repository will not have Discussions.  Specify this to enable Discussions.
+
     .PARAMETER DisallowSquashMerge
         By default, squash-merging pull requests will be allowed.
         Specify this to disallow.
@@ -1056,6 +1071,9 @@ filter Set-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
 
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
@@ -1156,11 +1174,15 @@ filter Set-GitHubRepository
 
         [switch] $NoWiki,
 
+        [switch] $HasDiscussions,
+
         [switch] $DisallowSquashMerge,
 
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
+
+        [switch] $AllowAutoMerge,
 
         [switch] $DeleteBranchOnMerge,
 
@@ -1205,9 +1227,11 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('HasDiscussions')) { $hashBody['has_discussions'] = ( $HasDiscussions.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('WebCommitSignoffRequired')) { $hashBody['web_commit_signoff_required'] = $WebCommitSignoffRequired.ToBool() }
