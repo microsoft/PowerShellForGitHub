@@ -339,7 +339,7 @@ Describe 'Getting file and folder content' {
 
                 $content | Should -Be $writtenContent
             }
-
+        }
 
         It "Should have the expected type" {
             $readmeFileObject.type | Should -Be "file"
