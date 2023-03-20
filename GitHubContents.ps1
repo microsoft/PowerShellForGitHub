@@ -232,7 +232,7 @@ filter Set-GitHubContent
         The new file content.
 
     .PARAMETER ContentPath
-        The local path to file content.
+        The local path to a file whose content should replace what is currently stored remotely in the repo at the Path location.
 
     .PARAMETER Sha
         The SHA value of the current file if present. If this parameter is not provided, and the
