@@ -245,7 +245,7 @@ Describe 'Getting file and folder content' {
                     Path = "$filePath/$fileName"
                     CommitMessage = $commitMessage
                     Branch = $branchName
-                    ContentPath = $contentPath
+                    ContentPath = $contentPath.FullName
                     Uri = $repo.svn_url
                     CommitterName = $committerName
                     CommitterEmail = $committerEmail
