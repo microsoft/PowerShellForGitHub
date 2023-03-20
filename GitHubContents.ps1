@@ -385,7 +385,7 @@ filter Set-GitHubContent
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
 
-    if ($ContentPath)
+    if (-not [String]::IsNullOrWhitespace($ContentPath))
     {
         $encodedContent = [Convert]::ToBase64String((Get-Content -Path $ContentPath -AsByteStream -Raw))
     }
