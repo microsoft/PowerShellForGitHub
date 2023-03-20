@@ -68,6 +68,9 @@ filter New-GitHubRepository
     .PARAMETER NoWiki
         By default, this repository will have a Wiki.  Specify this to disable the Wiki.
 
+    .PARAMETER HasDiscussions
+        By default, this repository will not have Discussions.  Specify this to enable Discussions.
+
     .PARAMETER AutoInit
         Specify this to create an initial commit with an empty README.
 
@@ -82,6 +85,13 @@ filter New-GitHubRepository
     .PARAMETER DisallowRebaseMerge
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
+
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
+
+    .PARAMETER AllowUpdateBranch
+        Specifies whether to always allow a pull request head branch that is behind its base branch
+        to be updated even if it is not required to be up-to-date before merging.
 
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
@@ -152,6 +162,8 @@ filter New-GitHubRepository
 
         [switch] $NoWiki,
 
+        [switch] $HasDiscussions,
+
         [switch] $AutoInit,
 
         [switch] $DisallowSquashMerge,
@@ -159,6 +171,10 @@ filter New-GitHubRepository
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
+
+        [switch] $AllowAutoMerge,
+
+        [switch] $AllowUpdateBranch,
 
         [switch] $DeleteBranchOnMerge,
 
@@ -201,10 +217,13 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('HasDiscussions')) { $hashBody['has_discussions'] = ( $HasDiscussions.ToBool()) }
     if ($PSBoundParameters.ContainsKey('AutoInit')) { $hashBody['auto_init'] = $AutoInit.ToBool() }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('AllowUpdateBranch')) { $hashBody['allow_update_branch'] = $AllowUpdateBranch.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
 
@@ -1045,6 +1064,9 @@ filter Set-GitHubRepository
     .PARAMETER NoWiki
         By default, this repository will have a Wiki.  Specify this to disable the Wiki.
 
+    .PARAMETER HasDiscussions
+        By default, this repository will not have Discussions.  Specify this to enable Discussions.
+
     .PARAMETER DisallowSquashMerge
         By default, squash-merging pull requests will be allowed.
         Specify this to disallow.
@@ -1057,11 +1079,21 @@ filter Set-GitHubRepository
         By default, rebase-merge pull requests will be allowed.
         Specify this to disallow.
 
+    .PARAMETER AllowAutoMerge
+        Specifies whether to allow auto-merge on pull requests.
+
+    .PARAMETER AllowUpdateBranch
+        Specifies whether to always allow a pull request head branch that is behind its base branch
+        to be updated even if it is not required to be up-to-date before merging.
+
     .PARAMETER DeleteBranchOnMerge
         Specifies the automatic deleting of head branches when pull requests are merged.
 
     .PARAMETER IsTemplate
         Specifies whether the repository is made available as a template.
+
+    .PARAMETER WebCommitSignoffRequired
+        Specifies whether to require contributors to sign off on web-based commits.
 
     .PARAMETER Archived
         Specify this to archive this repository.
@@ -1153,15 +1185,23 @@ filter Set-GitHubRepository
 
         [switch] $NoWiki,
 
+        [switch] $HasDiscussions,
+
         [switch] $DisallowSquashMerge,
 
         [switch] $DisallowMergeCommit,
 
         [switch] $DisallowRebaseMerge,
 
+        [switch] $AllowAutoMerge,
+
+        [switch] $AllowUpdateBranch,
+
         [switch] $DeleteBranchOnMerge,
 
         [switch] $IsTemplate,
+
+        [switch] $WebCommitSignoffRequired,
 
         [switch] $Archived,
 
@@ -1200,11 +1240,15 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('NoIssues')) { $hashBody['has_issues'] = (-not $NoIssues.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoProjects')) { $hashBody['has_projects'] = (-not $NoProjects.ToBool()) }
     if ($PSBoundParameters.ContainsKey('NoWiki')) { $hashBody['has_wiki'] = (-not $NoWiki.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('HasDiscussions')) { $hashBody['has_discussions'] = ( $HasDiscussions.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
+    if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
+    if ($PSBoundParameters.ContainsKey('AllowUpdateBranch')) { $hashBody['allow_update_branch'] = $AllowUpdateBranch.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
+    if ($PSBoundParameters.ContainsKey('WebCommitSignoffRequired')) { $hashBody['web_commit_signoff_required'] = $WebCommitSignoffRequired.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
 
     if ($Force -and (-not $Confirm))
@@ -3070,7 +3114,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3104,7 +3148,7 @@ filter Get-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamSlug'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -TeamSlug $TeamSlug -AccessToken $AccessToken
 
         $TeamName = $team.name
     }
@@ -3253,7 +3297,7 @@ filter Set-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3426,7 +3470,7 @@ filter Remove-GitHubRepositoryTeamPermission
 
     if ($PSBoundParameters.ContainsKey('TeamName'))
     {
-        $team = Get-GitHubTeam -OrganizationName $OwnerName |
+        $team = Get-GitHubTeam -OrganizationName $OwnerName -AccessToken $AccessToken |
             Where-Object -Property name -eq $TeamName
 
         if ($null -eq $team)
@@ -3925,13 +3969,13 @@ filter Add-GitHubRepositoryTeamPermissionAdditionalProperties
         {
             $permission = 'admin'
         }
-        elseif ($result.permissions.push)
-        {
-            $permission = 'push'
-        }
         elseif ($result.permissions.maintain)
         {
             $permission = 'maintain'
+        }
+        elseif ($result.permissions.push)
+        {
+            $permission = 'push'
         }
         elseif ($result.permissions.triage)
         {
