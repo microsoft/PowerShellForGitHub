@@ -319,7 +319,7 @@ Describe 'Getting file and folder content' {
                 $result.content.name | Should -Be $fileName
                 $result.content.path | Should -Be "$filePath/$fileName"
                 $result.content.url | Should -Be ("https://api.github.com/repos/$($script:ownerName)" +
-                    "/$repoName/contents/$filePath/$($fileName)?ref=$BranchName")
+                    "/$repoName/contents/$filePath/$($fileName)?ref=$branchName")
                 $result.commit.author.name | Should -Be $authorName
                 $result.commit.author.email | Should -Be $authorEmail
                 $result.commit.committer.name | Should -Be $committerName
