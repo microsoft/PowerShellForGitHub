@@ -335,9 +335,7 @@ Describe 'Getting file and folder content' {
                     ResultAsString = $true
                 }
 
-                $writtenContent = Get-GitHubContent @getGitHubContentParms
-
-                $content | Should -Be $writtenContent
+                $content | Should -Be (Get-GitHubContent @getGitHubContentParms)
             }
         }
 
