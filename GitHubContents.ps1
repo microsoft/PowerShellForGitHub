@@ -28,7 +28,7 @@ filter Get-GitHubContent
         them individually.
 
     .PARAMETER Path
-        The file path for which to retrieve contents
+        The remote file path in the repository whose content should be changed.
 
     .PARAMETER BranchName
         The branch, or defaults to the default branch of not specified.
