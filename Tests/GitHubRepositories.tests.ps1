@@ -209,8 +209,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'BLANK'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'Blank'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -241,8 +241,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'CommitMessages'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -273,8 +273,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'PR_BODY'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'PRBody'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -305,8 +305,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'COMMIT_OR_PR_TITLE'
-                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                    SquashMergeCommitTitle = 'CommitOrPRTitle'
+                    SquashMergeCommitMessage = 'CommitMessages'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -337,8 +337,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'PR_TITLE'
-                    MergeCommitMessage = 'BLANK'
+                    MergeCommitTitle = 'PRTitle'
+                    MergeCommitMessage = 'Blank'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -369,8 +369,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'PR_TITLE'
-                    MergeCommitMessage = 'PR_BODY'
+                    MergeCommitTitle = 'PRTitle'
+                    MergeCommitMessage = 'PRBody'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -401,8 +401,8 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $newGithubRepositoryParms = @{
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'MERGE_MESSAGE'
-                    MergeCommitMessage = 'PR_TITLE'
+                    MergeCommitTitle = 'MergeMessage'
+                    MergeCommitMessage = 'PRTitle'
                 }
 
                 $repo = New-GitHubRepository @newGithubRepositoryParms
@@ -1069,8 +1069,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'BLANK'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'Blank'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1094,8 +1094,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'CommitMessages'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1119,8 +1119,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'PR_TITLE'
-                    SquashMergeCommitMessage = 'PR_BODY'
+                    SquashMergeCommitTitle = 'PRTitle'
+                    SquashMergeCommitMessage = 'PRBody'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1144,8 +1144,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowSquashMerge = $false
-                    SquashMergeCommitTitle = 'COMMIT_OR_PR_TITLE'
-                    SquashMergeCommitMessage = 'COMMIT_MESSAGES'
+                    SquashMergeCommitTitle = 'CommitOrPRTitle'
+                    SquashMergeCommitMessage = 'CommitMessages'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1169,8 +1169,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'PR_TITLE'
-                    MergeCommitMessage = 'BLANK'
+                    MergeCommitTitle = 'PRTitle'
+                    MergeCommitMessage = 'Blank'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1194,8 +1194,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'PR_TITLE'
-                    MergeCommitMessage = 'PR_BODY'
+                    MergeCommitTitle = 'PRTitle'
+                    MergeCommitMessage = 'PRBody'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
@@ -1219,8 +1219,8 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
                     OwnerName = $repo.owner.login
                     RepositoryName = $repoName
                     DisallowMergeCommit = $false
-                    MergeCommitTitle = 'MERGE_MESSAGE'
-                    MergeCommitMessage = 'PR_TITLE'
+                    MergeCommitTitle = 'MergeMessage'
+                    MergeCommitMessage = 'PRTitle'
                 }
 
                 $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
