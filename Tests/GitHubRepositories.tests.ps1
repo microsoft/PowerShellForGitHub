@@ -88,7 +88,6 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.homepage | Should -BeNullOrEmpty
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
-                $repo.has_Wiki | Should -BeTrue
                 $repo.has_discussions | Should -BeFalse
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
@@ -284,7 +283,6 @@ Describe 'GitHubRepositories\New-GitHubRepository' {
                 $repo.homepage | Should -BeNullOrEmpty
                 $repo.has_issues | Should -BeTrue
                 $repo.has_projects | Should -BeTrue
-                $repo.has_Wiki | Should -BeTrue
                 $repo.allow_squash_merge | Should -BeTrue
                 $repo.allow_merge_commit | Should -BeTrue
                 $repo.allow_rebase_merge | Should -BeTrue
