@@ -723,6 +723,27 @@ Describe 'GitHubRepositories\Set-GitHubRepository' {
             $repo = New-GitHubRepository -RepositoryName $repoName
         }
 
+        Context -Name 'When updating a public repository with Secret Scanning' {
+            BeforeAll -ScriptBlock {
+                $updateGithubRepositoryParms = @{
+                    OwnerName = $repo.owner.login
+                    RepositoryName = $repoName
+                    SecretScanning = 'Enabled'
+                }
+
+                $updatedRepo = Set-GitHubRepository @updateGithubRepositoryParms -PassThru
+            }
+
+            It 'Should return an object of the correct type' {
+                $updatedRepo | Should -BeOfType PSCustomObject
+            }
+
+            It 'Should return the correct properties' {
+                $updatedRepo.name | Should -Be $repoName
+                $updatedRepo.security_and_analysis.secret_scanning.status | Should -Be 'enabled'
+            }
+        }
+
         Context -Name 'When updating a public repository with auto-merge set to true' {
             BeforeAll -ScriptBlock {
                 $updateGithubRepositoryParms = @{
