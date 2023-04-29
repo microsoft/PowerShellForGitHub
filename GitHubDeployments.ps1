@@ -415,7 +415,6 @@ filter Get-GitHubDeploymentEnvironment
 
         Gets details of the Test deployment environment for the specified repository.
 #>
-
 [CmdletBinding(DefaultParameterSetName = 'Elements')]
     [OutputType({$script:GitHubRepositoryTypeName})]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification="The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.")]
