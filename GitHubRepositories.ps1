@@ -117,7 +117,7 @@ filter New-GitHubRepository
           request's title (when more than one commit).
 
     .PARAMETER SquashMergeCommitMessage
-        Specifies the default vaule for a squash merge commit message. This can be one of the
+        Specifies the default value for a squash merge commit message. This can be one of the
         following values:
         - 'PRBody' - default to the pull request's body.
         - 'CommitMessages' - default to the branch's commit messages.
@@ -1157,7 +1157,7 @@ filter Set-GitHubRepository
           request's title (when more than one commit).
 
     .PARAMETER SquashMergeCommitMessage
-        Specifies the default vaule for a squash merge commit message. This can be one of the
+        Specifies the default value for a squash merge commit message. This can be one of the
         following values:
         - PRBody - default to the pull request's body.
         - CommitMessages - default to the branch's commit messages.
