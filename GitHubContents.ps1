@@ -387,7 +387,7 @@ filter Set-GitHubContent
 
     if (-not [String]::IsNullOrWhitespace($ContentPath))
     {
-        $encodedContent = [Convert]::ToBase64String((Get-Content -Path $ContentPath -AsByteStream -Raw))
+        $encodedContent = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($ContentPath))
     }
     else
     {
