@@ -1116,6 +1116,9 @@ filter Set-GitHubRepository
     .PARAMETER DefaultBranch
         Update the default branch for this repository.
 
+    .PARAMETER SecretScanning
+        Specifies whether to enable or disable secret scanning for the repository.
+
     .PARAMETER Private
         Specify this to make the repository private.
         To change a repository to be public, specify -Private:$false
@@ -1272,6 +1275,9 @@ filter Set-GitHubRepository
 
         [string] $DefaultBranch,
 
+        [ValidateSet('Enabled', 'Disabled')]
+        [string] $SecretScanning,
+
         [switch] $Private,
 
         [switch] $NoIssues,
@@ -1361,6 +1367,14 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('IsTemplate')) { $hashBody['is_template'] = $IsTemplate.ToBool() }
     if ($PSBoundParameters.ContainsKey('WebCommitSignoffRequired')) { $hashBody['web_commit_signoff_required'] = $WebCommitSignoffRequired.ToBool() }
     if ($PSBoundParameters.ContainsKey('Archived')) { $hashBody['archived'] = $Archived.ToBool() }
+
+    $securityAndAnalysis = @{}
+    if ($PSBoundParameters.ContainsKey('SecretScanning')) {
+        $securityAndAnalysis['secret_scanning'] = @{ 'status' = $SecretScanning.ToLower()}
+    }
+    if ($securityAndAnalysis.Count -ne 0) {
+        $hashBody['security_and_analysis'] = $securityAndAnalysis
+    }
 
     if ($Force -and (-not $Confirm))
     {
