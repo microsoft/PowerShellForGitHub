@@ -1261,7 +1261,7 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('SecretScanning')) {
         $securityAndAnalysis['secret_scanning'] = @{ 'status' = $SecretScanning.ToLower()}
     }
-    if ($securityAndAnalysis.count -ne 0) {
+    if ($securityAndAnalysis.Count -ne 0) {
         $hashBody['security_and_analysis'] = $securityAndAnalysis
     }
 
