@@ -220,7 +220,7 @@ filter Remove-GitHubDeploymentEnvironment
         Removes a deployment environment from a GitHub repository.
 
     .DESCRIPTION
-        Removes a team from an organization on GitHub.
+        Removes a deployment environment from a GitHub repository.
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
