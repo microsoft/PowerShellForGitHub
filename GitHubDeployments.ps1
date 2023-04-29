@@ -287,7 +287,6 @@ filter Remove-GitHubDeploymentEnvironment
 
         You can also pipe in a repo that was returned from a previous command.
 #>
-
     [CmdletBinding(
         SupportsShouldProcess,
         DefaultParameterSetName='Elements',
