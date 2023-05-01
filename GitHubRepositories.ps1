@@ -11,32 +11,28 @@
     GitHubRepositoryLanguageTypeName = 'GitHub.RepositoryLanguage'
     GitHubRepositoryTagTypeName = 'GitHub.RepositoryTag'
     GitHubRepositoryTeamPermissionTypeName = 'GitHub.RepositoryTeamPermission'
- }.GetEnumerator() | ForEach-Object {
+    SquashMergeCommitTitleConversion = @{
+        'PRTitle' = 'PR_TITLE'
+        'CommitOrPRTitle' = 'COMMIT_OR_PR_TITLE'
+        'MergeMessage' = 'MERGE_MESSAGE'
+    }
+    SquashMergeCommitMessageConversion = @{
+        'PRBody' = 'PR_BODY'
+        'CommitMessages' = 'COMMIT_MESSAGES'
+        'Blank' = 'BLANK'
+    }
+    MergeCommitTitleConversion = @{
+        'PRTitle' = 'PR_TITLE'
+        'MergeMessage' = 'MERGE_MESSAGE'
+    }
+    MergeCommitMessageConversion = @{
+        'PRTitle' = 'PR_TITLE'
+        'PRBody' = 'PR_BODY'
+        'Blank' = 'BLANK'
+    }
+     }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
-
-$squashMergeCommitTitleConversion = @{
-    'PRTitle' = 'PR_TITLE'
-    'CommitOrPRTitle' = 'COMMIT_OR_PR_TITLE'
-    'MergeMessage' = 'MERGE_MESSAGE'
-}
-
-$squashMergeCommitMessageConversion = @{
-    'PRBody' = 'PR_BODY'
-    'CommitMessages' = 'COMMIT_MESSAGES'
-    'Blank' = 'BLANK'
-}
-
-$mergeCommitTitleConversion = @{
-    'PRTitle' = 'PR_TITLE'
-    'MergeMessage' = 'MERGE_MESSAGE'
-}
-
-$mergeCommitMessageConversion = @{
-    'PRTitle' = 'PR_TITLE'
-    'PRBody' = 'PR_BODY'
-    'Blank' = 'BLANK'
-}
 
 filter New-GitHubRepository
 {
@@ -285,10 +281,10 @@ filter New-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
-    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $squashMergeCommitTitleConversion.$SquashMergeCommitTitle }
-    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $squashMergeCommitMessageConversion.$SquashMergeCommitMessage }
-    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $mergeCommitTitleConversion.$MergeCommitTitle }
-    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $mergeCommitMessageConversion.$MergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $script:SquashMergeCommitTitleConversion.$SquashMergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $script:SquashMergeCommitMessageConversion.$SquashMergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $script:MergeCommitTitleConversion.$MergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $script:MergeCommitMessageConversion.$MergeCommitMessage }
     if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('AllowUpdateBranch')) { $hashBody['allow_update_branch'] = $AllowUpdateBranch.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
@@ -1357,10 +1353,10 @@ filter Set-GitHubRepository
     if ($PSBoundParameters.ContainsKey('DisallowSquashMerge')) { $hashBody['allow_squash_merge'] = (-not $DisallowSquashMerge.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowMergeCommit')) { $hashBody['allow_merge_commit'] = (-not $DisallowMergeCommit.ToBool()) }
     if ($PSBoundParameters.ContainsKey('DisallowRebaseMerge')) { $hashBody['allow_rebase_merge'] = (-not $DisallowRebaseMerge.ToBool()) }
-    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $squashMergeCommitTitleConversion.$SquashMergeCommitTitle }
-    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $squashMergeCommitMessageConversion.$SquashMergeCommitMessage }
-    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $mergeCommitTitleConversion.$MergeCommitTitle }
-    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $mergeCommitMessageConversion.$MergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitTitle')) { $hashBody['squash_merge_commit_title'] = $script:SquashMergeCommitTitleConversion.$SquashMergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('SquashMergeCommitMessage')) { $hashBody['squash_merge_commit_message'] = $script:SquashMergeCommitMessageConversion.$SquashMergeCommitMessage }
+    if ($PSBoundParameters.ContainsKey('MergeCommitTitle')) { $hashBody['merge_commit_title'] = $script:MergeCommitTitleConversion.$MergeCommitTitle }
+    if ($PSBoundParameters.ContainsKey('MergeCommitMessage')) { $hashBody['merge_commit_message'] = $script:MergeCommitMessageConversion.$MergeCommitMessage }
     if ($PSBoundParameters.ContainsKey('AllowAutoMerge')) { $hashBody['allow_auto_merge'] = $AllowAutoMerge.ToBool() }
     if ($PSBoundParameters.ContainsKey('AllowUpdateBranch')) { $hashBody['allow_update_branch'] = $AllowUpdateBranch.ToBool() }
     if ($PSBoundParameters.ContainsKey('DeleteBranchOnMerge')) { $hashBody['delete_branch_on_merge'] = $DeleteBranchOnMerge.ToBool() }
