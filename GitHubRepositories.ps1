@@ -30,7 +30,7 @@
         'PRBody' = 'PR_BODY'
         'Blank' = 'BLANK'
     }
-     }.GetEnumerator() | ForEach-Object {
+ }.GetEnumerator() | ForEach-Object {
      Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
  }
 
