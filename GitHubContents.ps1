@@ -387,6 +387,7 @@ filter Set-GitHubContent
 
     if (-not [String]::IsNullOrWhitespace($ContentPath))
     {
+        $ContentPath = Resolve-UnverifiedPath -Path $ContentPath
         $encodedContent = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($ContentPath))
     }
     else
