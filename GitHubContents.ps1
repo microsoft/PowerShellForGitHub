@@ -385,7 +385,7 @@ filter Set-GitHubContent
 
     $uriFragment = "/repos/$OwnerName/$RepositoryName/contents/$Path"
 
-    if (-not [String]::IsNullOrWhitespace($ContentPath))
+    if ($PSBoundParameters.ContainsKey('ContentPath')
     {
         $ContentPath = Resolve-UnverifiedPath -Path $ContentPath
         $encodedContent = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($ContentPath))
