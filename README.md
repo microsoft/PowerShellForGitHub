@@ -90,6 +90,7 @@ At present, this module can:
    as well as gist comments.
  * Query, edit and remove [reactions](https://developer.github.com/v3/reactions/) on Issues and
    Pull Requests.
+* Query, create, edit and remove [Deployment Environments](https://docs.github.com/en/rest/deployments/environments)
  * Miscellaneous functionality:
       * Get all [Codes of Conduct](https://developer.github.com/v3/codes_of_conduct/) as well as that
         of a specific repo.
