@@ -296,7 +296,7 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
-                Branch = $branchName
+                BranchName = $branchName
                 Content = $content
                 Uri = $repo.svn_url
                 CommitterName = $committerName
@@ -417,7 +417,7 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
-                Branch = $branchName
+                BranchName = $branchName
                 ContentPath = $contentPath.FullName
                 Uri = $repo.svn_url
                 CommitterName = $committerName
