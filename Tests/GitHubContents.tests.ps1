@@ -402,9 +402,9 @@ Describe 'GitHubContents/Set-GitHubContent' {
     Context 'When setting new file content by path' {
         BeforeAll {
             $filePath = 'notes'
-            $fileName = 'hello.txt'
+            $fileName = 'hello-by-path.txt'
             $commitMessage = 'Commit Message'
-            $content = 'This is the content for test.txt'
+            $content = 'This is the content for hello-by-path.txt'
             $branchName = 'master'
             $committerName = 'John Doe'
             $committerEmail = 'john.doe@testdomain.com'
@@ -463,20 +463,23 @@ Describe 'GitHubContents/Set-GitHubContent' {
     Context 'When overwriting file content by path' {
         BeforeAll {
             $filePath = 'notes'
-            $fileName = 'hello.txt'
+            $fileName = 'hello-by-path.txt'
             $commitMessage = 'Commit Message 2'
-            $content = 'This is the new content for test.txt'
+            $content = 'This is the new content for hello-by-path.txt'
             $branchName = 'master'
             $committerName = 'John Doe'
             $committerEmail = 'john.doe@testdomain.com'
             $authorName = 'Jane Doe'
             $authorEmail = 'jane.doe@testdomain.com'
 
+            $contentPath = New-TemporaryFile
+            $content | Out-File -FilePath $contentPath
+
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
                 CommitMessage = $commitMessage
-                BranchName = $branchName
-                Content = $content
+                Branch = $branchName
+                ContentPath = $contentPath.FullName
                 Uri = $repo.svn_url
                 CommitterName = $committerName
                 CommitterEmail = $committerEmail
@@ -509,6 +512,10 @@ Describe 'GitHubContents/Set-GitHubContent' {
             }
 
             $content | Should -Be (Get-GitHubContent @getGitHubContentParms)
+        }
+
+        AfterAll {
+            Remove-Item -Path $contentPath
         }
     }
 
