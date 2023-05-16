@@ -411,6 +411,8 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $authorName = 'Jane Doe'
             $authorEmail = 'jane.doe@testdomain.com'
 
+            . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
+
             $contentPath = New-TemporaryFile
             $contentPath = Resolve-UnverifiedPath -Path $contentPath
             [System.IO.File]::WriteAllText($contentPath, $content)
@@ -472,6 +474,8 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $committerEmail = 'john.doe@testdomain.com'
             $authorName = 'Jane Doe'
             $authorEmail = 'jane.doe@testdomain.com'
+
+            . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
 
             $contentPath = New-TemporaryFile
             $contentPath = Resolve-UnverifiedPath -Path $contentPath
