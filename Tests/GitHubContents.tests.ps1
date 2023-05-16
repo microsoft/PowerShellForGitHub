@@ -412,7 +412,8 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $authorEmail = 'jane.doe@testdomain.com'
 
             $contentPath = New-TemporaryFile
-            $content | Out-File -FilePath $contentPath
+            $contentPath = Resolve-UnverifiedPath -Path $contentPath
+            [System.IO.File]::WriteAllText($contentPath, $content)
 
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
@@ -473,7 +474,8 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $authorEmail = 'jane.doe@testdomain.com'
 
             $contentPath = New-TemporaryFile
-            $content | Out-File -FilePath $contentPath
+            $contentPath = Resolve-UnverifiedPath -Path $contentPath
+            [System.IO.File]::WriteAllText($contentPath, $content)
 
             $setGitHubContentParms = @{
                 Path = "$filePath/$fileName"
