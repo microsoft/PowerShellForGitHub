@@ -411,10 +411,7 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $authorName = 'Jane Doe'
             $authorEmail = 'jane.doe@testdomain.com'
 
-            . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
-
             $contentPath = New-TemporaryFile
-            $contentPath = Resolve-UnverifiedPath -Path $contentPath
             [System.IO.File]::WriteAllText($contentPath, $content)
 
             $setGitHubContentParms = @{
@@ -475,10 +472,7 @@ Describe 'GitHubContents/Set-GitHubContent' {
             $authorName = 'Jane Doe'
             $authorEmail = 'jane.doe@testdomain.com'
 
-            . (Join-Path -Path $moduleRootPath -ChildPath 'Helpers.ps1')
-
             $contentPath = New-TemporaryFile
-            $contentPath = Resolve-UnverifiedPath -Path $contentPath
             [System.IO.File]::WriteAllText($contentPath, $content)
 
             $setGitHubContentParms = @{
