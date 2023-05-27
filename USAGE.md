@@ -146,8 +146,12 @@
         *   [Getting codespaces](#getting-codespaces)
         *   [Creating a codespace](#creating-a-codespace)
         *   [Removing a codespace](#removing-a-codespace)
-        *   [Starting a codespace](#updating-a-codespace)
-        *   [Stopping a codespace](#starting-a-codespace)
+        *   [Starting a codespace](#starting-a-codespace)
+        *   [Stopping a codespace](#stopping-a-codespace)
+    *   [Codespaces](#codespaces-organizations)
+        *   [Getting codespaces](#getting-organization-codespaces)
+        *   [Removing a codespace](#removing-an-organization-codespace)
+        *   [Stopping a codespace](#stopping-an-organization-codespace)
 
 ----------
 
@@ -1308,12 +1312,6 @@ Get-GitHubCodespace
 # Get all codespaces for the current authenticated user in a repository
 Get-GitHubCodespace -OwnerName microsoft -RepositoryName TestRepo
 
-# Get all codespaces for an Organizaion
-Get-GitHubCodespace -OrganizationName microsoft
-
-# Get all codespaces for a specific organization user
-Get-GitHubCodespace -OrganizationName microsoft -UserName octocat
-
 # Get a codespace by name
 Get-GitHubCodespace -CodespaceName 'microsoft-symmetrical-chainsaw-7q4vp6v7q3pwqq'
 ```
@@ -1354,9 +1352,6 @@ $codespaceName = 'microsoft-symmetrical-chainsaw-7q4vp6v7q3pwqq'
 
 # Remove a codespace for the current authenticated user
 Remove-GitHubCodespace -CodespaceName $codespaceName
-
-# Remove a codespace for an organization user
-Remove-GitHubCodespace -Organization microsoft -UserName octocat -CodespaceName $codespaceName
 ```
 
 #### Starting a codespace
@@ -1379,4 +1374,34 @@ Stop-GithubCodespace -CodespaceName $codespaceName
 
 # Stopping a codespace (wait for Shutdown)
 Stop-GithubCodespace -CodespaceName $codespaceName -Wait
+```
+
+----------
+
+### Codespaces organizations
+
+#### Getting organization Codespaces
+```powershell
+
+# Get all codespaces for an Organizaion
+Get-GitHubCodespace -OrganizationName microsoft
+
+# Get all codespaces for a specific organization user
+Get-GitHubCodespace -OrganizationName microsoft -UserName octocat
+```
+
+#### Removing an organization Codespace
+```powershell
+$codespaceName = 'microsoft-symmetrical-chainsaw-7q4vp6v7q3pwqq'
+
+# Remove a codespace for an organization user
+Remove-GitHubCodespace -OrganizationName microsoft -UserName octocat -CodespaceName $codespaceName
+```
+
+#### Stopping an organization Codespace
+```powershell
+$codespaceName = 'microsoft-symmetrical-chainsaw-7q4vp6v7q3pwqq'
+
+# Stopping a codespace (wait for Shutdown)
+Stop-GithubCodespace -OrganizationName microsoft -UserName octocat -CodespaceName $codespaceName -Wait
 ```
