@@ -326,7 +326,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $codespace.machine.name | Should -Be $newGitHubCodespaceParms.Machine
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.repository.name | Should -Be $repo.name
-                $codespace.retention_period_minutes | Should -Be 10
+                $codespace.retention_period_minutes | Should -Be $newGitHubCodespaceParams.RetentionPeriod
                 $codespace.template | Should -BeNullOrEmpty
             }
 
