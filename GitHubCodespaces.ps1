@@ -674,6 +674,7 @@ filter Start-GitHubCodespace
 
     $telemetryProperties = @{
         CodespaceName = Get-PiiSafeString -PlainText $CodespaceName
+        Wait = $Wait.IsPresent
     }
 
     $params = @{
