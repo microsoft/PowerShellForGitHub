@@ -679,7 +679,7 @@ filter Start-GitHubCodespace
 
     $params = @{
         UriFragment = "user/codespaces/$CodespaceName/start"
-        Method = 'POST'
+        Method = 'Post'
         Description = "Start Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
