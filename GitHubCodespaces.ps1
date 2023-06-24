@@ -100,7 +100,7 @@ filter Get-GitHubCodespace
 #>
     [CmdletBinding(DefaultParameterSetName = 'AuthenticatedUser')]
     [OutputType({ $script:GitHubCodespaceTypeName })]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='Uri', Justification = 'The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.')]
     param(
         [Parameter(
             Mandatory,
@@ -324,16 +324,7 @@ function New-GitHubCodespace
         SupportsShouldProcess,
         DefaultParameterSetName = 'AuthenticatedUser')]
     [OutputType({ $script:GitHubCodespaceTypeName })]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='Uri', Justification = 'The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='ClientIp', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='DevContainerPath', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='DisplayName', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='Geo', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='IdleRetentionPeriodMinutes', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='Machine', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='Ref', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='TimeoutMinutes', Justification = 'Dynamically mapped to a request body property')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='WorkingDirectory', Justification = 'Dynamically mapped to a request body property')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1, and most of the others get dynamically accessed via $propertyMap.')]
     param(
         [Parameter(
             Mandatory,
@@ -661,7 +652,7 @@ filter Start-GitHubCodespace
         SupportsShouldProcess,
         ConfirmImpact = 'Low')]
     [OutputType({ $script:GitHubCodespaceTypeName })]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='PassThru', Justification = 'PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue')]
     param(
         [Parameter(
             Mandatory,
@@ -760,7 +751,7 @@ filter Stop-GitHubCodespace
         SupportsShouldProcess,
         ConfirmImpact = 'Low')]
     [OutputType({ $script:GitHubCodespaceTypeName })]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', CheckId='PassThru', Justification = 'PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue')]
     param(
         [Parameter(
             Mandatory,
