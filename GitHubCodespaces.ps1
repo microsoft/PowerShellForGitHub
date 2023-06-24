@@ -479,7 +479,7 @@ function New-GitHubCodespace
         $params = @{
             UriFragment = $uriFragment
             Body = (ConvertTo-Json -InputObject $hashBody -Depth 5)
-            Method = 'POST'
+            Method = 'Post'
             Description = $description
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
