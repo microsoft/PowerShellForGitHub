@@ -255,18 +255,18 @@ function New-GitHubCodespace
         Git ref (typically a branch name) for this codespace
 
     .PARAMETER ClientIp
-        IP for location auto-detection when proxying a request.
+        IP for geo auto-detection when proxying a request.
 
-    .PARAMETER Devcontainer
+    .PARAMETER DevContainerPath
         Path to devcontainer.json config to use for this codespace.
 
     .PARAMETER DisplayName
         Display name for this codespace
 
-    .PARAMETER Location
-        The requested location for a new codespace.
-        Best efforts are made to respect this upon creation.
+    .PARAMETER Geo
+        The geographic area for this codespace.
         Assigned by IP if not provided.
+        Can be one of: EuropeWest, SoutheastAsia, UsEast, UsWest
 
     .PARAMETER Machine
         Machine type to use for this codespace.
@@ -274,10 +274,10 @@ function New-GitHubCodespace
     .PARAMETER NoMultipleRepoPermissions
         Whether to authorize requested permissions to other repos from devcontainer.json.
 
-    .PARAMETER RetentionPeriod
+    .PARAMETER IdleRetentionPeriodMinutes
         Duration in minutes (up to 30 days) after codespace has gone idle in which it will be deleted.
 
-    .PARAMETER Timeout
+    .PARAMETER TimeoutMinutes
         Time in minutes before codespace stops from inactivity.
 
     .PARAMETER WorkingDirectory
@@ -350,8 +350,7 @@ function New-GitHubCodespace
         [Alias('PullRequestUrl')]
         [string] $Uri,
 
-        [Parameter(
-            ParameterSetName = 'AuthenticatedUser')]
+        [Parameter(ParameterSetName = 'AuthenticatedUser')]
         [Parameter(
             Mandatory,
             ParameterSetName = 'ElementsPullRequest')]
@@ -364,27 +363,26 @@ function New-GitHubCodespace
         [Int64] $RepositoryId,
 
         [Parameter(ParameterSetName = 'AuthenticatedUser')]
-        [Parameter(
-            ParameterSetName = 'Elements')]
+        [Parameter(ParameterSetName = 'Elements')]
         [string] $Ref,
 
         [string] $ClientIp,
 
-        [string] $Devcontainer,
+        [string] $DevContainerPath,
 
         [string] $DisplayName,
 
-        [string] $Location,
+        [string] $Geo,
 
         [string] $Machine,
 
         [switch] $NoMultipleRepoPermissions,
 
         [ValidateRange(0, 43200)]
-        [int] $RetentionPeriod,
+        [int] $IdleRetentionPeriodMinutes,
 
         [ValidateRange(5, 240)]
-        [int] $Timeout,
+        [int] $TimeoutMinutes,
 
         [string] $WorkingDirectory,
 
@@ -397,20 +395,19 @@ function New-GitHubCodespace
 
         $propertyMap = @{
             ClientIp = 'client_ip'
-            Devcontainer = 'devcontainer_path'
+            DevContainerPath = 'devcontainer_path'
             DisplayName = 'display_name'
-            Location = 'location'
+            Geo = 'geo'
             Machine = 'machine'
             Ref = 'ref'
-            RetentionPeriod = 'retention_period_minutes'
-            Timeout = 'idle_timeout_minutes'
+            IdleRetentionPeriodMinutes = 'retention_period_minutes'
+            TimeoutMinutes = 'idle_timeout_minutes'
             WorkingDirectory = 'working_directory'
         }
     }
 
     process
     {
-
         $telemetryProperties = @{
             UsageType = $PSCmdlet.ParameterSetName
         }
@@ -453,7 +450,7 @@ function New-GitHubCodespace
         # Map params to hashBody properties
         foreach ($p in $PSBoundParameters.GetEnumerator())
         {
-            if ($propertyMap.ContainsKey($p.Key) -and (-not [string]::IsNullOrWhiteSpace($p.Value)))
+            if ($propertyMap.ContainsKey($p.Key) -and -not [string]::IsNullOrWhiteSpace($p.Value))
             {
                 $hashBody.Add($propertyMap[$p.Key], $p.Value)
             }
@@ -478,8 +475,8 @@ function New-GitHubCodespace
 
         $params = @{
             UriFragment = $uriFragment
-            Body = (ConvertTo-Json -InputObject $hashBody -Depth 5)
-            Method = 'Post'
+            Body = (ConvertTo-Json -InputObject $hashBody)
+            Method = 'POST'
             Description = $description
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -545,7 +542,6 @@ filter Remove-GitHubCodespace
         DefaultParameterSetName = 'AuthenticatedUser',
         SupportsShouldProcess,
         ConfirmImpact = 'High')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     [Alias('Delete-GitHubCodespace')]
     param(
         [Parameter(
@@ -590,7 +586,7 @@ filter Remove-GitHubCodespace
 
     $params = @{
         UriFragment = $uriFragment
-        Method = 'Delete'
+        Method = 'DELETE'
         Description = "Remove Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -628,7 +624,7 @@ filter Start-GitHubCodespace
         If present will wait for the codespace to start.
 
     .PARAMETER PassThru
-        Returns the updated GitHub Issue.  By default, this cmdlet does not generate any output.
+        Returns the start action result.  By default, this cmdlet does not generate any output.
         You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
         of this switch.
 
@@ -658,7 +654,8 @@ filter Start-GitHubCodespace
     [OutputType({ $script:GitHubCodespaceTypeName })]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
-        [Parameter(Mandatory,
+        [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [string] $CodespaceName,
@@ -674,12 +671,11 @@ filter Start-GitHubCodespace
 
     $telemetryProperties = @{
         CodespaceName = Get-PiiSafeString -PlainText $CodespaceName
-        Wait = $Wait.IsPresent
     }
 
     $params = @{
         UriFragment = "user/codespaces/$CodespaceName/start"
-        Method = 'Post'
+        Method = 'POST'
         Description = "Start Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -757,7 +753,8 @@ filter Stop-GitHubCodespace
     [OutputType({ $script:GitHubCodespaceTypeName })]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "", Justification = "PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue")]
     param(
-        [Parameter(Mandatory,
+        [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [string] $CodespaceName,
@@ -835,7 +832,8 @@ function Wait-GitHubCodespaceAction
     [CmdletBinding()]
     [OutputType({ $script:GitHubCodespaceTypeName })]
     param(
-        [Parameter(Mandatory,
+        [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [string] $CodespaceName,
@@ -927,6 +925,11 @@ filter Add-GitHubCodespaceAdditionalProperties
             {
                 Add-Member -InputObject $item -Name 'CodespaceUrl' -Value "user/codespaces/$($item.name)" -MemberType NoteProperty -Force
                 Add-Member -InputObject $item -Name 'CodespaceName' -Value $item.name -MemberType NoteProperty -Force
+            }
+
+            if ($null -ne $item.billable_owner)
+            {
+                $null = Add-GitHubUserAdditionalProperties -InputObject $item.billable_owner
             }
 
             if ($null -ne $item.owner)

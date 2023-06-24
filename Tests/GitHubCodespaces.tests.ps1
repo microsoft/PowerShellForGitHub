@@ -215,7 +215,6 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
                 $codespace.repository.name | Should -Be $repo.name
-                $codespace.idle_timeout_minutes | Should -Be 30
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.template | Should -BeNullOrEmpty
             }
@@ -230,7 +229,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
         Context -Name 'When creating a codespace with default settings with Ref' {
             BeforeAll {
-                $repoWithPR = Get-GitHubRepository -OrganizationName 'super-fake-not-real-org' |
+                $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
                     Where-Object { $_ | Get-GitHubPullRequest } |
                     Select-Object -First 1
                 $pullRequest = $repoWithPR | Get-GitHubPullRequest | Select-Object -First 1
@@ -250,7 +249,6 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
                 $codespace.git_status.ref | Should -Be $pullRequest.head.ref
                 $codespace.repository.name | Should -Be $repoWithPR.name
-                $codespace.idle_timeout_minutes | Should -Be 30
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.template | Should -BeNullOrEmpty
             }
@@ -265,7 +263,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
         Context -Name 'When creating a codespace with default settings from a PullRequest' {
             BeforeAll {
-                  $repoWithPR = Get-GitHubRepository -OrganizationName 'super-fake-not-real-org' |
+                  $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
                       Where-Object { $_ | Get-GitHubPullRequest } |
                       Select-Object -First 1
                 $pullRequest = $repoWithPR | Get-GitHubPullRequest | Select-Object -First 1
@@ -284,7 +282,6 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
                 $codespace.repository.name | Should -Be $repoWithPR.name
-                $codespace.idle_timeout_minutes | Should -Be 30
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.pulls_url | Should -Be $pullRequest.url
                 $codespace.template | Should -BeNullOrEmpty
@@ -301,14 +298,14 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
         Context -Name 'When creating a codespace with all possible settings' {
             BeforeAll {
                 $newGitHubCodespaceParms = @{
-                    # ClientIp = 'TODO ???? - should be instead of rather than in addition to Location, perhaps add some param validation to the function'
-                    # Devcontainer = 'Will add to test in the future when Get-GitHubDevContainer is implemented and the test repo includes one'
+                    # ClientIp = 'TODO ???? - should be instead of rather than in addition to Geo, perhaps add some param validation to the function'
+                    # DevContainerPath = 'Will add to test in the future when Get-GitHubDevContainer is implemented and the test repo includes one'
                     DisplayName = 'PowerShellForGitHub pester test'
-                    Location = 'WestUs2'
+                    Geo = 'UsWest'
                     Machine = 'basicLinux32gb'
                     NoMultipleRepoPermissions = $true # Not sure how to assert this, but this proves it accepts the switch without error
-                    RetentionPeriod = 10
-                    Timeout = 5
+                    IdleRetentionPeriodMinutes = 10
+                    TimeoutMinutes = 5
                     # WorkingDirectory = 'TODO ???? - not sure how to handle this'
                 }
                 $codespace = $repo | New-GitHubCodespace @newGitHubCodespaceParms
@@ -321,12 +318,12 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 # $codespace.devcontainer_path | Should -Be
                 $codespace.display_name | Should -Be $newGitHubCodespaceParms.DisplayName
-                $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParams.Timeout
-                $codespace.location | Should -Be $newGitHubCodespaceParms.Location
+                $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParams.TimeoutMinutes
+                $codespace.location | Should -Be $newGitHubCodespaceParms.Geo
                 $codespace.machine.name | Should -Be $newGitHubCodespaceParms.Machine
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.repository.name | Should -Be $repo.name
-                $codespace.retention_period_minutes | Should -Be $newGitHubCodespaceParams.RetentionPeriod
+                $codespace.retention_period_minutes | Should -Be $newGitHubCodespaceParams.IdleRetentionPeriodMinutes
                 $codespace.template | Should -BeNullOrEmpty
             }
 

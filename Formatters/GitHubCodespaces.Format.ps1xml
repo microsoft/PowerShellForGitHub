@@ -24,7 +24,7 @@
                 <PropertyName>state</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>location</PropertyName>
+                <PropertyName>geo</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>created_at</PropertyName>
