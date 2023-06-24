@@ -321,7 +321,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 # $codespace.devcontainer_path | Should -Be
                 $codespace.display_name | Should -Be $newGitHubCodespaceParms.DisplayName
-                $codespace.idle_timeout_minutes | Should -Be 5
+                $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParams.Timeout
                 $codespace.location | Should -Be $newGitHubCodespaceParms.Location
                 $codespace.machine.name | Should -Be $newGitHubCodespaceParms.Machine
                 $codespace.owner.UserName | Should -Be $script:OwnerName
