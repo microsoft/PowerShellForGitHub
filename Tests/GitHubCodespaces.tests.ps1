@@ -33,7 +33,6 @@ BeforeAll {
 }
 
 Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
-
     Context 'When deleting a codespace for the authenticated user' {
         BeforeEach {
             # Suppress HTTP 202 warning for codespace creation
