@@ -123,6 +123,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         BeforeAll {
             $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
         }
+
         It 'Should return objects of the correct type' {
             $codespaces[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
         }
