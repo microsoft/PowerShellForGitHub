@@ -363,8 +363,7 @@ function New-GitHubCodespace
             ParameterSetName = 'AuthenticatedUser')]
         [Int64] $RepositoryId,
 
-        [Parameter(
-            ParameterSetName = 'AuthenticatedUser')]
+        [Parameter(ParameterSetName = 'AuthenticatedUser')]
         [Parameter(
             ParameterSetName = 'Elements')]
         [string] $Ref,
