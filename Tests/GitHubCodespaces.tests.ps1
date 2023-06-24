@@ -98,7 +98,6 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
     }
 
     Context 'When getting a codespace for a specified owner and repository' {
-
         BeforeAll {
             $codespaces = Get-GitHubCodespace @newGitHubCodespaceParms
         }
