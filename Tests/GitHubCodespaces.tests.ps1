@@ -120,7 +120,6 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
     }
 
     Context 'When getting all codespaces for a specified organization' {
-
         BeforeAll {
             $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
         }
