@@ -199,7 +199,6 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
 
 Describe 'GitHubCodespaces\New-GitHubCodespace' {
     Context -Name 'When creating a repository for the authenticated user' {
-
         Context -Name 'When creating a codespace with default settings with RepositoryId' {
             BeforeAll {
                 $newGitHubCodespaceParms = @{
