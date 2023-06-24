@@ -868,6 +868,7 @@ function Wait-GitHubCodespaceAction
         {
             Start-Sleep -Seconds $sleepSeconds
             $codespace = (Get-GitHubCodespace @PSBoundParameters)
+            Write-Log -Message "[$CodespaceName] state is $($codespace.state)" -Level Verbose
         }
         until ($codespace.state -notmatch 'Queued|ing')
 
