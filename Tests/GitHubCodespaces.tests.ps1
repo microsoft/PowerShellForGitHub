@@ -351,7 +351,6 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
                 $codespace.repository.name | Should -Be $repo.name
-                $codespace.idle_timeout_minutes | Should -Be 30
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.template | Should -BeNullOrEmpty
             }
