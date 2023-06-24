@@ -561,7 +561,8 @@ filter Remove-GitHubCodespace
         [ValidateNotNullOrEmpty()]
         [String] $UserName,
 
-        [Parameter(Mandatory,
+        [Parameter(
+            Mandatory,
             ValueFromPipeline,
             ValueFromPipelineByPropertyName)]
         [string] $CodespaceName,
