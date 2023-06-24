@@ -590,7 +590,7 @@ filter Remove-GitHubCodespace
 
     $params = @{
         UriFragment = $uriFragment
-        Method = 'DELETE'
+        Method = 'Delete'
         Description = "Remove Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
