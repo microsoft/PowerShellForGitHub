@@ -190,6 +190,7 @@ filter Get-GitHubTeam
         {
             $message = "Team '$TeamName' not found"
             Write-Log -Message $message -Level Error
+            $result = $null
             throw $message
         }
         else
