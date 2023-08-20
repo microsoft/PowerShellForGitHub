@@ -476,7 +476,7 @@ function New-GitHubCodespace
         $params = @{
             UriFragment = $uriFragment
             Body = (ConvertTo-Json -InputObject $hashBody)
-            Method = 'POST'
+            Method = 'Post'
             Description = $description
             AccessToken = $AccessToken
             TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -586,7 +586,7 @@ filter Remove-GitHubCodespace
 
     $params = @{
         UriFragment = $uriFragment
-        Method = 'DELETE'
+        Method = 'Delete'
         Description = "Remove Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -675,7 +675,7 @@ filter Start-GitHubCodespace
 
     $params = @{
         UriFragment = "user/codespaces/$CodespaceName/start"
-        Method = 'POST'
+        Method = 'Post'
         Description = "Start Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
@@ -774,7 +774,7 @@ filter Stop-GitHubCodespace
 
     $params = @{
         UriFragment = "user/codespaces/$CodespaceName/stop"
-        Method = 'POST'
+        Method = 'Post'
         Description = "Stop Codespace $CodespaceName"
         AccessToken = $AccessToken
         TelemetryEventName = $MyInvocation.MyCommand.Name
