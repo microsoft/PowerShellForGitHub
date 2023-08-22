@@ -263,9 +263,9 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
         Context -Name 'When creating a codespace with default settings from a PullRequest' {
             BeforeAll {
-                  $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
-                      Where-Object { $_ | Get-GitHubPullRequest } |
-                      Select-Object -First 1
+                $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
+                    Where-Object { $_ | Get-GitHubPullRequest } |
+                    Select-Object -First 1
                 $pullRequest = $repoWithPR | Get-GitHubPullRequest | Select-Object -First 1
                 $newGitHubCodespaceParms = @{
                     PullRequest = $pullRequest.number
