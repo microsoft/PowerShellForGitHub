@@ -282,6 +282,9 @@ function New-GitHubCodespace
     .PARAMETER WorkingDirectory
         Working directory for this codespace.
 
+    .PARAMETER Wait
+        If present will wait for the codespace to start.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
@@ -386,6 +389,8 @@ function New-GitHubCodespace
 
         [string] $WorkingDirectory,
 
+        [switch] $Wait,
+
         [string] $AccessToken
     )
 
@@ -488,8 +493,19 @@ function New-GitHubCodespace
             return
         }
 
-        return (Invoke-GHRestMethod @params | Add-GitHubCodespaceAdditionalProperties)
+        $result = (Invoke-GHRestMethod @params | Add-GitHubCodespaceAdditionalProperties)
 
+        if ($Wait.IsPresent)
+        {
+            $waitParams = @{
+                CodespaceName = $result.CodespaceName
+                AccessToken = $AccessToken
+            }
+
+            $result = Wait-GitHubCodespaceAction @waitParams
+        }
+
+        return $result
     }
 }
 

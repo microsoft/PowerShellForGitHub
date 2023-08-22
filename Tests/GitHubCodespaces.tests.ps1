@@ -42,9 +42,9 @@ Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
             $newGitHubCodespaceParms = @{
                 OwnerName = $script:organizationName
                 RepositoryName = $defaultRepositoryName
+                Wait = $true
             }
             $codespace = New-GitHubCodespace @newGitHubCodespaceParms
-            Start-Sleep -Seconds 2
         }
 
         It 'Should get no content using -Confirm:$false' {
@@ -69,9 +69,9 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
+            Wait = $true
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms
-        Start-Sleep -Seconds 2
     }
 
     Context 'When getting codespaces for the authenticated user' {
@@ -203,9 +203,9 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             BeforeAll {
                 $newGitHubCodespaceParms = @{
                     RepositoryId = $repo.Id
+                    Wait = $true
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms
-                Start-Sleep -Seconds 2
             }
 
             It 'Should return an object of the correct type' {
@@ -236,9 +236,9 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $newGitHubCodespaceParms = @{
                     Ref = $pullRequest.head.ref
                     RepositoryId = $repoWithPR.Id
+                    Wait = $true
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms
-                Start-Sleep -Seconds 2
             }
 
             It 'Should return an object of the correct type' {
@@ -270,9 +270,9 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $newGitHubCodespaceParms = @{
                     PullRequest = $pullRequest.number
                     RepositoryId = $repoWithPR.Id
+                    Wait = $true
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms
-                Start-Sleep -Seconds 2
             }
 
             It 'Should return an object of the correct type' {
@@ -373,9 +373,9 @@ Describe 'GitHubCodespaces\Start-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
+            Wait = $true
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms
-        Start-Sleep -Seconds 2
     }
 
     Context 'When starting a codespace for the authenticated user' {
@@ -404,9 +404,9 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
+            Wait = $true
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms
-        Start-Sleep -Seconds 2
     }
 
     Context 'When stopping a codespace for the authenticated user' {
