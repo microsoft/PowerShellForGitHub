@@ -266,7 +266,6 @@ function New-GitHubCodespace
     .PARAMETER Geo
         The geographic area for this codespace.
         Assigned by IP if not provided.
-        Can be one of: EuropeWest, SoutheastAsia, UsEast, UsWest
 
     .PARAMETER Machine
         Machine type to use for this codespace.
@@ -372,6 +371,7 @@ function New-GitHubCodespace
 
         [string] $DisplayName,
 
+        [ValidateSet('EuropeWest', 'SoutheastAsia', 'UsEast', 'UsWest')]
         [string] $Geo,
 
         [string] $Machine,
