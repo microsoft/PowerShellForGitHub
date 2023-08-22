@@ -77,7 +77,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
     Context 'When getting codespaces for the authenticated user' {
         BeforeAll {
             $codespaces = Get-GitHubCodespace |
-            Where-Object { $_.repository.name -eq $defaultRepositoryName }
+                Where-Object { $_.repository.name -eq $defaultRepositoryName }
         }
 
         It 'Should return objects of the correct type' {
