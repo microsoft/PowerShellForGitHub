@@ -480,7 +480,7 @@ function New-GitHubCodespace
 
         $params = @{
             UriFragment = $uriFragment
-            Body = (ConvertTo-Json -InputObject $hashBody)
+            Body = (ConvertTo-Json -InputObject $hashBody -Depth 5)
             Method = 'Post'
             Description = $description
             AccessToken = $AccessToken
