@@ -513,6 +513,9 @@ filter Remove-GitHubCodespace
     .PARAMETER CodespaceName
         Name of the Codespace.
 
+    .PARAMETER Force
+        If this switch is specified, you will not be prompted for confirmation of command execution.
+
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
         REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
