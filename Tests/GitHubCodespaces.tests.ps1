@@ -30,6 +30,8 @@ BeforeAll {
         OrganizationName = $script:organizationName
     }
     $repo = New-GitHubRepository @newGitHubRepositoryParms
+    # Get the main/master branch name
+    $mainBranchName = $repo | Get-GitHubRepositoryBranch | Select-Object -ExpandProperty name -First 1
 }
 
 Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
@@ -229,13 +231,20 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
         Context -Name 'When creating a codespace with default settings with Ref' {
             BeforeAll {
-                $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
-                    Where-Object { $_ | Get-GitHubPullRequest } |
-                    Select-Object -First 1
-                $pullRequest = $repoWithPR | Get-GitHubPullRequest | Select-Object -First 1
+                $prBranchName = 'testCodespaceByRef'
+                $prBranch = $repo | New-GitHubRepositoryBranch -BranchName $mainBranchName -TargetBranchName $prBranchName
+                $setContentParms = @{
+                    Path = 'README.md'
+                    Content = 'When creating a codespace with default settings with Ref'
+                    CommitMessage = $prBranchName
+                    BranchName = $prBranchName
+                }
+                $repo | Set-GitHubContent @setContentParms
+                $pullRequest = $prBranch | New-GitHubPullRequest -Title $prBranchName -Head $prBranchName -Base $mainBranchName
+
                 $newGitHubCodespaceParms = @{
                     Ref = $pullRequest.head.ref
-                    RepositoryId = $repoWithPR.Id
+                    RepositoryId = $repo.Id
                     Wait = $true
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms
@@ -248,7 +257,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
                 $codespace.git_status.ref | Should -Be $pullRequest.head.ref
-                $codespace.repository.name | Should -Be $repoWithPR.name
+                $codespace.repository.name | Should -Be $repo.name
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.template | Should -BeNullOrEmpty
             }
@@ -263,13 +272,20 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
         Context -Name 'When creating a codespace with default settings from a PullRequest' {
             BeforeAll {
-                $repoWithPR = Get-GitHubRepository -OrganizationName $script:organizationName |
-                    Where-Object { $_ | Get-GitHubPullRequest } |
-                    Select-Object -First 1
-                $pullRequest = $repoWithPR | Get-GitHubPullRequest | Select-Object -First 1
+                $prBranchName = 'testCodespaceFromPR'
+                $prBranch = $repo | New-GitHubRepositoryBranch -BranchName $mainBranchName -TargetBranchName $prBranchName
+                $setContentParms = @{
+                    Path = 'README.md'
+                    Content = 'When creating a codespace with default settings from a PullRequest'
+                    CommitMessage = $prBranchName
+                    BranchName = $prBranchName
+                }
+                $repo | Set-GitHubContent @setContentParms
+                $pullRequest = $prBranch | New-GitHubPullRequest -Title $prBranchName -Head $prBranchName -Base $mainBranchName
+
                 $newGitHubCodespaceParms = @{
                     PullRequest = $pullRequest.number
-                    RepositoryId = $repoWithPR.Id
+                    RepositoryId = $repo.Id
                     Wait = $true
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms
@@ -281,7 +297,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
 
             It 'Should return the correct properties' {
                 $codespace.display_name | Should -Not -BeNullOrEmpty
-                $codespace.repository.name | Should -Be $repoWithPR.name
+                $codespace.repository.name | Should -Be $repo.name
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.pulls_url | Should -Be $pullRequest.url
                 $codespace.template | Should -BeNullOrEmpty
@@ -318,12 +334,12 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             It 'Should return the correct properties' {
                 # $codespace.devcontainer_path | Should -Be
                 $codespace.display_name | Should -Be $newGitHubCodespaceParms.DisplayName
-                $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParams.TimeoutMinutes
-                $codespace.location | Should -Be $newGitHubCodespaceParms.Geo
+                $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParms.TimeoutMinutes
+                $codespace.location | Should -Match 'WestUs'
                 $codespace.machine.name | Should -Be $newGitHubCodespaceParms.Machine
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.repository.name | Should -Be $repo.name
-                $codespace.retention_period_minutes | Should -Be $newGitHubCodespaceParams.IdleRetentionPeriodMinutes
+                $codespace.retention_period_minutes | Should -Be $newGitHubCodespaceParms.IdleRetentionPeriodMinutes
                 $codespace.template | Should -BeNullOrEmpty
             }
 
