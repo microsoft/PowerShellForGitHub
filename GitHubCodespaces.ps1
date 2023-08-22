@@ -891,14 +891,6 @@ filter Add-GitHubCodespaceAdditionalProperties
     .PARAMETER TypeName
         The type that should be assigned to the object.
 
-    .PARAMETER OwnerName
-        Owner of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
-    .PARAMETER RepositoryName
-        Name of the repository.  This information might be obtainable from InputObject, so this
-        is optional based on what InputObject contains.
-
     .INPUTS
         [PSCustomObject]
 
