@@ -455,7 +455,7 @@ function New-GitHubCodespace
         # Map params to hashBody properties
         foreach ($p in $PSBoundParameters.GetEnumerator())
         {
-            if ($propertyMap.ContainsKey($p.Key) -and -not [string]::IsNullOrWhiteSpace($p.Value))
+            if ($propertyMap.ContainsKey($p.Key) -and (-not [string]::IsNullOrWhiteSpace($p.Value)))
             {
                 $hashBody.Add($propertyMap[$p.Key], $p.Value)
             }
