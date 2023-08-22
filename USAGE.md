@@ -1383,7 +1383,7 @@ Stop-GithubCodespace -CodespaceName $codespaceName -Wait
 #### Getting organization Codespaces
 ```powershell
 
-# Get all codespaces for an Organizaion
+# Get all codespaces for an Organization
 Get-GitHubCodespace -OrganizationName microsoft
 
 # Get all codespaces for a specific organization user
