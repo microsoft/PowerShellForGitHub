@@ -283,7 +283,7 @@ function New-GitHubCodespace
         Working directory for this codespace.
 
     .PARAMETER Wait
-        If present will wait for the codespace to start.
+        If present will wait for the codespace to be available.
 
     .PARAMETER AccessToken
         If provided, this will be used as the AccessToken for authentication with the
