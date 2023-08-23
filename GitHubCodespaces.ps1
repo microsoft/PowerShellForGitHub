@@ -415,6 +415,7 @@ function New-GitHubCodespace
     {
         $telemetryProperties = @{
             UsageType = $PSCmdlet.ParameterSetName
+            Wait = $Wait.IsPresent
         }
 
         $uriFragment = [String]::Empty
