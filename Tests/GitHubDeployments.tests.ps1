@@ -9,6 +9,8 @@
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '',
     Justification = 'Suppress false positives in Pester code blocks')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingCmdletAliases', '',
+    Justification = 'Using Set-GitHubDeploymentEnvironment the way a user would.')]
 param()
 
 Set-StrictMode -Version 1.0
