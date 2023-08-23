@@ -86,7 +86,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         }
 
         It 'Should return one or more results' {
-            @($codespaces).Count | Should -BeGreaterOrEqual 1
+            ($codespaces | Where-Object { $_ }).Count | Should -BeGreaterOrEqual 1
         }
 
         It 'Should return the correct properties' {
@@ -108,7 +108,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         }
 
         It 'Should return one or more results' {
-            @($codespaces).Count | Should -BeGreaterOrEqual 1
+            ($codespaces | Where-Object { $_ }).Count | Should -BeGreaterOrEqual 1
         }
 
         It 'Should return the correct properties' {
@@ -130,7 +130,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         }
 
         It 'Should return one or more results' {
-            @($codespaces).Count | Should -BeGreaterOrEqual 1
+            ($codespaces | Where-Object { $_ }).Count | Should -BeGreaterOrEqual 1
         }
     }
 
