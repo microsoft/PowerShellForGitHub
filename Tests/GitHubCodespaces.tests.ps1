@@ -390,7 +390,7 @@ Describe 'GitHubCodespaces\Start-GitHubCodespace' {
 
     Context 'When starting a codespace for the authenticated user' {
         BeforeAll {
-            $codespace = Get-GitHubCodespace @newGitHubCodespaceParms
+            $codespace = Get-GitHubCodespace @newGitHubCodespaceParms | Select-Object -First 1
         }
 
         It 'Should not throw' {
@@ -420,7 +420,7 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
 
     Context 'When stopping a codespace for the authenticated user' {
         BeforeAll {
-            $codespace = Get-GitHubCodespace @newGitHubCodespaceParms
+            $codespace = Get-GitHubCodespace @newGitHubCodespaceParms | Select-Object -First 1
         }
 
         It 'Should not throw' {
