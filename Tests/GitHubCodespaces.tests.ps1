@@ -44,9 +44,8 @@ Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
             $newGitHubCodespaceParms = @{
                 OwnerName = $script:organizationName
                 RepositoryName = $defaultRepositoryName
-                Wait = $true
             }
-            $codespace = New-GitHubCodespace @newGitHubCodespaceParms
+            $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
         }
 
         It 'Should get no content using -Confirm:$false' {
@@ -204,9 +203,8 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             BeforeAll {
                 $newGitHubCodespaceParms = @{
                     RepositoryId = $repo.Id
-                    Wait = $true
                 }
-                $codespace = New-GitHubCodespace @newGitHubCodespaceParms
+                $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
 
             It 'Should return an object of the correct type' {
@@ -244,9 +242,8 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $newGitHubCodespaceParms = @{
                     Ref = $pullRequest.head.ref
                     RepositoryId = $repo.Id
-                    Wait = $true
                 }
-                $codespace = New-GitHubCodespace @newGitHubCodespaceParms
+                $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
 
             It 'Should return an object of the correct type' {
@@ -285,9 +282,8 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 $newGitHubCodespaceParms = @{
                     PullRequest = $pullRequest.number
                     RepositoryId = $repo.Id
-                    Wait = $true
                 }
-                $codespace = New-GitHubCodespace @newGitHubCodespaceParms
+                $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
 
             It 'Should return an object of the correct type' {
@@ -323,7 +319,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                     TimeoutMinutes = 5
                     # WorkingDirectory = 'TODO ???? - not sure how to handle this'
                 }
-                $codespace = $repo | New-GitHubCodespace @newGitHubCodespaceParms
+                $codespace = $repo | New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
 
             It 'Should return an object of the correct type' {
@@ -356,7 +352,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                     RepositoryName = $repo.name
                     OwnerName = $script:organizationName
                 }
-                $codespace = New-GitHubCodespace @newGitHubCodespaceParms
+                $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
 
             It 'Should return an object of the correct type' {
@@ -388,9 +384,8 @@ Describe 'GitHubCodespaces\Start-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
-            Wait = $true
         }
-        $null = New-GitHubCodespace @newGitHubCodespaceParms
+        $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
     }
 
     Context 'When starting a codespace for the authenticated user' {
@@ -419,9 +414,8 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
-            Wait = $true
         }
-        $null = New-GitHubCodespace @newGitHubCodespaceParms
+        $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
     }
 
     Context 'When stopping a codespace for the authenticated user' {
