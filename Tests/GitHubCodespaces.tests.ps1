@@ -71,9 +71,8 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         $newGitHubCodespaceParms = @{
             OwnerName = $script:organizationName
             RepositoryName = $defaultRepositoryName
-            Wait = $true
         }
-        $null = New-GitHubCodespace @newGitHubCodespaceParms
+        $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
     }
 
     Context 'When getting codespaces for the authenticated user' {
