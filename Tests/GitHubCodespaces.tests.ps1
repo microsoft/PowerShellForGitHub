@@ -194,6 +194,10 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
             $codespace.repository.name | Should -Be $repo.name
         }
     }
+
+    AfterAll {
+        Get-GitHubCodespace @newGitHubCodespaceParms | Remove-GitHubCodespace -Confirm:$false -Force
+    }
 }
 
 
@@ -404,6 +408,10 @@ Describe 'GitHubCodespaces\Start-GitHubCodespace' {
             $result.State | Should -Be 'Available'
         }
     }
+
+    AfterAll {
+        Get-GitHubCodespace @newGitHubCodespaceParms | Remove-GitHubCodespace -Confirm:$false -Force
+    }
 }
 
 Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
@@ -433,6 +441,10 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
             $result = $codespace | Stop-GitHubCodespace -Wait -PassThru
             $result.State | Should -Be 'Shutdown'
         }
+    }
+
+    AfterAll {
+        Get-GitHubCodespace @newGitHubCodespaceParms | Remove-GitHubCodespace -Confirm:$false -Force
     }
 }
 
