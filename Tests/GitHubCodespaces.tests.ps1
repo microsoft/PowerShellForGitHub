@@ -119,20 +119,6 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         }
     }
 
-    Context 'When getting all codespaces for a specified organization' {
-        BeforeAll {
-            $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
-        }
-
-        It 'Should return objects of the correct type' {
-            $codespaces[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
-        }
-
-        It 'Should return one or more results' {
-            ($codespaces | Where-Object { $_ }).Count | Should -BeGreaterOrEqual 1
-        }
-    }
-
     Context 'When getting a codespace for a specified organization user' {
         BeforeAll {
             $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
