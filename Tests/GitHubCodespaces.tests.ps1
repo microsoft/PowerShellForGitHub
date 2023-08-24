@@ -302,7 +302,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                     # ClientIp = 'TODO ???? - should be instead of rather than in addition to Geo, perhaps add some param validation to the function'
                     # DevContainerPath = 'Will add to test in the future when Get-GitHubDevContainer is implemented and the test repo includes one'
                     DisplayName = 'PowerShellForGitHub pester test'
-                    Geo = 'UsWest'
+                    Geo = 'UsWest' # location was deprecated in favor of Geo
                     Machine = 'basicLinux32gb'
                     NoMultipleRepoPermissions = $true # Not sure how to assert this, but this proves it accepts the switch without error
                     IdleRetentionPeriodMinutes = 10
@@ -320,7 +320,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
                 # $codespace.devcontainer_path | Should -Be
                 $codespace.display_name | Should -Be $newGitHubCodespaceParms.DisplayName
                 $codespace.idle_timeout_minutes | Should -Be $newGitHubCodespaceParms.TimeoutMinutes
-                $codespace.location | Should -Match 'WestUs'
+                $codespace.location | Should -Match 'WestUs' # location should align with our requested Geo
                 $codespace.machine.name | Should -Be $newGitHubCodespaceParms.Machine
                 $codespace.owner.UserName | Should -Be $script:OwnerName
                 $codespace.repository.name | Should -Be $repo.name
