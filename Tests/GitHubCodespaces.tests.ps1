@@ -42,7 +42,7 @@ Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
             $WarningPreference = 'SilentlyContinue'
 
             $newGitHubCodespaceParms = @{
-                OwnerName = $script:organizationName
+                OwnerName = $repo.owner.login
                 RepositoryName = $defaultRepositoryName
             }
             $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
@@ -68,7 +68,7 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         $WarningPreference = 'SilentlyContinue'
 
         $newGitHubCodespaceParms = @{
-            OwnerName = $script:organizationName
+            OwnerName = $repo.owner.login
             RepositoryName = $defaultRepositoryName
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
@@ -340,7 +340,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             BeforeAll {
                 $newGitHubCodespaceParms = @{
                     RepositoryName = $repo.name
-                    OwnerName = $script:organizationName
+                    OwnerName = $repo.owner.login
                 }
                 $codespace = New-GitHubCodespace @newGitHubCodespaceParms -Wait
             }
@@ -372,7 +372,7 @@ Describe 'GitHubCodespaces\Start-GitHubCodespace' {
         $WarningPreference = 'SilentlyContinue'
 
         $newGitHubCodespaceParms = @{
-            OwnerName = $script:organizationName
+            OwnerName = $repo.owner.login
             RepositoryName = $defaultRepositoryName
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
@@ -406,7 +406,7 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
         $WarningPreference = 'SilentlyContinue'
 
         $newGitHubCodespaceParms = @{
-            OwnerName = $script:organizationName
+            OwnerName = $repo.owner.login
             RepositoryName = $defaultRepositoryName
         }
         $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
