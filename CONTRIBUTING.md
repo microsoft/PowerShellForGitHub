@@ -422,7 +422,7 @@ Pester can also be used to test code-coverage, like so:
 
 ```powershell
 $pesterConfig = New-PesterConfiguration
-$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1") 
+$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1")
 $pesterConfig.CodeCoverage.Enabled = $true
 
 Invoke-Pester -Configuration $pesterConfig
@@ -435,7 +435,7 @@ The code-coverage object can be captured and interacted with, like so:
 
 ```powershell
 $pesterConfig = New-PesterConfiguration
-$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1") 
+$pesterConfig.CodeCoverage.Path = @("$root\GitHubLabels.ps1")
 $pesterConfig.CodeCoverage.Enabled = $true
 $pesterConfig.Run.PassThru = $true
 
@@ -625,6 +625,7 @@ Thank you to all of our contributors, no matter how big or small the contributio
 - **[Neil White (@variableresistor)](https://github.com/variableresistor)**
 - **[Mark Curole(@tigerfansga)](https://github.com/tigerfansga)**
 - **[Jason Vercellone(@vercellone)](https://github.com/vercellone)**
+- **[Andy Jordan (@andyleejordan)](https://github.com/andyleejordan)**
 
 ----------
 
