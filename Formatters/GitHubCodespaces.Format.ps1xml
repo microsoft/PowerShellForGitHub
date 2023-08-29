@@ -24,9 +24,6 @@
                 <PropertyName>state</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>geo</PropertyName>
-              </TableColumnItem>
-              <TableColumnItem>
                 <PropertyName>created_at</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
