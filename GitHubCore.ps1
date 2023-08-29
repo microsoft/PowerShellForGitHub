@@ -997,6 +997,7 @@ $script:datePropertyNames = @(
     'due_on',
     'last_edited_at',
     'last_read_at',
+    'last_used_at',
     'merged_at',
     'published_at',
     'pushed_at',
