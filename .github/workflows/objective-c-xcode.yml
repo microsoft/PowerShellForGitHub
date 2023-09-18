@@ -28,3 +28,4 @@ jobs:
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
           xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty && exit ${PIPESTATUS[0]}
+[![Xcode - Build and Analyze](https://github.com/https-github-com-20Mahiranyawong/PowerShell-GitHub/actions/workflows/objective-c-xcode.yml/badge.svg?branch=master&event=fork)](https://github.com/https-github-com-20Mahiranyawong/PowerShell-GitHub/actions/workflows/objective-c-xcode.yml)
