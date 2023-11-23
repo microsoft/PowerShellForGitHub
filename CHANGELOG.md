@@ -1,6 +1,90 @@
 # PowerShellForGitHub PowerShell Module
 # Changelog
 
+## [0.17.0](https://github.com/PowerShell/PowerShellForGitHub/tree/0.17.0) - (2021/11/20)
+
+### Features
+
++ Add support for `Invoke-GHGraphQl` which then allowed support for
+  `Get-GitHubRepositoryBranchPatternProtectionRule`, `New-GitHubRepositoryBranchPatternProtectionRule`,
+  and `Remove-GitHubRepositoryBranchPatternProtectionRule`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/313) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/f7efc4a03640cf292b0e6a256d6713a6f15145b2)
+
++ Updated `Invoke-GHRestMethod` (and `Invoke-GHRestMethodMultipleResult`) to support versioned API's
+  with the new (optional) `ApiVersion` parameter
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/379) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/938896738c7a8c8b6d3b7b798c761798e4fce651)
+
++ Added the `HasDiscussions` switch to `New-GitHubRepository` and `Set-GitHubRepository` to allow
+  the control of whether discussions are supported in a repository
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/382) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/3ccee43287e053a4ad9f9729a943e75ad12ce904)
+
++ Added the `AllowAutoMerge` switch to `New-GitHubRepository` and `Set-GitHubRepository` (which is
+  currently only supported on public repositories).
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/383) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/b976e9515cd42d521bd3f4d7ab6fb2b870cd98ed)
+
++ Added the `AllowUpdateBranch` switch to `New-GitHubRepository` and `Set-GitHubRepository`, which
+  specifies whether to always allow a pull request head branch that is behind its base branch
+  to be updated even if it is not required to be up-to-date before merging.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/387) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/9baf54e44cee7fb79dee74ae54306b1edbe6e7d0)
+
++ Added the `WebCommitSignoffRequired` switch to `Set-GitHubRepository`, which
+  specifies whether to require contributors to sign off on web-based commits.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/389) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/516be0b4cafafb334bca5951c057af0885e6976f)
+
++ Added the `SecretScanning` parameter to `Set-GitHubRepository`, which
+  specifies whether to enable or disable secret scanning for the repository.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/391) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/43d5392642cce2ec3d45fbbb1066f7b2efc3b8c4)
+
++ Added support for Deployment environments with `New-GitHubDeploymentEnvironment`,
+  `Get-GitHubDeploymentEnvironment`, `Set-GitHubDeploymentEnvironment` and
+  `Remove-GitHubDeploymentEnvironment`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/395) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/dd844e5e4a2224e092c8d247f889f6ebabda1767)
+
++ Added the ability to control how the title and message of a commit are handled during a merge
+  and a squash merge with the new `SquashMergeCommitTitle`, `SquashMergeCommitMessage`,
+  `MergeCommitTitle`, and `MergeCommitMessage` parameters on `New-GitHubRepository` and
+  `Set-GitHubRepository`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/385) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/6f94a9b0a37ee466c2fb457299c78de1bd371f95)
+
++ Added base support for GitHub Codespaces with `Get-GitHubCodespace`, `New-GitHubCodespace`,
+  `Remove-GitHubCodespace`, `Start-GitHubCodespace` and `Stop-GitHubCodespace`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/407) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/9ec863b14277a524aa8f2931b742bb3dfed10d5a)
+
+### Fixes
+
++ Fixed a documentation error with `DefaultRepositoryName` in `Set-GitHubConfiguration`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/341) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/8b46226ba5347155470c2d789ef2356e4aef118a)
+
++ Fixed a bug that caused Telemetry to stop working when a PowerShell session was open for longer
+  than a day
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/355) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/4b48946d81924a8508be2b16c28d9842da7d5b37)
+
++ Improved the error message displayed when an API returns with a 404 error code
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/363) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/1466f1656b85e256917bc3057ba6dd6d1579a652)
+
++ Was not properly forwarding the `AccessToken` to sub-commands for
+  `Get-GitHubRepositoryTeamPermission`, `Set-GitHubRepositoryTeamPermission`, and
+  `Remove-GitHubRepositoryTeamPermission`
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/362) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/4d7667bcaf66523bf3b0194d847d8bfc3c6325f1)
+
++ Fixed the logic that determined the simplified explanation of Team permissions exposed by a
+  repository object
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/361) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/d8ee50a7ad0fa1b12e3b5d7745aeed348a340708)
+
++ Fixed support for PowerShell 7.4+ which removed support for `BinaryFormatter`.
+  [[pr]](https://github.com/PowerShell/PowerShellForGitHub/pull/415) | [[cl]](https://github.com/microsoft/PowerShellForGitHub/commit/356350b22f47acf55e72380442c630e6c9591fbc)
+
+### Authors
+
++ [**@HowardWolosky**](https://github.com/HowardWolosky)
++ [**@X-Guardian**](https://github.com/X-Guardian)
++ [**@matt9ucci**](https://github.com/matt9ucci)
++ [**@variableresistor**](https://github.com/variableresistor)
++ [**@vercellone**](https://github.com/vercellone)
++ [**@andyleejordan**](https://github.com/andyleejordan)
+
+------
+
 ## [0.16.1](https://github.com/PowerShell/PowerShellForGitHub/tree/0.16.1) - (2021/05/26)
 
 ### Features

@@ -394,14 +394,8 @@ function DeepCopy-Object
         [PSCustomObject] $InputObject
     )
 
-    $memoryStream = New-Object System.IO.MemoryStream
-    $binaryFormatter = New-Object System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-    $binaryFormatter.Serialize($memoryStream, $InputObject)
-    $memoryStream.Position = 0
-    $DeepCopiedObject = $binaryFormatter.Deserialize($memoryStream)
-    $memoryStream.Close()
-
-    return $DeepCopiedObject
+    $serialData = [System.Management.Automation.PSSerializer]::Serialize($InputObject, 64)
+    return [System.Management.Automation.PSSerializer]::Deserialize($serialData)
 }
 
 function New-TemporaryDirectory
