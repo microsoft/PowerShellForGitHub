@@ -148,11 +148,16 @@
         *   [Removing a codespace](#removing-a-codespace)
         *   [Starting a codespace](#starting-a-codespace)
         *   [Stopping a codespace](#stopping-a-codespace)
-    *   [Codespaces](#codespaces-organizations)
-        *   [Getting codespaces](#getting-organization-codespaces)
-        *   [Removing a codespace](#removing-an-organization-codespace)
-        *   [Stopping a codespace](#stopping-an-organization-codespace)
-
+    *   [Codespaces/organizations](#codespaces-organizations)
+        *   [Manage access control for Codespaces](#manage-organization-codespaces-billing)
+        *   [Add users to Codespaces billing](#adding-users-to-codespaces-billing)
+        *   [Removes users from Codespaces billing](#removing-users-from-codespaces-billing)
+        *   [Getting Codespaces](#getting-organization-codespaces)
+        *   [Removing a Codespace](#removing-an-organization-codespace)
+        *   [Stopping a Codespace](#stopping-an-organization-codespace)
+    *   [Codespaces/machines](#codespaces-machines)
+        *   [Getting Codespaces machines](#getting-codespaces-machines)
+        
 ----------
 
 ## Full Module Documentation
@@ -1380,6 +1385,30 @@ Stop-GithubCodespace -CodespaceName $codespaceName -Wait
 
 ### Codespaces organizations
 
+#### Manage organization Codespaces billing
+```powershell
+
+# Disable Codespace access entirely in the organization.
+Set-GitHubCodespaceVisibility -Visibility Disabled
+
+# Allow all organization members to access Codespaces.
+Set-GitHubCodespaceVisibility -Visibility AllMembers
+
+# Limit Codespace access to a selected list of organization members.
+# Care should be taken with this option, as the users specified will overwrite any active list.
+Set-GitHubCodespaceVisibility -Visibility SelectedMembers -UserName octocat,heptacat
+```
+
+#### Adding users to Codespaces billing
+```powershell
+Add-GitHubCodespaceUser -OrganizationName microsoft -UserName octocat,heptacat
+```
+
+#### Removing users from Codespaces billing
+```powershell
+Remove-GitHubCodespaceUser -OrganizationName microsoft -UserName octocat,heptacat
+```
+
 #### Getting organization Codespaces
 ```powershell
 
@@ -1402,6 +1431,20 @@ Remove-GitHubCodespace -OrganizationName microsoft -UserName octocat -CodespaceN
 ```powershell
 $codespaceName = 'microsoft-symmetrical-chainsaw-7q4vp6v7q3pwqq'
 
-# Stopping a codespace (wait for Shutdown)
+# Stopping a Codespace (wait for Shutdown)
 Stop-GithubCodespace -OrganizationName microsoft -UserName octocat -CodespaceName $codespaceName -Wait
+```
+----------
+
+### Codespaces machines
+
+#### Getting Codespaces machines
+```powershell
+
+# Get machine types a Codespace can transition to use
+Get-GitHubCodespace | Select-Object -First 1 | Get-GitHubCodespaceMachine
+
+# Get all machine types available for a given repository based on its configuration
+Get-GitHubCodespaceMachine -Owner microsoft -RepositoryName PowerShellForGitHub
+
 ```

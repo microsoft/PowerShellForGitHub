@@ -34,6 +34,83 @@ BeforeAll {
     $mainBranchName = $repo | Get-GitHubRepositoryBranch | Select-Object -ExpandProperty name -First 1
 }
 
+Describe 'GitHubCodespaces\Set-GitHubCodespaceVisibility' {
+    Context 'When setting the visibility of a codespace' {
+
+        It 'sets the visibility successfully too ''Disabled'' ' {
+            $setVisibilityParams = @{
+                Force = $true
+                OrganizationName = $script:organizationName
+                Visibility = 'Disabled'
+            }
+            # At this time, the API does not offer any way to retrieve the current Visibility for a Codespace. The best we can do is validate that this function call doesn't fail.
+            Set-GitHubCodespaceVisibility @setVisibilityParams
+        }
+
+        It 'sets the visibility successfully too ''AllMembers'' ' {
+            $setVisibilityParams = @{
+                Force = $true
+                OrganizationName = $script:organizationName
+                Visibility = 'AllMembers'
+            }
+            # At this time, the API does not offer any way to retrieve the current Visibility for a Codespace. The best we can do is validate that this function call doesn't fail.
+            Set-GitHubCodespaceVisibility @setVisibilityParams
+        }
+
+        It 'sets the visibility successfully to ''SelectedMembers'' ' {
+            $setVisibilityParams = @{
+                Force = $true
+                OrganizationName = $script:organizationName
+                UserName = $script:ownerName
+                Visibility = 'SelectedMembers'
+            }
+            # At this time, the API does not offer any way to retrieve the current Visibility for a Codespace. The best we can do is validate that this function call doesn't fail.
+            Set-GitHubCodespaceVisibility @setVisibilityParams
+        }
+
+        It 'accepts users via the pipeline for visibility ''SelectedMembers'' ' {
+            $setVisibilityParams = @{
+                Force = $true
+                OrganizationName = $script:organizationName
+                Visibility = 'SelectedMembers'
+            }
+            # At this time, the API does not offer any way to retrieve the current Visibility for a Codespace. The best we can do is validate that this function call doesn't fail.
+            $script:ownerName | Set-GitHubCodespaceVisibility @setVisibilityParams
+        }
+
+    }
+}
+
+Describe 'GitHubCodespaces\Remove-GitHubCodespaceUser' {
+    Context 'When revoking a user''s access to codespaces for an organization' {
+
+        It 'removes a user successfully' {
+            { Remove-GitHubCodespaceUser -OrganizationName $script:organizationName -UserName $script:ownerName } | Should -Not -Throw
+        }
+
+        It 'accepts user names from pipeline' {
+            # By passing in the same user, we are also proving 304 Not Modified is handled
+            { $script:OwnerName | Remove-GitHubCodespaceUser -OrganizationName $script:organizationName } | Should -Not -Throw
+        }
+
+    }
+}
+
+Describe 'GitHubCodespaces\Add-GitHubCodespaceUser' {
+    Context 'When granting a user access to codespaces for an organization' {
+
+        It 'adds a user successfully' {
+            { Add-GitHubCodespaceUser -OrganizationName $script:organizationName -UserName $script:ownerName } | Should -Not -Throw
+        }
+
+        It 'accepts user names from pipeline' {
+            # By passing in the same user, we are also proving 304 Not Modified is handled
+            { $script:OwnerName | Add-GitHubCodespaceUser -OrganizationName $script:organizationName } | Should -Not -Throw
+        }
+
+    }
+}
+
 Describe 'GitHubCodespaces\Delete-GitHubCodespace' {
     Context 'When deleting a codespace for the authenticated user' {
         BeforeEach {
@@ -119,6 +196,20 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
         }
     }
 
+    Context 'When getting all codespaces for a specified organization' {
+        BeforeAll {
+            $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
+        }
+
+        It 'Should return objects of the correct type' {
+            $codespaces[0].PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
+        }
+
+        It 'Should return one or more results' {
+            @($codespaces | Where-Object { $_ }).Count | Should -BeGreaterOrEqual 1
+        }
+    }
+
     Context 'When getting a codespace for a specified organization user' {
         BeforeAll {
             $codespaces = Get-GitHubCodespace -OrganizationName $script:organizationName
@@ -186,6 +277,33 @@ Describe 'GitHubCodespaces\Get-GitHubCodespace' {
     }
 }
 
+Describe 'GitHubCodespaces\Get-GitHubCodespaceMachine' {
+    BeforeAll {
+        # Suppress HTTP 202 warning for codespace creation
+        $WarningPreference = 'SilentlyContinue'
+
+        $newGitHubCodespaceParms = @{
+            OwnerName = $repo.owner.login
+            RepositoryName = $defaultRepositoryName
+        }
+        $null = New-GitHubCodespace @newGitHubCodespaceParms -Wait
+    }
+
+    Context 'When listing machine types a codespace can transition to' {
+        BeforeAll {
+            $codespaceMachine = Get-GitHubCodespace @newGitHubCodespaceParms | Select-Object -First 1 | Get-GitHubCodespaceMachine
+        }
+
+        It 'Should return an object of the correct type' {
+            $codespaceMachine.PSObject.TypeNames[0] | Should -Be 'GitHub.CodespaceMachine'
+        }
+    }
+
+    AfterAll {
+        Get-GitHubCodespace @newGitHubCodespaceParms | Remove-GitHubCodespace -Confirm:$false -Force
+    }
+}
+
 
 Describe 'GitHubCodespaces\New-GitHubCodespace' {
     Context -Name 'When creating a repository for the authenticated user' {
@@ -198,7 +316,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             }
 
             It 'Should return an object of the correct type' {
-                $codespace | Should -BeOfType PSCustomObject
+                $codespace.PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
             }
 
             It 'Should return the correct properties' {
@@ -237,7 +355,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             }
 
             It 'Should return an object of the correct type' {
-                $codespace | Should -BeOfType PSCustomObject
+                $codespace.PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
             }
 
             It 'Should return the correct properties' {
@@ -277,7 +395,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             }
 
             It 'Should return an object of the correct type' {
-                $codespace | Should -BeOfType PSCustomObject
+                $codespace.PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
             }
 
             It 'Should return the correct properties' {
@@ -313,7 +431,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             }
 
             It 'Should return an object of the correct type' {
-                $codespace | Should -BeOfType PSCustomObject
+                $codespace.PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
             }
 
             It 'Should return the correct properties' {
@@ -346,7 +464,7 @@ Describe 'GitHubCodespaces\New-GitHubCodespace' {
             }
 
             It 'Should return an object of the correct type' {
-                $codespace | Should -BeOfType PSCustomObject
+                $codespace.PSObject.TypeNames[0] | Should -Be 'GitHub.Codespace'
             }
 
             It 'Should return the correct properties' {
@@ -425,6 +543,23 @@ Describe 'GitHubCodespaces\Stop-GitHubCodespace' {
         It 'Should become Shutdown' {
             # Also asserts Wait and PassThru
             $result = $codespace | Stop-GitHubCodespace -Wait -PassThru
+            $result.State | Should -Be 'Shutdown'
+        }
+    }
+
+    Context 'When stopping a codespace for an organization user' {
+        BeforeAll {
+            $userCodespace = Get-GitHubCodespace -OrganizationName $script:organizationName -UserName $script:OwnerName | Select-Object -First 1
+        }
+
+        It 'Should not throw' {
+            # Also asserts pipeline input
+            { Stop-GitHubCodespace -OrganizationName $script:organizationName -UserName $script:OwnerName -CodespaceName $userCodespace.name } | Should -Not -Throw
+        }
+
+        It 'Should become Shutdown' {
+            # Also asserts Wait and PassThru
+            $result = Stop-GitHubCodespace -OrganizationName $script:organizationName -UserName $script:OwnerName -CodespaceName $userCodespace.name -Wait -PassThru
             $result.State | Should -Be 'Shutdown'
         }
     }

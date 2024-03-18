@@ -3,6 +3,7 @@
 
 @{
     GitHubCodespaceTypeName = 'GitHub.Codespace'
+    GitHubCodespaceMachineTypeName = 'GitHub.CodespaceMachine'
 }.GetEnumerator() | ForEach-Object {
     Set-Variable -Scope Script -Option ReadOnly -Name $_.Key -Value $_.Value
 }
@@ -28,7 +29,7 @@ filter Get-GitHubCodespace
 
     .PARAMETER Uri
         Uri for the Codespace.
-        The OwnerName and CodespaceName will be extracted from here instead of needing to provide
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
     .PARAMETER OrganizationName
@@ -221,6 +222,157 @@ filter Get-GitHubCodespace
     return ($result | Add-GitHubCodespaceAdditionalProperties)
 }
 
+filter Get-GitHubCodespaceMachine
+{
+    <#
+    .SYNOPSIS
+        Retrieves the machine types available for a given repository or that a codespace can transition to use.
+
+    .DESCRIPTION
+        Retrieves information about codespace machine types.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OwnerName
+        Owner of the Codespace.
+        If not supplied here, the DefaultOwnerName configuration property value will be used.
+
+    .PARAMETER RepositoryName
+        Name of the repository.
+        If not supplied here, the DefaultRepositoryName configuration property value will be used.
+
+    .PARAMETER Uri
+        Uri for the Codespace.
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
+        them individually.
+
+    .PARAMETER CodespaceName
+        Name of the Codespace.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .INPUTS
+        GitHub.Codespace
+        GitHub.Project
+        GitHub.Repository
+
+    .OUTPUTS
+        GitHub.CodespaceMachine
+
+    .EXAMPLE
+        Get-GitHubCodespaceMachine -OwnerName microsoft -RepositoryName PowerShellForGitHub
+
+        Gets all codespace machines for the microsoft/PowerShellForGitHub repository.
+
+        name              display_name                        operating_system storage_in_bytes memory_in_bytes cpus prebuild_availability
+        ----              ------------                        ---------------- ---------------- --------------- ---- ---------------------
+        basicLinux32gb    2 cores, 8 GB RAM, 32 GB storage    linux            34359738368      8589934592      2
+        standardLinux32gb 4 cores, 16 GB RAM, 32 GB storage   linux            34359738368      17179869184     4
+        premiumLinux      8 cores, 32 GB RAM, 64 GB storage   linux            68719476736      34359738368     8
+        largePremiumLinux 16 cores, 64 GB RAM, 128 GB storage linux            137438953472     68719476736     16
+
+    .EXAMPLE
+        Get-GitHubCodespaceMachine -CodespaceName laughing-chainsaw-8v6qq79wvg6f7x7x
+
+        Gets all codespace machines available for use by an existing codespace.
+
+        name              display_name                      operating_system storage_in_bytes memory_in_bytes cpus prebuild_availability
+        ----              ------------                      ---------------- ---------------- --------------- ---- ---------------------
+        basicLinux32gb    2 cores, 8 GB RAM, 32 GB storage  linux            34359738368      8589934592      2    ready
+        standardLinux32gb 4 cores, 16 GB RAM, 32 GB storage linux            34359738368      17179869184     4    ready
+
+    .LINK
+        https://docs.github.com/en/rest/codespaces/machines?apiVersion=2022-11-28#list-available-machine-types-for-a-repository
+
+    .LINK
+        https://docs.github.com/en/rest/codespaces/machines?apiVersion=2022-11-28#list-machine-types-for-a-codespace
+    #>
+    [CmdletBinding(DefaultParameterSetName = 'CodespaceName')]
+    [OutputType({ $Script:GitHubCodespaceMachineTypeName })]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'The Uri parameter is only referenced by Resolve-RepositoryElements which get access to it from the stack via Get-Variable -Scope 1.')]
+    param(
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Elements')]
+        [string] $OwnerName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Elements')]
+        [string] $RepositoryName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'Uri')]
+        [Alias('RepositoryUrl')]
+        [string] $Uri,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName,
+            ParameterSetName = 'CodespaceName')]
+        [string] $CodespaceName,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    $telemetryProperties = @{
+        UsageType = $PSCmdlet.ParameterSetName
+    }
+
+    $uriFragment = [String]::Empty
+    $description = [String]::Empty
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        'CodespaceName'
+        {
+            $telemetryProperties['CodespaceName'] = Get-PiiSafeString -PlainText $CodespaceName
+
+            $uriFragment = "user/codespaces/$CodespaceName/machines"
+            $description = "Getting user/codespaces/$CodespaceName/machines"
+
+            break
+        }
+
+        { $_ -in ('Elements', 'Uri') }
+        {
+            $elements = Resolve-RepositoryElements
+            $OwnerName = $elements.ownerName
+            $RepositoryName = $elements.repositoryName
+
+            $telemetryProperties['OwnerName'] = Get-PiiSafeString -PlainText $OwnerName
+            $telemetryProperties['RepositoryName'] = Get-PiiSafeString -PlainText $RepositoryName
+
+            $uriFragment = "repos/$OwnerName/$RepositoryName/codespaces/machines"
+            $description = "Getting repos/$OwnerName/$RepositoryName/codespaces/machines"
+
+            break
+        }
+    }
+
+    $params = @{
+        UriFragment = $uriFragment
+        Description = $description
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+        TelemetryProperties = $telemetryProperties
+    }
+
+    $result = Invoke-GHRestMethodMultipleResult @params
+    if ($null -ne $result.machines)
+    {
+        $result = $result.machines
+    }
+    return ($result | Add-GitHubCodespaceAdditionalProperties -TypeName $Script:GitHubCodespaceMachineTypeName)
+}
+
 function New-GitHubCodespace
 {
     <#
@@ -242,7 +394,7 @@ function New-GitHubCodespace
 
     .PARAMETER Uri
         Uri for the Codespace.
-        The OwnerName and CodespaceName will be extracted from here instead of needing to provide
+        The OwnerName and RepositoryName will be extracted from here instead of needing to provide
         them individually.
 
     .PARAMETER PullRequest
@@ -309,7 +461,7 @@ function New-GitHubCodespace
         Creates a new codespace for the current authenticated user in the specified repository from a pull request.
 
     .EXAMPLE
-        New-GitHubCodespace -OwnerName marykay -RepositoryName one
+        New-GitHubCodespace -OwnerName microsoft -RepositoryName PowerShellForGitHub
 
         Creates a codespace owned by the authenticated user in the specified repository.
 
@@ -737,6 +889,12 @@ filter Stop-GitHubCodespace
 
         The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
 
+    .PARAMETER OrganizationName
+        Name of the Organization.
+
+    .PARAMETER UserName
+        The handle for the GitHub user account(s).
+
     .PARAMETER CodespaceName
         Name of the Codespace.
 
@@ -744,7 +902,7 @@ filter Stop-GitHubCodespace
         If present will wait for the codespace to stop.
 
     .PARAMETER PassThru
-        Returns the updated GitHub Issue.  By default, this cmdlet does not generate any output.
+        Returns the stop action result.  By default, this cmdlet does not generate any output.
         You can use "Set-GitHubConfiguration -DefaultPassThru" to control the default behavior
         of this switch.
 
@@ -769,11 +927,22 @@ filter Stop-GitHubCodespace
         GitHub Apps must have write access to the codespaces_lifecycle_admin repository permission to use this endpoint.
 #>
     [CmdletBinding(
+        DefaultParameterSetName = 'AuthenticatedUser',
         SupportsShouldProcess,
         ConfirmImpact = 'Low')]
     [OutputType({ $script:GitHubCodespaceTypeName })]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'PassThru is accessed indirectly via Resolve-ParameterWithDefaultConfigurationValue')]
     param(
+        [Parameter(
+            Mandatory,
+            ParameterSetName = 'Organization')]
+        [string] $OrganizationName,
+
+        [Parameter(
+            Mandatory,
+	        ParameterSetName = 'Organization')]
+        [string] $UserName,
+
         [Parameter(
             Mandatory,
             ValueFromPipeline,
@@ -791,11 +960,25 @@ filter Stop-GitHubCodespace
 
     $telemetryProperties = @{
         CodespaceName = Get-PiiSafeString -PlainText $CodespaceName
+        UsageType = $PSCmdlet.ParameterSetName
         Wait = $Wait.IsPresent
     }
 
+    $uriFragment = [String]::Empty
+
+    if ($PSCmdlet.ParameterSetName -eq 'Organization')
+    {
+        $telemetryProperties['OrganizationName'] = Get-PiiSafeString -PlainText $OrganizationName
+        $telemetryProperties['UserName'] = Get-PiiSafeString -PlainText $UserName
+        $uriFragment = "orgs/$OrganizationName/members/$UserName/codespaces/$CodespaceName/stop"
+    }
+    else
+    {
+        $uriFragment = "user/codespaces/$CodespaceName/stop"
+    }
+
     $params = @{
-        UriFragment = "user/codespaces/$CodespaceName/stop"
+        UriFragment = $uriFragment
         Method = 'Post'
         Description = "Stop Codespace $CodespaceName"
         AccessToken = $AccessToken
@@ -898,6 +1081,316 @@ function Wait-GitHubCodespaceAction
     }
 }
 
+function Add-GitHubCodespaceUser
+{
+    <#
+    .SYNOPSIS
+        Add user(s) to Codespaces billing for an organization.
+
+    .DESCRIPTION
+        Add user(s) to Codespaces billing for an organization.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OrganizationName
+        Name of the Organization.
+
+    .PARAMETER UserName
+        The handle for the GitHub user account(s).
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .EXAMPLE
+        Add-GitHubCodespaceUser -OrganizationName microsoft -UserName octocat
+
+    .INPUTS
+        GitHub.User
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        To use this endpoint, the billing settings for the organization must be set to SelectedMembers,
+        which can done using Set-GitHubCodespaceVisibility -Visibility SelectedMembers.
+
+    .NOTES
+        You must authenticate using an access token with the admin:org scope to use this endpoint.
+
+    .LINK
+        https://docs.github.com/en/rest/codespaces/organizations?apiVersion=2022-11-28#add-users-to-codespaces-billing-for-an-organization
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string] $OrganizationName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [string[]] $UserName,
+
+        [string] $AccessToken
+    )
+
+    begin {
+        $userNames = @()
+    }
+
+    process {
+        foreach ($name in $UserName)
+        {
+            $userNames += $name
+        }
+    }
+
+    end {
+        Write-InvocationLog
+
+        $hashBody = @{
+            selected_usernames = @($userNames)
+        }
+
+        $params = @{
+            UriFragment = "orgs/$OrganizationName/codespaces/access/selected_users"
+            Body = ConvertTo-Json -InputObject $hashBody
+            Method = 'Post'
+            Description = 'Add users to GitHub Codespace billing'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+        }
+
+        if (-not $PSCmdlet.ShouldProcess(($userNames -join ','), 'Add Codespace Users'))
+        {
+            return
+        }
+        try
+        {
+            $null = Invoke-GHRestMethod @params
+        }
+        catch
+        {
+            if ($_.Exception.Message -like '*(304)*') # Not Modified
+            {
+                Write-Log -Message "Codespace selected_users not modified. Requested users already included." -Level Verbose
+            }
+            else
+            {
+                throw
+            }
+        }
+    }
+}
+
+function Remove-GitHubCodespaceUser
+{
+    <#
+    .SYNOPSIS
+        Remove user(s) from Codespaces billing for an organization.
+
+    .DESCRIPTION
+        Remove user(s) from Codespaces billing for an organization.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OrganizationName
+        Name of the Organization.
+
+    .PARAMETER UserName
+        The handle for the GitHub user account(s).
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .EXAMPLE
+        Remove-GitHubCodespaceUser -OrganizationName microsoft -UserName octocat
+
+    .INPUTS
+        GitHub.User
+
+    .OUTPUTS
+        None
+
+    .NOTES
+        To use this endpoint, the billing settings for the organization must be set to SelectedMembers,
+        which can done using Set-GitHubCodespaceVisibility -Visibility SelectedMembers.
+
+    .NOTES
+        You must authenticate using an access token with the admin:org scope to use this endpoint.
+
+    .LINK
+        https://docs.github.com/en/rest/codespaces/organizations?apiVersion=2022-11-28#removes-users-from-codespaces-billing-for-an-organization
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    [Alias('Delete-GitHubCodespaceUser')]
+    param (
+        [Parameter(Mandatory)]
+        [string] $OrganizationName,
+
+        [Parameter(
+            Mandatory,
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [string[]] $UserName,
+
+        [string] $AccessToken
+    )
+
+    begin {
+        $userNames = @()
+    }
+
+    process {
+        foreach ($name in $UserName)
+        {
+            $userNames += $name
+        }
+    }
+
+    end {
+        Write-InvocationLog
+
+        $hashBody = @{
+            selected_usernames = $userNames
+        }
+
+        $params = @{
+            UriFragment = "orgs/$OrganizationName/codespaces/access/selected_users"
+            Body = ConvertTo-Json -InputObject $hashBody
+            Method = 'Delete'
+            Description = 'Remove users from GitHub codespace billing'
+            AccessToken = $AccessToken
+            TelemetryEventName = $MyInvocation.MyCommand.Name
+        }
+
+        if (-not $PSCmdlet.ShouldProcess(($userNames -join ','), 'Remove Codespace Users'))
+        {
+            return
+        }
+        try
+        {
+            $null = Invoke-GHRestMethod @params
+        }
+        catch
+        {
+            if ($_.Exception.Message -like '*(304)*') # Not Modified
+            {
+                Write-Log -Message "Codespace selected_users not modified. Requested users already excluded." -Level Verbose
+            }
+            else
+            {
+                throw
+            }
+        }
+    }
+}
+
+filter Set-GitHubCodespaceVisibility
+{
+    <#
+    .SYNOPSIS
+        Manage access control for organization codespaces.
+
+    .DESCRIPTION
+        Manage access control for organization codespaces.
+        Sets which users can access codespaces in an organization. This is synonymous with granting
+        or revoking Codespaces access permissions for users according to the visibility.
+
+        The Git repo for this module can be found here: http://aka.ms/PowerShellForGitHub
+
+    .PARAMETER OrganizationName
+        Name of the Organization.
+
+    .PARAMETER Visibility
+        Which users can access codespaces in the organization.
+        Disabled means that no users can access codespaces in the organization.
+
+    .PARAMETER UserName
+        The usernames of the organization member(s) who should have access
+        to Codespaces in the organization. Required when visibility is SelectedMembers.
+        The provided list of usernames will replace any existing value.
+
+    .PARAMETER AccessToken
+        If provided, this will be used as the AccessToken for authentication with the
+        REST Api.  Otherwise, will attempt to use the configured value or will run unauthenticated.
+
+    .EXAMPLE
+        Set-GitHubCodespaceVisibility -Visibility SelectedMembers -User octocat -Force
+
+    .INPUTS
+        GitHub.User
+
+    .NOTES
+        You must authenticate using an access token with the admin:org scope to use this endpoint.
+
+    .LINK
+        https://docs.github.com/en/rest/codespaces/organizations?apiVersion=2022-11-28#manage-access-control-for-organization-codespaces
+    #>
+    [CmdletBinding(
+        SupportsShouldProcess,
+        ConfirmImpact = 'High')]
+    param (
+        [Parameter(Mandatory)]
+        [string] $OrganizationName,
+
+        [ValidateSet('Disabled', 'SelectedMembers', 'AllMembers', 'AllMembersAndOutsideCollaborators')]
+        [string] $Visibility,
+
+        [Parameter(
+            ValueFromPipeline,
+            ValueFromPipelineByPropertyName)]
+        [string[]] $UserName,
+
+        [switch] $Force,
+
+        [string] $AccessToken
+    )
+
+    Write-InvocationLog
+
+    if (($UserName.Count -gt 0) -and ($Visibility -ne 'SelectedMembers'))
+    {
+        $message = 'You can only specify the UserName parameter when the Visibility is set to ''SelectedMembers'''
+        Write-Log -Message $message -Level Error
+        throw $message
+    }
+
+    $visibilityMap = @{
+        Disabled = 'disabled'
+        SelectedMembers = 'selected_members'
+        AllMembers = 'all_members'
+        AllMembersAndOutsideCollaborators = 'all_members_and_outside_collaborators'
+    }
+    $hashBody = @{ visibility = $visibilityMap[$Visibility] }
+
+    if ($Visibility -eq 'SelectedMembers')
+    {
+        $hashBody.Add('selected_usernames', @($UserName))
+    }
+
+    $params = @{
+        UriFragment = "orgs/$OrganizationName/codespaces/access"
+        Body = ConvertTo-Json -InputObject $hashBody
+        Method = 'Put'
+        Description = 'Set Codespace Visiblity'
+        AccessToken = $AccessToken
+        TelemetryEventName = $MyInvocation.MyCommand.Name
+    }
+
+    if ($Force -and (-not $Confirm))
+    {
+        $ConfirmPreference = 'None'
+    }
+
+    if ($PSCmdLet.ShouldProcess($Visibility, 'Set Codespace Visibility'))
+    {
+        Invoke-GHRestMethod @params
+    }
+}
+
 filter Add-GitHubCodespaceAdditionalProperties
 {
     <#
@@ -936,7 +1429,7 @@ filter Add-GitHubCodespaceAdditionalProperties
 
         if (-not (Get-GitHubConfiguration -Name DisablePipelineSupport))
         {
-            if ($item.name)
+            if ($item.name -and  $TypeName -eq $script:GitHubCodespaceTypeName)
             {
                 Add-Member -InputObject $item -Name 'CodespaceUrl' -Value "user/codespaces/$($item.name)" -MemberType NoteProperty -Force
                 Add-Member -InputObject $item -Name 'CodespaceName' -Value $item.name -MemberType NoteProperty -Force

@@ -34,5 +34,41 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <!--================== GitHub.CodespaceMachine Type View =================-->
+    <View>
+      <Name>GitHub.CodespaceMachine</Name>
+      <ViewSelectedBy>
+        <TypeName>GitHub.CodespaceMachine</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>display_name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>operating_system</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>storage_in_bytes</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>memory_in_bytes</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>cpus</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>prebuild_availability</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>
